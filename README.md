@@ -17,4 +17,4 @@
 
 ### Who do I talk to? ###
 
-* Please direct any questions @josephduchesne
+* Please direct any questions to @josephduchesne
