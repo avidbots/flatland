@@ -41,7 +41,7 @@ roslint_cpp()
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf yaml-cpp
-  DEPENDS opencv yaml-cpp
+  DEPENDS OpenCV YAML_CPP
 )
 
 ###########
@@ -50,6 +50,8 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
