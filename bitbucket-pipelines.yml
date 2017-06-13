@@ -1,5 +1,5 @@
 # Docker image base
-image: kinetic-ros-base
+image: ros:kinetic-ros-base
 
 pipelines:
   default:
