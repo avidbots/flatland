@@ -1,0 +1,15 @@
+# Docker image base
+image: kinetic-ros-base
+
+pipelines:
+  default:
+    - step:
+        script: # Modify the commands below to build your repository.
+          - mkdir ~/catkin_ws
+          - ln -s $BITBUCKET_CLONE_DIR ~/catkin_ws/src
+          - cd ~/catkin_ws
+          - apt-get update
+          - rosdep install --from-paths src --ignore-src
+          - catkin_make
+          - catkin_make roslint
+          - catkin_make run_tests
