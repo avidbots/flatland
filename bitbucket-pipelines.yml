@@ -9,7 +9,8 @@ pipelines:
           - ln -s $BITBUCKET_CLONE_DIR ~/catkin_ws/src
           - cd ~/catkin_ws
           - apt-get update
-          - rosdep install --as-root --from-paths src --ignore-src
+          - apt-get install sudo -y  # Needed by rosdep
+          - rosdep install --from-paths src --ignore-src
           - catkin_make
           - catkin_make roslint
           - catkin_make run_tests
