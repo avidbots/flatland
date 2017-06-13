@@ -10,6 +10,7 @@ pipelines:
           - cd ~/catkin_ws
           - apt-get update
           - apt-get install sudo -y  # Needed by rosdep
+          - rosdep update
           - rosdep install --from-paths src --ignore-src
           - catkin_make
           - catkin_make roslint
