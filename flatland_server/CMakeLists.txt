@@ -39,7 +39,7 @@ roslint_cpp()
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  # INCLUDE_DIRS include
+  INCLUDE_DIRS include
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf yaml-cpp
   DEPENDS OpenCV YAML_CPP
 )
