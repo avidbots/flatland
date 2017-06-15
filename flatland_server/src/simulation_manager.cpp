@@ -56,10 +56,9 @@ namespace flatland_server {
  */
 SimulationManager::SimulationManager(std::string world_file,
                                      double initial_rate)
-    : gravity_(0.0, 0.0), initial_rate_(initial_rate) {
+    : initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
-  physics_world_ = new b2World(gravity_);
-  world_ = new World(world_file, physics_world_);
+  world_ = new World(world_file);
   // Todo: Initialize SimTime class here once written
 }
 
@@ -85,7 +84,6 @@ void SimulationManager::Main() {
 void SimulationManager::Shutdown() {
   ROS_INFO_NAMED("SimMan", "Shutdown called");
   delete world_;
-  delete physics_world_;
 }
 
 };  // namespace flatland_server

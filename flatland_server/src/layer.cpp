@@ -9,7 +9,7 @@
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	 world.cpp
  * @brief	 implements flatland layer
- * @author   Joseph Duchesne
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -49,31 +49,34 @@
  #include <yaml-cpp/yaml.h>
  #include <opencv2/opencv.hpp>
  #include <flatland_server/layer.h>
+ #include <flatland_server/exceptions.h>
 
 namespace flatland_server {
 
-bool Layer::load(const boost::filesystem::path &world_yaml_dir, 
+void Layer::load_layer(const boost::filesystem::path &world_yaml_dir, 
   const YAML::Node &layer_node) {
+
+  boost::filesystem::path map_yaml_path;
 
   if (layer_node["map"]) {
     map_yaml_path = 
       boost::filesystem::path(layer_node["map"].as<std::string>());
   }
   else {
-    return false;
+    throw YAMLException("Invalid \"properties\" in " + name_ + " layer");
   }
 
   if (layer_node["color"] &&
     layer_node["color"].IsSequence()&&
     layer_node["color"].size() == 4) {
 
-    color[0] = layer_node["color"][0].as<int>();
-    color[1] = layer_node["color"][1].as<int>();
-    color[2] = layer_node["color"][2].as<int>();
-    color[3] = layer_node["color"][3].as<int>();
+    color_[0] = layer_node["color"][0].as<double>();
+    color_[1] = layer_node["color"][1].as<double>();
+    color_[2] = layer_node["color"][2].as<double>();
+    color_[3] = layer_node["color"][3].as<double>();
   }
   else {
-    return false;
+    throw YAMLException("Invalid \"color\" in " + name_ + " layer");
   }
 
   // use absolute path if start with '/', use relative otherwise
@@ -82,64 +85,69 @@ bool Layer::load(const boost::filesystem::path &world_yaml_dir,
   }
 
   // start parsing the map yaml file
-  YAML::Node yaml = YAML::LoadFile(map_yaml_path.string());
+  YAML::Node yaml;
+  try {
+    yaml = YAML::LoadFile(map_yaml_path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + map_yaml_path.string(), 
+      e.msg, e.mark);
+  }
 
   if (yaml["image"]) {
     boost::filesystem::path image_path(yaml["image"].as<std::string>());
 
-    if (image_path.string().front() == '/') {
+    if (image_path.string().front() != '/') {
       image_path = map_yaml_path.parent_path() / image_path;
     }
 
     cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
-    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
+    map.convertTo(bitmap_, CV_32FC1, 1.0 / 255.0);
   }
   else{
-    return false;
+    throw YAMLException("Invalid \"image\" in " + name_ + " layer");
   }
 
   if (yaml["resolution"]) {
-    resolution = yaml["resolution"].as<double>();
+    resolution_ = yaml["resolution"].as<double>();
   }
   else {
-    return false;
+    throw YAMLException("Invalid \"resolution\" in " + name_ + " layer");
   }
 
   if (yaml["origin"] && yaml["origin"].IsSequence() &&
     yaml["origin"].size() == 3) {
-    origin[0] = yaml["origin"][0].as<double>();
-    origin[1] = yaml["origin"][1].as<double>();
-    origin[2] = yaml["origin"][2].as<double>();
+    origin_[0] = yaml["origin"][0].as<double>();
+    origin_[1] = yaml["origin"][1].as<double>();
+    origin_[2] = yaml["origin"][2].as<double>();
   }
   else {
-    return false;
+    throw YAMLException("Invalid \"origin\" in " + name_ + " layer");
   }
 
   if (yaml["occupied_thresh"]) {
-    occupied_thresh = yaml["occupied_thresh"].as<double>();
+    occupied_thresh_ = yaml["occupied_thresh"].as<double>();
   }
   else {
-    return false;
+    throw YAMLException("Invalid \"occupied_thresh\" in " + 
+      name_ +" layer");
   }
 
   if (yaml["free_thresh"]) {
-    free_thresh = yaml["free_thresh"].as<double>();
+    free_thresh_ = yaml["free_thresh"].as<double>();
   }
   else {
-    return false;
+    throw YAMLException("Invalid \"free_thresh\" in " + name_ + " layer");
   }
 
   vectorize_bitmap();
-
-  return true;
 }
 
 void Layer::vectorize_bitmap() {
   cv::Mat padded_map, obstable_map;
-  cv::copyMakeBorder(bitmap, padded_map, 1, 1, 1, 1, cv::BORDER_CONSTANT, 0);
+  cv::copyMakeBorder(bitmap_, padded_map, 1, 1, 1, 1, cv::BORDER_CONSTANT, 0);
 
   // obstacle map is now binary
-  cv::inRange(padded_map, occupied_thresh, 1.0, obstable_map);
+  cv::inRange(padded_map, occupied_thresh_, 1.0, obstable_map);
 
   // loop through all the rows, looking at 2 at once
   for (int i = 0; i < obstable_map.rows; i++) {
@@ -172,7 +180,7 @@ void Layer::vectorize_bitmap() {
         edge.Set(b2Vec2(start, i), b2Vec2(end, i)); // TODO
         fixture.shape = &edge;
 
-        phys_body->CreateFixture(&fixture);
+        physics_body_->CreateFixture(&fixture);
 
         start = end;
       }
@@ -205,7 +213,7 @@ void Layer::vectorize_bitmap() {
         edge.Set(b2Vec2(i, start), b2Vec2(i, end)); // TODO
         fixture.shape = &edge;
 
-        phys_body->CreateFixture(&fixture);
+        physics_body_->CreateFixture(&fixture);
 
         start = end;
       }

@@ -125,4 +125,13 @@ if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gtest(null_test test/null.cpp)
 
+  catkin_add_gtest(flatland_server_load_world_test
+    test/flatland_server_load_world_test.cpp)
+  target_link_libraries(flatland_server_load_world_test
+    ${catkin_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    Box2D
+    flatland_lib
+  )
+  
 endif()

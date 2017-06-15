@@ -56,8 +56,6 @@ namespace flatland_server {
 class SimulationManager {
  public:
   bool run_simulator_ = true;  // While true, keep running the simulation loop
-  b2Vec2 gravity_;
-  b2World *physics_world_;
   World *world_;
   double initial_rate_;
 

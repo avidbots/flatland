@@ -55,11 +55,11 @@
 namespace flatland_server {
 class World {
  public:
-  b2World *physics_world_;
+  b2World physics_world_;
   std::vector<Layer> layers_;
 
-  World(std::string world_file, b2World *physics_world);
-  bool load_world(std::string yaml_path);
+  World(std::string world_file);
+  void load_world(std::string yaml_path);
 
 };
 };      // namespace flatland_server

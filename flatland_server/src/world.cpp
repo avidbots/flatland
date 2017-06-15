@@ -48,29 +48,42 @@
 #include <string>
 #include <yaml-cpp/yaml.h>
 #include <map>
-#include <flatland_server/world.h>
 #include <boost/filesystem.hpp>
-
-
-#include "flatland_server/world.h"
+#include <Box2D/Box2D.h>
+#include <flatland_server/exceptions.h>
+#include <flatland_server/world.h>
 
 namespace flatland_server {
 
-World::World(std::string world_file, b2World *physics_world)
-    : physics_world_(physics_world) {
+World::World(std::string world_file) :  
+  physics_world_(b2World(b2Vec2(0, 0))){
+  
+  try {
+    load_world(world_file);
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading yaml", e.msg, e.mark);
+  }
+
   ROS_INFO_NAMED("World", "World loaded");
 }
 
-bool World::load_world(std::string yaml_path) {
+void World::load_world(std::string yaml_path) {
 
+  boost::filesystem::path path(yaml_path);
+  
   // parse the world YAML file
-  YAML::Node yaml = YAML::LoadFile(yaml_path);
-
+  YAML::Node yaml;
+  try {
+     yaml = YAML::LoadFile(path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
+  }
+  
   if (yaml["properties"] && yaml["properties"].IsMap()) {
     // TODO
   }
   else {
-    return false;
+    throw YAMLException("Invalid world \"properties\"");
   }
 
   std::vector<Layer> loaded_layers;
@@ -82,26 +95,23 @@ bool World::load_world(std::string yaml_path) {
 
       Layer layer;
 
-      layer.name = it->first.as<std::string>();
-
-      boost::filesystem::path path(yaml_path);
-      layer.load(path.parent_path(), it->second);
+      layer.name_ = it->first.as<std::string>();
+      layer.load_layer(path.parent_path(), it->second);
 
       loaded_layers.push_back(layer);
     }
   }
   else {
-    return false;
+    throw YAMLException("Invalid world \"layers\"");
   }
 
   if (yaml["models"] && yaml["models"].IsSequence()) {
     // TODO
   } else {
-    return false;
+    throw YAMLException("Invalid world \"models\"");
   }
 
   layers_ = loaded_layers;
-  return true;
 }
 
 };  // namespace flatland_server

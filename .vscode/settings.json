@@ -36,6 +36,9 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "utility": "cpp",
-        "string": "cpp"
-    }
+        "string": "cpp",
+        "valarray": "cpp",
+        "*.ipp": "cpp"
+    },
+    "editor.tabSize": 2
 }

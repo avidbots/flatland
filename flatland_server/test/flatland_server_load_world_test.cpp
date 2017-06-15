@@ -46,12 +46,13 @@
 
 #include <gtest/gtest.h>
 #include <flatland_server/world.h>
-
+#include <Box2D/Box2D.h>
 
 // Declare a test
 TEST(FlatlandServerLoadWorldTest, validWorldYaml)
 {
-  flatland_server::World world()
+  // b2World physics_world(b2Vec2(0, 0));
+  // flatland_server::World world("/home/infrastructurecoop/Dev/flatland_ws/src/flatland/flatland_server/test/conestogo_office_test/world.yaml", &physics_world);
 }
 
 TEST(FlatlandServerLoadWorldTest, invalidWorldYamlA)
