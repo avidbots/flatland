@@ -11,9 +11,11 @@
 
 ### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
+* code should be unit tested using gtest/rosunit when practical.
+* code must be formatted as per clang-format-3.8 --style=file
+* code must pass scan-build's static analysis. To run, clean your build directory and run:
+  
+  scan-build-3.8 --status-bugs catkin_make -j1
 
 ### Who do I talk to? ###
 
