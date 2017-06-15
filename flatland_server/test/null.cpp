@@ -12,14 +12,14 @@
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
- * 
+ *
  *  Copyright (c) 2017, Avidbots Corp.
  *  All rights reserved.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
@@ -29,7 +29,7 @@
  *   * Neither the name of the Avidbots Corp. nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -47,20 +47,13 @@
 #include <gtest/gtest.h>
 
 // Declare a test
-TEST(TestSuite, testA)
-{
-  EXPECT_EQ(1, 1);
-}
+TEST(TestSuite, testA) { EXPECT_EQ(1, 1); }
 
 // Declare another test
-TEST(TestSuite, testB)
-{
-  EXPECT_TRUE(true);
-}
+TEST(TestSuite, testB) { EXPECT_TRUE(true); }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

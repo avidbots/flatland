@@ -12,14 +12,14 @@
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
- * 
+ *
  *  Copyright (c) 2017, Avidbots Corp.
  *  All rights reserved.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
@@ -29,7 +29,7 @@
  *   * Neither the name of the Avidbots Corp. nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -50,14 +50,12 @@
 #include <Box2D/Box2D.h>
 #include <string>
 
-namespace flatland_server
-{
-class World
-{
-  public:
-    b2World *physics_world_;
+namespace flatland_server {
+class World {
+public:
+  b2World *physics_world_;
 
-    World(std::string world_file, b2World *physics_world);
+  World(std::string world_file, b2World *physics_world);
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_WORLD_H
+};     // namespace flatland_server
+#endif // FLATLAND_SERVER_WORLD_H

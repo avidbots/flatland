@@ -12,14 +12,14 @@
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
- * 
+ *
  *  Copyright (c) 2017, Avidbots Corp.
  *  All rights reserved.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
@@ -29,7 +29,7 @@
  *   * Neither the name of the Avidbots Corp. nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -47,25 +47,23 @@
 #ifndef FLATLAND_SERVER_SIMULATION_MANAGER_H
 #define FLATLAND_SERVER_SIMULATION_MANAGER_H
 
+#include "flatland_server/debug_visualization.h"
+#include "flatland_server/world.h"
 #include <Box2D/Box2D.h>
 #include <string>
-#include "flatland_server/world.h"
-#include "flatland_server/debug_visualization.h"
 
-namespace flatland_server
-{
-class SimulationManager
-{
-  public:
-    bool run_simulator_ = true;  // While true, keep running the simulation loop
-    b2Vec2 gravity_;
-    b2World *physics_world_;
-    World *world_;
-    double initial_rate_;
+namespace flatland_server {
+class SimulationManager {
+public:
+  bool run_simulator_ = true; // While true, keep running the simulation loop
+  b2Vec2 gravity_;
+  b2World *physics_world_;
+  World *world_;
+  double initial_rate_;
 
-    SimulationManager(std::string world_file, double initial_rate);
-    void Main();
-    void Shutdown();
+  SimulationManager(std::string world_file, double initial_rate);
+  void Main();
+  void Shutdown();
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_SIMULATION_MANAGER_H
+};     // namespace flatland_server
+#endif // FLATLAND_SERVER_SIMULATION_MANAGER_H
