@@ -45,12 +45,15 @@
  */
 
 #include <ros/ros.h>
+#include <string>
+
 #include "flatland_server/world.h"
 
 namespace flatland_server
 {
 
-World::World(std::string world_file)
+World::World(std::string world_file, b2World *physics_world)
+: physics_world_(physics_world)
 {
   ROS_INFO_NAMED("World", "World loaded");
 }

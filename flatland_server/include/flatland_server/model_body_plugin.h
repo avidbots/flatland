@@ -69,5 +69,5 @@ public:
 protected:
   ModelBodyPlugin() {}
 };
-};     // namespace flatland_server
-#endif // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H

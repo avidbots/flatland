@@ -45,6 +45,7 @@
  */
 
 #include <ros/ros.h>
+#include <string>
 #include "flatland_server/simulation_manager.h"
 
 namespace flatland_server
@@ -59,7 +60,7 @@ SimulationManager::SimulationManager(std::string world_file, double initial_rate
 {
   ROS_INFO_NAMED("SimMan", "Initializing");
   physics_world_ = new b2World(gravity_);
-  world_ = new World(world_file);
+  world_ = new World(world_file, physics_world_);
   // Todo: Initialize SimTime class here once written
 }
 
@@ -69,7 +70,7 @@ void SimulationManager::Main()
 
   ros::Rate rate(initial_rate_);  // Todo: Placeholder for proper simulation time control
 
-  while (ros::ok() && run_simulator_) 
+  while (ros::ok() && run_simulator_)
   {
     // Todo: update physics
     ros::spinOnce();

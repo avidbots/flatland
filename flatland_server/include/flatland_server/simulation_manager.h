@@ -48,6 +48,7 @@
 #define FLATLAND_SERVER_SIMULATION_MANAGER_H
 
 #include <Box2D/Box2D.h>
+#include <string>
 #include "flatland_server/world.h"
 #include "flatland_server/debug_visualization.h"
 
@@ -55,7 +56,7 @@ namespace flatland_server
 {
 class SimulationManager
 {
-  public: 
+  public:
     bool run_simulator_ = true;  // While true, keep running the simulation loop
     b2Vec2 gravity_;
     b2World *physics_world_;
