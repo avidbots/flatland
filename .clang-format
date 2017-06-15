@@ -1,5 +1,3 @@
-{
-  BasedOnStyle: "Visual Studio",
-  IndentWidth: 2,
-  SpacesBeforeTrailingComments: 2
-}
+BasedOnStyle: "Google"
+IndentWidth: 2
+SpacesBeforeTrailingComments: 2

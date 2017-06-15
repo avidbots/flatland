@@ -51,5 +51,5 @@
 
 namespace flatland_server {
 class DebugVisualization {};
-};     // namespace flatland_server
-#endif // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

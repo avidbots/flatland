@@ -53,7 +53,7 @@
 
 namespace flatland_server {
 class ModelBodyPlugin {
-public:
+ public:
   /**
    * @param handle The ROS nodehandle for this plugin instance
    * @param config The yaml config file for this plugin
@@ -64,8 +64,8 @@ public:
   virtual void collisionWithModel(void *model) = 0;
   virtual ~ModelBodyPlugin() {}
 
-protected:
+ protected:
   ModelBodyPlugin() {}
 };
-};     // namespace flatland_server
-#endif // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H

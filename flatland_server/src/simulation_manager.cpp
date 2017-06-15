@@ -67,7 +67,7 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Main starting");
 
   ros::Rate rate(
-      initial_rate_); // Todo: Placeholder for proper simulation time control
+      initial_rate_);  // Todo: Placeholder for proper simulation time control
 
   while (ros::ok() && run_simulator_) {
     // Todo: update physics
@@ -76,7 +76,7 @@ void SimulationManager::Main() {
 
     ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
 
-    rate.sleep(); // Todo: Placeholder for proper simulation time control
+    rate.sleep();  // Todo: Placeholder for proper simulation time control
   }
 
   ROS_INFO_NAMED("SimMan", "Main exiting");
@@ -88,4 +88,4 @@ void SimulationManager::Shutdown() {
   delete physics_world_;
 }
 
-}; // namespace flatland_server
+};  // namespace flatland_server

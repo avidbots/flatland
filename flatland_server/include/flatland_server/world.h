@@ -52,10 +52,10 @@
 
 namespace flatland_server {
 class World {
-public:
+ public:
   b2World *physics_world_;
 
   World(std::string world_file, b2World *physics_world);
 };
-};     // namespace flatland_server
-#endif // FLATLAND_SERVER_WORLD_H
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_WORLD_H
