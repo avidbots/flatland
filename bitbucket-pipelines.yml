@@ -17,5 +17,5 @@ pipelines:
           - git ls-files | grep -E '\.[ch](pp)?$' |  xargs clang-format-3.8 --style=file -i && git diff --exit-code || { git reset --hard; false; }
           - cd ~/catkin_ws
           - catkin_make
-          - scan-build --status-bugs catkin_make -j1
+          - scan-build-3.8 --status-bugs catkin_make -j1
           - catkin_make run_tests && catkin_test_results
