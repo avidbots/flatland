@@ -46,6 +46,11 @@
 
 #include <ros/ros.h>
 #include <string>
+#include <yaml-cpp/yaml.h>
+#include <map>
+#include <flatland_server/world.h>
+#include <boost/filesystem.hpp>
+
 
 #include "flatland_server/world.h"
 
@@ -54,6 +59,49 @@ namespace flatland_server {
 World::World(std::string world_file, b2World *physics_world)
     : physics_world_(physics_world) {
   ROS_INFO_NAMED("World", "World loaded");
+}
+
+bool World::load_world(std::string yaml_path) {
+
+  // parse the world YAML file
+  YAML::Node yaml = YAML::LoadFile(yaml_path);
+
+  if (yaml["properties"] && yaml["properties"].IsMap()) {
+    // TODO
+  }
+  else {
+    return false;
+  }
+
+  std::vector<Layer> loaded_layers;
+  if (yaml["layers"] && yaml["layers"].IsMap()) {
+    auto layers = yaml["layers"];
+
+    for (YAML::const_iterator it = yaml["layers"].begin();
+      it != yaml["layers"].end(); ++it){
+
+      Layer layer;
+
+      layer.name = it->first.as<std::string>();
+
+      boost::filesystem::path path(yaml_path);
+      layer.load(path.parent_path(), it->second);
+
+      loaded_layers.push_back(layer);
+    }
+  }
+  else {
+    return false;
+  }
+
+  if (yaml["models"] && yaml["models"].IsSequence()) {
+    // TODO
+  } else {
+    return false;
+  }
+
+  layers_ = loaded_layers;
+  return true;
 }
 
 };  // namespace flatland_server

@@ -56,10 +56,12 @@ include_directories(
 add_library(flatland_lib
   src/simulation_manager.cpp
   src/world.cpp
+  src/layer.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   Box2D
   yaml-cpp
 )
@@ -76,6 +78,7 @@ add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   Box2D
   yaml-cpp
   flatland_lib

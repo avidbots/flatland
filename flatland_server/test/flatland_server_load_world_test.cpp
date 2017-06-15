@@ -51,7 +51,7 @@
 // Declare a test
 TEST(FlatlandServerLoadWorldTest, validWorldYaml)
 {
-  EXPECT_EQ(1, 1);
+  flatland_server::World world()
 }
 
 TEST(FlatlandServerLoadWorldTest, invalidWorldYamlA)

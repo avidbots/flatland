@@ -8,8 +8,8 @@
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	 world.h
- * @brief	 Loads world file
- * @author Joseph Duchesne
+ * @brief	 Defines flatland Layer
+ * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,23 +44,33 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_WORLD_H
-#define FLATLAND_SERVER_WORLD_H
+#ifndef FLATLAND_SERVER_LAYER_H
+#define FLATLAND_SERVER_LAYER_H
 
 #include <Box2D/Box2D.h>
 #include <string>
-#include <vector>
-#include <flatland_server/layer.h>
+#include <yaml-cpp/yaml.h>
+#include <opencv2/opencv.hpp>
+#include <boost/filesystem.hpp>
 
 namespace flatland_server {
-class World {
+class Layer {
  public:
-  b2World *physics_world_;
-  std::vector<Layer> layers_;
 
-  World(std::string world_file, b2World *physics_world);
-  bool load_world(std::string yaml_path);
+    std::string name;
+    boost::filesystem::path map_yaml_path;
+    int color[4]; // r, g, b, a
+    cv::Mat bitmap;
+    double resolution;
+    double origin[3];
+    double occupied_thresh;
+    double free_thresh;
 
+    b2Body *phys_body;
+
+    void vectorize_bitmap();
+    bool load(const boost::filesystem::path &world_yaml_dir, 
+      const YAML::Node &layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
