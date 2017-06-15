@@ -56,4 +56,4 @@ World::World(std::string world_file, b2World *physics_world)
   ROS_INFO_NAMED("World", "World loaded");
 }
 
-}; // namespace flatland_server
+};  // namespace flatland_server
