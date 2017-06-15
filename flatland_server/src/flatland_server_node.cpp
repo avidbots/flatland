@@ -80,7 +80,8 @@ int main(int argc, char **argv) {
 
   // Load parameters
   float initial_rate = 60.0;  // The physics update rate (Hz)
-  std::string world_path;
+  std::string world_path;     // The file path to the world.yaml file
+  
   if (node_handle.getParam("initial_rate", initial_rate)) {
     ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
   } else {
