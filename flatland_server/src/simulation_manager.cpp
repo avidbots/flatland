@@ -51,11 +51,11 @@
 namespace flatland_server {
 
 /**
- * @name Simuiilation Manager constructor
- * @param World File
+ * @name  Simulation Manager constructor
+ * @param world_file   The path to the world.yaml file we wish to load
+ * @param initial_rate The physics step frequency in Hz
  */
-SimulationManager::SimulationManager(std::string world_file,
-                                     double initial_rate)
+SimulationManager::SimulationManager(std::string world_file, float initial_rate)
     : gravity_(0.0, 0.0), initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
   physics_world_ = new b2World(gravity_);

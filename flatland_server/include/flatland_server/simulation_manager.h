@@ -56,12 +56,12 @@ namespace flatland_server {
 class SimulationManager {
  public:
   bool run_simulator_ = true;  // While true, keep running the simulation loop
-  b2Vec2 gravity_;
-  b2World *physics_world_;
-  World *world_;
-  double initial_rate_;
+  b2Vec2 gravity_;             // The 2d gravity vector (0,0)
+  b2World *physics_world_;     // The box2d physics world
+  World *world_;               // The world container object
+  float initial_rate_;         // The physics update rate (Hz)
 
-  SimulationManager(std::string world_file, double initial_rate);
+  SimulationManager(std::string world_file, float initial_rate);
   void Main();
   void Shutdown();
 };

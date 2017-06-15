@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle node_handle("~");
 
   // Load parameters
-  double initial_rate = 60.0;
+  float initial_rate = 60.0;  // The physics update rate (Hz)
   std::string world_path;
   if (node_handle.getParam("initial_rate", initial_rate)) {
     ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
