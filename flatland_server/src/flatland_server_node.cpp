@@ -12,14 +12,14 @@
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
- * 
+ *
  *  Copyright (c) 2017, Avidbots Corp.
  *  All rights reserved.
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
- * 
+ *
  *   * Redistributions of source code must retain the above copyright
  *     notice, this list of conditions and the following disclaimer.
  *   * Redistributions in binary form must reproduce the above
@@ -29,7 +29,7 @@
  *   * Neither the name of the Avidbots Corp. nor the names of its
  *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -44,7 +44,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <ros/ros.h>
 #include <signal.h>
 #include <string>
@@ -52,19 +51,17 @@
 #include "flatland_server/simulation_manager.h"
 
 /** Global variables */
-flatland_server::SimulationManager* simulation_manager;
+flatland_server::SimulationManager *simulation_manager;
 
 /**
  * @name        SigintHandler
  * @brief       Interrupt handler - sends shutdown signal to simulation_manager
  * @param[in]   sig: signal itself
  */
-void SigintHandler(int sig)
-{
+void SigintHandler(int sig) {
   ROS_WARN_NAMED("Node", "*** Shutting down... ***");
 
-  if (simulation_manager != nullptr)
-  {
+  if (simulation_manager != nullptr) {
     simulation_manager->Shutdown();
     delete simulation_manager;
     simulation_manager = nullptr;
@@ -77,36 +74,30 @@ void SigintHandler(int sig)
  * @name        main
  * @brief       Entrypoint for Flatland Server ros node
  */
-int main(int argc, char**argv)
-{
+int main(int argc, char **argv) {
   ros::init(argc, argv, "Node", ros::init_options::NoSigintHandler);
   ros::NodeHandle node_handle("~");
 
   // Load parameters
   double initial_rate = 60.0;
   std::string world_path;
-  if (node_handle.getParam("initial_rate", initial_rate))
-  {
+  if (node_handle.getParam("initial_rate", initial_rate)) {
     ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
-  }
-  else
-  {
+  } else {
     ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
   }
 
-  if (node_handle.getParam("world_path", world_path))
-  {
+  if (node_handle.getParam("world_path", world_path)) {
     ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
-  }
-  else
-  {
+  } else {
     ROS_FATAL_NAMED("Node", "No world_path parameter given!");
     ros::shutdown();
     return 1;
   }
 
   // Create simulation manager object
-  simulation_manager = new flatland_server::SimulationManager(world_path, initial_rate);
+  simulation_manager =
+      new flatland_server::SimulationManager(world_path, initial_rate);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);

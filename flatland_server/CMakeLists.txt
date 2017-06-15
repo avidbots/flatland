@@ -8,7 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roslint
   rostest
   pluginlib
   roscpp
@@ -31,12 +30,6 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 # OpenCV
 find_package(OpenCV REQUIRED)
-
-##########
-## Lint ##
-##########
-
-roslint_cpp()
 
 ###################################
 ## catkin specific configuration ##
