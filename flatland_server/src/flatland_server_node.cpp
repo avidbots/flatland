@@ -13,7 +13,7 @@ flatland_server::SimulationManager* simulation_manager;
  */
 void SigintHandler(int sig)
 {
-  ROS_WARN_NAMED("flatland_server", "*** Shutting down... ***");
+  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
 
   if (simulation_manager != nullptr)
   {
@@ -21,7 +21,7 @@ void SigintHandler(int sig)
     delete simulation_manager;
     simulation_manager = nullptr;
   }
-  ROS_INFO_STREAM_NAMED("flatland_server", "Beginning ros shutdown");
+  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
   ros::shutdown();
 }
 
@@ -31,36 +31,36 @@ void SigintHandler(int sig)
  */
 int main(int argc, char**argv)
 {
-  ros::init(argc, argv, "flatland_server", ros::init_options::NoSigintHandler);
-  ros::NodeHandle node_handle;
+  ros::init(argc, argv, "Node", ros::init_options::NoSigintHandler);
+  ros::NodeHandle node_handle("~");
 
   // Load parameters
   double initial_rate = 60.0;
   std::string world_path;
   if (node_handle.getParam("initial_rate", initial_rate)) {
-    ROS_INFO_STREAM_NAMED("flatland_server", "initial rate: " << initial_rate);
+    ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
   } else {
-    ROS_INFO_STREAM_NAMED("flatland_server", "assuming initial rate: " << initial_rate);
+    ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
   }
 
   if (node_handle.getParam("world_path", world_path)) {
-    ROS_INFO_STREAM_NAMED("flatland_server", "world path: " << world_path);
+    ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
   } else {
-    ROS_FATAL_NAMED("flatland_server", "No world_path parameter given!");
+    ROS_FATAL_NAMED("Node", "No world_path parameter given!");
     ros::shutdown();
     return 1;
   }
 
   // Create simulation manager object
-  simulation_manager = new flatland_server::SimulationManager();
+  simulation_manager = new flatland_server::SimulationManager(world_path, initial_rate);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
 
-  ROS_INFO_STREAM_NAMED("flatland_server", "Initialized");
-  simulation_manager->main();
+  ROS_INFO_STREAM_NAMED("Node", "Initialized");
+  simulation_manager->Main();
 
-  ROS_INFO_STREAM_NAMED("flatland_server", "Returned from simulation manager main");
+  ROS_INFO_STREAM_NAMED("Node", "Returned from simulation manager main");
   delete simulation_manager;
   simulation_manager = nullptr;
   return 0;

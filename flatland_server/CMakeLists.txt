@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(flatland_server)
 
+# Ensure we're using c++11
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -40,6 +43,7 @@ roslint_cpp()
 ###################################
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES flatland_lib
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf yaml-cpp
   DEPENDS OpenCV YAML_CPP
 )
@@ -49,32 +53,40 @@ catkin_package(
 ###########
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(flatland_server
-#   src/${PROJECT_NAME}/flatland_server.cpp
-# )
+## Flatland server library
+add_library(flatland_lib
+  src/simulation_manager.cpp
+  src/world.cpp
+)
+add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(flatland_lib
+  ${catkin_LIBRARIES}
+  Box2D
+  yaml-cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(flatland_server_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(flatland_server_node src/flatland_server_node.cpp)
-
-## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(flatland_server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(flatland_server src/flatland_server_node.cpp)
+add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(flatland_server_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(flatland_server
+  ${catkin_LIBRARIES}
+  Box2D
+  yaml-cpp
+  flatland_lib
+)
 
 #############
 ## Install ##
@@ -90,26 +102,24 @@ include_directories(
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-## Mark executables and/or libraries for installation
-# install(TARGETS flatland_server flatland_server_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+# Mark executables and/or libraries for installation
+install(TARGETS flatland_server flatland_lib
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+# Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
 
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+# Install launchfiles
+install(DIRECTORY launch
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 #############
 ## Testing ##

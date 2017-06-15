@@ -56,12 +56,15 @@ namespace flatland_server
 class SimulationManager
 {
   public: 
-    bool run_simulator = true;  // While true, keep running the simulation loop
-    static const b2Vec2 gravity(0.0, 0.0);
-    b2World physics_world;
+    bool run_simulator_ = true;  // While true, keep running the simulation loop
+    b2Vec2 gravity_;
+    b2World *physics_world_;
+    World *world_;
+    double initial_rate_;
 
-    void SimulationManager(std::string world_file, double initial_rate);
+    SimulationManager(std::string world_file, double initial_rate);
     void Main();
+    void Shutdown();
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_SIMULATION_MANAGER_H

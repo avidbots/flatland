@@ -44,6 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <ros/ros.h>
 #include "flatland_server/simulation_manager.h"
 
 namespace flatland_server
@@ -54,26 +55,39 @@ namespace flatland_server
  * @param World File
  */
 SimulationManager::SimulationManager(std::string world_file, double initial_rate)
-: physics_world(SimulationManager::gravity), world(world_file)  // Todo: Initialize SimTime class here once written
+: gravity_(0.0, 0.0), initial_rate_(initial_rate)
 {
-  ROS_INFO_NAMED("flatland_server::SimulationManager", "Initializing");
-  
-  // Todo: Create box2d world
-
+  ROS_INFO_NAMED("SimMan", "Initializing");
+  physics_world_ = new b2World(gravity_);
+  world_ = new World(world_file);
+  // Todo: Initialize SimTime class here once written
 }
 
-SimulationManager::Main()
+void SimulationManager::Main()
 {
-  ROS_INFO_NAMED("flatland_server::SimulationManager", "Main starting");
+  ROS_INFO_NAMED("SimMan", "Main starting");
 
-  while (ros::ok() && run_simulator) 
+  ros::Rate rate(initial_rate_);  // Todo: Placeholder for proper simulation time control
+
+  while (ros::ok() && run_simulator_) 
   {
     // Todo: update physics
-    ros::SpinOnce();
+    ros::spinOnce();
     // Todo: Update bodies
+
+    ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
+
+    rate.sleep();  // Todo: Placeholder for proper simulation time control
   }
 
-  ROS_INFO_NAMED("flatland_server::SimulationManager", "Main exiting");
+  ROS_INFO_NAMED("SimMan", "Main exiting");
+}
+
+void SimulationManager::Shutdown()
+{
+  ROS_INFO_NAMED("SimMan", "Shutdown called");
+  delete world_;
+  delete physics_world_;
 }
 
 };  // namespace flatland_server

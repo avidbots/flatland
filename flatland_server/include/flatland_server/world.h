@@ -52,7 +52,7 @@ namespace flatland_server
 class World
 {
   public:
-    void World(std::string world_file);
+    World(std::string world_file);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

@@ -45,13 +45,14 @@
  */
 
 #include <ros/ros.h>
+#include "flatland_server/world.h"
 
 namespace flatland_server
 {
 
 World::World(std::string world_file)
 {
-  ROS_INFO_NAMED("flatland_server::World", "World loaded");
+  ROS_INFO_NAMED("World", "World loaded");
 }
 
 };      // namespace flatland_server
