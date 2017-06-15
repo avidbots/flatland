@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	null.cpp
- * @brief	Sanity check / example test file
+ * @name	 world.cpp
+ * @brief	 Loads world file
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,16 +44,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtest/gtest.h>
+#include <ros/ros.h>
+#include <string>
 
-// Declare a test
-TEST(TestSuite, testA) { EXPECT_EQ(1, 1); }
+#include "flatland_server/world.h"
 
-// Declare another test
-TEST(TestSuite, testB) { EXPECT_TRUE(true); }
+namespace flatland_server {
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+World::World(std::string world_file, b2World *physics_world)
+    : physics_world_(physics_world) {
+  ROS_INFO_NAMED("World", "World loaded");
 }
+
+};  // namespace flatland_server

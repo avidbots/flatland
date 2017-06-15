@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	null.cpp
- * @brief	Sanity check / example test file
+ * @name	simulation_manager.h
+ * @brief	Simulation manager class header definition
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,16 +44,26 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtest/gtest.h>
+#ifndef FLATLAND_SERVER_SIMULATION_MANAGER_H
+#define FLATLAND_SERVER_SIMULATION_MANAGER_H
 
-// Declare a test
-TEST(TestSuite, testA) { EXPECT_EQ(1, 1); }
+#include <Box2D/Box2D.h>
+#include <string>
+#include "flatland_server/debug_visualization.h"
+#include "flatland_server/world.h"
 
-// Declare another test
-TEST(TestSuite, testB) { EXPECT_TRUE(true); }
+namespace flatland_server {
+class SimulationManager {
+ public:
+  bool run_simulator_ = true;  // While true, keep running the simulation loop
+  b2Vec2 gravity_;             // The 2d gravity vector (0,0)
+  b2World *physics_world_;     // The box2d physics world
+  World *world_;               // The world container object
+  float initial_rate_;         // The physics update rate (Hz)
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+  SimulationManager(std::string world_file, float initial_rate);
+  void Main();
+  void Shutdown();
+};
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_SIMULATION_MANAGER_H

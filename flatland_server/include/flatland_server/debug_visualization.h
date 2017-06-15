@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	null.cpp
- * @brief	Sanity check / example test file
+ * @name	debug_visualization.h
+ * @brief Transform box2d types into published visualization messages
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,16 +44,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtest/gtest.h>
+#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
 
-// Declare a test
-TEST(TestSuite, testA) { EXPECT_EQ(1, 1); }
+#include <ros/ros.h>
 
-// Declare another test
-TEST(TestSuite, testB) { EXPECT_TRUE(true); }
-
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+namespace flatland_server {
+class DebugVisualization {};
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

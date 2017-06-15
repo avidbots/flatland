@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	null.cpp
- * @brief	Sanity check / example test file
+ * @name	simulation_manager.cpp
+ * @brief	Simulation manager runs the physics+event loop
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,16 +44,48 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtest/gtest.h>
+#include "flatland_server/simulation_manager.h"
+#include <ros/ros.h>
+#include <string>
 
-// Declare a test
-TEST(TestSuite, testA) { EXPECT_EQ(1, 1); }
+namespace flatland_server {
 
-// Declare another test
-TEST(TestSuite, testB) { EXPECT_TRUE(true); }
-
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+/**
+ * @name  Simulation Manager constructor
+ * @param world_file   The path to the world.yaml file we wish to load
+ * @param initial_rate The physics step frequency in Hz
+ */
+SimulationManager::SimulationManager(std::string world_file, float initial_rate)
+    : gravity_(0.0, 0.0), initial_rate_(initial_rate) {
+  ROS_INFO_NAMED("SimMan", "Initializing");
+  physics_world_ = new b2World(gravity_);
+  world_ = new World(world_file, physics_world_);
+  // Todo: Initialize SimTime class here once written
 }
+
+void SimulationManager::Main() {
+  ROS_INFO_NAMED("SimMan", "Main starting");
+
+  ros::Rate rate(
+      initial_rate_);  // Todo: Placeholder for proper simulation time control
+
+  while (ros::ok() && run_simulator_) {
+    // Todo: update physics
+    ros::spinOnce();
+    // Todo: Update bodies
+
+    ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
+
+    rate.sleep();  // Todo: Placeholder for proper simulation time control
+  }
+
+  ROS_INFO_NAMED("SimMan", "Main exiting");
+}
+
+void SimulationManager::Shutdown() {
+  ROS_INFO_NAMED("SimMan", "Shutdown called");
+  delete world_;
+  delete physics_world_;
+}
+
+};  // namespace flatland_server

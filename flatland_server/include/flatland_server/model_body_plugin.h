@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	null.cpp
- * @brief	Sanity check / example test file
+ * @name	model_body_plugin.h
+ * @brief	Interface for ModelBodyPlugin pluginlib plugins
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,16 +44,28 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtest/gtest.h>
+#ifndef FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+#define FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
 
-// Declare a test
-TEST(TestSuite, testA) { EXPECT_EQ(1, 1); }
+#include <Box2D/Box2D.h>
+#include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
 
-// Declare another test
-TEST(TestSuite, testB) { EXPECT_TRUE(true); }
+namespace flatland_server {
+class ModelBodyPlugin {
+ public:
+  /**
+   * @param handle The ROS nodehandle for this plugin instance
+   * @param config The yaml config file for this plugin
+   */
+  virtual void initialize(ros::NodeHandle handle, YAML::Node &config) = 0;
+  virtual void update(double timestep) = 0;
+  virtual void collisionWithMap(b2EdgeShape &edge) = 0;
+  virtual void collisionWithModel(void *model) = 0;
+  virtual ~ModelBodyPlugin() {}
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+ protected:
+  ModelBodyPlugin() {}
+};
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
