@@ -47,6 +47,7 @@
 #include "flatland_server/simulation_manager.h"
 #include <ros/ros.h>
 #include <string>
+#include "flatland_server/debug_visualization.h"
 
 namespace flatland_server {
 
@@ -69,12 +70,43 @@ void SimulationManager::Main() {
   ros::Rate rate(
       initial_rate_);  // Todo: Placeholder for proper simulation time control
 
+  b2BodyDef bodyDef;
+  bodyDef.type = b2_dynamicBody;
+  bodyDef.position.Set(0.0f, 4.0f);
+  b2Body* body = physics_world_->CreateBody(&bodyDef);
+
+  b2PolygonShape dynamicBox;
+  dynamicBox.SetAsBox(1.0f, 2.0f);
+  b2FixtureDef fixtureDef;
+  fixtureDef.shape = &dynamicBox;
+  fixtureDef.density = 1.0f;
+  fixtureDef.friction = 0.3f;
+  body->CreateFixture(&fixtureDef);
+
+  b2CircleShape circle;
+  circle.m_p.Set(2.0f, 3.0f);
+  circle.m_radius = 0.5f;
+  fixtureDef.shape = &circle;
+  body->CreateFixture(&fixtureDef);
+
+  b2EdgeShape edge;
+  edge.m_vertex1.Set(0.5, 1.5);
+  edge.m_vertex2.Set(0.5, 2.0);
+  fixtureDef.shape = &edge;
+  body->CreateFixture(&fixtureDef);
+  body->SetAngularVelocity(0.1);
+  
   while (ros::ok() && run_simulator_) {
-    // Todo: update physics
-    ros::spinOnce();
+    physics_world_->Step(1.0/initial_rate_, 10, 10);
+    ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
+    DebugVisualization::get().publish();  // Publish debug visualization output
+
     ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
+    
+    DebugVisualization::get().reset("foo");
+    DebugVisualization::get().visualize("foo", body, 1.0, 0.0, 0.0, 1.0);
 
     rate.sleep();  // Todo: Placeholder for proper simulation time control
   }

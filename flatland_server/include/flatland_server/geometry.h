@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
- * @author Joseph Duchesne
+ * @name	  geometry.h
+ * @brief     Geometry functions
+ * @author    Joseph Duchesne
  *
  * Software License Agreement (BSD License)
  *
@@ -44,39 +44,24 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#ifndef FLATLAND_SERVER_GEOMETRY_H
+#define FLATLAND_SERVER_GEOMETRY_H
 
 #include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
 
 namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
+
+struct RotateTranslate {
+  float dx, dy;
+  float cos;
+  float sin;
 };
 
-class DebugVisualization {
- private:
-  DebugVisualization();
-
+class Geometry {
  public:
-  std::map<std::string, DebugTopic> topics;
-  ros::NodeHandle node;
-
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
+  static RotateTranslate createTransform(float dx, float dy, float a);
+  static b2Vec2 transform(const b2Vec2& in, const RotateTranslate& rt);
 };
+
 };      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#endif  // FLATLAND_SERVER_GEOMETRY_H

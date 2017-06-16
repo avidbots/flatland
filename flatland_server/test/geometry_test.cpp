@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
+ * @name	null.cpp
+ * @brief	Sanity check / example test file
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,39 +44,59 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#include "flatland_server/geometry.h"
+#include <gtest/gtest.h>
+#include <cmath>
 
-#include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
+// Test the CreateTransform method
+TEST(TestSuite, testCreateTransform) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(2.0, 1.0, 1.1);
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
+  EXPECT_NEAR(rt.dx, 2.0, 1e-5);
+  EXPECT_NEAR(rt.dy, 1.0, 1e-5);
+  EXPECT_NEAR(rt.cos, cosf(1.1), 1e-5);
+  EXPECT_NEAR(rt.sin, sinf(1.1), 1e-5);
+}
 
-class DebugVisualization {
- private:
-  DebugVisualization();
+// Test the transform method, translation
+TEST(TestSuite, testTransformTranslate) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(2.0, 1.5, 0.0);
 
- public:
-  std::map<std::string, DebugTopic> topics;
-  ros::NodeHandle node;
+  b2Vec2 in(1.0, 2.0);
+  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
 
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+  EXPECT_NEAR(out.x, 3.0, 1e-5);
+  EXPECT_NEAR(out.y, 3.5, 1e-5);
+}
+
+// Test the transform method, rotation
+TEST(TestSuite, testTransformRotate) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(0.0, 0.0, M_PI_2);
+
+  b2Vec2 in(1.0, 2.0);
+  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+
+  EXPECT_NEAR(out.x, -2.0, 1e-5);
+  EXPECT_NEAR(out.y, 1.0, 1e-5);
+}
+
+// Test the transform method, translation + rotation
+TEST(TestSuite, testTransformTranslateAndRotate) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(1.0, 0.5, -M_PI);
+
+  b2Vec2 in(-1.0, 1.5);
+  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+
+  EXPECT_NEAR(out.x, 2.0, 1e-5);
+  EXPECT_NEAR(out.y, -1.0, 1e-5);
+}
+
+// Run all the tests that were declared with TEST()
+int main(int argc, char **argv) {
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

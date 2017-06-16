@@ -44,8 +44,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flatland_server/debug_visualization.h"
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <map>
 #include <string>
 
@@ -65,20 +68,99 @@ DebugVisualization& DebugVisualization::get() {
  * @brief Append each shape on the fixture as a marker on the marker array
  * @param markers The output marker array
  * @param fixture The input fixture pointer
+ * @param r red color 0.0->1.0
+ * @param g green color 0.0->1.0
+ * @param b blue color 0.0->1.0
+ * @param a alpha color 0.0->1.0
  */
-void DebugVisualization::fixtureToMarkers(
-    visualization_msgs::MarkerArray& markers, b2Fixture* fixture) {}
+void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
+                                       b2Body* body, float r, float g, float b,
+                                       float a) {
+  b2Fixture* fixture = body->GetFixtureList();
+
+  while (fixture != NULL) {
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "map";
+    marker.header.stamp = ros::Time();
+    marker.id = markers.markers.size();
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = a;
+    marker.pose.position.x = body->GetPosition().x;
+    marker.pose.position.y = body->GetPosition().y;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, body->GetAngle()); // from euler angles: roll, pitch, yaw
+    marker.pose.orientation = tf2::toMsg(q);
+
+    // Get the shape from the fixture
+    switch (fixture->GetType()) {
+      case b2Shape::e_circle: {
+        b2CircleShape* circle = (b2CircleShape*)fixture->GetShape();
+
+        marker.type = marker.CYLINDER;
+        marker.scale.x = marker.scale.y = circle->m_radius * 2.0;  // diameter
+        marker.scale.z = 0.01;                                     // height
+
+      } break;
+
+      case b2Shape::e_polygon: {  // Convert b2Polygon -> LINE_STRIP
+        b2PolygonShape* poly = (b2PolygonShape*)fixture->GetShape();
+        marker.type = marker.LINE_STRIP;
+        marker.scale.x = 0.03;  // 3cm wide lines
+
+        // TODO: Translate+rotate by body pose
+        for (int i = 0; i < poly->m_count; i++) {
+          geometry_msgs::Point p;
+          p.x = poly->m_vertices[i].x;
+          p.y = poly->m_vertices[i].y;
+          marker.points.push_back(p);
+        }
+        marker.points.push_back(marker.points[0]);  // Close the shape
+
+      } break;
+
+      case b2Shape::e_edge: {  // Convert b2Edge -> LINE_LIST
+        b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
+        marker.type = marker.LINE_LIST;
+        marker.scale.x = 0.03;  // 3cm wide lines
+
+        // TODO: Translate+rotate by body pose
+        geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
+        p.x = edge->m_vertex1.x;
+        p.y = edge->m_vertex1.y;
+        marker.points.push_back(p);
+        p.x = edge->m_vertex2.x;
+        p.y = edge->m_vertex2.y;
+        marker.points.push_back(p);
+
+      } break;
+
+      default:  // Unsupported shape
+        ROS_WARN_STREAM_THROTTLE_NAMED(
+            1.0, "DebugVis",
+            "Unsupported Box2D shape " << static_cast<int>(fixture->GetType()));
+        break;
+    }
+
+    markers.markers.push_back(marker);  // Add the new marker
+    fixture = fixture->GetNext();       // Traverse the linked list of fixtures
+  }
+}
 
 /**
  * @brief Publish all marker array topics that need publishing
  */
 void DebugVisualization::publish() {
-  for (auto topic : topics) {
-    if (!topic.needs_publishing) {
+  // Iterate over the topics map as pair(name, topic)
+  for (auto& topic : topics) {
+    if (!topic.second.needs_publishing) {
       continue;
     }
-    topic.publisher.publish(topic.markers);
-    topic.needs_publish = false;
+    topic.second.publisher.publish(topic.second.markers);
+    topic.second.needs_publishing = false;
+    ROS_INFO_STREAM_THROTTLE_NAMED(1.0, "DebugVis",
+                                   "Publishing " << topic.first);
   }
 }
 
@@ -86,17 +168,22 @@ void DebugVisualization::publish() {
  * @brief Append the shapes from a fixture to a marker array
  * @param name    The name of the topic
  * @param fixture The fixture to output
+ * @param r red color 0.0->1.0
+ * @param g green color 0.0->1.0
+ * @param b blue color 0.0->1.0
+ * @param a alpha color 0.0->1.0
  */
-void DebugVisualization::visualize(std::string name, b2Fixture* fixture) {
+void DebugVisualization::visualize(std::string name, b2Body* body, float r,
+                                   float g, float b, float a) {
   // If the topic doesn't exist, create it
   if (topics.count(name) == 0) {  // If the topic doesn't exist yet, create it
     topics[name] = {
-
-        n.advertise<visualization_msgs::MarkerArray>(name, 1000) true,
+        node.advertise<visualization_msgs::MarkerArray>(name, 1, true), true,
         visualization_msgs::MarkerArray()};
   }
 
-  // Todo: Actually do things!
+  bodyToMarkers(topics[name].markers, body, r, g, b, a);
+  topics[name].needs_publishing = true;
 }
 
 /**
