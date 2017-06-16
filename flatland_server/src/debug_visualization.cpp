@@ -90,7 +90,7 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
     marker.pose.position.x = body->GetPosition().x;
     marker.pose.position.y = body->GetPosition().y;
     tf2::Quaternion q;
-    q.setRPY(0, 0, body->GetAngle()); // from euler angles: roll, pitch, yaw
+    q.setRPY(0, 0, body->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
 
     // Get the shape from the fixture

@@ -95,16 +95,16 @@ void SimulationManager::Main() {
   fixtureDef.shape = &edge;
   body->CreateFixture(&fixtureDef);
   body->SetAngularVelocity(0.1);
-  
+
   while (ros::ok() && run_simulator_) {
-    physics_world_->Step(1.0/initial_rate_, 10, 10);
+    physics_world_->Step(1.0 / initial_rate_, 10, 10);
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
     DebugVisualization::get().publish();  // Publish debug visualization output
 
     ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
-    
+
     DebugVisualization::get().reset("foo");
     DebugVisualization::get().visualize("foo", body, 1.0, 0.0, 0.0, 1.0);
 
