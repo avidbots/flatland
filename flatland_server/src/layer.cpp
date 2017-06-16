@@ -53,6 +53,18 @@
 
 namespace flatland_server {
 
+Layer::Layer() :  
+  physics_world_(b2World(b2Vec2(0, 0))){
+
+  try {
+    load_world(world_file);
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading yaml", e.msg, e.mark);
+  }
+
+  ROS_INFO_NAMED("World", "World loaded");
+}
+
 void Layer::load_layer(const boost::filesystem::path &world_yaml_dir, 
   const YAML::Node &layer_node) {
 

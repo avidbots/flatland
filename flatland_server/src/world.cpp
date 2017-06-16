@@ -57,7 +57,7 @@ namespace flatland_server {
 
 World::World(std::string world_file) :  
   physics_world_(b2World(b2Vec2(0, 0))){
-  
+
   try {
     load_world(world_file);
   } catch (const YAML::Exception &e) {
@@ -70,7 +70,7 @@ World::World(std::string world_file) :
 void World::load_world(std::string yaml_path) {
 
   boost::filesystem::path path(yaml_path);
-  
+
   // parse the world YAML file
   YAML::Node yaml;
   try {

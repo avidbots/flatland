@@ -64,7 +64,7 @@ class Layer {
     double occupied_thresh_;
     double free_thresh_;
 
-    b2Body *physics_body_;
+    b2Body physics_body_;
 
     void vectorize_bitmap();
     void load_layer(const boost::filesystem::path &world_yaml_dir, 
