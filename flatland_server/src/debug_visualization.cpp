@@ -137,9 +137,8 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
       } break;
 
       default:  // Unsupported shape
-        ROS_WARN_STREAM_THROTTLE_NAMED(
-            1.0, "DebugVis",
-            "Unsupported Box2D shape " << static_cast<int>(fixture->GetType()));
+        ROS_WARN_THROTTLE_NAMED(1.0, "DebugVis", "Unsupported Box2D shape %d",
+                                static_cast<int>(fixture->GetType()));
         break;
     }
 
@@ -159,8 +158,8 @@ void DebugVisualization::publish() {
     }
     topic.second.publisher.publish(topic.second.markers);
     topic.second.needs_publishing = false;
-    ROS_INFO_STREAM_THROTTLE_NAMED(1.0, "DebugVis",
-                                   "Publishing " << topic.first);
+    ROS_INFO_THROTTLE_NAMED(1.0, "DebugVis", "Publishing %d",
+                            static_cast<int>(topic.first));
   }
 }
 
