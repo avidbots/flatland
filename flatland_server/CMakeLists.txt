@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   tf
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -37,7 +38,7 @@ find_package(OpenCV REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_lib
-  CATKIN_DEPENDS pluginlib roscpp std_msgs tf yaml-cpp
+  CATKIN_DEPENDS pluginlib roscpp std_msgs tf yaml-cpp visualization_msgs
   DEPENDS OpenCV YAML_CPP
 )
 
@@ -56,6 +57,7 @@ include_directories(
 add_library(flatland_lib
   src/simulation_manager.cpp
   src/world.cpp
+  src/simulation_manager.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib

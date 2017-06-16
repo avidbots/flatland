@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
+ * @name   debug_visualization.cpp
+ * @brief  Transform box2d types into published visualization messages
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,36 +44,70 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
 #include <map>
 #include <string>
 
 namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
 
-class DebugVisualization {
- private:
-  DebugVisualization();
+DebugVisualization::DebugVisualization() : node("~debug") {}
 
- public:
-  std::map<std::string, DebugTopic> topics;
-  ros::NodeHandle node;
+/**
+ * @brief Return the singleton object
+ */
+DebugVisualization& DebugVisualization::get() {
+  static DebugVisualization instance;
+  return instance;
+}
 
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Fixture* fixture);
-  void reset(std::string name);
-  void fixtureToMarkers(visualization_msgs::MarkerArray& markers,
-                        b2Fixture* fixture);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+/**
+ * @brief Append each shape on the fixture as a marker on the marker array
+ * @param markers The output marker array
+ * @param fixture The input fixture pointer
+ */
+void DebugVisualization::fixtureToMarkers(
+    visualization_msgs::MarkerArray& markers, b2Fixture* fixture) {}
+
+/**
+ * @brief Publish all marker array topics that need publishing
+ */
+void DebugVisualization::publish() {
+  for (auto topic : topics) {
+    if (!topic.needs_publishing) {
+      continue;
+    }
+    topic.publisher.publish(topic.markers);
+    topic.needs_publish = false;
+  }
+}
+
+/**
+ * @brief Append the shapes from a fixture to a marker array
+ * @param name    The name of the topic
+ * @param fixture The fixture to output
+ */
+void DebugVisualization::visualize(std::string name, b2Fixture* fixture) {
+  // If the topic doesn't exist, create it
+  if (topics.count(name) == 0) {  // If the topic doesn't exist yet, create it
+    topics[name] = {
+
+        n.advertise<visualization_msgs::MarkerArray>(name, 1000) true,
+        visualization_msgs::MarkerArray()};
+  }
+
+  // Todo: Actually do things!
+}
+
+/**
+ * @brief Remove all elements in a visualiation topic
+ * @param name
+ */
+void DebugVisualization::reset(std::string name) {
+  if (topics.count(name) > 0) {  // If the topic exists, clear it
+    topics[name].markers.markers.clear();
+    topics[name].needs_publishing = true;
+  }
+}
+
+};  // namespace flatland_server
