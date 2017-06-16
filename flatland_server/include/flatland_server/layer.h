@@ -57,18 +57,32 @@ namespace flatland_server {
 class Layer {
  public:
     std::string name_;
-    double color_[4]; // r, g, b, a
+    std::array<double, 4> color_; // r, g, b, a
+    std::array<double, 3> origin_;
     cv::Mat bitmap_;
     double resolution_;
-    double origin_[3];
     double occupied_thresh_;
     double free_thresh_;
 
-    b2Body physics_body_;
+    b2Body *physics_body_;
+
+    Layer(b2World *physics_world, const std::string &name, const cv::Mat &bitmap, 
+      const std::array<double, 4> &color, const std::array<double, 3> &origin,
+      double &resolution, double &occupied_thresh, double &free_thresh);
+    ~Layer();
 
     void vectorize_bitmap();
-    void load_layer(const boost::filesystem::path &world_yaml_dir, 
-      const YAML::Node &layer_node);
+
+    static void parse_yaml_node(
+      const boost::filesystem::path &world_yaml_dir, 
+      const YAML::Node &layer_node,  
+      cv::Mat *bitmap,
+      std::array<double, 4> *color, std::array<double, 3> *origin,
+      double *resolution, double *occupied_thresh, double *free_thresh);
+
+    static void add_layer(b2World *physics_world, 
+      boost::filesystem::path world_yaml_dir,
+      std::string name, YAML::Node layer_node, std::vector<Layer> *layers);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

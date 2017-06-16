@@ -44,29 +44,49 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
- #include <Box2D/Box2D.h>
- #include <string>
- #include <yaml-cpp/yaml.h>
- #include <opencv2/opencv.hpp>
- #include <flatland_server/layer.h>
- #include <flatland_server/exceptions.h>
+#include <ros/ros.h>
+#include <Box2D/Box2D.h>
+#include <string>
+#include <yaml-cpp/yaml.h>
+#include <opencv2/opencv.hpp>
+#include <flatland_server/layer.h>
+#include <flatland_server/exceptions.h>
 
 namespace flatland_server {
 
-Layer::Layer() :  
-  physics_world_(b2World(b2Vec2(0, 0))){
+Layer::Layer(b2World *physics_world, 
+      const std::string &name, const cv::Mat &bitmap, 
+      const std::array<double, 4> &color, const std::array<double, 3> &origin,
+      double &resolution, double &occupied_thresh, double &free_thresh) : 
+      name_(name), 
+      color_(color), 
+      origin_(origin), 
+      resolution_(resolution), 
+      occupied_thresh_(occupied_thresh), 
+      free_thresh_(free_thresh_) {
 
-  try {
-    load_world(world_file);
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading yaml", e.msg, e.mark);
-  }
+  bitmap.copyTo(bitmap_);
 
-  ROS_INFO_NAMED("World", "World loaded");
+  b2BodyDef body_def;
+  body_def.type = b2_staticBody;
+
+  physics_body_ = physics_world->CreateBody(&body_def);
+
+  ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }
 
-void Layer::load_layer(const boost::filesystem::path &world_yaml_dir, 
-  const YAML::Node &layer_node) {
+Layer::~Layer() {
+  physics_body_->GetWorld()->DestroyBody(physics_body_);
+}
+
+void Layer::add_layer(b2World *physics_world, 
+  boost::filesystem::path world_yaml_dir,
+  std::string name, YAML::Node layer_node, std::vector<Layer> *layers) {
+  
+  cv::Mat bitmap;
+  std::array<double, 4> color;
+  std::array<double, 3> origin;
+  double resolution, occupied_thresh, free_thresh;
 
   boost::filesystem::path map_yaml_path;
 
@@ -75,20 +95,20 @@ void Layer::load_layer(const boost::filesystem::path &world_yaml_dir,
       boost::filesystem::path(layer_node["map"].as<std::string>());
   }
   else {
-    throw YAMLException("Invalid \"properties\" in " + name_ + " layer");
+    throw YAMLException("Invalid \"properties\" in " + name + " layer");
   }
 
   if (layer_node["color"] &&
     layer_node["color"].IsSequence()&&
     layer_node["color"].size() == 4) {
 
-    color_[0] = layer_node["color"][0].as<double>();
-    color_[1] = layer_node["color"][1].as<double>();
-    color_[2] = layer_node["color"][2].as<double>();
-    color_[3] = layer_node["color"][3].as<double>();
+    color[0] = layer_node["color"][0].as<double>();
+    color[1] = layer_node["color"][1].as<double>();
+    color[2] = layer_node["color"][2].as<double>();
+    color[3] = layer_node["color"][3].as<double>();
   }
   else {
-    throw YAMLException("Invalid \"color\" in " + name_ + " layer");
+    throw YAMLException("Invalid \"color\" in " + name + " layer");
   }
 
   // use absolute path if start with '/', use relative otherwise
@@ -113,45 +133,45 @@ void Layer::load_layer(const boost::filesystem::path &world_yaml_dir,
     }
 
     cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
-    map.convertTo(bitmap_, CV_32FC1, 1.0 / 255.0);
+    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
   }
   else{
-    throw YAMLException("Invalid \"image\" in " + name_ + " layer");
+    throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
 
   if (yaml["resolution"]) {
-    resolution_ = yaml["resolution"].as<double>();
+    resolution = yaml["resolution"].as<double>();
   }
   else {
-    throw YAMLException("Invalid \"resolution\" in " + name_ + " layer");
+    throw YAMLException("Invalid \"resolution\" in " + name + " layer");
   }
 
   if (yaml["origin"] && yaml["origin"].IsSequence() &&
     yaml["origin"].size() == 3) {
-    origin_[0] = yaml["origin"][0].as<double>();
-    origin_[1] = yaml["origin"][1].as<double>();
-    origin_[2] = yaml["origin"][2].as<double>();
+    origin[0] = yaml["origin"][0].as<double>();
+    origin[1] = yaml["origin"][1].as<double>();
+    origin[2] = yaml["origin"][2].as<double>();
   }
   else {
-    throw YAMLException("Invalid \"origin\" in " + name_ + " layer");
+    throw YAMLException("Invalid \"origin\" in " + name+ " layer");
   }
 
   if (yaml["occupied_thresh"]) {
-    occupied_thresh_ = yaml["occupied_thresh"].as<double>();
+    occupied_thresh = yaml["occupied_thresh"].as<double>();
   }
   else {
-    throw YAMLException("Invalid \"occupied_thresh\" in " + 
-      name_ +" layer");
+    throw YAMLException("Invalid \"occupied_thresh\" in " + name +" layer");
   }
 
   if (yaml["free_thresh"]) {
-    free_thresh_ = yaml["free_thresh"].as<double>();
+    free_thresh = yaml["free_thresh"].as<double>();
   }
   else {
-    throw YAMLException("Invalid \"free_thresh\" in " + name_ + " layer");
+    throw YAMLException("Invalid \"free_thresh\" in " + name + " layer");
   }
-
-  vectorize_bitmap();
+  
+  layers->push_back(Layer(physics_world, name, bitmap, color, origin, 
+    resolution, occupied_thresh, free_thresh));
 }
 
 void Layer::vectorize_bitmap() {

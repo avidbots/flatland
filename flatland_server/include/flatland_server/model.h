@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  flat_server_load_world_test.cpp
- * @brief Testing the load world functionality
+ * @name	 world.h
+ * @brief	 Defines flatland Layer
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,46 +44,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <gtest/gtest.h>
-#include <flatland_server/world.h>
-#include <Box2D/Box2D.h>
-#include <boost/filesystem.hpp>
+#ifndef FLATLAND_SERVER_MODEL_H
+#define FLATLAND_SERVER_MODEL_H
 
-namespace fs = boost::filesystem;
+namespace flatland_server {
+class Model {
 
-class FlatlandServerLoadWorldTest : public ::testing::Test
-{
-public:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
-
-  FlatlandServerLoadWorldTest() {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
-  }
 };
-
-// Declare a test
-TEST(FlatlandServerLoadWorldTest, initWorld)
-{
-  world_yaml = this_file_dir / fs::path("conestogo_office_test/world.yaml");
-  flatland_server::World::make_world(world_yaml);
-}
-
-TEST(FlatlandServerLoadWorldTest, invalidWorldYamlA)
-{
-  EXPECT_EQ(1, 1);
-}
-
-TEST(FlatlandServerLoadWorldTest, invalidWorldYamlB)
-{
-  EXPECT_EQ(1, 1);
-}
-
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv)
-{
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_MODEL_H

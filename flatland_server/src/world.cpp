@@ -55,20 +55,20 @@
 
 namespace flatland_server {
 
-World::World(std::string world_file) :  
-  physics_world_(b2World(b2Vec2(0, 0))){
+World::World  () : 
+  gravity_(0, 0)  {
+  
+  physics_world_ = new b2World(gravity_);
 
-  try {
-    load_world(world_file);
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading yaml", e.msg, e.mark);
-  }
-
-  ROS_INFO_NAMED("World", "World loaded");
+  ROS_INFO_NAMED("World", "World constructed");
 }
 
-void World::load_world(std::string yaml_path) {
+World::~World() {
+  delete physics_world_;
+}
 
+World *World::make_world(std::string yaml_path) {
+  
   boost::filesystem::path path(yaml_path);
 
   // parse the world YAML file
@@ -80,38 +80,59 @@ void World::load_world(std::string yaml_path) {
   }
   
   if (yaml["properties"] && yaml["properties"].IsMap()) {
-    // TODO
+    // TODO (Chunshang Li): parse properties
   }
   else {
     throw YAMLException("Invalid world \"properties\"");
   }
 
-  std::vector<Layer> loaded_layers;
-  if (yaml["layers"] && yaml["layers"].IsMap()) {
-    auto layers = yaml["layers"];
+  return new World();
+}
 
-    for (YAML::const_iterator it = yaml["layers"].begin();
-      it != yaml["layers"].end(); ++it){
+void World::load_layers(std::string yaml_path) {
+  boost::filesystem::path path(yaml_path);
 
-      Layer layer;
+  YAML::Node yaml;
 
-      layer.name_ = it->first.as<std::string>();
-      layer.load_layer(path.parent_path(), it->second);
-
-      loaded_layers.push_back(layer);
-    }
+  try {
+     yaml = YAML::LoadFile(path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
   }
-  else {
+
+  if (!yaml["layers"] || !yaml["layers"].IsMap()) {
     throw YAMLException("Invalid world \"layers\"");
   }
 
-  if (yaml["models"] && yaml["models"].IsSequence()) {
-    // TODO
-  } else {
+  // loop through each layer and parse the data
+  for (YAML::const_iterator it = yaml["layers"].begin();
+  it != yaml["layers"].end(); ++it) {
+    std::string name = it->first.as<std::string>();
+
+    Layer::add_layer(physics_world_, path.parent_path(), name,
+      it->second, &layers_);
+  }
+}
+
+void World::load_models(std::string yaml_path) {
+  boost::filesystem::path path(yaml_path);
+
+  YAML::Node yaml;
+
+  try {
+     yaml = YAML::LoadFile(path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
+  }
+
+  if (!yaml["models"] || !yaml["models"].IsSequence()) {
     throw YAMLException("Invalid world \"models\"");
   }
 
-  layers_ = loaded_layers;
+  // loop through each layer and parse the data
+  for (int i = 0; i < yaml["models"].size(); i++) {
+    // TODO (Chunshang Li): add models
+  }
 }
 
-};  // namespace flatland_server
+}; // namespace flatland_server

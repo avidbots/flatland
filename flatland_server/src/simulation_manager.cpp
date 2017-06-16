@@ -47,6 +47,9 @@
 #include "flatland_server/simulation_manager.h"
 #include <ros/ros.h>
 #include <string>
+#include <flatland_server/layer.h>
+#include <flatland_server/model.h>
+#include <flatland_server/world.h>
 
 namespace flatland_server {
 
@@ -58,7 +61,11 @@ SimulationManager::SimulationManager(std::string world_file,
                                      double initial_rate)
     : initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
-  world_ = new World(world_file);
+  
+  world_ = World::make_world(world_file);
+  world_->load_layers(world_file);
+  world_->load_models(world_file);
+
   // Todo: Initialize SimTime class here once written
 }
 

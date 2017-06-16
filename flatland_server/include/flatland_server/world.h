@@ -51,16 +51,24 @@
 #include <string>
 #include <vector>
 #include <flatland_server/layer.h>
+#include <flatland_server/model.h>
 
 namespace flatland_server {
 class World {
  public:
-  b2World physics_world_;
+  std::string yaml_path;
+  b2World *physics_world_;
+  b2Vec2 gravity_;
   std::vector<Layer> layers_;
+  std::vector<Model> models_;
 
-  World(std::string world_file);
-  void load_world(std::string yaml_path);
+  World();
+  ~World();
 
+  void load_layers(std::string yaml_path);
+  void load_models(std::string yaml_path);
+  
+  static World *make_world(std::string yaml_path);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
