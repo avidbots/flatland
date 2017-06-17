@@ -34,6 +34,18 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 # OpenCV
 find_package(OpenCV REQUIRED)
 
+
+##############
+## coverage ##
+##############
+
+set(COVERAGE "OFF" CACHE STRING "Enable coverage generation.")
+
+message(STATUS "Using COVERAGE: ${COVERAGE}")
+if("${COVERAGE}" STREQUAL "ON")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+endif()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -43,6 +55,7 @@ catkin_package(
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs
   DEPENDS OpenCV YAML_CPP
 )
+
 
 ###########
 ## Build ##
