@@ -109,7 +109,6 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
         marker.type = marker.LINE_STRIP;
         marker.scale.x = 0.03;  // 3cm wide lines
 
-        // TODO: Translate+rotate by body pose
         for (int i = 0; i < poly->m_count; i++) {
           geometry_msgs::Point p;
           p.x = poly->m_vertices[i].x;
@@ -125,7 +124,6 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
         marker.type = marker.LINE_LIST;
         marker.scale.x = 0.03;  // 3cm wide lines
 
-        // TODO: Translate+rotate by body pose
         geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
         p.x = edge->m_vertex1.x;
         p.y = edge->m_vertex1.y;
