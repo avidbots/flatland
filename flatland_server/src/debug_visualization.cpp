@@ -78,7 +78,7 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
                                        float a) {
   b2Fixture* fixture = body->GetFixtureList();
 
-  while (fixture != NULL) {
+  while (fixture != NULL) {  // traverse fixture linked list
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
     marker.header.stamp = ros::Time::now();
@@ -89,7 +89,7 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
     marker.color.a = a;
     marker.pose.position.x = body->GetPosition().x;
     marker.pose.position.y = body->GetPosition().y;
-    tf2::Quaternion q;
+    tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
     q.setRPY(0, 0, body->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
 
