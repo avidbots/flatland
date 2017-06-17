@@ -49,7 +49,6 @@
 
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
-#include <std_msgs/ColorRGBA.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <map>
 #include <string>

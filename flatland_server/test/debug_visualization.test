@@ -1,0 +1,3 @@
+<launch>
+  <test pkg="flatland_server" type="debug_visualization_test" test-name="debug_visualization_test"/>
+</launch>

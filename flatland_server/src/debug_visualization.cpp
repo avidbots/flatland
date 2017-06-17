@@ -81,7 +81,7 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
   while (fixture != NULL) {
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time();
+    marker.header.stamp = ros::Time::now();
     marker.id = markers.markers.size();
     marker.color.r = r;
     marker.color.g = g;
@@ -139,6 +139,8 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
       default:  // Unsupported shape
         ROS_WARN_THROTTLE_NAMED(1.0, "DebugVis", "Unsupported Box2D shape %d",
                                 static_cast<int>(fixture->GetType()));
+        fixture = fixture->GetNext();
+        continue;  // Do not add broken marker
         break;
     }
 
