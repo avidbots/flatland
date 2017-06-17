@@ -54,7 +54,7 @@
 
 namespace flatland_server {
 
-DebugVisualization::DebugVisualization() : node("~debug") {}
+DebugVisualization::DebugVisualization() : node_("~debug") {}
 
 /**
  * @brief Return the singleton object
@@ -150,11 +150,11 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
 }
 
 /**
- * @brief Publish all marker array topics that need publishing
+ * @brief Publish all marker array topics_ that need publishing
  */
 void DebugVisualization::publish() {
-  // Iterate over the topics map as pair(name, topic)
-  for (auto& topic : topics) {
+  // Iterate over the topics_ map as pair(name, topic)
+  for (auto& topic : topics_) {
     if (!topic.second.needs_publishing) {
       continue;
     }
@@ -177,14 +177,14 @@ void DebugVisualization::publish() {
 void DebugVisualization::visualize(std::string name, b2Body* body, float r,
                                    float g, float b, float a) {
   // If the topic doesn't exist, create it
-  if (topics.count(name) == 0) {  // If the topic doesn't exist yet, create it
-    topics[name] = {
-        node.advertise<visualization_msgs::MarkerArray>(name, 1, true), true,
+  if (topics_.count(name) == 0) {  // If the topic doesn't exist yet, create it
+    topics_[name] = {
+        node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
         visualization_msgs::MarkerArray()};
   }
 
-  bodyToMarkers(topics[name].markers, body, r, g, b, a);
-  topics[name].needs_publishing = true;
+  bodyToMarkers(topics_[name].markers, body, r, g, b, a);
+  topics_[name].needs_publishing = true;
 }
 
 /**
@@ -192,9 +192,9 @@ void DebugVisualization::visualize(std::string name, b2Body* body, float r,
  * @param name
  */
 void DebugVisualization::reset(std::string name) {
-  if (topics.count(name) > 0) {  // If the topic exists, clear it
-    topics[name].markers.markers.clear();
-    topics[name].needs_publishing = true;
+  if (topics_.count(name) > 0) {  // If the topic exists, clear it
+    topics_[name].markers.markers.clear();
+    topics_[name].needs_publishing = true;
   }
 }
 

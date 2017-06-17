@@ -67,48 +67,24 @@ SimulationManager::SimulationManager(std::string world_file, float initial_rate)
 void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Main starting");
 
-  ros::Rate rate(
-      initial_rate_);  // Todo: Placeholder for proper simulation time control
-
-  b2BodyDef bodyDef;
-  bodyDef.type = b2_dynamicBody;
-  bodyDef.position.Set(0.0f, 4.0f);
-  b2Body* body = physics_world_->CreateBody(&bodyDef);
-
-  b2PolygonShape dynamicBox;
-  dynamicBox.SetAsBox(1.0f, 2.0f);
-  b2FixtureDef fixtureDef;
-  fixtureDef.shape = &dynamicBox;
-  fixtureDef.density = 1.0f;
-  fixtureDef.friction = 0.3f;
-  body->CreateFixture(&fixtureDef);
-
-  b2CircleShape circle;
-  circle.m_p.Set(2.0f, 3.0f);
-  circle.m_radius = 0.5f;
-  fixtureDef.shape = &circle;
-  body->CreateFixture(&fixtureDef);
-
-  b2EdgeShape edge;
-  edge.m_vertex1.Set(0.5, 1.5);
-  edge.m_vertex2.Set(0.5, 2.0);
-  fixtureDef.shape = &edge;
-  body->CreateFixture(&fixtureDef);
-  body->SetAngularVelocity(0.1);
+  ros::Rate rate(initial_rate_);
 
   while (ros::ok() && run_simulator_) {
-    physics_world_->Step(1.0 / initial_rate_, 10, 10);
+    // Step physics by ros cycle time
+    physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
+
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
     DebugVisualization::get().publish();  // Publish debug visualization output
 
-    ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
+    rate.sleep();
 
-    DebugVisualization::get().reset("foo");
-    DebugVisualization::get().visualize("foo", body, 1.0, 0.0, 0.0, 1.0);
-
-    rate.sleep();  // Todo: Placeholder for proper simulation time control
+    ROS_INFO_THROTTLE_NAMED(
+        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
+        rate.cycleTime().toSec() * 1000,
+        rate.expectedCycleTime().toSec() * 1000.0,
+        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
   }
 
   ROS_INFO_NAMED("SimMan", "Main exiting");

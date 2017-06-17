@@ -151,9 +151,6 @@ TEST(TestSuite, testBodyToMarkersEdge) {
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  bodyDef.type = b2_dynamicBody;
-  bodyDef.position.Set(3.0f, 4.0f);
-  bodyDef.angle = M_PI_2;
   b2Body* body = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef;
@@ -204,8 +201,203 @@ TEST(TestSuite, testBodyToMarkersUnsupported) {
   ASSERT_EQ(markers.markers.size(), 0);
 }
 
-// Todo: test body with multiple fixtures
-// Todo: test multiple bodies
+// test bodyToMarkers with a body with multiple fixtures
+TEST(TestSuite, testBodyToMarkersMultifixture) {
+  b2Vec2 gravity(0.0, 0.0);
+  b2World world(gravity);
+
+  b2BodyDef bodyDef;
+  b2Body* body = world.CreateBody(&bodyDef);
+
+  // body 2 before body 1 because fixture ordering is LIFO in box2d
+  b2FixtureDef fixtureDef, fixtureDef2;
+  b2EdgeShape edge, edge2;
+
+  edge2.m_vertex1.Set(-1.0, 3.0);
+  edge2.m_vertex2.Set(5.0, 7.0);
+  fixtureDef2.shape = &edge2;
+  body->CreateFixture(&fixtureDef2);
+
+  edge.m_vertex1.Set(0.0, 1.0);
+  edge.m_vertex2.Set(1.0, 2.0);
+  fixtureDef.shape = &edge;
+  body->CreateFixture(&fixtureDef);
+
+  visualization_msgs::MarkerArray markers;
+  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+                                                           0.0, 0.0, 1.0);
+  // check that marker was created
+  ASSERT_EQ(markers.markers.size(), 2);
+
+  // Check the 1st marker
+  ASSERT_EQ(markers.markers[0].type, markers.markers[0].LINE_LIST);
+  ASSERT_EQ(markers.markers[0].points.size(), 2);
+  ASSERT_NEAR(markers.markers[0].points[0].x, 0.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[0].y, 1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[1].x, 1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[1].y, 2.0, 1e-5);
+
+  // check the 2nd marker
+  ASSERT_EQ(markers.markers[1].type, markers.markers[0].LINE_LIST);
+  ASSERT_EQ(markers.markers[1].points.size(), 2);
+  ASSERT_NEAR(markers.markers[1].points[0].x, -1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[1].points[0].y, 3.0, 1e-5);
+  ASSERT_NEAR(markers.markers[1].points[1].x, 5.0, 1e-5);
+  ASSERT_NEAR(markers.markers[1].points[1].y, 7.0, 1e-5);
+}
+
+// test bodyToMarkers with multiple bodies
+TEST(TestSuite, testBodyToMarkersMultibody) {
+  b2Vec2 gravity(0.0, 0.0);
+  b2World world(gravity);
+
+  b2BodyDef bodyDef;
+  b2Body* body = world.CreateBody(&bodyDef);
+  b2Body* body2 = world.CreateBody(&bodyDef);
+
+  b2FixtureDef fixtureDef, fixtureDef2;
+  b2EdgeShape edge, edge2;
+
+  edge.m_vertex1.Set(0.0, 1.0);
+  edge.m_vertex2.Set(1.0, 2.0);
+  fixtureDef.shape = &edge;
+  body->CreateFixture(&fixtureDef);
+
+  edge2.m_vertex1.Set(-1.0, 3.0);
+  edge2.m_vertex2.Set(5.0, 7.0);
+  fixtureDef2.shape = &edge2;
+  body2->CreateFixture(&fixtureDef2);
+
+  visualization_msgs::MarkerArray markers;
+  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+                                                           0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body2, 1.0,
+                                                           0.0, 0.0, 1.0);
+  // check that marker was created
+  ASSERT_EQ(markers.markers.size(), 2);
+
+  // Check the 1st marker
+  ASSERT_EQ(markers.markers[0].type, markers.markers[0].LINE_LIST);
+  ASSERT_EQ(markers.markers[0].points.size(), 2);
+  ASSERT_NEAR(markers.markers[0].points[0].x, 0.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[0].y, 1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[1].x, 1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[1].y, 2.0, 1e-5);
+
+  // check the 2nd marker
+  ASSERT_EQ(markers.markers[1].type, markers.markers[0].LINE_LIST);
+  ASSERT_EQ(markers.markers[1].points.size(), 2);
+  ASSERT_NEAR(markers.markers[1].points[0].x, -1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[1].points[0].y, 3.0, 1e-5);
+  ASSERT_NEAR(markers.markers[1].points[1].x, 5.0, 1e-5);
+  ASSERT_NEAR(markers.markers[1].points[1].y, 7.0, 1e-5);
+}
+
+// A helper class to accept MarkerArray message callbacks
+struct MarkerArraySubscriptionHelper {
+  visualization_msgs::MarkerArray markers_;
+  int count_;
+
+  MarkerArraySubscriptionHelper() : count_(0) {}
+
+  /**
+   * @brief callback that stores the last message and total message count
+   * @param msg The input message pointer
+   */
+  void callback(const visualization_msgs::MarkerArrayConstPtr& msg) {
+    ++count_;
+    ROS_INFO("GOT ONE");
+    markers_ = visualization_msgs::MarkerArray(*msg);  // Copy the message
+  }
+
+  /**
+   * @brief Wait up to 2 seconds for a specific message count
+   *
+   * @param count The message count to wait for
+   *
+   * @return true if successful
+   */
+  bool waitForMessageCount(int count) {
+    ros::Rate rate(10);  // throttle check to 10Hz
+    for (int i = 0; i < 20; i++) {
+      ros::spinOnce();
+      if (count_ >= count) return true;
+      rate.sleep();
+    }
+    return false;
+  }
+};
+
+// Test the bodyToMarkers method on an unsupported shape
+TEST(TestSuite, testPublishMarkers) {
+  b2Vec2 gravity(0.0, 0.0);
+  b2World world(gravity);
+
+  b2BodyDef bodyDef;
+  b2Body* body = world.CreateBody(&bodyDef);
+
+  b2FixtureDef fixtureDef;
+  b2CircleShape circle;
+  circle.m_p.Set(2.0f, 3.0f);
+  circle.m_radius = 0.2f;
+  fixtureDef.shape = &circle;
+  body->CreateFixture(&fixtureDef);
+
+  // Set up helper class subscribing to rostopic
+  ros::NodeHandle nh;
+  MarkerArraySubscriptionHelper helper;
+  ros::Subscriber sub =
+      nh.subscribe("/debug_visualization_test/debug/example", 0,
+                   &MarkerArraySubscriptionHelper::callback, &helper);
+
+  flatland_server::DebugVisualization::get().visualize("example", body, 1.0,
+                                                       0.0, 0.0, 1.0);
+
+  // Check pre publish conditions
+  EXPECT_EQ(flatland_server::DebugVisualization::get().topics_.size(), 1);
+  ros::spinOnce();
+  EXPECT_EQ(helper.count_, 0);
+  EXPECT_EQ(flatland_server::DebugVisualization::get()
+                .topics_["example"]
+                .needs_publishing,
+            true);
+
+  // Check that there is a publisher
+  EXPECT_EQ(sub.getNumPublishers(), 1);
+
+  // Publish
+  flatland_server::DebugVisualization::get().publish();
+
+  // Verify that message was published
+  EXPECT_TRUE(helper.waitForMessageCount(1));
+  EXPECT_EQ(helper.markers_.markers.size(), 1);
+
+  // Publish again (should have no change- nothing needs publishing)
+  flatland_server::DebugVisualization::get().publish();
+
+  // Verify that message was published
+  EXPECT_TRUE(helper.waitForMessageCount(1));
+  EXPECT_EQ(1, helper.markers_.markers.size());
+
+  // Publish some more markers
+  flatland_server::DebugVisualization::get().visualize("example", body, 1.0,
+                                                       0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::get().visualize("example", body, 1.0,
+                                                       0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::get().publish();
+
+  // Verify that message was published
+  EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
+  EXPECT_EQ(3, helper.markers_.markers.size());  // 3 markers in latest msg
+
+  // Reset marker list
+  flatland_server::DebugVisualization::get().reset("example");
+  flatland_server::DebugVisualization::get().publish();
+
+  // Verify that message was published
+  EXPECT_TRUE(helper.waitForMessageCount(3));    // Published three times
+  EXPECT_EQ(0, helper.markers_.markers.size());  // 0 markers in latest msg
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {

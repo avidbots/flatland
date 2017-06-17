@@ -66,8 +66,8 @@ class DebugVisualization {
   DebugVisualization();
 
  public:
-  std::map<std::string, DebugTopic> topics;
-  ros::NodeHandle node;
+  std::map<std::string, DebugTopic> topics_;
+  ros::NodeHandle node_;
 
   static DebugVisualization& get();
   void publish();
