@@ -63,6 +63,8 @@ class YAMLException : public Exception {
     YAML::Mark yaml_cpp_mark_;
     std::string msg_, yaml_cpp_msg_;
 
+    
+
     YAMLException(const std::string &msg, const std::string &yaml_cpp_msg, 
       const YAML::Mark &yaml_cpp_mark) :
       Exception(error_msg(msg, yaml_cpp_msg, yaml_cpp_mark)),

@@ -71,6 +71,11 @@ class Layer {
       double &resolution, double &occupied_thresh, double &free_thresh);
     ~Layer();
 
+  /* This class should be non-copyable. This will cause the destructor to be
+      called twice for a given b2Body*/
+    Layer(const Layer&) = delete;
+    Layer& operator=(const Layer&) = delete;
+
     void vectorize_bitmap();
 
     static void parse_yaml_node(
@@ -80,9 +85,9 @@ class Layer {
       std::array<double, 4> *color, std::array<double, 3> *origin,
       double *resolution, double *occupied_thresh, double *free_thresh);
 
-    static void add_layer(b2World *physics_world, 
+    static Layer *make_layer(b2World *physics_world, 
       boost::filesystem::path world_yaml_dir,
-      std::string name, YAML::Node layer_node, std::vector<Layer> *layers);
+      std::string name, YAML::Node layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

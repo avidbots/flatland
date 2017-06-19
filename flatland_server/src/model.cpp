@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.h
- * @brief	 Loads world file
- * @author Joseph Duchesne
+ * @name	 world.cpp
+ * @brief	 implements flatland layer
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,31 +44,14 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_WORLD_H
-#define FLATLAND_SERVER_WORLD_H
-
-#include <Box2D/Box2D.h>
-#include <string>
-#include <vector>
-#include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 
 namespace flatland_server {
-class World {
- public:
-  std::string yaml_path;
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer*> layers_;
-  std::vector<Model*> models_;
 
-  World();
-  ~World();
+Model::Model() {
+}
 
-  void load_layers(std::string yaml_path);
-  void load_models(std::string yaml_path);
-  
-  static World *make_world(std::string yaml_path);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_WORLD_H
+Model::~Model() {
+}
+
+};  // namespace flatland_server

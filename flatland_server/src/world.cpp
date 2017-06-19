@@ -65,6 +65,14 @@ World::World  () :
 
 World::~World() {
   delete physics_world_;
+
+  for (int i = 0; i < layers_.size(); i++) {
+    delete layers_[i];
+  }
+
+  for (int i = 0; i < models_.size(); i++) {
+    delete models_[i];
+  }
 }
 
 World *World::make_world(std::string yaml_path) {
@@ -109,8 +117,10 @@ void World::load_layers(std::string yaml_path) {
   it != yaml["layers"].end(); ++it) {
     std::string name = it->first.as<std::string>();
 
-    Layer::add_layer(physics_world_, path.parent_path(), name,
-      it->second, &layers_);
+    Layer *layer = Layer::make_layer(physics_world_, path.parent_path(), name,
+      it->second);
+
+    layers_.push_back(layer);
   }
 }
 

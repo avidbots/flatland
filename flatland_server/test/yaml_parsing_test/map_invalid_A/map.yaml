@@ -1,0 +1,7 @@
+image: map.png
+resolution: 0.050000
+origins: [-16.600000, -6.650000, 0.000000] # invalid
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+

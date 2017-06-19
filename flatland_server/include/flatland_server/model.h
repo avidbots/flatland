@@ -50,6 +50,14 @@
 namespace flatland_server {
 class Model {
 
+public:
+  Model();
+  ~Model();
+
+  /* This class should be non-copyable. This will cause the destructor to be
+      called twice for a given b2Body*/
+  Model(const Model&) = delete;
+  Model& operator=(const Model&) = delete;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

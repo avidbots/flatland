@@ -57,6 +57,7 @@ add_library(flatland_lib
   src/simulation_manager.cpp
   src/world.cpp
   src/layer.cpp
+  src/model.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib

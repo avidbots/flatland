@@ -48,38 +48,110 @@
 #include <ros/package.h>
 #include <gtest/gtest.h>
 #include <flatland_server/world.h>
+#include <flatland_server/exceptions.h>
 #include <Box2D/Box2D.h>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
+using namespace flatland_server;
 
 class FlatlandServerLoadWorldTest : public ::testing::Test
 {
-public:
+protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
 
   FlatlandServerLoadWorldTest() {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
   }
+
+  void test_yaml_fail() {
+    try {
+      World *w = World::make_world(world_yaml.string());
+      w->load_layers(world_yaml.string());
+      w->load_models(world_yaml.string());
+
+      delete w;
+
+      FAIL() << "Expected YAMLException, it passed instead";
+    }
+    catch(YAMLException &e) {
+      printf("%s", e.what());
+    } catch (...) {
+      FAIL() << "Expected YAMLException, another exception was caught instead";
+    }
+  }
 };
 
 // Declare a test
-TEST(FlatlandServerLoadWorldTest, initWorld)
+TEST_F(FlatlandServerLoadWorldTest, conestogo_office_test)
 {
   world_yaml = this_file_dir / fs::path("conestogo_office_test/world.yaml");
-  flatland_server::World::make_world(world_yaml);
+  World *w = World::make_world(world_yaml.string());
+  w->load_layers(world_yaml.string());
+  w->load_models(world_yaml.string());
+
+  ASSERT_EQ(w->layers_.size(), 2);
+
+  EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
+  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[0], 0);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[3], 0);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[0], -16.6);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[1], -6.65);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[2], 0.0);
+  EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
+  EXPECT_EQ(w->layers_[0]->bitmap_.rows, 505);
+  EXPECT_EQ(w->layers_[0]->bitmap_.cols, 1310);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->resolution_, 0.05);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
+
+  EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
+  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[0], 1.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[3], 0.5);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[0], -16.6);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[1], -6.65);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[2], 0.0);
+  EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
+  EXPECT_EQ(w->layers_[1]->bitmap_.rows, 505);
+  EXPECT_EQ(w->layers_[1]->bitmap_.cols, 1310);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 0.05);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.65);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.196);
+
+  delete w;
 }
 
-TEST(FlatlandServerLoadWorldTest, invalidWorldYamlA)
+TEST_F(FlatlandServerLoadWorldTest, world_invalid_A)
 {
-  EXPECT_EQ(1, 1);
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_A/world.yaml");
+  test_yaml_fail();
 }
 
-TEST(FlatlandServerLoadWorldTest, invalidWorldYamlB)
+TEST_F(FlatlandServerLoadWorldTest, world_invalid_B)
 {
-  EXPECT_EQ(1, 1);
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_B/world.yaml");
+  test_yaml_fail();
 }
+
+TEST_F(FlatlandServerLoadWorldTest, map_invalid_A)
+{
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_A/world.yaml");
+  test_yaml_fail();
+}
+
+TEST_F(FlatlandServerLoadWorldTest, map_invalid_B)
+{
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_B/world.yaml");
+  test_yaml_fail();
+}
+
+
+
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)

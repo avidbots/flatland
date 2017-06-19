@@ -79,9 +79,9 @@ Layer::~Layer() {
   physics_body_->GetWorld()->DestroyBody(physics_body_);
 }
 
-void Layer::add_layer(b2World *physics_world, 
+Layer *Layer::make_layer(b2World *physics_world, 
   boost::filesystem::path world_yaml_dir,
-  std::string name, YAML::Node layer_node, std::vector<Layer> *layers) {
+  std::string name, YAML::Node layer_node) {
   
   cv::Mat bitmap;
   std::array<double, 4> color;
@@ -133,6 +133,10 @@ void Layer::add_layer(b2World *physics_world,
     }
 
     cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+    if (map.empty()) {
+      throw YAMLException("Failed to load " + image_path.string());
+    }
+
     map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
   }
   else{
@@ -170,8 +174,8 @@ void Layer::add_layer(b2World *physics_world,
     throw YAMLException("Invalid \"free_thresh\" in " + name + " layer");
   }
   
-  layers->push_back(Layer(physics_world, name, bitmap, color, origin, 
-    resolution, occupied_thresh, free_thresh));
+  return new Layer(physics_world, name, bitmap, color, origin, resolution, 
+    occupied_thresh, free_thresh);
 }
 
 void Layer::vectorize_bitmap() {
