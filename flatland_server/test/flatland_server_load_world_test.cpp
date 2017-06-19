@@ -51,6 +51,8 @@
 #include <flatland_server/exceptions.h>
 #include <Box2D/Box2D.h>
 #include <boost/filesystem.hpp>
+#include <string>
+#include <regex>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -65,7 +67,7 @@ protected:
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
   }
 
-  void test_yaml_fail() {
+  void test_yaml_fail(std::string regex_str) {
     try {
       World *w = World::make_world(world_yaml.string());
       w->load_layers(world_yaml.string());
@@ -76,17 +78,23 @@ protected:
       FAIL() << "Expected YAMLException, it passed instead";
     }
     catch(YAMLException &e) {
-      printf("%s", e.what());
-    } catch (...) {
+      // do a regex match against error messages
+      std::cmatch match;
+      std::regex regex(regex_str);
+      EXPECT_TRUE(std::regex_match(e.what(), match, regex)) <<
+        "'" + std::string(e.what()) + "'" + " did not match against " + "'" + 
+        regex_str + "'";
+    }
+    catch (...) {
       FAIL() << "Expected YAMLException, another exception was caught instead";
     }
   }
 };
 
 // Declare a test
-TEST_F(FlatlandServerLoadWorldTest, conestogo_office_test)
+TEST_F(FlatlandServerLoadWorldTest, all_valid)
 {
-  world_yaml = this_file_dir / fs::path("conestogo_office_test/world.yaml");
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/all_valid/world.yaml");
   World *w = World::make_world(world_yaml.string());
   w->load_layers(world_yaml.string());
   w->load_models(world_yaml.string());
@@ -126,31 +134,35 @@ TEST_F(FlatlandServerLoadWorldTest, conestogo_office_test)
   delete w;
 }
 
+TEST_F(FlatlandServerLoadWorldTest, wrong_world_path)
+{
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/random_path/world.yaml");
+  test_yaml_fail("Error loading.*world.yaml.*bad file");
+}
+
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_A)
 {
   world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_A/world.yaml");
-  test_yaml_fail();
+  test_yaml_fail("Invalid world param \"properties\"");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_B)
 {
   world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_B/world.yaml");
-  test_yaml_fail();
+  test_yaml_fail("Invalid \"color\" in 2d layer");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_A)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_A/world.yaml");
-  test_yaml_fail();
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/map_invalid_A/world.yaml");
+  test_yaml_fail("Invalid \"origin\" in 2d layer");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_B)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_B/world.yaml");
-  test_yaml_fail();
+  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/map_invalid_B/world.yaml");
+  test_yaml_fail("Failed to load .*.png");
 }
-
-
 
 
 // Run all the tests that were declared with TEST()

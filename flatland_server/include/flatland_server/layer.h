@@ -86,8 +86,7 @@ class Layer {
       double *resolution, double *occupied_thresh, double *free_thresh);
 
     static Layer *make_layer(b2World *physics_world, 
-      boost::filesystem::path world_yaml_dir,
-      std::string name, YAML::Node layer_node);
+      boost::filesystem::path world_yaml_dir, YAML::Node layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

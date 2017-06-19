@@ -63,7 +63,7 @@ Layer::Layer(b2World *physics_world,
       origin_(origin), 
       resolution_(resolution), 
       occupied_thresh_(occupied_thresh), 
-      free_thresh_(free_thresh_) {
+      free_thresh_(free_thresh) {
 
   bitmap.copyTo(bitmap_);
 
@@ -80,15 +80,22 @@ Layer::~Layer() {
 }
 
 Layer *Layer::make_layer(b2World *physics_world, 
-  boost::filesystem::path world_yaml_dir,
-  std::string name, YAML::Node layer_node) {
+  boost::filesystem::path world_yaml_dir, YAML::Node layer_node) {
   
+  std::string name;
   cv::Mat bitmap;
   std::array<double, 4> color;
   std::array<double, 3> origin;
   double resolution, occupied_thresh, free_thresh;
 
   boost::filesystem::path map_yaml_path;
+
+  if (layer_node["name"]) {
+    name = layer_node["name"].as<std::string>();
+  }
+  else {
+    throw YAMLException("Invalid \"properties\" in " + name + " layer");
+  }
 
   if (layer_node["map"]) {
     map_yaml_path = 
@@ -118,29 +125,12 @@ Layer *Layer::make_layer(b2World *physics_world,
 
   // start parsing the map yaml file
   YAML::Node yaml;
+
   try {
     yaml = YAML::LoadFile(map_yaml_path.string());
   } catch (const YAML::Exception &e) {
     throw YAMLException("Error loading " + map_yaml_path.string(), 
       e.msg, e.mark);
-  }
-
-  if (yaml["image"]) {
-    boost::filesystem::path image_path(yaml["image"].as<std::string>());
-
-    if (image_path.string().front() != '/') {
-      image_path = map_yaml_path.parent_path() / image_path;
-    }
-
-    cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
-    if (map.empty()) {
-      throw YAMLException("Failed to load " + image_path.string());
-    }
-
-    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
-  }
-  else{
-    throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
 
   if (yaml["resolution"]) {
@@ -172,6 +162,24 @@ Layer *Layer::make_layer(b2World *physics_world,
   }
   else {
     throw YAMLException("Invalid \"free_thresh\" in " + name + " layer");
+  }
+
+  if (yaml["image"]) {
+    boost::filesystem::path image_path(yaml["image"].as<std::string>());
+
+    if (image_path.string().front() != '/') {
+      image_path = map_yaml_path.parent_path() / image_path;
+    }
+
+    cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+    if (map.empty()) {
+      throw YAMLException("Failed to load " + image_path.string());
+    }
+
+    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
+  }
+  else{
+    throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
   
   return new Layer(physics_world, name, bitmap, color, origin, resolution, 

@@ -63,7 +63,7 @@ class YAMLException : public Exception {
     YAML::Mark yaml_cpp_mark_;
     std::string msg_, yaml_cpp_msg_;
 
-    
+
 
     YAMLException(const std::string &msg, const std::string &yaml_cpp_msg, 
       const YAML::Mark &yaml_cpp_mark) :
@@ -71,7 +71,7 @@ class YAMLException : public Exception {
       yaml_cpp_msg_(yaml_cpp_msg), yaml_cpp_mark_(yaml_cpp_mark){}
 
     YAMLException(const std::string &msg) :
-      Exception(msg){}
+      Exception(msg), msg_(msg){}
       
   private:
     static const std::string error_msg(const std::string &msg,
@@ -88,8 +88,10 @@ class YAMLException : public Exception {
         }
 
         if (yaml_cpp_msg.size() > 0) {
-          output << "" << yaml_cpp_msg;
+          output << " " << yaml_cpp_msg;
         }
+
+        return output.str();
       }
 };
 

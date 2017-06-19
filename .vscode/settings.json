@@ -38,7 +38,8 @@
         "utility": "cpp",
         "string": "cpp",
         "valarray": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "bitset": "cpp"
     },
     "editor.tabSize": 2
 }

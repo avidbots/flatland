@@ -7,7 +7,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceRoot}/../../devel/lib/flatland_server/flatland_server_load_world_test",
-      "args": [],
+      "args": ["--gtest_filter=FlatlandServerLoadWorldTest.world_invalid_C"],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}",
       "environment": [],

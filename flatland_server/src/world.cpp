@@ -81,6 +81,7 @@ World *World::make_world(std::string yaml_path) {
 
   // parse the world YAML file
   YAML::Node yaml;
+
   try {
      yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
@@ -91,7 +92,7 @@ World *World::make_world(std::string yaml_path) {
     // TODO (Chunshang Li): parse properties
   }
   else {
-    throw YAMLException("Invalid world \"properties\"");
+    throw YAMLException("Invalid world param \"properties\"");
   }
 
   return new World();
@@ -103,22 +104,19 @@ void World::load_layers(std::string yaml_path) {
   YAML::Node yaml;
 
   try {
-     yaml = YAML::LoadFile(path.string());
+    yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
     throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
   }
 
-  if (!yaml["layers"] || !yaml["layers"].IsMap()) {
-    throw YAMLException("Invalid world \"layers\"");
+  if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
+    throw YAMLException("Invalid world param \"layers\"");
   }
 
   // loop through each layer and parse the data
-  for (YAML::const_iterator it = yaml["layers"].begin();
-  it != yaml["layers"].end(); ++it) {
-    std::string name = it->first.as<std::string>();
-
-    Layer *layer = Layer::make_layer(physics_world_, path.parent_path(), name,
-      it->second);
+  for (int i = 0; i < yaml["layers"].size(); i++) {
+    Layer *layer = Layer::make_layer(physics_world_, path.parent_path(),
+      yaml["layers"][i]);
 
     layers_.push_back(layer);
   }
@@ -136,7 +134,7 @@ void World::load_models(std::string yaml_path) {
   }
 
   if (!yaml["models"] || !yaml["models"].IsSequence()) {
-    throw YAMLException("Invalid world \"models\"");
+    throw YAMLException("Invalid world param \"models\"");
   }
 
   // loop through each layer and parse the data
