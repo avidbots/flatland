@@ -78,7 +78,7 @@ void SimulationManager::Main() {
 
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time
-    physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
+    world_->physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
 
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
