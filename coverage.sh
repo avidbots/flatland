@@ -1,4 +1,8 @@
 #!/bin/bash -e
+# This script is used in CI testing (and can be used manually)
+# to generate code coverage statistics, showing which code has been unit tested
+# to use it, you must install "lcov" (`sudo apt-get install lcov`)
+#
 # Run from catkin workspace to generate coverage stats
 PROJECT_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
