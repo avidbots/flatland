@@ -50,15 +50,17 @@
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/world.h>
+#include "flatland_server/debug_visualization.h"
 
 namespace flatland_server {
 
 /**
- * @name Simuiilation Manager constructor
- * @param World File
+ * @name  Simulation Manager constructor
+ * @param world_file   The path to the world.yaml file we wish to load
+ * @param initial_rate The physics step frequency in Hz
  */
 SimulationManager::SimulationManager(std::string world_file,
-                                     double initial_rate)
+                                     float initial_rate)
     : initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
   
@@ -72,17 +74,24 @@ SimulationManager::SimulationManager(std::string world_file,
 void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Main starting");
 
-  ros::Rate rate(
-      initial_rate_);  // Todo: Placeholder for proper simulation time control
+  ros::Rate rate(initial_rate_);
 
   while (ros::ok() && run_simulator_) {
-    // Todo: update physics
-    ros::spinOnce();
+    // Step physics by ros cycle time
+    physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
+
+    ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
-    ROS_INFO_THROTTLE_NAMED(1.0, "SimMan", "loop running...");
+    DebugVisualization::get().publish();  // Publish debug visualization output
 
-    rate.sleep();  // Todo: Placeholder for proper simulation time control
+    rate.sleep();
+
+    ROS_INFO_THROTTLE_NAMED(
+        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
+        rate.cycleTime().toSec() * 1000,
+        rate.expectedCycleTime().toSec() * 1000.0,
+        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
   }
 
   ROS_INFO_NAMED("SimMan", "Main exiting");

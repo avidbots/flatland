@@ -9,7 +9,7 @@ pipelines:
           - ln -s $BITBUCKET_CLONE_DIR ~/catkin_ws/src
           - cd ~/catkin_ws
           - apt-get update
-          - apt-get install sudo clang-format-3.8 clang-3.8 -y  # Needed by rosdep
+          - apt-get install sudo clang-format-3.8 clang-3.8 lcov -y
           - rosdep update
           - rosdep install -y --from-paths src --ignore-src
           - source /opt/ros/*/setup.bash
@@ -17,5 +17,4 @@ pipelines:
           - git ls-files | grep -E '\.[ch](pp)?$' |  xargs clang-format-3.8 --style=file -i && git diff --exit-code || { git reset --hard; false; }
           - cd ~/catkin_ws
           - scan-build-3.8 --status-bugs catkin_make -j1
-          - catkin_make
-          - catkin_make run_tests && catkin_test_results
+          - ./src/coverage.sh

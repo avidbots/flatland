@@ -57,9 +57,9 @@ class SimulationManager {
  public:
   bool run_simulator_ = true;  // While true, keep running the simulation loop
   World *world_;
-  double initial_rate_;
+  float initial_rate_;
 
-  SimulationManager(std::string world_file, double initial_rate);
+  SimulationManager(std::string world_file, float initial_rate);
   void Main();
   void Shutdown();
 };

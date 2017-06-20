@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	flatland_server_ndoe.cpp
- * @brief	Load params and run the ros node for flatland_server
+ * @name	null.cpp
+ * @brief	Sanity check / example test file
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,69 +44,59 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
-#include <signal.h>
-#include <string>
+#include "flatland_server/geometry.h"
+#include <gtest/gtest.h>
+#include <cmath>
 
-#include "flatland_server/simulation_manager.h"
+// Test the CreateTransform method
+TEST(TestSuite, testCreateTransform) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(2.0, 1.0, 1.1);
 
-/** Global variables */
-flatland_server::SimulationManager *simulation_manager;
-
-/**
- * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
- * @param[in]   sig: signal itself
- */
-void SigintHandler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
-
-  if (simulation_manager != nullptr) {
-    simulation_manager->Shutdown();
-    delete simulation_manager;
-    simulation_manager = nullptr;
-  }
-  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-  ros::shutdown();
+  EXPECT_NEAR(rt.dx, 2.0, 1e-5);
+  EXPECT_NEAR(rt.dy, 1.0, 1e-5);
+  EXPECT_NEAR(rt.cos, cosf(1.1), 1e-5);
+  EXPECT_NEAR(rt.sin, sinf(1.1), 1e-5);
 }
 
-/**
- * @name        main
- * @brief       Entrypoint for Flatland Server ros node
- */
+// Test the transform method, translation
+TEST(TestSuite, testTransformTranslate) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(2.0, 1.5, 0.0);
+
+  b2Vec2 in(1.0, 2.0);
+  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+
+  EXPECT_NEAR(out.x, 3.0, 1e-5);
+  EXPECT_NEAR(out.y, 3.5, 1e-5);
+}
+
+// Test the transform method, rotation
+TEST(TestSuite, testTransformRotate) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(0.0, 0.0, M_PI_2);
+
+  b2Vec2 in(1.0, 2.0);
+  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+
+  EXPECT_NEAR(out.x, -2.0, 1e-5);
+  EXPECT_NEAR(out.y, 1.0, 1e-5);
+}
+
+// Test the transform method, translation + rotation
+TEST(TestSuite, testTransformTranslateAndRotate) {
+  flatland_server::RotateTranslate rt =
+      flatland_server::Geometry::createTransform(1.0, 0.5, -M_PI);
+
+  b2Vec2 in(-1.0, 1.5);
+  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+
+  EXPECT_NEAR(out.x, 2.0, 1e-5);
+  EXPECT_NEAR(out.y, -1.0, 1e-5);
+}
+
+// Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "Node", ros::init_options::NoSigintHandler);
-  ros::NodeHandle node_handle("~");
-
-  // Load parameters
-  float initial_rate = 60.0;  // The physics update rate (Hz)
-  if (node_handle.getParam("initial_rate", initial_rate)) {
-    ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
-  } else {
-    ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
-  }
-
-  std::string world_path;  // The file path to the world.yaml file
-  if (node_handle.getParam("world_path", world_path)) {
-    ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
-  } else {
-    ROS_FATAL_NAMED("Node", "No world_path parameter given!");
-    ros::shutdown();
-    return 1;
-  }
-
-  // Create simulation manager object
-  simulation_manager =
-      new flatland_server::SimulationManager(world_path, initial_rate);
-
-  // Register sigint shutdown handler
-  signal(SIGINT, SigintHandler);
-
-  ROS_INFO_STREAM_NAMED("Node", "Initialized");
-  simulation_manager->Main();
-
-  ROS_INFO_STREAM_NAMED("Node", "Returned from simulation manager main");
-  delete simulation_manager;
-  simulation_manager = nullptr;
-  return 0;
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
