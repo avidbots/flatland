@@ -1,6 +1,6 @@
 image: map.png
 resolution: 0.050000
-origin: [-16.600000, -6.650000, 0.000000]
+origin: [0.05e0, -5e-2, 1.57] # the angle is ignored
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196

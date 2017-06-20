@@ -51,6 +51,7 @@
 #include <opencv2/opencv.hpp>
 #include <flatland_server/layer.h>
 #include <flatland_server/exceptions.h>
+#include <flatland_server/geometry.h>
 
 namespace flatland_server {
 
@@ -74,6 +75,7 @@ Layer::Layer(b2World *physics_world,
   physics_body_ = physics_world->CreateBody(&body_def);
 
   vectorize_bitmap();
+  load_edges();
 
   ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }
@@ -270,7 +272,34 @@ void Layer::vectorize_bitmap() {
 }
 
 void Layer::load_edges() {
-  
+  // The rotation is ignored
+  RotateTranslate transform = Geometry::createTransform(origin_[0], 
+    origin_[1], 0);
+
+  for (const auto &edge : extracted_edges) {
+    b2EdgeShape edge_tf;
+
+    // creates a copy
+    b2Vec2 v1 = edge.m_vertex1;
+    b2Vec2 v2 = edge.m_vertex2;
+
+    v1.y = bitmap_.rows - v1.y;
+    v2.y = bitmap_.rows - v2.y;
+
+    v1.x = v1.x * resolution_;
+    v1.y = v1.y * resolution_;
+    v2.x = v2.x * resolution_;
+    v2.y = v2.y * resolution_;
+
+    b2Vec2 v1_tf = Geometry::transform(v1, transform);
+    b2Vec2 v2_tf = Geometry::transform(v2, transform);
+
+    edge_tf.Set(v1_tf, v2_tf);
+
+    b2FixtureDef fixture_def;
+    fixture_def.shape = &edge_tf;
+    physics_body_->CreateFixture(&fixture_def);
+  }
 }
 
 };  // namespace flatland_server
