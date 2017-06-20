@@ -136,7 +136,8 @@ protected:
 // Declare a test
 TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
 {
-  world_yaml = this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
+  world_yaml = this_file_dir / 
+    fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::make_world(world_yaml.string());
   w->load_layers(world_yaml.string());
   w->load_models(world_yaml.string());
@@ -224,31 +225,36 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
 
 TEST_F(FlatlandServerLoadWorldTest, wrong_world_path)
 {
-  world_yaml = this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
+  world_yaml = this_file_dir / 
+    fs::path("load_world_tests/random_path/world.yaml");
   test_yaml_fail("Error loading.*world.yaml.*bad file");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_A)
 {
-  world_yaml = this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
+  world_yaml = this_file_dir / 
+    fs::path("load_world_tests/world_invalid_A/world.yaml");
   test_yaml_fail("Invalid world param \"properties\"");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_B)
 {
-  world_yaml = this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
+  world_yaml = this_file_dir / 
+    fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail("Invalid \"color\" in 2d layer");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_A)
 {
-  world_yaml = this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
+  world_yaml = this_file_dir / 
+    fs::path("load_world_tests/map_invalid_A/world.yaml");
   test_yaml_fail("Invalid \"origin\" in 2d layer");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_B)
 {
-  world_yaml = this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
+  world_yaml = this_file_dir / 
+    fs::path("load_world_tests/map_invalid_B/world.yaml");
   test_yaml_fail("Failed to load .*.png");
 }
 

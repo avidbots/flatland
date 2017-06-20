@@ -194,10 +194,6 @@ void Layer::vectorize_bitmap() {
 
   cv::copyMakeBorder(obstable_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT, 255);
 
-  // cv::namedWindow( "Display window");
-  // cv::imshow("Display window", padded_map);
-  // cv::waitKey(0);
-
   // loop through all the rows, looking at 2 at once
   for (int i = 0; i < padded_map.rows - 1; i++) {
     cv::Mat row1 = padded_map.row(i);
@@ -208,10 +204,6 @@ void Layer::vectorize_bitmap() {
     // if the two rows are not the same value, there is an edge
     // result is still binary, either 255 or 0
     cv::absdiff(row1, row2, diff);
-
-    // printf("%d\n", i);
-    // cv::imshow("Display window", diff);
-    // cv::waitKey(0);
 
     int start = 0;
     bool started = false;
@@ -234,21 +226,12 @@ void Layer::vectorize_bitmap() {
         edge123.Set(b2Vec2(start, i), b2Vec2(j, i));
         extracted_edges.push_back(edge123);
 
-        // printf("(%f,%f)(%d,%d), ", edge123.m_vertex1.x, edge123.m_vertex1.y, j, i);
-        // printf("%lu", extracted_edges.size());
-        // fflush(stdout);
-
         started = false;
       }
     }
-    // printf("\n");
   }
 
   cv::copyMakeBorder(obstable_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT, 255);
-
-  // cv::namedWindow( "Display window 2");
-  // cv::imshow("Display window", padded_map);
-  // cv::waitKey(0);
 
   // loop through all the columns, looking at 2 at once
   for (int i = 0; i < padded_map.cols - 1; i++) {
@@ -257,10 +240,6 @@ void Layer::vectorize_bitmap() {
     cv::Mat diff;
 
     cv::absdiff(col1, col2, diff);
-
-    // printf("%d\n", i);
-    // cv::imshow("Display window 2", diff);
-    // cv::waitKey(0);
 
     int start = 0;
     bool started = false;
@@ -283,14 +262,9 @@ void Layer::vectorize_bitmap() {
         edge123.Set(b2Vec2(i, start), b2Vec2(i, j));
         extracted_edges.push_back(edge123);
 
-        // printf("(%f,%f)(%d,%d), ", edge123.m_vertex1.x, edge123.m_vertex1.y, j, i);
-        // printf("%lu", extracted_edges.size());
-        // fflush(stdout);
-
         started = false;
       }
     }
-    // printf("\n");
   }
 
 }
