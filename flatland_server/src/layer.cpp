@@ -57,7 +57,8 @@ namespace flatland_server {
 Layer::Layer(b2World *physics_world, 
       const std::string &name, const cv::Mat &bitmap, 
       const std::array<double, 4> &color, const std::array<double, 3> &origin,
-      double &resolution, double &occupied_thresh, double &free_thresh) : 
+      const double &resolution, const double &occupied_thresh,
+      const double &free_thresh) : 
       name_(name), 
       color_(color), 
       origin_(origin), 
@@ -266,7 +267,10 @@ void Layer::vectorize_bitmap() {
       }
     }
   }
+}
 
+void Layer::load_edges() {
+  
 }
 
 };  // namespace flatland_server

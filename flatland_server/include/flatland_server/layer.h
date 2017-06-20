@@ -71,8 +71,8 @@ class Layer {
 
     Layer(b2World *physics_world, const std::string &name,
       const cv::Mat &bitmap, const std::array<double, 4> &color, 
-      const std::array<double, 3> &origin, double &resolution,
-      double &occupied_thresh, double &free_thresh);
+      const std::array<double, 3> &origin, const double &resolution,
+      const double &occupied_thresh, const double &free_thresh);
     ~Layer();
 
   /* This class should be non-copyable. This will cause the destructor to be
@@ -82,13 +82,6 @@ class Layer {
 
     void vectorize_bitmap();
     void load_edges();
-
-    static void parse_yaml_node(
-      const boost::filesystem::path &world_yaml_dir, 
-      const YAML::Node &layer_node,  
-      cv::Mat *bitmap,
-      std::array<double, 4> *color, std::array<double, 3> *origin,
-      double *resolution, double *occupied_thresh, double *free_thresh);
 
     static Layer *make_layer(b2World *physics_world, 
       boost::filesystem::path world_yaml_dir, YAML::Node layer_node);
