@@ -92,9 +92,9 @@ protected:
 };
 
 // Declare a test
-TEST_F(FlatlandServerLoadWorldTest, all_valid)
+TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/all_valid/world.yaml");
+  world_yaml = this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::make_world(world_yaml.string());
   w->load_layers(world_yaml.string());
   w->load_models(world_yaml.string());
@@ -110,8 +110,8 @@ TEST_F(FlatlandServerLoadWorldTest, all_valid)
   EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[1], -6.65);
   EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[2], 0.0);
   EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
-  EXPECT_EQ(w->layers_[0]->bitmap_.rows, 505);
-  EXPECT_EQ(w->layers_[0]->bitmap_.cols, 1310);
+  EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
+  EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
   EXPECT_DOUBLE_EQ(w->layers_[0]->resolution_, 0.05);
   EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
   EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
@@ -121,49 +121,50 @@ TEST_F(FlatlandServerLoadWorldTest, all_valid)
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[3], 0.5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[0], -16.6);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[1], -6.65);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[2], 0.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[0], -3.4e-2);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[1], 200000);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[2], -5e30);
   EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
-  EXPECT_EQ(w->layers_[1]->bitmap_.rows, 505);
-  EXPECT_EQ(w->layers_[1]->bitmap_.cols, 1310);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.65);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.196);
+  EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
+  EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 1.5);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
+
+  
 
   delete w;
 }
 
 TEST_F(FlatlandServerLoadWorldTest, wrong_world_path)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/random_path/world.yaml");
+  world_yaml = this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
   test_yaml_fail("Error loading.*world.yaml.*bad file");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_A)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_A/world.yaml");
+  world_yaml = this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
   test_yaml_fail("Invalid world param \"properties\"");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_B)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/world_invalid_B/world.yaml");
+  world_yaml = this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail("Invalid \"color\" in 2d layer");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_A)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/map_invalid_A/world.yaml");
+  world_yaml = this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
   test_yaml_fail("Invalid \"origin\" in 2d layer");
 }
 
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_B)
 {
-  world_yaml = this_file_dir / fs::path("yaml_parsing_tests/map_invalid_B/world.yaml");
+  world_yaml = this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
   test_yaml_fail("Failed to load .*.png");
 }
-
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)

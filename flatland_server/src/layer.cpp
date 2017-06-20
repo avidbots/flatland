@@ -72,6 +72,8 @@ Layer::Layer(b2World *physics_world,
 
   physics_body_ = physics_world->CreateBody(&body_def);
 
+  vectorize_bitmap();
+
   ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }
 
@@ -188,81 +190,109 @@ Layer *Layer::make_layer(b2World *physics_world,
 
 void Layer::vectorize_bitmap() {
   cv::Mat padded_map, obstable_map;
-  cv::copyMakeBorder(bitmap_, padded_map, 1, 1, 1, 1, cv::BORDER_CONSTANT, 0);
+  cv::inRange(bitmap_, occupied_thresh_, 1.0, obstable_map);
 
-  // obstacle map is now binary
-  cv::inRange(padded_map, occupied_thresh_, 1.0, obstable_map);
+  cv::copyMakeBorder(obstable_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT, 255);
+
+  // cv::namedWindow( "Display window");
+  // cv::imshow("Display window", padded_map);
+  // cv::waitKey(0);
 
   // loop through all the rows, looking at 2 at once
-  for (int i = 0; i < obstable_map.rows; i++) {
-    cv::Mat row1 = obstable_map.row(i);
-    cv::Mat row2 = obstable_map.row(i + 1);
-    cv::Mat diff, non_zeros;
+  for (int i = 0; i < padded_map.rows - 1; i++) {
+    cv::Mat row1 = padded_map.row(i);
+    cv::Mat row2 = padded_map.row(i + 1);
+    cv::Mat diff;
 
     // if the two row are the same value, there is no edge
     // if the two rows are not the same value, there is an edge
-    // result is still binary, either 1 or 0
+    // result is still binary, either 255 or 0
     cv::absdiff(row1, row2, diff);
 
-    int start = 0, end = 0;
+    // printf("%d\n", i);
+    // cv::imshow("Display window", diff);
+    // cv::waitKey(0);
+
+    int start = 0;
+    bool started = false;
 
     // find all the walls, put the connected walls as a single line segment
-    for (int j = 0; j < diff.total(); j++) {
+    for (int j = 0; j <= diff.total(); j++) {
 
-      int edge_exists = diff.at<int>(0, j);
+      bool edge_exists = false;
+      if (j < diff.total()) {
+        edge_exists = diff.at<uint8_t>(0, j); // 255 maps to true
+      }
 
-      if (edge_exists && start == end) {
+      if (edge_exists && !started) {
         start = j;
+        started = true;
       } 
-      else if (!edge_exists || j == diff.total() - 1) {
-        end = j;
+      else if (started && !edge_exists) {
 
-        // this is your start and end
-        b2FixtureDef fixture;
-        b2EdgeShape edge;
+        b2EdgeShape edge123;
+        edge123.Set(b2Vec2(start, i), b2Vec2(j, i));
+        extracted_edges.push_back(edge123);
 
-        edge.Set(b2Vec2(start, i), b2Vec2(end, i)); // TODO
-        fixture.shape = &edge;
+        // printf("(%f,%f)(%d,%d), ", edge123.m_vertex1.x, edge123.m_vertex1.y, j, i);
+        // printf("%lu", extracted_edges.size());
+        // fflush(stdout);
 
-        physics_body_->CreateFixture(&fixture);
-
-        start = end;
+        started = false;
       }
     }
+    // printf("\n");
   }
 
+  cv::copyMakeBorder(obstable_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT, 255);
+
+  // cv::namedWindow( "Display window 2");
+  // cv::imshow("Display window", padded_map);
+  // cv::waitKey(0);
+
   // loop through all the columns, looking at 2 at once
-  for (int i = 0; i < obstable_map.cols; i++) {
-    cv::Mat col1 = obstable_map.col(i);
-    cv::Mat col2 = obstable_map.col(i + 1);
-    cv::Mat diff, non_zeros;
+  for (int i = 0; i < padded_map.cols - 1; i++) {
+    cv::Mat col1 = padded_map.col(i);
+    cv::Mat col2 = padded_map.col(i + 1);
+    cv::Mat diff;
 
     cv::absdiff(col1, col2, diff);
 
-    int start = 0, end = 0;
+    // printf("%d\n", i);
+    // cv::imshow("Display window 2", diff);
+    // cv::waitKey(0);
 
-    for (int j = 0; j < diff.total(); j++) {
+    int start = 0;
+    bool started = false;
 
-      int edge_exists = diff.at<int>(j, 0);
 
-      if (edge_exists && start == end) {
+    for (int j = 0; j <= diff.total(); j++) {
+
+      bool edge_exists = false;
+      if (j < diff.total()) {
+        edge_exists = diff.at<uint8_t>(j, 0);
+      }
+
+      if (edge_exists && !started) {
         start = j;
-      } 
-      else if (!edge_exists || j == diff.total() - 1) {
-        end = j;
+        started = true;
+      }
+      else if (started && !edge_exists) {
 
-        b2FixtureDef fixture;
-        b2EdgeShape edge;
+        b2EdgeShape edge123;
+        edge123.Set(b2Vec2(i, start), b2Vec2(i, j));
+        extracted_edges.push_back(edge123);
 
-        edge.Set(b2Vec2(i, start), b2Vec2(i, end)); // TODO
-        fixture.shape = &edge;
+        // printf("(%f,%f)(%d,%d), ", edge123.m_vertex1.x, edge123.m_vertex1.y, j, i);
+        // printf("%lu", extracted_edges.size());
+        // fflush(stdout);
 
-        physics_body_->CreateFixture(&fixture);
-
-        start = end;
+        started = false;
       }
     }
+    // printf("\n");
   }
+
 }
 
 };  // namespace flatland_server
