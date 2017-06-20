@@ -89,6 +89,44 @@ protected:
       FAIL() << "Expected YAMLException, another exception was caught instead";
     }
   }
+
+  // return the index if found, -1 otherwise
+  int does_edge_exist(const b2EdgeShape &edge, 
+    const std::vector<std::pair<b2Vec2, b2Vec2>> &edges) {
+      for (int i = 0; i < edges.size(); i++) {
+        auto e = edges[i];
+        if (edge.m_vertex1.x == e.first.x &&
+            edge.m_vertex1.y == e.first.y &&
+            edge.m_vertex2.x == e.second.x &&
+            edge.m_vertex2.y == e.second.y) {
+              return i;
+            }
+      }
+    
+    return -1;
+  }
+
+  bool does_edges_exactly_match(const std::vector<b2EdgeShape> &edges1,
+    const std::vector<std::pair<b2Vec2, b2Vec2>> &edges2) {
+
+      std::vector<std::pair<b2Vec2, b2Vec2>> edges_cpy = edges2;
+      for (int i = 0; i < edges1.size(); i++) {
+        auto e = edges1[i];
+        int ret_idx = does_edge_exist(e, edges_cpy);
+
+        if (ret_idx < 0) {
+          return false;
+        }
+
+        edges_cpy.erase(edges_cpy.begin() + ret_idx);
+      }
+
+      if (edges_cpy.size() == 0) {
+        return true;
+      } else {
+        return false;
+      }
+    }
 };
 
 // Declare a test
@@ -131,7 +169,27 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
   EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
   EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
 
-  
+  // check that bitmap vectorization is performed correctly
+  std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_edges = {
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(5, 0)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(4, 1)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(3, 2)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(3, 3)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(4, 4)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 5), b2Vec2(5, 5)),
+
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 5)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(1, 4)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(2, 3)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 3)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(4, 4)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 0), b2Vec2(5, 5))
+  };
+
+  ASSERT_EQ(w->layers_[0]->extracted_edges.size(), 
+    layer0_expected_edges.size());
+  EXPECT_TRUE(does_edges_exactly_match(w->layers_[0]->extracted_edges, 
+    layer0_expected_edges));
 
   delete w;
 }
