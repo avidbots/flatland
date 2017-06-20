@@ -95,10 +95,14 @@ protected:
     const std::vector<std::pair<b2Vec2, b2Vec2>> &edges) {
       for (int i = 0; i < edges.size(); i++) {
         auto e = edges[i];
-        if (edge.m_vertex1.x == e.first.x &&
-            edge.m_vertex1.y == e.first.y &&
-            edge.m_vertex2.x == e.second.x &&
-            edge.m_vertex2.y == e.second.y) {
+        if ((edge.m_vertex1.x == e.first.x &&
+             edge.m_vertex1.y == e.first.y &&
+             edge.m_vertex2.x == e.second.x &&
+             edge.m_vertex2.y == e.second.y) ||
+            (edge.m_vertex1.x == e.second.x &&
+             edge.m_vertex1.y == e.second.y &&
+             edge.m_vertex2.x == e.first.x &&
+             edge.m_vertex2.y == e.first.y)) {
               return i;
             }
       }
@@ -190,6 +194,30 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
     layer0_expected_edges.size());
   EXPECT_TRUE(does_edges_exactly_match(w->layers_[0]->extracted_edges, 
     layer0_expected_edges));
+
+  std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(1, 0)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 2)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 2), b2Vec2(3, 2)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 4)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 3), b2Vec2(4, 1)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(1, 1)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 0), b2Vec2(1, 1)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(4, 3)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 5), b2Vec2(2, 3)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(3, 4)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 5), b2Vec2(2, 5)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(1, 5)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(5, 4)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(4, 5)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 4), b2Vec2(5, 5)),
+    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 5), b2Vec2(5, 5))
+  };
+
+  ASSERT_EQ(w->layers_[1]->extracted_edges.size(), 
+    layer1_expected_edges.size());
+  EXPECT_TRUE(does_edges_exactly_match(w->layers_[1]->extracted_edges, 
+    layer1_expected_edges));
 
   delete w;
 }
