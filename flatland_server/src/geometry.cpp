@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
- * @author Joseph Duchesne
+ * @name	  geometry.cpp
+ * @brief     Geometry functions
+ * @author    Joseph Duchesne
  *
  * Software License Agreement (BSD License)
  *
@@ -44,38 +44,38 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-
+#include "flatland_server/geometry.h"
 #include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
+#include <cmath>
 
 namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
+
+/**
+ * @brief Return a RotateTranslate given translation and rotation
+ *
+ * @param dx X translation
+ * @param dy Y translation
+ * @param a  rotation (radians)
+ *
+ * @return THe RotateTranslate object
+ */
+RotateTranslate Geometry::createTransform(float dx, float dy, float a) {
+  RotateTranslate out = {dx, dy, cosf(a), sinf(a)};
+  return out;
+}
+
+/**
+ * @param Transform a b2Vec2 copy by a RotateTranslate object
+ *
+ * @param in The input vector
+ * @param rt The transformation
+ *
+ * @return
+ */
+b2Vec2 Geometry::transform(const b2Vec2& in, const RotateTranslate& rt) {
+  b2Vec2 out;
+  out.x = in.x * rt.cos - in.y * rt.sin + rt.dx;
+  out.y = in.x * rt.sin + in.y * rt.cos + rt.dy;
+  return out;
+}
 };
-
-class DebugVisualization {
- private:
-  DebugVisualization();
-
- public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

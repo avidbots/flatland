@@ -1,0 +1,9 @@
+<!--
+Test launchfile for debug_visualization_test
+
+This file is used so that rosmaster is running when the test is executed,
+in order to test publish/subscribe
+-->
+<launch>
+  <test pkg="flatland_server" type="debug_visualization_test" test-name="debug_visualization_test"/>
+</launch>

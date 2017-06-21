@@ -12,7 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   std_msgs
-  tf
+  tf2
+  tf2_geometry_msgs
+  geometry_msgs
+  visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -31,15 +34,28 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 # OpenCV
 find_package(OpenCV REQUIRED)
 
+
+##############
+## coverage ##
+##############
+
+set(COVERAGE "OFF" CACHE STRING "Enable coverage generation.")
+
+message(STATUS "Using COVERAGE: ${COVERAGE}")
+if("${COVERAGE}" STREQUAL "ON")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+endif()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_lib
-  CATKIN_DEPENDS pluginlib roscpp std_msgs tf yaml-cpp
+  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs
   DEPENDS OpenCV YAML_CPP
 )
+
 
 ###########
 ## Build ##
@@ -56,6 +72,8 @@ include_directories(
 add_library(flatland_lib
   src/simulation_manager.cpp
   src/world.cpp
+  src/debug_visualization.cpp
+  src/geometry.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib
@@ -106,7 +124,6 @@ install(TARGETS flatland_server flatland_lib
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
 )
 
 # Install launchfiles
@@ -121,5 +138,12 @@ install(DIRECTORY launch
 if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gtest(null_test test/null.cpp)
+
+  catkin_add_gtest(geometry_test test/geometry_test.cpp)
+  target_link_libraries(geometry_test flatland_lib Box2D)
+
+  add_rostest_gtest(debug_visualization_test test/debug_visualization.test
+                    test/debug_visualization_test.cpp)
+  target_link_libraries(debug_visualization_test flatland_lib Box2D)
 
 endif()

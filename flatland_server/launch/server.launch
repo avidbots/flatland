@@ -15,4 +15,6 @@
     <param name="world_path" value="$(arg world_path)" />
     <param name="initial_rate" value="$(arg initial_rate)" />
   </node>
+
+  <node name="rviz" pkg="rviz" type="rviz"/>
 </launch>

@@ -20,8 +20,11 @@
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
   <depend>std_msgs</depend>
-  <depend>tf</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>yaml-cpp</depend>
+  <depend>visualization_msgs</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->
