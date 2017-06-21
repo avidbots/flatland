@@ -60,7 +60,6 @@ class World {
   b2World *physics_world_;
   b2Vec2 gravity_;
   std::vector<Layer *> layers_;
-  std::vector<Model *> models_;
 
   World();
   ~World();
