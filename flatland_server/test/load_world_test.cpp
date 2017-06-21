@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  flat_server_load_world_test.cpp
+ * @name  load_world_test.cpp
  * @brief Testing the load world functionality
  * @author Chunshang Li
  *
