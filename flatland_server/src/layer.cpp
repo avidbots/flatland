@@ -44,29 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
 #include <Box2D/Box2D.h>
-#include <string>
-#include <yaml-cpp/yaml.h>
-#include <opencv2/opencv.hpp>
-#include <flatland_server/layer.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
+#include <flatland_server/layer.h>
+#include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
+#include <opencv2/opencv.hpp>
+#include <string>
 
 namespace flatland_server {
 
-Layer::Layer(b2World *physics_world, 
-      const std::string &name, const cv::Mat &bitmap, 
-      const std::array<double, 4> &color, const std::array<double, 3> &origin,
-      const double &resolution, const double &occupied_thresh,
-      const double &free_thresh) : 
-      name_(name), 
-      color_(color), 
-      origin_(origin), 
-      resolution_(resolution), 
-      occupied_thresh_(occupied_thresh), 
+Layer::Layer(b2World *physics_world, const std::string &name,
+             const cv::Mat &bitmap, const std::array<double, 4> &color,
+             const std::array<double, 3> &origin, const double &resolution,
+             const double &occupied_thresh, const double &free_thresh)
+    : name_(name),
+      color_(color),
+      origin_(origin),
+      resolution_(resolution),
+      occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {
-
   bitmap.copyTo(bitmap_);
 
   b2BodyDef body_def;
@@ -80,13 +78,11 @@ Layer::Layer(b2World *physics_world,
   ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }
 
-Layer::~Layer() {
-  physics_body_->GetWorld()->DestroyBody(physics_body_);
-}
+Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
 
-Layer *Layer::make_layer(b2World *physics_world, 
-  boost::filesystem::path world_yaml_dir, YAML::Node layer_node) {
-  
+Layer *Layer::make_layer(b2World *physics_world,
+                         boost::filesystem::path world_yaml_dir,
+                         YAML::Node layer_node) {
   std::string name;
   cv::Mat bitmap;
   std::array<double, 4> color;
@@ -97,29 +93,24 @@ Layer *Layer::make_layer(b2World *physics_world,
 
   if (layer_node["name"]) {
     name = layer_node["name"].as<std::string>();
-  }
-  else {
+  } else {
     throw YAMLException("Invalid \"properties\" in " + name + " layer");
   }
 
   if (layer_node["map"]) {
-    map_yaml_path = 
-      boost::filesystem::path(layer_node["map"].as<std::string>());
-  }
-  else {
+    map_yaml_path =
+        boost::filesystem::path(layer_node["map"].as<std::string>());
+  } else {
     throw YAMLException("Invalid \"properties\" in " + name + " layer");
   }
 
-  if (layer_node["color"] &&
-    layer_node["color"].IsSequence()&&
-    layer_node["color"].size() == 4) {
-
+  if (layer_node["color"] && layer_node["color"].IsSequence() &&
+      layer_node["color"].size() == 4) {
     color[0] = layer_node["color"][0].as<double>();
     color[1] = layer_node["color"][1].as<double>();
     color[2] = layer_node["color"][2].as<double>();
     color[3] = layer_node["color"][3].as<double>();
-  }
-  else {
+  } else {
     throw YAMLException("Invalid \"color\" in " + name + " layer");
   }
 
@@ -134,38 +125,34 @@ Layer *Layer::make_layer(b2World *physics_world,
   try {
     yaml = YAML::LoadFile(map_yaml_path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + map_yaml_path.string(), 
-      e.msg, e.mark);
+    throw YAMLException("Error loading " + map_yaml_path.string(), e.msg,
+                        e.mark);
   }
 
   if (yaml["resolution"]) {
     resolution = yaml["resolution"].as<double>();
-  }
-  else {
+  } else {
     throw YAMLException("Invalid \"resolution\" in " + name + " layer");
   }
 
   if (yaml["origin"] && yaml["origin"].IsSequence() &&
-    yaml["origin"].size() == 3) {
+      yaml["origin"].size() == 3) {
     origin[0] = yaml["origin"][0].as<double>();
     origin[1] = yaml["origin"][1].as<double>();
     origin[2] = yaml["origin"][2].as<double>();
-  }
-  else {
-    throw YAMLException("Invalid \"origin\" in " + name+ " layer");
+  } else {
+    throw YAMLException("Invalid \"origin\" in " + name + " layer");
   }
 
   if (yaml["occupied_thresh"]) {
     occupied_thresh = yaml["occupied_thresh"].as<double>();
-  }
-  else {
-    throw YAMLException("Invalid \"occupied_thresh\" in " + name +" layer");
+  } else {
+    throw YAMLException("Invalid \"occupied_thresh\" in " + name + " layer");
   }
 
   if (yaml["free_thresh"]) {
     free_thresh = yaml["free_thresh"].as<double>();
-  }
-  else {
+  } else {
     throw YAMLException("Invalid \"free_thresh\" in " + name + " layer");
   }
 
@@ -182,20 +169,20 @@ Layer *Layer::make_layer(b2World *physics_world,
     }
 
     map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
-  }
-  else{
+  } else {
     throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
-  
-  return new Layer(physics_world, name, bitmap, color, origin, resolution, 
-    occupied_thresh, free_thresh);
+
+  return new Layer(physics_world, name, bitmap, color, origin, resolution,
+                   occupied_thresh, free_thresh);
 }
 
 void Layer::vectorize_bitmap() {
   cv::Mat padded_map, obstable_map;
   cv::inRange(bitmap_, occupied_thresh_, 1.0, obstable_map);
 
-  cv::copyMakeBorder(obstable_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT, 255);
+  cv::copyMakeBorder(obstable_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT,
+                     255);
 
   // loop through all the rows, looking at 2 at once
   for (int i = 0; i < padded_map.rows - 1; i++) {
@@ -213,18 +200,15 @@ void Layer::vectorize_bitmap() {
 
     // find all the walls, put the connected walls as a single line segment
     for (int j = 0; j <= diff.total(); j++) {
-
       bool edge_exists = false;
       if (j < diff.total()) {
-        edge_exists = diff.at<uint8_t>(0, j); // 255 maps to true
+        edge_exists = diff.at<uint8_t>(0, j);  // 255 maps to true
       }
 
       if (edge_exists && !started) {
         start = j;
         started = true;
-      } 
-      else if (started && !edge_exists) {
-
+      } else if (started && !edge_exists) {
         b2EdgeShape edge123;
         edge123.Set(b2Vec2(start, i), b2Vec2(j, i));
         extracted_edges.push_back(edge123);
@@ -234,7 +218,8 @@ void Layer::vectorize_bitmap() {
     }
   }
 
-  cv::copyMakeBorder(obstable_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT, 255);
+  cv::copyMakeBorder(obstable_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT,
+                     255);
 
   // loop through all the columns, looking at 2 at once
   for (int i = 0; i < padded_map.cols - 1; i++) {
@@ -247,9 +232,7 @@ void Layer::vectorize_bitmap() {
     int start = 0;
     bool started = false;
 
-
     for (int j = 0; j <= diff.total(); j++) {
-
       bool edge_exists = false;
       if (j < diff.total()) {
         edge_exists = diff.at<uint8_t>(j, 0);
@@ -258,9 +241,7 @@ void Layer::vectorize_bitmap() {
       if (edge_exists && !started) {
         start = j;
         started = true;
-      }
-      else if (started && !edge_exists) {
-
+      } else if (started && !edge_exists) {
         b2EdgeShape edge123;
         edge123.Set(b2Vec2(i, start), b2Vec2(i, j));
         extracted_edges.push_back(edge123);
@@ -273,8 +254,8 @@ void Layer::vectorize_bitmap() {
 
 void Layer::load_edges() {
   // The rotation is ignored
-  RotateTranslate transform = Geometry::createTransform(origin_[0], 
-    origin_[1], 0);
+  RotateTranslate transform =
+      Geometry::createTransform(origin_[0], origin_[1], 0);
 
   for (const auto &edge : extracted_edges) {
     b2EdgeShape edge_tf;

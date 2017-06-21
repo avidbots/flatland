@@ -47,54 +47,51 @@
 #ifndef FLATLAND_SERVER_EXCEPTIONS_H
 #define FLATLAND_SERVER_EXCEPTIONS_H
 
-#include <string>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
+#include <string>
 
 namespace flatland_server {
 
 class Exception : public std::runtime_error {
-  public:
-    Exception(const std::string &msg) : std::runtime_error(msg) {}
+ public:
+  Exception(const std::string &msg) : std::runtime_error(msg) {}
 };
 
 class YAMLException : public Exception {
-  public:
-    YAML::Mark yaml_cpp_mark_;
-    std::string msg_, yaml_cpp_msg_;
+ public:
+  YAML::Mark yaml_cpp_mark_;
+  std::string msg_, yaml_cpp_msg_;
 
+  YAMLException(const std::string &msg, const std::string &yaml_cpp_msg,
+                const YAML::Mark &yaml_cpp_mark)
+      : Exception(error_msg(msg, yaml_cpp_msg, yaml_cpp_mark)),
+        yaml_cpp_msg_(yaml_cpp_msg),
+        yaml_cpp_mark_(yaml_cpp_mark) {}
 
+  YAMLException(const std::string &msg) : Exception(msg), msg_(msg) {}
 
-    YAMLException(const std::string &msg, const std::string &yaml_cpp_msg, 
-      const YAML::Mark &yaml_cpp_mark) :
-      Exception(error_msg(msg, yaml_cpp_msg, yaml_cpp_mark)),
-      yaml_cpp_msg_(yaml_cpp_msg), yaml_cpp_mark_(yaml_cpp_mark){}
+ private:
+  static const std::string error_msg(const std::string &msg,
+                                     const std::string &yaml_cpp_msg,
+                                     const YAML::Mark &yaml_cpp_mark) {
+    std::stringstream output;
 
-    YAMLException(const std::string &msg) :
-      Exception(msg), msg_(msg){}
-      
-  private:
-    static const std::string error_msg(const std::string &msg,
-      const std::string &yaml_cpp_msg, 
-      const YAML::Mark &yaml_cpp_mark) {
-        std::stringstream output;
+    output << msg;
+    if (yaml_cpp_mark.pos == -1 && yaml_cpp_mark.line == -1 &&
+        yaml_cpp_mark.column == -1) {
+      output << " Error at Line " << yaml_cpp_mark.line + 1 << ", col "
+             << yaml_cpp_mark.column + 1;
+    }
 
-        output << msg;
-        if (yaml_cpp_mark.pos == -1 && 
-            yaml_cpp_mark.line == -1 && 
-            yaml_cpp_mark.column == -1) {
-          output << " Error at Line " << yaml_cpp_mark.line + 1 << ", col "
-                 << yaml_cpp_mark.column + 1;
-        }
+    if (yaml_cpp_msg.size() > 0) {
+      output << " " << yaml_cpp_msg;
+    }
 
-        if (yaml_cpp_msg.size() > 0) {
-          output << " " << yaml_cpp_msg;
-        }
-
-        return output.str();
-      }
+    return output.str();
+  }
 };
 
-}; // namespace flatland_server
+};  // namespace flatland_server
 
 #endif  // FLATLAND_SERVER_WORLD_H

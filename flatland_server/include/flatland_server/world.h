@@ -48,10 +48,10 @@
 #define FLATLAND_SERVER_WORLD_H
 
 #include <Box2D/Box2D.h>
-#include <string>
-#include <vector>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <string>
+#include <vector>
 
 namespace flatland_server {
 class World {
@@ -59,15 +59,15 @@ class World {
   std::string yaml_path;
   b2World *physics_world_;
   b2Vec2 gravity_;
-  std::vector<Layer*> layers_;
-  std::vector<Model*> models_;
+  std::vector<Layer *> layers_;
+  std::vector<Model *> models_;
 
   World();
   ~World();
 
   void load_layers(std::string yaml_path);
   void load_models(std::string yaml_path);
-  
+
   static World *make_world(std::string yaml_path);
 };
 };      // namespace flatland_server

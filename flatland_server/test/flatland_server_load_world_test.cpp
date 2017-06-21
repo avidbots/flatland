@@ -44,22 +44,21 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <gtest/gtest.h>
-#include <flatland_server/world.h>
-#include <flatland_server/exceptions.h>
 #include <Box2D/Box2D.h>
+#include <flatland_server/exceptions.h>
+#include <flatland_server/world.h>
+#include <gtest/gtest.h>
+#include <ros/package.h>
+#include <ros/ros.h>
 #include <boost/filesystem.hpp>
-#include <string>
 #include <regex>
+#include <string>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-class FlatlandServerLoadWorldTest : public ::testing::Test
-{
-protected:
+class FlatlandServerLoadWorldTest : public ::testing::Test {
+ protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
 
@@ -76,16 +75,14 @@ protected:
       delete w;
 
       FAIL() << "Expected YAMLException, it passed instead";
-    }
-    catch(YAMLException &e) {
+    } catch (YAMLException &e) {
       // do a regex match against error messages
       std::cmatch match;
       std::regex regex(regex_str);
-      EXPECT_TRUE(std::regex_match(e.what(), match, regex)) <<
-        "'" + std::string(e.what()) + "'" + " did not match against " + "'" + 
-        regex_str + "'";
-    }
-    catch (...) {
+      EXPECT_TRUE(std::regex_match(e.what(), match, regex))
+          << "'" + std::string(e.what()) + "'" + " did not match against " +
+                 "'" + regex_str + "'";
+    } catch (...) {
       FAIL() << "Expected YAMLException, another exception was caught instead";
     }
   }
@@ -96,56 +93,55 @@ protected:
   }
 
   // return the index if found, -1 otherwise
-  int does_edge_exist(const b2EdgeShape &edge, 
-    const std::vector<std::pair<b2Vec2, b2Vec2>> &edges) {
-      for (int i = 0; i < edges.size(); i++) {
-        auto e = edges[i];
-        if ((float_cmp(edge.m_vertex1.x, e.first.x) &&
-             float_cmp(edge.m_vertex1.y, e.first.y) &&
-             float_cmp(edge.m_vertex2.x, e.second.x) &&
-             float_cmp(edge.m_vertex2.y, e.second.y)) ||
+  int does_edge_exist(const b2EdgeShape &edge,
+                      const std::vector<std::pair<b2Vec2, b2Vec2>> &edges) {
+    for (int i = 0; i < edges.size(); i++) {
+      auto e = edges[i];
+      if ((float_cmp(edge.m_vertex1.x, e.first.x) &&
+           float_cmp(edge.m_vertex1.y, e.first.y) &&
+           float_cmp(edge.m_vertex2.x, e.second.x) &&
+           float_cmp(edge.m_vertex2.y, e.second.y)) ||
 
-            (float_cmp(edge.m_vertex1.x, e.second.x) &&
-             float_cmp(edge.m_vertex1.y, e.second.y) &&
-             float_cmp(edge.m_vertex2.x, e.first.x) &&
-             float_cmp(edge.m_vertex2.y, e.first.y))) {
-              return i;
-            }
+          (float_cmp(edge.m_vertex1.x, e.second.x) &&
+           float_cmp(edge.m_vertex1.y, e.second.y) &&
+           float_cmp(edge.m_vertex2.x, e.first.x) &&
+           float_cmp(edge.m_vertex2.y, e.first.y))) {
+        return i;
       }
-    
+    }
+
     return -1;
   }
 
-  bool does_edges_exactly_match(const std::vector<b2EdgeShape> &edges1,
-    const std::vector<std::pair<b2Vec2, b2Vec2>> &edges2) {
+  bool does_edges_exactly_match(
+      const std::vector<b2EdgeShape> &edges1,
+      const std::vector<std::pair<b2Vec2, b2Vec2>> &edges2) {
+    std::vector<std::pair<b2Vec2, b2Vec2>> edges_cpy = edges2;
+    for (int i = 0; i < edges1.size(); i++) {
+      auto e = edges1[i];
+      int ret_idx = does_edge_exist(e, edges_cpy);
 
-      std::vector<std::pair<b2Vec2, b2Vec2>> edges_cpy = edges2;
-      for (int i = 0; i < edges1.size(); i++) {
-        auto e = edges1[i];
-        int ret_idx = does_edge_exist(e, edges_cpy);
-
-        if (ret_idx < 0) {
-          b2Vec2 v1_tf = e.m_vertex1;
-          b2Vec2 v2_tf = e.m_vertex2;
-          return false;
-        }
-
-        edges_cpy.erase(edges_cpy.begin() + ret_idx);
-      }
-
-      if (edges_cpy.size() == 0) {
-        return true;
-      } else {
+      if (ret_idx < 0) {
+        b2Vec2 v1_tf = e.m_vertex1;
+        b2Vec2 v2_tf = e.m_vertex2;
         return false;
       }
+
+      edges_cpy.erase(edges_cpy.begin() + ret_idx);
     }
+
+    if (edges_cpy.size() == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 };
 
 // Declare a test
-TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
-{
-  world_yaml = this_file_dir / 
-    fs::path("load_world_tests/simple_test_A/world.yaml");
+TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::make_world(world_yaml.string());
   w->load_layers(world_yaml.string());
   w->load_models(world_yaml.string());
@@ -184,154 +180,144 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A)
 
   // check that bitmap vectorization is performed correctly
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(5, 0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(4, 1)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(3, 2)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(3, 3)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(4, 4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 5), b2Vec2(5, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(5, 0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(4, 1)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(3, 2)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(3, 3)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(4, 4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 5), b2Vec2(5, 5)),
 
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(1, 4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(2, 3)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 3)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(4, 4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 0), b2Vec2(5, 5))
-  };
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(1, 4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(2, 3)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 3)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(4, 4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 0), b2Vec2(5, 5))};
 
-  EXPECT_EQ(w->layers_[0]->extracted_edges.size(), 
-    layer0_expected_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(w->layers_[0]->extracted_edges, 
-    layer0_expected_edges));
+  EXPECT_EQ(w->layers_[0]->extracted_edges.size(),
+            layer0_expected_edges.size());
+  EXPECT_TRUE(does_edges_exactly_match(w->layers_[0]->extracted_edges,
+                                       layer0_expected_edges));
 
   std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(1, 0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 2)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 2), b2Vec2(3, 2)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 3), b2Vec2(4, 1)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(1, 1)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 0), b2Vec2(1, 1)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(4, 3)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 5), b2Vec2(2, 3)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(3, 4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 5), b2Vec2(2, 5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(1, 5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(5, 4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(4, 5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 4), b2Vec2(5, 5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 5), b2Vec2(5, 5))
-  };
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(1, 0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 2)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 2), b2Vec2(3, 2)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 3), b2Vec2(4, 1)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(1, 1)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 0), b2Vec2(1, 1)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(4, 3)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 5), b2Vec2(2, 3)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(3, 4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 5), b2Vec2(2, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(1, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(5, 4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(4, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 4), b2Vec2(5, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 5), b2Vec2(5, 5))};
 
-  EXPECT_EQ(w->layers_[1]->extracted_edges.size(), 
-    layer1_expected_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(w->layers_[1]->extracted_edges, 
-    layer1_expected_edges));
+  EXPECT_EQ(w->layers_[1]->extracted_edges.size(),
+            layer1_expected_edges.size());
+  EXPECT_TRUE(does_edges_exactly_match(w->layers_[1]->extracted_edges,
+                                       layer1_expected_edges));
 
   // check that bitmap is transformed correctly
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_transformed_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.30, 0.20)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.25, 0.15)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.10), b2Vec2(0.20, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.05), b2Vec2(0.20, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.00), b2Vec2(0.25, 0.00)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, -0.05), b2Vec2(0.30, -0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.30, 0.20)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.25, 0.15)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.10), b2Vec2(0.20, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.05), b2Vec2(0.20, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.00), b2Vec2(0.25, 0.00)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, -0.05), b2Vec2(0.30, -0.05)),
 
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, -0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.00)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.10), b2Vec2(0.15, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.10), b2Vec2(0.20, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.15), b2Vec2(0.25, 0.00)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.30, 0.20), b2Vec2(0.30, -0.05))
-  };
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, -0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.00)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.10), b2Vec2(0.15, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.10), b2Vec2(0.20, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.15), b2Vec2(0.25, 0.00)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.30, 0.20), b2Vec2(0.30, -0.05))};
 
   std::vector<b2EdgeShape> layer0_transformed_edges;
-  for (b2Fixture* f = w->layers_[0]->physics_body_->GetFixtureList(); 
-    f; f = f->GetNext()) {
-      b2EdgeShape e = *(dynamic_cast<b2EdgeShape*> (f->GetShape()));
-      layer0_transformed_edges.push_back(e);
+  for (b2Fixture *f = w->layers_[0]->physics_body_->GetFixtureList(); f;
+       f = f->GetNext()) {
+    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+    layer0_transformed_edges.push_back(e);
 
     b2Vec2 v1_tf = e.m_vertex1;
     b2Vec2 v2_tf = e.m_vertex2;
   }
-  EXPECT_EQ(layer0_transformed_edges.size(), 
-    layer0_expected_transformed_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(layer0_transformed_edges, 
-    layer0_expected_transformed_edges));
+  EXPECT_EQ(layer0_transformed_edges.size(),
+            layer0_expected_transformed_edges.size());
+  EXPECT_TRUE(does_edges_exactly_match(layer0_transformed_edges,
+                                       layer0_expected_transformed_edges));
 
   // layer[1] has origin of [0, 0, 0], so there should be no transform, just
   // apply the inversion of y coordinates and scale by resolution
   std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_transformed_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(1.5, 7.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(0.0, 4.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 4.5), b2Vec2(4.5, 4.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4.5, 4.5), b2Vec2(4.5, 1.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 3.0), b2Vec2(6.0, 6.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 6.0), b2Vec2(1.5, 6.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 7.5), b2Vec2(1.5, 6.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(3.0, 3.0), b2Vec2(6.0, 3.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(3.0, 0.0), b2Vec2(3.0, 3.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 1.5), b2Vec2(4.5, 1.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 0.0), b2Vec2(3.0, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 1.5), b2Vec2(1.5, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 1.5), b2Vec2(7.5, 1.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 1.5), b2Vec2(6.0, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(7.5, 1.5), b2Vec2(7.5, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 0.0), b2Vec2(7.5, 0.0))
-  };
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(1.5, 7.5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(0.0, 4.5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 4.5), b2Vec2(4.5, 4.5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(4.5, 4.5), b2Vec2(4.5, 1.5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 3.0), b2Vec2(6.0, 6.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 6.0), b2Vec2(1.5, 6.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 7.5), b2Vec2(1.5, 6.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(3.0, 3.0), b2Vec2(6.0, 3.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(3.0, 0.0), b2Vec2(3.0, 3.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 1.5), b2Vec2(4.5, 1.5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 0.0), b2Vec2(3.0, 0.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 1.5), b2Vec2(1.5, 0.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 1.5), b2Vec2(7.5, 1.5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 1.5), b2Vec2(6.0, 0.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(7.5, 1.5), b2Vec2(7.5, 0.0)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 0.0), b2Vec2(7.5, 0.0))};
 
   std::vector<b2EdgeShape> layer1_transformed_edges;
-  for (b2Fixture* f = w->layers_[1]->physics_body_->GetFixtureList(); 
-    f; f = f->GetNext()) {
-      b2EdgeShape e = *(dynamic_cast<b2EdgeShape*> (f->GetShape()));
-      layer1_transformed_edges.push_back(e);
+  for (b2Fixture *f = w->layers_[1]->physics_body_->GetFixtureList(); f;
+       f = f->GetNext()) {
+    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+    layer1_transformed_edges.push_back(e);
   }
-  EXPECT_EQ(layer1_transformed_edges.size(), 
-    layer1_expected_transformed_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(layer1_transformed_edges, 
-    layer1_expected_transformed_edges));
+  EXPECT_EQ(layer1_transformed_edges.size(),
+            layer1_expected_transformed_edges.size());
+  EXPECT_TRUE(does_edges_exactly_match(layer1_transformed_edges,
+                                       layer1_expected_transformed_edges));
 
   delete w;
 }
 
-TEST_F(FlatlandServerLoadWorldTest, wrong_world_path)
-{
-  world_yaml = this_file_dir / 
-    fs::path("load_world_tests/random_path/world.yaml");
+TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
   test_yaml_fail("Error loading.*world.yaml.*bad file");
 }
 
-TEST_F(FlatlandServerLoadWorldTest, world_invalid_A)
-{
-  world_yaml = this_file_dir / 
-    fs::path("load_world_tests/world_invalid_A/world.yaml");
+TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
   test_yaml_fail("Invalid world param \"properties\"");
 }
 
-TEST_F(FlatlandServerLoadWorldTest, world_invalid_B)
-{
-  world_yaml = this_file_dir / 
-    fs::path("load_world_tests/world_invalid_B/world.yaml");
+TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail("Invalid \"color\" in 2d layer");
 }
 
-TEST_F(FlatlandServerLoadWorldTest, map_invalid_A)
-{
-  world_yaml = this_file_dir / 
-    fs::path("load_world_tests/map_invalid_A/world.yaml");
+TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
   test_yaml_fail("Invalid \"origin\" in 2d layer");
 }
 
-TEST_F(FlatlandServerLoadWorldTest, map_invalid_B)
-{
-  world_yaml = this_file_dir / 
-    fs::path("load_world_tests/map_invalid_B/world.yaml");
+TEST_F(FlatlandServerLoadWorldTest, map_invalid_B) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
   test_yaml_fail("Failed to load .*.png");
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

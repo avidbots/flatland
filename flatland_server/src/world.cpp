@@ -44,20 +44,18 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
-#include <string>
-#include <yaml-cpp/yaml.h>
-#include <map>
-#include <boost/filesystem.hpp>
 #include <Box2D/Box2D.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/world.h>
+#include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
+#include <boost/filesystem.hpp>
+#include <map>
+#include <string>
 
 namespace flatland_server {
 
-World::World  () : 
-  gravity_(0, 0)  {
-  
+World::World() : gravity_(0, 0) {
   physics_world_ = new b2World(gravity_);
 
   ROS_INFO_NAMED("World", "World constructed");
@@ -68,30 +66,24 @@ World::~World() {
     delete layers_[i];
   }
 
-  for (int i = 0; i < models_.size(); i++) {
-    delete models_[i];
-  }
-  
   delete physics_world_;
 }
 
 World *World::make_world(std::string yaml_path) {
-  
   boost::filesystem::path path(yaml_path);
 
   // parse the world YAML file
   YAML::Node yaml;
 
   try {
-     yaml = YAML::LoadFile(path.string());
+    yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
     throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
   }
-  
+
   if (yaml["properties"] && yaml["properties"].IsMap()) {
     // TODO (Chunshang Li): parse properties
-  }
-  else {
+  } else {
     throw YAMLException("Invalid world param \"properties\"");
   }
 
@@ -116,31 +108,12 @@ void World::load_layers(std::string yaml_path) {
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
     Layer *layer = Layer::make_layer(physics_world_, path.parent_path(),
-      yaml["layers"][i]);
+                                     yaml["layers"][i]);
 
     layers_.push_back(layer);
   }
 }
 
-void World::load_models(std::string yaml_path) {
-  boost::filesystem::path path(yaml_path);
+void World::load_models(std::string yaml_path) {}
 
-  YAML::Node yaml;
-
-  try {
-     yaml = YAML::LoadFile(path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
-  }
-
-  if (!yaml["models"] || !yaml["models"].IsSequence()) {
-    throw YAMLException("Invalid world param \"models\"");
-  }
-
-  // loop through each layer and parse the data
-  for (int i = 0; i < yaml["models"].size(); i++) {
-    // TODO (Chunshang Li): add models
-  }
-}
-
-}; // namespace flatland_server
+};  // namespace flatland_server

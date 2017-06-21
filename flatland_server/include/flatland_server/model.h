@@ -49,8 +49,7 @@
 
 namespace flatland_server {
 class Model {
-
-public:
+ public:
   Model();
   ~Model();
 

@@ -48,43 +48,44 @@
 #define FLATLAND_SERVER_LAYER_H
 
 #include <Box2D/Box2D.h>
-#include <string>
 #include <yaml-cpp/yaml.h>
-#include <opencv2/opencv.hpp>
 #include <boost/filesystem.hpp>
+#include <opencv2/opencv.hpp>
+#include <string>
 
 namespace flatland_server {
 class Layer {
  public:
-    std::string name_;
-    std::array<double, 4> color_; // r, g, b, a
-    std::array<double, 3> origin_;
-    cv::Mat bitmap_;
-    double resolution_;
-    double occupied_thresh_;
-    double free_thresh_;
+  std::string name_;
+  std::array<double, 4> color_;  // r, g, b, a
+  std::array<double, 3> origin_;
+  cv::Mat bitmap_;
+  double resolution_;
+  double occupied_thresh_;
+  double free_thresh_;
 
-    b2Body *physics_body_;
+  b2Body *physics_body_;
 
-    // edges extracted from bitmap
-    std::vector<b2EdgeShape> extracted_edges;
+  // edges extracted from bitmap
+  std::vector<b2EdgeShape> extracted_edges;
 
-    Layer(b2World *physics_world, const std::string &name,
-      const cv::Mat &bitmap, const std::array<double, 4> &color, 
-      const std::array<double, 3> &origin, const double &resolution,
-      const double &occupied_thresh, const double &free_thresh);
-    ~Layer();
+  Layer(b2World *physics_world, const std::string &name, const cv::Mat &bitmap,
+        const std::array<double, 4> &color, const std::array<double, 3> &origin,
+        const double &resolution, const double &occupied_thresh,
+        const double &free_thresh);
+  ~Layer();
 
   /* This class should be non-copyable. This will cause the destructor to be
       called twice for a given b2Body*/
-    Layer(const Layer&) = delete;
-    Layer& operator=(const Layer&) = delete;
+  Layer(const Layer &) = delete;
+  Layer &operator=(const Layer &) = delete;
 
-    void vectorize_bitmap();
-    void load_edges();
+  void vectorize_bitmap();
+  void load_edges();
 
-    static Layer *make_layer(b2World *physics_world, 
-      boost::filesystem::path world_yaml_dir, YAML::Node layer_node);
+  static Layer *make_layer(b2World *physics_world,
+                           boost::filesystem::path world_yaml_dir,
+                           YAML::Node layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

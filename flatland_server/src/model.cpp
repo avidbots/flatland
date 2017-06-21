@@ -48,10 +48,8 @@
 
 namespace flatland_server {
 
-Model::Model() {
-}
+Model::Model() {}
 
-Model::~Model() {
-}
+Model::~Model() {}
 
 };  // namespace flatland_server

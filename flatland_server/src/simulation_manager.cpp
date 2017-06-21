@@ -45,11 +45,11 @@
  */
 
 #include "flatland_server/simulation_manager.h"
-#include <ros/ros.h>
-#include <string>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/world.h>
+#include <ros/ros.h>
+#include <string>
 #include "flatland_server/debug_visualization.h"
 
 namespace flatland_server {
@@ -59,11 +59,10 @@ namespace flatland_server {
  * @param world_file   The path to the world.yaml file we wish to load
  * @param initial_rate The physics step frequency in Hz
  */
-SimulationManager::SimulationManager(std::string world_file,
-                                     float initial_rate)
+SimulationManager::SimulationManager(std::string world_file, float initial_rate)
     : initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
-  
+
   world_ = World::make_world(world_file);
   world_->load_layers(world_file);
   world_->load_models(world_file);
