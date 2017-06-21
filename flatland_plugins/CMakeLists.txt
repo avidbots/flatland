@@ -44,7 +44,7 @@ endif()
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES flatland_plugins
+  LIBRARIES flatland_plugins_lib
   CATKIN_DEPENDS pluginlib roscpp
   DEPENDS YAML_CPP
 )
@@ -60,12 +60,12 @@ include_directories(
 )
 
 # Declare a C++ library
-add_library(flatland_plugins
+add_library(flatland_plugins_lib
   src/laser.cpp
 )
 
-add_dependencies(flatland_plugins ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(flatland_plugins
+add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(flatland_plugins_lib
   ${catkin_LIBRARIES}
   Box2D
   yaml-cpp
@@ -85,26 +85,24 @@ target_link_libraries(flatland_plugins
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
-## Mark executables and/or libraries for installation
-# install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+# Mark executables and/or libraries for installation
+install(TARGETS flatland_plugins_lib
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+# Mark cpp header files for installation
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
 
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
+# Install launchfiles
+install(DIRECTORY launch
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 
 #############
 ## Testing ##
@@ -118,3 +116,11 @@ target_link_libraries(flatland_plugins
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+if(CATKIN_ENABLE_TESTING)
+
+  add_rostest_gtest(laser_test test/laser_test.test
+                    test/laser_test.cpp)
+  target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
+
+endif()
