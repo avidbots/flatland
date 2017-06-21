@@ -52,14 +52,12 @@
 namespace flatland_plugins {
 
 class Laser : public flatland_server::ModelBodyPlugin {
-
-public:
+ public:
   void initialize(ros::NodeHandle handle, YAML::Node &config);
   void update(double timestep);
   void collisionWithMap(b2EdgeShape &edge);
   void collisionWithModel(void *model);
 };
-
 };
 
 #endif

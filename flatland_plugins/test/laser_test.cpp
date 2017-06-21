@@ -44,28 +44,26 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtest/gtest.h>
-#include <ros/ros.h>
-#include <pluginlib/class_loader.h>
-#include <flatland_server/model_body_plugin.h>
 #include <flatland_plugins/laser.h>
+#include <flatland_server/model_body_plugin.h>
+#include <gtest/gtest.h>
+#include <pluginlib/class_loader.h>
+#include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
 TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
-  pluginlib::ClassLoader<flatland_server::ModelBodyPlugin> 
-    loader("flatland_server", "flatland_server::ModelBodyPlugin");
+  pluginlib::ClassLoader<flatland_server::ModelBodyPlugin> loader(
+      "flatland_server", "flatland_server::ModelBodyPlugin");
 
   try {
-   boost::shared_ptr<flatland_server::ModelBodyPlugin> laser = 
-      loader.createInstance("flatland_plugins::Laser");
+    boost::shared_ptr<flatland_server::ModelBodyPlugin> laser =
+        loader.createInstance("flatland_plugins::Laser");
 
     ros::NodeHandle handle;
     YAML::Node node;
 
     laser->initialize(handle, node);
-  }
-  catch(pluginlib::PluginlibException& e)
-  { 
+  } catch (pluginlib::PluginlibException& e) {
     printf("%s", e.what());
     // FAIL() << "Failed to load Laser plugin. " << e.what();
   }

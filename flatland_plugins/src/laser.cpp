@@ -44,9 +44,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <pluginlib/class_list_macros.h>
-#include <flatland_server/model_body_plugin.h>
 #include <flatland_plugins/laser.h>
+#include <flatland_server/model_body_plugin.h>
+#include <pluginlib/class_list_macros.h>
 
 namespace flatland_plugins {
 
@@ -58,16 +58,10 @@ void Laser::update(double timestep) {
   ROS_INFO_NAMED("LaserPlugin", "Updated");
 }
 
-void Laser::collisionWithMap(b2EdgeShape &edge) {
+void Laser::collisionWithMap(b2EdgeShape &edge) {}
 
-
-}
-
-void Laser::collisionWithModel(void *model) {
-
-}
-
+void Laser::collisionWithModel(void *model) {}
 };
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::Laser,
-  flatland_server::ModelBodyPlugin)
+                       flatland_server::ModelBodyPlugin)
