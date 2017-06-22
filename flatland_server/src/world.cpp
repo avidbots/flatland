@@ -87,7 +87,10 @@ World *World::make_world(std::string yaml_path) {
     throw YAMLException("Invalid world param \"properties\"");
   }
 
-  return new World();
+  World *w = new World();
+  w->load_layers(yaml_path);
+  w->load_models(yaml_path);
+  return w;
 }
 
 void World::load_layers(std::string yaml_path) {

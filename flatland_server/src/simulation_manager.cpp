@@ -64,9 +64,7 @@ SimulationManager::SimulationManager(std::string world_file, float initial_rate)
   ROS_INFO_NAMED("SimMan", "Initializing");
 
   world_ = World::make_world(world_file);
-  world_->load_layers(world_file);
-  world_->load_models(world_file);
-
+  
   // Todo: Initialize SimTime class here once written
 }
 

@@ -52,6 +52,7 @@
 #include <yaml-cpp/yaml.h>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <flatland_server/debug_visualization.h>
 
 namespace flatland_server {
 
@@ -74,6 +75,9 @@ Layer::Layer(b2World *physics_world, const std::string &name,
 
   vectorize_bitmap();
   load_edges();
+
+  DebugVisualization::get().visualize(std::string("layer_")+name, 
+    physics_body_ , color_[0], color_[1], color_[2], 1);
 
   ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }
@@ -178,11 +182,20 @@ Layer *Layer::make_layer(b2World *physics_world,
 }
 
 void Layer::vectorize_bitmap() {
-  cv::Mat padded_map, obstable_map;
-  cv::inRange(bitmap_, occupied_thresh_, 1.0, obstable_map);
+  cv::Mat padded_map, obstacle_map;
 
-  cv::copyMakeBorder(obstable_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT,
-                     255);
+  // thresholds the map, values between the occupied threshold and 1.0 are
+  // considered to be occupied
+  cv::inRange(bitmap_, occupied_thresh_, 1.0, obstacle_map);
+
+  // cv::namedWindow( "Display window" );
+  // cv::imshow( "Display window", bitmap_ );
+  // cv::waitKey(0);
+
+  // pad the top and bottom of the map each with an empty row (255=white). This 
+  // helps to look at the transition from one row of pixel to another
+  cv::copyMakeBorder(obstacle_map, padded_map, 1, 1, 0, 0, 
+    cv::BORDER_CONSTANT, 255);
 
   // loop through all the rows, looking at 2 at once
   for (int i = 0; i < padded_map.rows - 1; i++) {
@@ -218,7 +231,8 @@ void Layer::vectorize_bitmap() {
     }
   }
 
-  cv::copyMakeBorder(obstable_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT,
+  // pad the left and right of the map each with an empty column (255).
+  cv::copyMakeBorder(obstacle_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT,
                      255);
 
   // loop through all the columns, looking at 2 at once
@@ -253,7 +267,7 @@ void Layer::vectorize_bitmap() {
 }
 
 void Layer::load_edges() {
-  // The rotation is ignored
+  // rotation from the map yaml origin is ignored
   RotateTranslate transform =
       Geometry::createTransform(origin_[0], origin_[1], 0);
 
