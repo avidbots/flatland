@@ -45,6 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/layer.h>
@@ -52,7 +53,6 @@
 #include <yaml-cpp/yaml.h>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include <flatland_server/debug_visualization.h>
 
 namespace flatland_server {
 
@@ -189,10 +189,10 @@ void Layer::vectorize_bitmap() {
   // cv::imshow( "Display window", bitmap_ );
   // cv::waitKey(0);
 
-  // pad the top and bottom of the map each with an empty row (255=white). This 
+  // pad the top and bottom of the map each with an empty row (255=white). This
   // helps to look at the transition from one row of pixel to another
-  cv::copyMakeBorder(obstacle_map, padded_map, 1, 1, 0, 0, 
-    cv::BORDER_CONSTANT, 255);
+  cv::copyMakeBorder(obstacle_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT,
+                     255);
 
   // loop through all the rows, looking at 2 at once
   for (int i = 0; i < padded_map.rows - 1; i++) {

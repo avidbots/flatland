@@ -142,7 +142,7 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
 
 /**
  * This test loads the world, layers, models (TODO) from the given world
- * yaml file and checks that all configurations, data, and calculations are 
+ * yaml file and checks that all configurations, data, and calculations are
  * correct after instantiation
  */
 TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
@@ -204,7 +204,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_EQ(w->layers_[0]->extracted_edges.size(),
             layer0_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(w->layers_[0]->extracted_edges,
-                                       layer0_expected_edges));
+                                     layer0_expected_edges));
 
   std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(1, 0)),
@@ -227,10 +227,10 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_EQ(w->layers_[1]->extracted_edges.size(),
             layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(w->layers_[1]->extracted_edges,
-                                       layer1_expected_edges));
+                                     layer1_expected_edges));
 
   // check that bitmap is transformed correctly. This involves flipping the
-  // y coordinates, applying the resolution, and apply the translation 
+  // y coordinates, applying the resolution, and apply the translation
   // with respect to the map origin
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_transformed_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.30, 0.20)),
@@ -259,7 +259,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_EQ(layer0_transformed_edges.size(),
             layer0_expected_transformed_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer0_transformed_edges,
-                                       layer0_expected_transformed_edges));
+                                     layer0_expected_transformed_edges));
 
   // layer[1] has origin of [0, 0, 0], so there should be no transform, just
   // apply the inversion of y coordinates and scale by resolution
@@ -290,13 +290,13 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_EQ(layer1_transformed_edges.size(),
             layer1_expected_transformed_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_transformed_edges,
-                                       layer1_expected_transformed_edges));
+                                     layer1_expected_transformed_edges));
 
   delete w;
 }
 
 /**
- * This test tries to loads a non-existent world yaml file. It should throw 
+ * This test tries to loads a non-existent world yaml file. It should throw
  * an exception
  */
 TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
@@ -305,9 +305,9 @@ TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
   test_yaml_fail("Error loading.*world.yaml.*bad file");
 }
 
-/** 
- * This test tries to loads a invalid world yaml file. It should throw 
- * an exception. 
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
  */
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
   world_yaml =
@@ -316,8 +316,8 @@ TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
 }
 
 /**
- * This test tries to loads a invalid world yaml file. It should throw 
- * an exception. 
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
  */
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
   world_yaml =
@@ -326,7 +326,7 @@ TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
 }
 
 /**
- * This test tries to loads valid world yaml file which in turn tries to 
+ * This test tries to loads valid world yaml file which in turn tries to
  * load a invalid map yaml file. It should throw an exception.
  */
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
@@ -335,7 +335,7 @@ TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
   test_yaml_fail("Invalid \"origin\" in 2d layer");
 }
 
-/** 
+/**
  * This test tries to loads valid world yaml file which in turn load a map yaml
  * file which then inturn tries to load a non-exists map image file. It should
  * throw an exception

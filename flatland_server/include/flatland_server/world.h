@@ -73,14 +73,14 @@ class World {
   ~World();
 
   /**
-   * @brief load layers into the world. Throws yaml-cpp exceptions and 
+   * @brief load layers into the world. Throws yaml-cpp exceptions and
    * flatland server exceptions.
    * @param[in] yaml_path Path to the world yaml file containing list of layers
    */
   void load_layers(std::string yaml_path);
 
   /**
-   * @brief load models into the world. Throws yaml-cpp exceptions and 
+   * @brief load models into the world. Throws yaml-cpp exceptions and
    * flatland server exceptions.
    * @param[in] yaml_path Path to the world yaml file containing list of models
    */

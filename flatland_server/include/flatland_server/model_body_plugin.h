@@ -54,7 +54,6 @@
 namespace flatland_server {
 class ModelBodyPlugin {
  public:
- 
   /**
    * @param handle The ROS nodehandle for this plugin instance
    * @param config The yaml config file for this plugin

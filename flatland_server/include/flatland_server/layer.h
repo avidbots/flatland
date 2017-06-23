@@ -66,7 +66,7 @@ class Layer {
 
   b2Body *physics_body_;
 
-  std::vector<b2EdgeShape> extracted_edges; // edges extracted from bitmap
+  std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
 
   /**
    * @brief Constructor for the Layer class. All data required for
@@ -85,7 +85,7 @@ class Layer {
         const std::array<double, 4> &color, const std::array<double, 3> &origin,
         const double &resolution, const double &occupied_thresh,
         const double &free_thresh);
-        
+
   /**
    * @brief Destructor for the layer class
    */
