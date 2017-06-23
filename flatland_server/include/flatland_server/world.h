@@ -61,12 +61,36 @@ class World {
   b2Vec2 gravity_;
   std::vector<Layer *> layers_;
 
+  /**
+   * @brief Constructor for the world class. All data required for
+   * initialization should be passed in here
+   */
   World();
+
+  /**
+   * @brief Destructor for the world class
+   */
   ~World();
 
+  /**
+   * @brief load layers into the world. Throws yaml-cpp exceptions and 
+   * flatland server exceptions.
+   * @param[in] yaml_path Path to the world yaml file containing list of layers
+   */
   void load_layers(std::string yaml_path);
+
+  /**
+   * @brief load models into the world. Throws yaml-cpp exceptions and 
+   * flatland server exceptions.
+   * @param[in] yaml_path Path to the world yaml file containing list of models
+   */
   void load_models(std::string yaml_path);
 
+  /**
+   * @brief factory method to create a instance of the world class. Cleans all
+   * the inputs before instantiation of the class.
+   * @param[in] yaml_path Path to the world yaml file
+   */
   static World *make_world(std::string yaml_path);
 };
 };      // namespace flatland_server
