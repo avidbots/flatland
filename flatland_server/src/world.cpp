@@ -110,8 +110,8 @@ void World::load_layers(std::string yaml_path) {
 
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer = Layer::make_layer(this, i, path.parent_path(),
-                                     yaml["layers"][i]);
+    Layer *layer =
+        Layer::make_layer(this, i, path.parent_path(), yaml["layers"][i]);
 
     layers_.push_back(layer);
   }

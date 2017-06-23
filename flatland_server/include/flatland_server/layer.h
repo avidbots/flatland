@@ -48,11 +48,11 @@
 #define FLATLAND_SERVER_LAYER_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/world.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
-#include <flatland_server/world.h>
 
 namespace flatland_server {
 

@@ -176,8 +176,8 @@ Layer *Layer::make_layer(World *world, uint8_t index,
     throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
 
-  return new Layer(world, index, name, bitmap, color, origin,
-                   resolution, occupied_thresh, free_thresh);
+  return new Layer(world, index, name, bitmap, color, origin, resolution,
+                   occupied_thresh, free_thresh);
 }
 
 void Layer::vectorize_bitmap() {
