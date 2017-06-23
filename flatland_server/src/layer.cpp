@@ -56,11 +56,12 @@
 
 namespace flatland_server {
 
-Layer::Layer(b2World *physics_world, uint8_t index, const std::string &name,
+Layer::Layer(World *world, uint8_t index, const std::string &name,
              const cv::Mat &bitmap, const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
              double occupied_thresh, double free_thresh)
-    : index_(index),
+    : world_(world),
+      index_(index),
       name_(name),
       color_(color),
       origin_(origin),
@@ -72,7 +73,7 @@ Layer::Layer(b2World *physics_world, uint8_t index, const std::string &name,
   b2BodyDef body_def;
   body_def.type = b2_staticBody;
 
-  physics_body_ = physics_world->CreateBody(&body_def);
+  physics_body_ = world_->physics_world_->CreateBody(&body_def);
 
   vectorize_bitmap();
   load_edges();
@@ -82,7 +83,7 @@ Layer::Layer(b2World *physics_world, uint8_t index, const std::string &name,
 
 Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
 
-Layer *Layer::make_layer(b2World *physics_world, uint8_t index,
+Layer *Layer::make_layer(World *world, uint8_t index,
                          boost::filesystem::path world_yaml_dir,
                          YAML::Node layer_node) {
   std::string name;
@@ -175,7 +176,7 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t index,
     throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
 
-  return new Layer(physics_world, index, name, bitmap, color, origin,
+  return new Layer(world, index, name, bitmap, color, origin,
                    resolution, occupied_thresh, free_thresh);
 }
 

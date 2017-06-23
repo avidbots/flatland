@@ -54,6 +54,9 @@
 #include <vector>
 
 namespace flatland_server {
+
+class Layer;
+
 class World {
  public:
   std::string yaml_path;

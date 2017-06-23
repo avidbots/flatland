@@ -52,8 +52,12 @@
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <flatland_server/world.h>
 
 namespace flatland_server {
+
+class World;
+
 class Layer {
  public:
   uint8_t index_;
@@ -66,13 +70,14 @@ class Layer {
   double free_thresh_;
 
   b2Body *physics_body_;
+  World *world_;
 
   std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
 
   /**
    * @brief Constructor for the Layer class. All data required for
    * initialization should be passed in here
-   * @param[in] physics_world Pointer to the physics simulation world
+   * @param[in] world Pointer to the world
    * @param[in] index Unique index of the layer
    * @param[in] name Name of the layer
    * @param[in] bitmap Matrix containing the map image
@@ -83,7 +88,7 @@ class Layer {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
-  Layer(b2World *physics_world, uint8_t index, const std::string &name,
+  Layer(World *world, uint8_t index, const std::string &name,
         const cv::Mat &bitmap, const std::array<double, 4> &color,
         const std::array<double, 3> &origin, double resolution,
         double occupied_thresh, double free_thresh);
@@ -116,13 +121,13 @@ class Layer {
 
   /**
    * @brief Factory method to instantiate a layer
-   * @param[in] physics_world Pointer to the physics simulation world
+   * @param[in] world Pointer to the world
    * @param[in] index Index of the layer, in the order of yaml definition
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
    */
-  static Layer *make_layer(b2World *physics_world, uint8_t index,
+  static Layer *make_layer(World *world, uint8_t index,
                            boost::filesystem::path world_yaml_dir,
                            YAML::Node layer_node);
 };
