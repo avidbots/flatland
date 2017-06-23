@@ -56,6 +56,7 @@
 namespace flatland_server {
 class Layer {
  public:
+  uint8_t index_;
   std::string name_;
   std::array<double, 4> color_;  // r, g, b, a
   std::array<double, 3> origin_;
@@ -72,6 +73,7 @@ class Layer {
    * @brief Constructor for the Layer class. All data required for
    * initialization should be passed in here
    * @param[in] physics_world Pointer to the physics simulation world
+   * @param[in] index Unique index of the layer
    * @param[in] name Name of the layer
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
@@ -81,10 +83,10 @@ class Layer {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
-  Layer(b2World *physics_world, const std::string &name, const cv::Mat &bitmap,
-        const std::array<double, 4> &color, const std::array<double, 3> &origin,
-        const double &resolution, const double &occupied_thresh,
-        const double &free_thresh);
+  Layer(b2World *physics_world, uint8_t index, const std::string &name,
+        const cv::Mat &bitmap, const std::array<double, 4> &color,
+        const std::array<double, 3> &origin, double resolution,
+        double occupied_thresh, double free_thresh);
 
   /**
    * @brief Destructor for the layer class
@@ -115,11 +117,12 @@ class Layer {
   /**
    * @brief Factory method to instantiate a layer
    * @param[in] physics_world Pointer to the physics simulation world
+   * @param[in] index Index of the layer, in the order of yaml definition
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
    */
-  static Layer *make_layer(b2World *physics_world,
+  static Layer *make_layer(b2World *physics_world, uint8_t index,
                            boost::filesystem::path world_yaml_dir,
                            YAML::Node layer_node);
 };

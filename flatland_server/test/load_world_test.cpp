@@ -154,6 +154,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
+  EXPECT_EQ(w->layers_[0]->index_, 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[0], 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
@@ -170,6 +171,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
+  EXPECT_EQ(w->layers_[1]->index_, 1);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[0], 1.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
@@ -253,6 +255,10 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
     layer0_transformed_edges.push_back(e);
 
+    // check that collision groups are correctly assigned
+    EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
+    EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
+
     b2Vec2 v1_tf = e.m_vertex1;
     b2Vec2 v2_tf = e.m_vertex2;
   }
@@ -286,6 +292,10 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
     layer1_transformed_edges.push_back(e);
+
+    // check that collision groups are correctly assigned
+    EXPECT_EQ(f->GetFilterData().categoryBits, 0x2);
+    EXPECT_EQ(f->GetFilterData().maskBits, 0x2);
   }
   EXPECT_EQ(layer1_transformed_edges.size(),
             layer1_expected_transformed_edges.size());

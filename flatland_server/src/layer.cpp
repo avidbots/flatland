@@ -56,11 +56,12 @@
 
 namespace flatland_server {
 
-Layer::Layer(b2World *physics_world, const std::string &name,
+Layer::Layer(b2World *physics_world, uint8_t index, const std::string &name,
              const cv::Mat &bitmap, const std::array<double, 4> &color,
-             const std::array<double, 3> &origin, const double &resolution,
-             const double &occupied_thresh, const double &free_thresh)
-    : name_(name),
+             const std::array<double, 3> &origin, double resolution,
+             double occupied_thresh, double free_thresh)
+    : index_(index),
+      name_(name),
       color_(color),
       origin_(origin),
       resolution_(resolution),
@@ -81,7 +82,7 @@ Layer::Layer(b2World *physics_world, const std::string &name,
 
 Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
 
-Layer *Layer::make_layer(b2World *physics_world,
+Layer *Layer::make_layer(b2World *physics_world, uint8_t index,
                          boost::filesystem::path world_yaml_dir,
                          YAML::Node layer_node) {
   std::string name;
@@ -174,8 +175,8 @@ Layer *Layer::make_layer(b2World *physics_world,
     throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
 
-  return new Layer(physics_world, name, bitmap, color, origin, resolution,
-                   occupied_thresh, free_thresh);
+  return new Layer(physics_world, index, name, bitmap, color, origin,
+                   resolution, occupied_thresh, free_thresh);
 }
 
 void Layer::vectorize_bitmap() {
@@ -290,6 +291,8 @@ void Layer::load_edges() {
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge_tf;
+    fixture_def.filter.categoryBits = 1 << index_;
+    fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     physics_body_->CreateFixture(&fixture_def);
   }
 }
