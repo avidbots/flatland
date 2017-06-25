@@ -4,7 +4,7 @@
   You can override these default values:
     roslaunch flatland_Server server.launch world_path:="/some/world.yaml" initial_rate:="30.0"
   -->
-  <arg name="world_path"   default="$(find flatland_server)/test/large_map_test/world.yaml"/>
+  <arg name="world_path"   default="$(find flatland_server)/test/conestogo_office_test/world.yaml"/>
   <arg name="initial_rate" default="60.0"/>
 
   <env name="ROSCONSOLE_FORMAT" value="[${severity} ${time} ${logger}]: ${message}" />
@@ -17,4 +17,6 @@
   </node>
 
   <node name="rviz" pkg="rviz" type="rviz"/>
+
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find flatland_server)/test/conestogo_office_test/map.yaml"/>
 </launch>

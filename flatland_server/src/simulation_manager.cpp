@@ -45,6 +45,9 @@
  */
 
 #include "flatland_server/simulation_manager.h"
+#include <flatland_server/layer.h>
+#include <flatland_server/model.h>
+#include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <string>
 #include "flatland_server/debug_visualization.h"
@@ -57,10 +60,11 @@ namespace flatland_server {
  * @param initial_rate The physics step frequency in Hz
  */
 SimulationManager::SimulationManager(std::string world_file, float initial_rate)
-    : gravity_(0.0, 0.0), initial_rate_(initial_rate) {
+    : initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
-  physics_world_ = new b2World(gravity_);
-  world_ = new World(world_file, physics_world_);
+
+  world_ = World::make_world(world_file);
+
   // Todo: Initialize SimTime class here once written
 }
 
@@ -71,7 +75,7 @@ void SimulationManager::Main() {
 
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time
-    physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
+    world_->physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
 
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
@@ -93,7 +97,6 @@ void SimulationManager::Main() {
 void SimulationManager::Shutdown() {
   ROS_INFO_NAMED("SimMan", "Shutdown called");
   delete world_;
-  delete physics_world_;
 }
 
 };  // namespace flatland_server

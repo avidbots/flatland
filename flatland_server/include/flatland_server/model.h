@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.cpp
- * @brief	 Loads world file
- * @author Joseph Duchesne
+ * @name	 world.h
+ * @brief	 Defines flatland Layer
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,79 +44,19 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Box2D/Box2D.h>
-#include <flatland_server/exceptions.h>
-#include <flatland_server/world.h>
-#include <ros/ros.h>
-#include <yaml-cpp/yaml.h>
-#include <boost/filesystem.hpp>
-#include <map>
-#include <string>
+#ifndef FLATLAND_SERVER_MODEL_H
+#define FLATLAND_SERVER_MODEL_H
 
 namespace flatland_server {
+class Model {
+ public:
+  Model();
+  ~Model();
 
-World::World() : gravity_(0, 0) {
-  physics_world_ = new b2World(gravity_);
-
-  ROS_INFO_NAMED("World", "World constructed");
-}
-
-World::~World() {
-  for (int i = 0; i < layers_.size(); i++) {
-    delete layers_[i];
-  }
-
-  delete physics_world_;
-}
-
-World *World::make_world(std::string yaml_path) {
-  boost::filesystem::path path(yaml_path);
-
-  // parse the world YAML file
-  YAML::Node yaml;
-
-  try {
-    yaml = YAML::LoadFile(path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
-  }
-
-  if (yaml["properties"] && yaml["properties"].IsMap()) {
-    // TODO (Chunshang Li): parse properties
-  } else {
-    throw YAMLException("Invalid world param \"properties\"");
-  }
-
-  World *w = new World();
-  w->load_layers(yaml_path);
-  w->load_models(yaml_path);
-  return w;
-}
-
-void World::load_layers(std::string yaml_path) {
-  boost::filesystem::path path(yaml_path);
-
-  YAML::Node yaml;
-
-  try {
-    yaml = YAML::LoadFile(path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
-  }
-
-  if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
-    throw YAMLException("Invalid world param \"layers\"");
-  }
-
-  // loop through each layer and parse the data
-  for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer =
-        Layer::make_layer(this, i, path.parent_path(), yaml["layers"][i]);
-
-    layers_.push_back(layer);
-  }
-}
-
-void World::load_models(std::string yaml_path) {}
-
-};  // namespace flatland_server
+  /* This class should be non-copyable. This will cause the destructor to be
+      called twice for a given b2Body*/
+  Model(const Model&) = delete;
+  Model& operator=(const Model&) = delete;
+};
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_MODEL_H

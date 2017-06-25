@@ -1,0 +1,7 @@
+image: map3d.png
+resolution: 1.5
+origin: [0.0, 0.0, 0.0]
+negate: 0
+occupied_thresh: 0.5153
+free_thresh: 0.2234
+

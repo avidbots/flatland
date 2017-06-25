@@ -72,12 +72,15 @@ include_directories(
 add_library(flatland_lib
   src/simulation_manager.cpp
   src/world.cpp
+  src/layer.cpp
+  src/model.cpp
   src/debug_visualization.cpp
   src/geometry.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   Box2D
   yaml-cpp
 )
@@ -94,6 +97,7 @@ add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   Box2D
   yaml-cpp
   flatland_lib
@@ -139,11 +143,23 @@ if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gtest(null_test test/null.cpp)
 
+  catkin_add_gtest(load_world_test
+    test/load_world_test.cpp)
+  target_link_libraries(load_world_test
+    ${catkin_LIBRARIES}
+    ${GTEST_LIBRARIES}
+    Box2D
+    flatland_lib
+  )
+  
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
-  target_link_libraries(geometry_test flatland_lib Box2D)
+  target_link_libraries(geometry_test
+    flatland_lib Box2D)
 
-  add_rostest_gtest(debug_visualization_test test/debug_visualization.test
-                    test/debug_visualization_test.cpp)
-  target_link_libraries(debug_visualization_test flatland_lib Box2D)
+  add_rostest_gtest(debug_visualization_test
+    test/debug_visualization.test
+    test/debug_visualization_test.cpp)
+  target_link_libraries(debug_visualization_test
+    flatland_lib Box2D)
 
 endif()
