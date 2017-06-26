@@ -74,6 +74,7 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
   body_def.type = b2_staticBody;
 
   physics_body_ = physics_world_->CreateBody(&body_def);
+  physics_body_->SetUserData(this);
 
   vectorize_bitmap();
   load_edges();
