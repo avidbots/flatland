@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  flat_server_load_world_test.cpp
+ * @name  load_world_test.cpp
  * @brief Testing the load world functionality
  * @author Chunshang Li
  *
@@ -66,11 +66,11 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
   }
 
+  // to test that the world instantiation will fail, and the exception
+  // message matches the given regex string
   void test_yaml_fail(std::string regex_str) {
     try {
       World *w = World::make_world(world_yaml.string());
-      w->load_layers(world_yaml.string());
-      w->load_models(world_yaml.string());
 
       delete w;
 
@@ -113,7 +113,9 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
     return -1;
   }
 
-  bool does_edges_exactly_match(
+  // checks if one list of edges completely matches the content
+  // of the other list
+  bool do_edges_exactly_match(
       const std::vector<b2EdgeShape> &edges1,
       const std::vector<std::pair<b2Vec2, b2Vec2>> &edges2) {
     std::vector<std::pair<b2Vec2, b2Vec2>> edges_cpy = edges2;
@@ -138,17 +140,21 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
   }
 };
 
-// Declare a test
+/**
+ * This test loads the world, layers, models (TODO) from the given world
+ * yaml file and checks that all configurations, data, and calculations are
+ * correct after instantiation
+ */
 TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::make_world(world_yaml.string());
-  w->load_layers(world_yaml.string());
-  w->load_models(world_yaml.string());
 
   ASSERT_EQ(w->layers_.size(), 2);
 
+  // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
+  EXPECT_EQ(w->layers_[0]->index_, 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[0], 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
@@ -163,7 +169,9 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
   EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
 
+  // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
+  EXPECT_EQ(w->layers_[1]->index_, 1);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[0], 1.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
@@ -178,7 +186,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
   EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
 
-  // check that bitmap vectorization is performed correctly
+  // check that bitmap vectorization is performed correctly. The data here
+  // used for comparison is the expect results from the given map images
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(5, 0)),
       std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(4, 1)),
@@ -196,8 +205,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   EXPECT_EQ(w->layers_[0]->extracted_edges.size(),
             layer0_expected_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(w->layers_[0]->extracted_edges,
-                                       layer0_expected_edges));
+  EXPECT_TRUE(do_edges_exactly_match(w->layers_[0]->extracted_edges,
+                                     layer0_expected_edges));
 
   std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(1, 0)),
@@ -219,10 +228,12 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   EXPECT_EQ(w->layers_[1]->extracted_edges.size(),
             layer1_expected_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(w->layers_[1]->extracted_edges,
-                                       layer1_expected_edges));
+  EXPECT_TRUE(do_edges_exactly_match(w->layers_[1]->extracted_edges,
+                                     layer1_expected_edges));
 
-  // check that bitmap is transformed correctly
+  // check that bitmap is transformed correctly. This involves flipping the
+  // y coordinates, applying the resolution, and apply the translation
+  // with respect to the map origin
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_transformed_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.30, 0.20)),
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.25, 0.15)),
@@ -244,13 +255,17 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
     layer0_transformed_edges.push_back(e);
 
+    // check that collision groups are correctly assigned
+    EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
+    EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
+
     b2Vec2 v1_tf = e.m_vertex1;
     b2Vec2 v2_tf = e.m_vertex2;
   }
   EXPECT_EQ(layer0_transformed_edges.size(),
             layer0_expected_transformed_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(layer0_transformed_edges,
-                                       layer0_expected_transformed_edges));
+  EXPECT_TRUE(do_edges_exactly_match(layer0_transformed_edges,
+                                     layer0_expected_transformed_edges));
 
   // layer[1] has origin of [0, 0, 0], so there should be no transform, just
   // apply the inversion of y coordinates and scale by resolution
@@ -277,39 +292,64 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
     layer1_transformed_edges.push_back(e);
+
+    // check that collision groups are correctly assigned
+    EXPECT_EQ(f->GetFilterData().categoryBits, 0x2);
+    EXPECT_EQ(f->GetFilterData().maskBits, 0x2);
   }
   EXPECT_EQ(layer1_transformed_edges.size(),
             layer1_expected_transformed_edges.size());
-  EXPECT_TRUE(does_edges_exactly_match(layer1_transformed_edges,
-                                       layer1_expected_transformed_edges));
+  EXPECT_TRUE(do_edges_exactly_match(layer1_transformed_edges,
+                                     layer1_expected_transformed_edges));
 
   delete w;
 }
 
+/**
+ * This test tries to loads a non-existent world yaml file. It should throw
+ * an exception
+ */
 TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
   test_yaml_fail("Error loading.*world.yaml.*bad file");
 }
 
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
   test_yaml_fail("Invalid world param \"properties\"");
 }
 
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail("Invalid \"color\" in 2d layer");
 }
 
+/**
+ * This test tries to loads valid world yaml file which in turn tries to
+ * load a invalid map yaml file. It should throw an exception.
+ */
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
   test_yaml_fail("Invalid \"origin\" in 2d layer");
 }
 
+/**
+ * This test tries to loads valid world yaml file which in turn load a map yaml
+ * file which then inturn tries to load a non-exists map image file. It should
+ * throw an exception
+ */
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");

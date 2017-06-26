@@ -153,10 +153,13 @@ if(CATKIN_ENABLE_TESTING)
   )
   
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
-  target_link_libraries(geometry_test flatland_lib Box2D)
+  target_link_libraries(geometry_test
+    flatland_lib Box2D)
 
-  add_rostest_gtest(debug_visualization_test test/debug_visualization.test
-                    test/debug_visualization_test.cpp)
-  target_link_libraries(debug_visualization_test flatland_lib Box2D)
+  add_rostest_gtest(debug_visualization_test
+    test/debug_visualization.test
+    test/debug_visualization_test.cpp)
+  target_link_libraries(debug_visualization_test
+    flatland_lib Box2D)
 
 endif()

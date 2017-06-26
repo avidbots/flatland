@@ -48,14 +48,19 @@
 #define FLATLAND_SERVER_LAYER_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/world.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
 
 namespace flatland_server {
+
+class World;
+
 class Layer {
  public:
+  uint8_t index_;
   std::string name_;
   std::array<double, 4> color_;  // r, g, b, a
   std::array<double, 3> origin_;
@@ -65,25 +70,64 @@ class Layer {
   double free_thresh_;
 
   b2Body *physics_body_;
+  World *world_;
 
-  // edges extracted from bitmap
-  std::vector<b2EdgeShape> extracted_edges;
+  std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
 
-  Layer(b2World *physics_world, const std::string &name, const cv::Mat &bitmap,
-        const std::array<double, 4> &color, const std::array<double, 3> &origin,
-        const double &resolution, const double &occupied_thresh,
-        const double &free_thresh);
+  /**
+   * @brief Constructor for the Layer class. All data required for
+   * initialization should be passed in here
+   * @param[in] world Pointer to the world
+   * @param[in] index Unique index of the layer
+   * @param[in] name Name of the layer
+   * @param[in] bitmap Matrix containing the map image
+   * @param[in] color Color in the form of r, g, b, a, used for visualization
+   * @param[in] origin Coordinate of the lower left corner of the image, in the
+   * form of x, y, theta, rotation theta is ignored
+   * @param[in] resolution Resolution of the map image in meters per pixel
+   * @param[in] occupied_thresh Threshold indicating obstacle if above
+   * @param[in] free_thresh Threshold indicating no obstale if below
+   */
+  Layer(World *world, uint8_t index, const std::string &name,
+        const cv::Mat &bitmap, const std::array<double, 4> &color,
+        const std::array<double, 3> &origin, double resolution,
+        double occupied_thresh, double free_thresh);
+
+  /**
+   * @brief Destructor for the layer class
+   */
   ~Layer();
 
-  /* This class should be non-copyable. This will cause the destructor to be
-      called twice for a given b2Body*/
+  /**
+   * @brief Disable copying of the class
+   */
   Layer(const Layer &) = delete;
+
+  /**
+   * @brief Disable copying of the class
+   */
   Layer &operator=(const Layer &) = delete;
 
+  /**
+   * @brief Vectorize the bitmap into line segments usable by physics simulator
+   */
   void vectorize_bitmap();
+
+  /**
+   * @brief Apply the necessary transformations and load the map into the
+   * physics simulator
+   */
   void load_edges();
 
-  static Layer *make_layer(b2World *physics_world,
+  /**
+   * @brief Factory method to instantiate a layer
+   * @param[in] world Pointer to the world
+   * @param[in] index Index of the layer, in the order of yaml definition
+   * @param[in] world_yaml_dir Path to the directory containing the world yaml
+   * file, this is used to calculate the path to the layermap yaml file
+   * @param[in] layer_node YAML node containing data for a layer
+   */
+  static Layer *make_layer(World *world, uint8_t index,
                            boost::filesystem::path world_yaml_dir,
                            YAML::Node layer_node);
 };

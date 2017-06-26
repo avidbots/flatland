@@ -87,7 +87,10 @@ World *World::make_world(std::string yaml_path) {
     throw YAMLException("Invalid world param \"properties\"");
   }
 
-  return new World();
+  World *w = new World();
+  w->load_layers(yaml_path);
+  w->load_models(yaml_path);
+  return w;
 }
 
 void World::load_layers(std::string yaml_path) {
@@ -107,8 +110,8 @@ void World::load_layers(std::string yaml_path) {
 
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer = Layer::make_layer(physics_world_, path.parent_path(),
-                                     yaml["layers"][i]);
+    Layer *layer =
+        Layer::make_layer(this, i, path.parent_path(), yaml["layers"][i]);
 
     layers_.push_back(layer);
   }
