@@ -55,11 +55,8 @@
 
 namespace flatland_server {
 
-class Layer;
-
 class World {
  public:
-  std::string yaml_path;
   b2World *physics_world_;
   b2Vec2 gravity_;
   std::vector<Layer *> layers_;

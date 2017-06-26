@@ -56,13 +56,13 @@
 
 namespace flatland_server {
 
-Layer::Layer(World *world, uint8_t index, const std::string &name,
-             const cv::Mat &bitmap, const std::array<double, 4> &color,
+Layer::Layer(b2World *physics_world, uint8_t layer_index,
+             const std::string &name, const cv::Mat &bitmap,
+             const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
              double occupied_thresh, double free_thresh)
-    : world_(world),
-      index_(index),
-      name_(name),
+    : Entity(physics_world, name),
+      layer_index_(layer_index),
       color_(color),
       origin_(origin),
       resolution_(resolution),
@@ -73,7 +73,7 @@ Layer::Layer(World *world, uint8_t index, const std::string &name,
   b2BodyDef body_def;
   body_def.type = b2_staticBody;
 
-  physics_body_ = world_->physics_world_->CreateBody(&body_def);
+  physics_body_ = physics_world_->CreateBody(&body_def);
 
   vectorize_bitmap();
   load_edges();
@@ -83,7 +83,7 @@ Layer::Layer(World *world, uint8_t index, const std::string &name,
 
 Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
 
-Layer *Layer::make_layer(World *world, uint8_t index,
+Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
                          boost::filesystem::path world_yaml_dir,
                          YAML::Node layer_node) {
   std::string name;
@@ -176,8 +176,8 @@ Layer *Layer::make_layer(World *world, uint8_t index,
     throw YAMLException("Invalid \"image\" in " + name + " layer");
   }
 
-  return new Layer(world, index, name, bitmap, color, origin, resolution,
-                   occupied_thresh, free_thresh);
+  return new Layer(physics_world, layer_index, name, bitmap, color, origin,
+                   resolution, occupied_thresh, free_thresh);
 }
 
 void Layer::vectorize_bitmap() {
@@ -221,9 +221,9 @@ void Layer::vectorize_bitmap() {
         start = j;
         started = true;
       } else if (started && !edge_exists) {
-        b2EdgeShape edge123;
-        edge123.Set(b2Vec2(start, i), b2Vec2(j, i));
-        extracted_edges.push_back(edge123);
+        b2EdgeShape edge;
+        edge.Set(b2Vec2(start, i), b2Vec2(j, i));
+        extracted_edges.push_back(edge);
 
         started = false;
       }
@@ -255,9 +255,9 @@ void Layer::vectorize_bitmap() {
         start = j;
         started = true;
       } else if (started && !edge_exists) {
-        b2EdgeShape edge123;
-        edge123.Set(b2Vec2(i, start), b2Vec2(i, j));
-        extracted_edges.push_back(edge123);
+        b2EdgeShape edge;
+        edge.Set(b2Vec2(i, start), b2Vec2(i, j));
+        extracted_edges.push_back(edge);
 
         started = false;
       }
@@ -292,7 +292,7 @@ void Layer::load_edges() {
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge_tf;
-    fixture_def.filter.categoryBits = 1 << index_;
+    fixture_def.filter.categoryBits = 1 << layer_index_;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     physics_body_->CreateFixture(&fixture_def);
   }

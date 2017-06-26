@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.cpp
- * @brief	 implements flatland layer
+ * @name	 entity.cpp
+ * @brief	 implements flatland entity
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,13 +44,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model.h>
+#include <flatland_server/entity.h>
+#include <string>
 
 namespace flatland_server {
 
-Model::Model(b2World *physics_world, const std::string &name)
-    : Entity(physics_world, name) {}
-
-Model::~Model() {}
+Entity::Entity(b2World *physics_world, std::string name)
+    : physics_world_(physics_world), name_(name) {}
 
 };  // namespace flatland_server
