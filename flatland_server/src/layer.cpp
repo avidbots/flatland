@@ -221,9 +221,9 @@ void Layer::vectorize_bitmap() {
         start = j;
         started = true;
       } else if (started && !edge_exists) {
-        b2EdgeShape edge123;
-        edge123.Set(b2Vec2(start, i), b2Vec2(j, i));
-        extracted_edges.push_back(edge123);
+        b2EdgeShape edge;
+        edge.Set(b2Vec2(start, i), b2Vec2(j, i));
+        extracted_edges.push_back(edge);
 
         started = false;
       }
@@ -255,9 +255,9 @@ void Layer::vectorize_bitmap() {
         start = j;
         started = true;
       } else if (started && !edge_exists) {
-        b2EdgeShape edge123;
-        edge123.Set(b2Vec2(i, start), b2Vec2(i, j));
-        extracted_edges.push_back(edge123);
+        b2EdgeShape edge;
+        edge.Set(b2Vec2(i, start), b2Vec2(i, j));
+        extracted_edges.push_back(edge);
 
         started = false;
       }
