@@ -53,12 +53,8 @@ namespace flatland_server {
 
 class Entity {
  public:
+  enum Type { LAYER, MODEL };
 
-  enum Type {
-    LAYER,
-    MODEL
-  };
-  
   std::string name_;
   b2World *physics_world_;
   b2Body *physics_body_;
@@ -67,8 +63,8 @@ class Entity {
 
   /* This class should be non-copyable. This will cause the destructor to be
       called twice for a given b2Body*/
-  Entity(const Entity&) = delete;
-  Entity& operator=(const Entity&) = delete;
+  Entity(const Entity &) = delete;
+  Entity &operator=(const Entity &) = delete;
 
   virtual Type type() = 0;
 };
