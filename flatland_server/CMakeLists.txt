@@ -74,6 +74,7 @@ add_library(flatland_lib
   src/world.cpp
   src/layer.cpp
   src/model.cpp
+  src/entity.cpp
   src/debug_visualization.cpp
   src/geometry.cpp
 )

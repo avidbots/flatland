@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.cpp
- * @brief	 implements flatland layer
+ * @name	 entity.h
+ * @brief	 Defines flatland Entity
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,13 +44,33 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model.h>
+#ifndef FLATLAND_SERVER_ENTITY_H
+#define FLATLAND_SERVER_ENTITY_H
+
+#include <Box2D/Box2D.h>
 
 namespace flatland_server {
 
-Model::Model(b2World *physics_world, const std::string &name)
-    : Entity(physics_world, name) {}
+class Entity {
+ public:
 
-Model::~Model() {}
+  enum Type {
+    LAYER,
+    MODEL
+  };
+  
+  std::string name_;
+  b2World *physics_world_;
+  b2Body *physics_body_;
 
-};  // namespace flatland_server
+  Entity(b2World *physics_world, std::string name);
+
+  /* This class should be non-copyable. This will cause the destructor to be
+      called twice for a given b2Body*/
+  Entity(const Entity&) = delete;
+  Entity& operator=(const Entity&) = delete;
+
+  virtual Type type() = 0;
+};
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_ENTITY_H

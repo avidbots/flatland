@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.h
+ * @name	 layer.h
  * @brief	 Defines flatland Layer
  * @author Chunshang Li
  *
@@ -48,7 +48,7 @@
 #define FLATLAND_SERVER_LAYER_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/world.h>
+#include <flatland_server/entity.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
@@ -56,12 +56,9 @@
 
 namespace flatland_server {
 
-class World;
-
-class Layer {
+class Layer : public Entity {
  public:
-  uint8_t index_;
-  std::string name_;
+  uint8_t layer_index_;
   std::array<double, 4> color_;  // r, g, b, a
   std::array<double, 3> origin_;
   cv::Mat bitmap_;
@@ -69,16 +66,13 @@ class Layer {
   double occupied_thresh_;
   double free_thresh_;
 
-  b2Body *physics_body_;
-  World *world_;
-
   std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
 
   /**
    * @brief Constructor for the Layer class. All data required for
    * initialization should be passed in here
-   * @param[in] world Pointer to the world
-   * @param[in] index Unique index of the layer
+   * @param[in] physics_world Pointer to the box2d physics world
+   * @param[in] layer_index Unique index of the layer
    * @param[in] name Name of the layer
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
@@ -88,7 +82,7 @@ class Layer {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
-  Layer(World *world, uint8_t index, const std::string &name,
+  Layer(b2World *physics_world, uint8_t layer_index, const std::string &name,
         const cv::Mat &bitmap, const std::array<double, 4> &color,
         const std::array<double, 3> &origin, double resolution,
         double occupied_thresh, double free_thresh);
@@ -99,14 +93,9 @@ class Layer {
   ~Layer();
 
   /**
-   * @brief Disable copying of the class
+   * @brief Return the type of entity
    */
-  Layer(const Layer &) = delete;
-
-  /**
-   * @brief Disable copying of the class
-   */
-  Layer &operator=(const Layer &) = delete;
+  virtual Type type() { return Type::LAYER; }
 
   /**
    * @brief Vectorize the bitmap into line segments usable by physics simulator
@@ -121,13 +110,13 @@ class Layer {
 
   /**
    * @brief Factory method to instantiate a layer
-   * @param[in] world Pointer to the world
-   * @param[in] index Index of the layer, in the order of yaml definition
+   * @param[in] physics_world Pointer to the box2d physics world
+   * @param[in] layer_index Index of the layer, in the order of yaml definition
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
    */
-  static Layer *make_layer(World *world, uint8_t index,
+  static Layer *make_layer(b2World *physics_world, uint8_t layer_index,
                            boost::filesystem::path world_yaml_dir,
                            YAML::Node layer_node);
 };

@@ -45,6 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
@@ -154,7 +155,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
-  EXPECT_EQ(w->layers_[0]->index_, 0);
+  EXPECT_EQ(w->layers_[0]->layer_index_, 0);
+  EXPECT_EQ(w->layers_[0]->type(), Entity::Type::LAYER);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[0], 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
@@ -171,7 +173,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
-  EXPECT_EQ(w->layers_[1]->index_, 1);
+  EXPECT_EQ(w->layers_[1]->layer_index_, 1);
+  EXPECT_EQ(w->layers_[1]->type(), Entity::Type::LAYER);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[0], 1.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
