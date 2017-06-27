@@ -78,15 +78,13 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
 
   vectorize_bitmap();
   load_edges();
-
-  ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }
 
 Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
 
 Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
-                         boost::filesystem::path world_yaml_dir,
-                         YAML::Node layer_node) {
+                         const boost::filesystem::path &yaml_path,
+                         const YAML::Node &layer_node) {
   std::string name;
   cv::Mat bitmap;
   std::array<double, 4> color;
@@ -187,10 +185,6 @@ void Layer::vectorize_bitmap() {
   // thresholds the map, values between the occupied threshold and 1.0 are
   // considered to be occupied
   cv::inRange(bitmap_, occupied_thresh_, 1.0, obstacle_map);
-
-  // cv::namedWindow( "Display window" );
-  // cv::imshow( "Display window", bitmap_ );
-  // cv::waitKey(0);
 
   // pad the top and bottom of the map each with an empty row (255=white). This
   // helps to look at the transition from one row of pixel to another

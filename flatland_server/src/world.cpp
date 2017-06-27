@@ -57,8 +57,6 @@ namespace flatland_server {
 
 World::World() : gravity_(0, 0) {
   physics_world_ = new b2World(gravity_);
-
-  ROS_INFO_NAMED("World", "World constructed");
 }
 
 World::~World() {
@@ -108,13 +106,23 @@ void World::load_layers(std::string yaml_path) {
     throw YAMLException("Invalid world param \"layers\"");
   }
 
+  // Box 2d has 16 collision categories we can use
+  if (yaml["layers"].size() > 16) {
+    throw YAMLException("Maximum number of layers is 16");
+  }
+
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer = Layer::make_layer(physics_world_, i, path.parent_path(),
-                                     yaml["layers"][i]);
+    Layer *layer = Layer::make_layer(physics_world_, layers_.size(), 
+                                     path.parent_path(), yaml["layers"][i]);
 
     layers_.push_back(layer);
+    ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name.c_str());
   }
+}
+
+void World::load_model(std::string yaml_path) {
+  
 }
 
 void World::load_models(std::string yaml_path) {}

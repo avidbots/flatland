@@ -57,7 +57,6 @@ class Entity {
 
   std::string name_;
   b2World *physics_world_;
-  b2Body *physics_body_;
 
   Entity(b2World *physics_world, std::string name);
 

@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model.h
- * @brief	 Defines flatland Model
- * @author Chunshang Li
+ * @name	 model_body.h
+ * @brief	 Defines Model Body
+ * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,41 +44,35 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_H
-#define FLATLAND_SERVER_MODEL_H
-
-#include <flatland_server/entity.h>
-#include <flatland_server/model_body.h>
+#ifndef FLATLAND_MODEL_BODY_H
+#define FLATLAND_MODEL_BODY_H
 
 namespace flatland_server {
 
-class ModelBody;
+class Model;
 
-class Model : public Entity {
+class ModelBody {
  public:
 
-  uint8_t model_index_;
-  std::vector<ModelBody*> bodies_;
-  std::vector<ModelJoint*> joints_
-  YAML::Node plugins_node_;
+  std::string name;
+  uint8_t body_index_;
+  b2Body *physics_body_;
+  b2World *physics_world_;
+  std::array<double, 4> color_;
+  std::array<double, 3> origin_;
 
-  Model(b2World *physics_world, uint8_t model_index, const std::string &name);
+  ModelBody(b2World *physics_world, uint8_t body_index, 
+    const std::string &name, const std::array<double, 4> &color, 
+    const std::array<double, 3> &origin, b2BodyType body_type, Model *model);
+  ~ModelBody();
 
-  /**
-   * @brief Destructor for the layer class
-   */
-  ~Model();
+  ModelBody(const ModelBody &) = delete;
+  ModelBody &operator=(const ModelBody &) = delete;
 
-  /**
-   * @brief Return the type of entity
-   */
-  virtual Type type() { return Type::MODEL; }
+  void load_footprints(const YAML::Node &footprints_node);
 
-  void load_bodies(const YAML::Node &bodies_node);
-  void load_joints(const YAML::Node &joints_node);
-  static Model *make_model(b2World *physics_world, uint8_t model_index, 
-                           boost::filesystem::path yaml_path,
-                           YAML::Node model_node);
+  static ModelBody *make_body(b2World *physics_world, uint8_t body_index_,
+                           YAML::Node body_node);
 };
 };      // namespace flatland_server
-#endif  // FLATLAND_SERVER_MODEL_H
+#endif  // FLATLAND_MODEL_BODY_H

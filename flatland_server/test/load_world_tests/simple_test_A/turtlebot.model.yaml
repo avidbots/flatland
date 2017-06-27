@@ -1,0 +1,31 @@
+name: Turtlebot
+
+
+bodies:  # List of named bodies
+  - name: base
+    origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
+    type: dynamic  # dynamic | static | kinematic, default dynamic
+    color: [0.5, 0.5, 0.5, 1] # r g b a
+    footprints:
+      - type: circle
+        center: [0, 0]  # relative to body origin
+        radius: 0.1777  # m
+        layers: ["all"] # any other layers, default is all
+        is_sensor: false # Box2d Sensor, false is default
+        self_collide: false # collides with other bodies, default is false
+
+
+plugins:
+  - type: DiffDrive # plugin class name
+    name: diff_drive # for registering list of plugins
+    body: base
+    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
+
+  - type: Laser
+    name: hokuyo_laser # every plugin has a unique name
+    topic: scan
+    body: base
+    origin: [0, 0, 0] # w.r.t body origin
+    range: 10 # m
+    angle: {min: -1.1, max: 1.1, increment: 0.01}
+    layer: "2d"

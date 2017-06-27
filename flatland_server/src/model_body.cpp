@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model.h
- * @brief	 Defines flatland Model
+ * @name	 model_body.cpp
+ * @brief	 implements flatland model_body
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,41 +44,66 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_H
-#define FLATLAND_SERVER_MODEL_H
-
-#include <flatland_server/entity.h>
 #include <flatland_server/model_body.h>
+#include <flatland_server/exceptions.h>
 
 namespace flatland_server {
 
-class ModelBody;
+ModelBody::ModelBody(b2World *physics_world, uint8_t body_index_, 
+                     const std::string &name, 
+                     const std::array<double, 4> &color, 
+                     const std::array<double, 3> &origin, 
+                     b2BodyType body_type)
+    : physics_world_(physics_world),
+      name_(name),
+      color_(color),
+      origin_(origin) {
 
-class Model : public Entity {
- public:
+  b2BodyDef body_def;
+  body_def.type = body_type;
 
-  uint8_t model_index_;
-  std::vector<ModelBody*> bodies_;
-  std::vector<ModelJoint*> joints_
-  YAML::Node plugins_node_;
+  physics_body_ = physics_world_->CreateBody(&body_def);
+  physics_body_->SetUserData(this);
+}
 
-  Model(b2World *physics_world, uint8_t model_index, const std::string &name);
+ModelBody::~ModelBody() {
+  physics_body_->GetWorld()->DestroyBody(physics_body_);
+}
 
-  /**
-   * @brief Destructor for the layer class
-   */
-  ~Model();
+ModelBody *ModelBody::make_body(b2World *physics_world, uint8_t model_index, 
+                         const boost::filesystem::path &yaml_path,
+                         const YAML::Node &model_node) {
+  YAML::Node yaml;
+  std::string name;
 
-  /**
-   * @brief Return the type of entity
-   */
-  virtual Type type() { return Type::MODEL; }
+  try {
+    yaml = YAML::LoadFile(yaml_path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + yaml_path.string(), e.msg,
+                        e.mark);
+  }
 
-  void load_bodies(const YAML::Node &bodies_node);
-  void load_joints(const YAML::Node &joints_node);
-  static Model *make_model(b2World *physics_world, uint8_t model_index, 
-                           boost::filesystem::path yaml_path,
-                           YAML::Node model_node);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_MODEL_H
+  if (yaml["name"]) {
+    resolution = yaml["name"].as<std:string>();
+  } else {
+    throw YAMLException("Invalid \"name\" in " + name + " model");
+  }
+
+  Model *m = new Model(physics_world, model_index, name);
+
+  if (yaml["plugins"] && yaml["plugins"].IsSequence()) {
+    m->plugins_node_ = yaml["plugins"]
+  } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
+    // if plugins exists and it is not a sequence, it is okay to have no plugins
+    throw YAMLException("Invalid \"plugins\" in " + name + " model");
+  }
+
+  m->load_bodies(yaml["bodies"]);
+  m->load_plugins(yaml["joints"]);
+}
+
+void ModelBody::load_footprints(const YAML::Node &footprints_node) {
+
+}
+
+};  // namespace flatland_server

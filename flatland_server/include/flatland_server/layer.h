@@ -67,6 +67,7 @@ class Layer : public Entity {
   double free_thresh_;
 
   std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
+  b2Body *physics_body_;
 
   /**
    * @brief Constructor for the Layer class. All data required for
@@ -117,8 +118,8 @@ class Layer : public Entity {
    * @param[in] layer_node YAML node containing data for a layer
    */
   static Layer *make_layer(b2World *physics_world, uint8_t layer_index,
-                           boost::filesystem::path world_yaml_dir,
-                           YAML::Node layer_node);
+                           const boost::filesystem::path &yaml_path,
+                           const YAML::Node &layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
