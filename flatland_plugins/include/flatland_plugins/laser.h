@@ -53,7 +53,7 @@ namespace flatland_plugins {
 
 class Laser : public flatland_server::ModelPlugin {
  public:
-  virtual void OnInitialize(const YAML::Node &config);
+  void OnInitialize(const YAML::Node &config) override;
 };
 };
 
