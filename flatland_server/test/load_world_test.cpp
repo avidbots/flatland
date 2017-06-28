@@ -325,7 +325,7 @@ TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
-  test_yaml_fail("Invalid world param \"properties\"");
+  test_yaml_fail("Missing/invalid world param \"properties\"");
 }
 
 /**
@@ -335,7 +335,7 @@ TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
 TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
-  test_yaml_fail("Invalid \"color\" in 2d layer");
+  test_yaml_fail("Missing/invalid \"color\" in 2d layer");
 }
 
 /**
@@ -345,7 +345,7 @@ TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
 TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
-  test_yaml_fail("Invalid \"origin\" in 2d layer");
+  test_yaml_fail("Missing/invalid \"origin\" in 2d layer");
 }
 
 /**

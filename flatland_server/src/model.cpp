@@ -57,9 +57,9 @@ Model::~Model() {
     delete bodies_[i];
   }
   
-  for (int i = 0; i < joints_.size(); i++) {
-    delete joints_[i];
-  }
+  // for (int i = 0; i < joints_.size(); i++) {
+  //   delete joints_[i];
+  // }
 }
 
 Model *Model::make_model(b2World *physics_world,
@@ -75,35 +75,33 @@ Model *Model::make_model(b2World *physics_world,
   }
 
   if (yaml["name"]) {
-    resolution = yaml["name"].as<std:string>();
+    name = yaml["name"].as<std::string>();
   } else {
-    throw YAMLException("Invalid \"name\" in " + name + " model");
+    throw YAMLException("Missing model name");
   }
 
-  Model *m = new Model(physics_world, model_index, name);
+  Model *m = new Model(physics_world, name);
 
-  if (!yaml["plugins"]) {
-    // Pass
-  } if (!yaml["plugins"].IsSequence()) {
+  // it is okay to have no plugins
+  if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
     throw YAMLException("Invalid \"plugins\" in " + name + " model, not a"
                         "list");
   } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
-    m->plugins_node_ = yaml["plugins"]
+    m->plugins_node_ = yaml["plugins"];
   }
 
   m->load_bodies(yaml["bodies"]);
-  m->load_plugins(yaml["joints"]);
+  m->load_joints(yaml["joints"]);
 }
 
 void Model::load_bodies(const YAML::Node &bodies_node) {
 
-  if (!bodies_node || !bodies_node.IsSequence() || bodies.size() <= 0) {
+  if (!bodies_node || !bodies_node.IsSequence() || bodies_node.size() <= 0) {
     throw YAMLException("Invalid \"bodies\" in " + name_ + " model, "
                         "must a be list of bodies of at least size 1");
   } else {
     for (const auto &body_node : bodies_node) {
-      ModelBody *b = ModelBody::make_body(physics_world_, bodies_.size(),
-        body_node);
+      ModelBody *b = ModelBody::make_body(physics_world_, this, body_node);
       bodies_.push_back(b);
     }
   }
@@ -111,16 +109,16 @@ void Model::load_bodies(const YAML::Node &bodies_node) {
 
 void Model::load_joints(const YAML::Node &joints_node) {
 
-  if (joints_node && !joints_node.IsSequence()) {
-    // if joints exists and it is not a sequence, it is okay to have no joints
-    throw YAMLException("Invalid \"joints\" in " + name + " model");
-  } else {
-    for (const auto &joint_node : joints_node) {
-      ModelJoint *j = ModelBody::make_joint(physics_body_, joints_.size(),
-        joint_node);
-      joints_.push_back(j);
-    }
-  }
+  // if (joints_node && !joints_node.IsSequence()) {
+  //   // if joints exists and it is not a sequence, it is okay to have no joints
+  //   throw YAMLException("Invalid \"joints\" in " + name + " model");
+  // } else {
+  //   for (const auto &joint_node : joints_node) {
+  //     ModelJoint *j = ModelBody::make_joint(physics_body_, joints_.size(),
+  //       joint_node);
+  //     joints_.push_back(j);
+  //   }
+  // }
 }
 
 };  // namespace flatland_server

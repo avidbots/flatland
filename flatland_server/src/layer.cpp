@@ -83,7 +83,7 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
 Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
 
 Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
-                         const boost::filesystem::path &yaml_path,
+                         const boost::filesystem::path &world_yaml_dir,
                          const YAML::Node &layer_node) {
   std::string name;
   cv::Mat bitmap;
@@ -96,14 +96,14 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
   if (layer_node["name"]) {
     name = layer_node["name"].as<std::string>();
   } else {
-    throw YAMLException("Invalid \"properties\" in " + name + " layer");
+    throw YAMLException("Invalid layer name");
   }
 
   if (layer_node["map"]) {
     map_yaml_path =
         boost::filesystem::path(layer_node["map"].as<std::string>());
   } else {
-    throw YAMLException("Invalid \"properties\" in " + name + " layer");
+    throw YAMLException("Missing \"map\" in " + name + " layer");
   }
 
   if (layer_node["color"] && layer_node["color"].IsSequence() &&
@@ -113,7 +113,7 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
     color[2] = layer_node["color"][2].as<double>();
     color[3] = layer_node["color"][3].as<double>();
   } else {
-    throw YAMLException("Invalid \"color\" in " + name + " layer");
+    throw YAMLException("Missing/invalid \"color\" in " + name + " layer");
   }
 
   // use absolute path if start with '/', use relative otherwise
@@ -134,7 +134,7 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
   if (yaml["resolution"]) {
     resolution = yaml["resolution"].as<double>();
   } else {
-    throw YAMLException("Invalid \"resolution\" in " + name + " layer");
+    throw YAMLException("Missing \"resolution\" in " + name + " layer");
   }
 
   if (yaml["origin"] && yaml["origin"].IsSequence() &&
@@ -143,19 +143,19 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
     origin[1] = yaml["origin"][1].as<double>();
     origin[2] = yaml["origin"][2].as<double>();
   } else {
-    throw YAMLException("Invalid \"origin\" in " + name + " layer");
+    throw YAMLException("Missing/invalid \"origin\" in " + name + " layer");
   }
 
   if (yaml["occupied_thresh"]) {
     occupied_thresh = yaml["occupied_thresh"].as<double>();
   } else {
-    throw YAMLException("Invalid \"occupied_thresh\" in " + name + " layer");
+    throw YAMLException("Missing \"occupied_thresh\" in " + name + " layer");
   }
 
   if (yaml["free_thresh"]) {
     free_thresh = yaml["free_thresh"].as<double>();
   } else {
-    throw YAMLException("Invalid \"free_thresh\" in " + name + " layer");
+    throw YAMLException("Missing \"free_thresh\" in " + name + " layer");
   }
 
   if (yaml["image"]) {
@@ -172,7 +172,7 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
 
     map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
   } else {
-    throw YAMLException("Invalid \"image\" in " + name + " layer");
+    throw YAMLException("Missing \"image\" in " + name + " layer");
   }
 
   return new Layer(physics_world, layer_index, name, bitmap, color, origin,

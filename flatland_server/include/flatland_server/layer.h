@@ -118,7 +118,7 @@ class Layer : public Entity {
    * @param[in] layer_node YAML node containing data for a layer
    */
   static Layer *make_layer(b2World *physics_world, uint8_t layer_index,
-                           const boost::filesystem::path &yaml_path,
+                           const boost::filesystem::path &world_yaml_dir,
                            const YAML::Node &layer_node);
 };
 };      // namespace flatland_server

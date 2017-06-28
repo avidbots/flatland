@@ -49,57 +49,69 @@
 
 namespace flatland_server {
 
-ModelBody::ModelBody(b2World *physics_world, uint8_t body_index_, 
-                     const std::string &name, 
-                     const std::array<double, 4> &color, 
-                     const std::array<double, 3> &origin, 
-                     b2BodyType body_type)
-    : physics_world_(physics_world),
-      name_(name),
-      color_(color),
-      origin_(origin) {
+ModelBody::ModelBody(b2World *physics_world, 
+  Model *model, const std::string &name, const std::array<double, 4> &color, 
+  const std::array<double, 3> &origin, b2BodyType body_type)
+    : Body(physics_world, model, name, color, origin, body_type) {}
 
-  b2BodyDef body_def;
-  body_def.type = body_type;
-
-  physics_body_ = physics_world_->CreateBody(&body_def);
-  physics_body_->SetUserData(this);
-}
-
-ModelBody::~ModelBody() {
-  physics_body_->GetWorld()->DestroyBody(physics_body_);
-}
-
-ModelBody *ModelBody::make_body(b2World *physics_world, uint8_t model_index, 
-                         const boost::filesystem::path &yaml_path,
-                         const YAML::Node &model_node) {
-  YAML::Node yaml;
+ModelBody *ModelBody::make_body(b2World *physics_world, Model *model, 
+  YAML::Node body_node) {
   std::string name;
+  std::array<double, 4> color;
+  std::array<double, 3> origin;
+  b2BodyType type;
 
-  try {
-    yaml = YAML::LoadFile(yaml_path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + yaml_path.string(), e.msg,
-                        e.mark);
-  }
-
-  if (yaml["name"]) {
-    resolution = yaml["name"].as<std:string>();
+  if (body_node["name"]) {
+    name = body_node["name"].as<std::string>();
   } else {
-    throw YAMLException("Invalid \"name\" in " + name + " model");
+    throw YAMLException("Missing body name");
   }
 
-  Model *m = new Model(physics_world, model_index, name);
-
-  if (yaml["plugins"] && yaml["plugins"].IsSequence()) {
-    m->plugins_node_ = yaml["plugins"]
-  } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
-    // if plugins exists and it is not a sequence, it is okay to have no plugins
-    throw YAMLException("Invalid \"plugins\" in " + name + " model");
+  if (body_node["origin"] && body_node["origin"].IsSequence() &&
+      body_node["origin"].size() == 3) {
+    origin[0] = body_node["origin"][0].as<double>();
+    origin[1] = body_node["origin"][1].as<double>();
+    origin[2] = body_node["origin"][2].as<double>();
+  } else {
+    throw YAMLException("Missing/invalid \"origin\" in " + name + " body");
   }
 
-  m->load_bodies(yaml["bodies"]);
-  m->load_plugins(yaml["joints"]);
+
+  if (body_node["color"] && body_node["color"].IsSequence() &&
+      body_node["color"].size() == 3) {
+    color[0] = body_node["color"][0].as<double>();
+    color[1] = body_node["color"][1].as<double>();
+    color[2] = body_node["color"][2].as<double>();
+    color[3] = body_node["color"][3].as<double>();
+  } else {
+    throw YAMLException("Missing/invalid \"color\" in " + name + " body");
+  }
+
+  if (body_node["type"]) {
+    std::string type_str = body_node["type"].as<std::string>();
+
+    if (type_str == "static") {
+      type = b2_staticBody;
+    } else if (type_str == "kinematic") {
+      type = b2_kinematicBody;
+    } else if (type_str == "dynamic") {
+      type = b2_dynamicBody;
+    } else {
+      throw YAMLException("Invalid \"type\" in " + name + " body, must be "
+                          "either static, kinematic, or dynamic");
+    }
+  } else {
+    throw YAMLException("Missing \"type\" in " + name + " body");
+  }
+
+  ModelBody *m = new ModelBody(physics_world, model, name, color, origin, type);
+
+  if (!body_node["footprints"] || !body_node["footprints"].IsSequence() ||
+       body_node["footprints"].size() <= 0) {
+    throw YAMLException("Missing/Invalid \"footprints\" in " + name + " body");
+  } else {
+    m->load_footprints(body_node["footprints"]);
+  }
 }
 
 void ModelBody::load_footprints(const YAML::Node &footprints_node) {

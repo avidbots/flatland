@@ -82,7 +82,7 @@ World *World::make_world(std::string yaml_path) {
   if (yaml["properties"] && yaml["properties"].IsMap()) {
     // TODO (Chunshang Li): parse properties
   } else {
-    throw YAMLException("Invalid world param \"properties\"");
+    throw YAMLException("Missing/invalid world param \"properties\"");
   }
 
   World *w = new World();
@@ -103,7 +103,7 @@ void World::load_layers(std::string yaml_path) {
   }
 
   if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
-    throw YAMLException("Invalid world param \"layers\"");
+    throw YAMLException("Missing/invalid world param \"layers\"");
   }
 
   // Box 2d has 16 collision categories we can use
@@ -117,7 +117,7 @@ void World::load_layers(std::string yaml_path) {
                                      path.parent_path(), yaml["layers"][i]);
 
     layers_.push_back(layer);
-    ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name.c_str());
+    ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());
   }
 }
 

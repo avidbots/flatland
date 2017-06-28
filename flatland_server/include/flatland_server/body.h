@@ -47,24 +47,25 @@
 #ifndef FLATLAND_BODY_H
 #define FLATLAND_BODY_H
 
-#include <flatland_server/Entity.h>
+#include <flatland_server/entity.h>
 
 namespace flatland_server {
 
 class Body {
 
  public:
-  Entity *entity;
+  Entity *entity_;
   std::string name_;
   b2Body *physics_body_;
   std::array<double, 4> color_;
 
-  Body(const std::string &name, const std::array<double, 4> &color, 
-    const std::array<double, 3> &origin, b2BodyType body_type, Model *model);
-  virtual ~Body()
+  Body(b2World *physics_world, Entity *entity, const std::string &name, 
+    const std::array<double, 4> &color, const std::array<double, 3> &origin, 
+    b2BodyType body_type);
+  virtual ~Body();
 
-  Body(const ModelBody &) = delete;
-  Body &operator=(const ModelBody &) = delete;
+  Body(const Body &) = delete;
+  Body &operator=(const Body &) = delete;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H

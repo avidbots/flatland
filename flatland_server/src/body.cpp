@@ -48,12 +48,10 @@
 
 namespace flatland_server {
 
-Body::Body(b2World *physics_world
-           const std::string &name, 
-           const std::array<double, 4> &color, 
-           const std::array<double, 3> &origin, 
-           b2BodyType body_type)
-    : physics_world_(physics_world),
+Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
+  const std::array<double, 4> &color, const std::array<double, 3> &origin, 
+  b2BodyType body_type) :
+      entity_(entity),
       name_(name),
       color_(color) {
 
@@ -62,7 +60,7 @@ Body::Body(b2World *physics_world
   body_def.position.Set(origin[0], origin[1]);
   body_def.angle = origin[2];
 
-  physics_body_ = physics_world_->CreateBody(&body_def);
+  physics_body_ = physics_world->CreateBody(&body_def);
   physics_body_->SetUserData(this);
 }
 
