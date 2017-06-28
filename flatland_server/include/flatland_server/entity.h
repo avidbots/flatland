@@ -59,6 +59,7 @@ class Entity {
   b2World *physics_world_;
 
   Entity(b2World *physics_world, std::string name);
+  virtual ~Entity() {};
 
   /* This class should be non-copyable. This will cause the destructor to be
       called twice for a given b2Body*/

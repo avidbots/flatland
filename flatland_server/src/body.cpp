@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model_body.h
- * @brief	 Defines Model Body
- * @author   Chunshang Li
+ * @name	 body.cpp
+ * @brief	 implements flatland body
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,25 +44,30 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_MODEL_BODY_H
-#define FLATLAND_MODEL_BODY_H
-
 #include <flatland_server/body.h>
 
 namespace flatland_server {
 
-class ModelBody : public {
- public:
+Body::Body(b2World *physics_world
+           const std::string &name, 
+           const std::array<double, 4> &color, 
+           const std::array<double, 3> &origin, 
+           b2BodyType body_type)
+    : physics_world_(physics_world),
+      name_(name),
+      color_(color) {
 
-  ModelBody(b2World *physics_world, uint8_t body_index, 
-    const std::string &name, const std::array<double, 4> &color, 
-    const std::array<double, 3> &origin, b2BodyType body_type, Model *model);
-  ~ModelBody();
+  b2BodyDef body_def;
+  body_def.type = body_type;
+  body_def.position.Set(origin[0], origin[1]);
+  body_def.angle = origin[2];
 
-  void load_footprints(const YAML::Node &footprints_node);
+  physics_body_ = physics_world_->CreateBody(&body_def);
+  physics_body_->SetUserData(this);
+}
 
-  static ModelBody *make_model_body(b2World *physics_world,
-    YAML::Node body_node);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_MODEL_BODY_H
+Body::~Body() {
+  physics_body_->GetWorld()->DestroyBody(physics_body_);
+}
+
+};  // namespace flatland_server

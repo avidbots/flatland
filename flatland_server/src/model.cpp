@@ -62,9 +62,8 @@ Model::~Model() {
   }
 }
 
-Model *Model::make_model(b2World *physics_world, uint8_t model_index, 
-                         const boost::filesystem::path &yaml_path,
-                         const YAML::Node &model_node) {
+Model *Model::make_model(b2World *physics_world,
+  const boost::filesystem::path &yaml_path, const YAML::Node &model_node) {
   YAML::Node yaml;
   std::string name;
 
@@ -83,11 +82,13 @@ Model *Model::make_model(b2World *physics_world, uint8_t model_index,
 
   Model *m = new Model(physics_world, model_index, name);
 
-  if (yaml["plugins"] && yaml["plugins"].IsSequence()) {
-    m->plugins_node_ = yaml["plugins"]
+  if (!yaml["plugins"]) {
+    // Pass
+  } if (!yaml["plugins"].IsSequence()) {
+    throw YAMLException("Invalid \"plugins\" in " + name + " model, not a"
+                        "list");
   } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
-    // if plugins exists and it is not a sequence, it is okay to have no plugins
-    throw YAMLException("Invalid \"plugins\" in " + name + " model");
+    m->plugins_node_ = yaml["plugins"]
   }
 
   m->load_bodies(yaml["bodies"]);
@@ -96,29 +97,29 @@ Model *Model::make_model(b2World *physics_world, uint8_t model_index,
 
 void Model::load_bodies(const YAML::Node &bodies_node) {
 
-  if (bodies_node && bodies_node.IsSequence() && bodies_node.size( > 0)) {
+  if (!bodies_node || !bodies_node.IsSequence() || bodies.size() <= 0) {
+    throw YAMLException("Invalid \"bodies\" in " + name_ + " model, "
+                        "must a be list of bodies of at least size 1");
+  } else {
     for (const auto &body_node : bodies_node) {
       ModelBody *b = ModelBody::make_body(physics_world_, bodies_.size(),
         body_node);
       bodies_.push_back(b);
     }
-  } else {
-    // you must have at least a body
-    throw YAMLException("Invalid \"bodies\" in " + name_ + " model");
   }
 }
 
 void Model::load_joints(const YAML::Node &joints_node) {
 
-  if (joints_node && joints_node.IsSequence()) {
+  if (joints_node && !joints_node.IsSequence()) {
+    // if joints exists and it is not a sequence, it is okay to have no joints
+    throw YAMLException("Invalid \"joints\" in " + name + " model");
+  } else {
     for (const auto &joint_node : joints_node) {
       ModelJoint *j = ModelBody::make_joint(physics_body_, joints_.size(),
         joint_node);
       joints_.push_back(j);
     }
-  } else if (joints_node && !joints_node.IsSequence()) {
-    // if joints exists and it is not a sequence, it is okay to have no joints
-    throw YAMLException("Invalid \"joints\" in " + name + " model");
   }
 }
 

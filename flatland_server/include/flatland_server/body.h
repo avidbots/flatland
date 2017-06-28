@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model_body.h
- * @brief	 Defines Model Body
+ * @name	 body.h
+ * @brief	 Defines Body
  * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,25 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_MODEL_BODY_H
-#define FLATLAND_MODEL_BODY_H
+#ifndef FLATLAND_BODY_H
+#define FLATLAND_BODY_H
 
-#include <flatland_server/body.h>
+#include <flatland_server/Entity.h>
 
 namespace flatland_server {
 
-class ModelBody : public {
+class Body {
+
  public:
+  Entity *entity;
+  std::string name_;
+  b2Body *physics_body_;
+  std::array<double, 4> color_;
 
-  ModelBody(b2World *physics_world, uint8_t body_index, 
-    const std::string &name, const std::array<double, 4> &color, 
+  Body(const std::string &name, const std::array<double, 4> &color, 
     const std::array<double, 3> &origin, b2BodyType body_type, Model *model);
-  ~ModelBody();
+  virtual ~Body()
 
-  void load_footprints(const YAML::Node &footprints_node);
-
-  static ModelBody *make_model_body(b2World *physics_world,
-    YAML::Node body_node);
+  Body(const ModelBody &) = delete;
+  Body &operator=(const ModelBody &) = delete;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H
