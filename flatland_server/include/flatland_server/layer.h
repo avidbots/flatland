@@ -53,20 +53,20 @@
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <flatland_server/body.h>
 
 namespace flatland_server {
 
 class Layer : public Entity {
  public:
   uint8_t layer_index_;
-  std::array<double, 4> color_;  // r, g, b, a
   cv::Mat bitmap_;
   double resolution_;
   double occupied_thresh_;
   double free_thresh_;
 
   std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
-  b2Body *physics_body_;
+  Body *body_;
 
   /**
    * @brief Constructor for the Layer class. All data required for

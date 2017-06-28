@@ -63,23 +63,19 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
              double occupied_thresh, double free_thresh)
     : Entity(physics_world, name),
       layer_index_(layer_index),
-      color_(color),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {
   bitmap.copyTo(bitmap_);
 
-  b2BodyDef body_def;
-  body_def.type = b2_staticBody;
-
-  physics_body_ = physics_world_->CreateBody(&body_def);
-  physics_body_->SetUserData(this);
+  // set zero transformation and transform each edge later
+  body_ = new Body(physics_world_, this, name, color, {0 ,0 ,0}, b2_staticBody);
 
   vectorize_bitmap();
   load_edges(origin);
 }
 
-Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
+Layer::~Layer() { delete body_; }
 
 Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
                          const boost::filesystem::path &world_yaml_dir,
@@ -288,7 +284,7 @@ void Layer::load_edges(const std::array<double, 3> &origin) {
     fixture_def.shape = &edge_tf;
     fixture_def.filter.categoryBits = 1 << layer_index_;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
-    physics_body_->CreateFixture(&fixture_def);
+    body_->physics_body_->CreateFixture(&fixture_def);
   }
 }
 

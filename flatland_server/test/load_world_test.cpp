@@ -157,10 +157,10 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->layer_index_, 0);
   EXPECT_EQ(w->layers_[0]->type(), Entity::Type::LAYER);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[0], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[3], 0);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[0], 0);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[1], 1);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[2], 0);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[3], 0);
   EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
   EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
@@ -172,10 +172,10 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
   EXPECT_EQ(w->layers_[1]->layer_index_, 1);
   EXPECT_EQ(w->layers_[1]->type(), Entity::Type::LAYER);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[0], 1.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[3], 0.5);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[0], 1.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[1], 0.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[2], 0.0);
+  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[3], 0.5);
   EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
   EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
@@ -247,7 +247,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.30, 0.20), b2Vec2(0.30, -0.05))};
 
   std::vector<b2EdgeShape> layer0_transformed_edges;
-  for (b2Fixture *f = w->layers_[0]->physics_body_->GetFixtureList(); f;
+  for (b2Fixture *f = w->layers_[0]->body_->physics_body_->GetFixtureList(); f;
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
     layer0_transformed_edges.push_back(e);
@@ -285,7 +285,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 0.0), b2Vec2(7.5, 0.0))};
 
   std::vector<b2EdgeShape> layer1_transformed_edges;
-  for (b2Fixture *f = w->layers_[1]->physics_body_->GetFixtureList(); f;
+  for (b2Fixture *f = w->layers_[1]->body_->physics_body_->GetFixtureList(); f;
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
     layer1_transformed_edges.push_back(e);
