@@ -44,7 +44,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <flatland_server/model_plugin.h>
 
 namespace flatland_server {
@@ -56,4 +55,4 @@ void ModelPlugin::Initialize(const std::string &name, Model *model,
   OnInitialize(config);
 }
 
-};      // namespace flatland_server
+};  // namespace flatland_server

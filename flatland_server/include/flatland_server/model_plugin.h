@@ -48,21 +48,20 @@
 #define FLATLAND_SERVER_MODEL_PLUGIN_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/layer.h>
+#include <flatland_server/model.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
-#include <flatland_server/model.h>
-#include <flatland_server/layer.h>
 
 namespace flatland_server {
 class ModelPlugin {
  public:
-
   std::string name_;
   ros::NodeHandle nh_;
   Model *model_;
 
   void Initialize(const std::string &name, Model *model_,
-    const YAML::Node &config);
+                  const YAML::Node &config);
   virtual void OnInitialize(const YAML::Node &config) = 0;
   virtual void WorldUpdateBegin(double timestep) {}
   virtual void WorldUpdateEnd(double timestep) {}
