@@ -45,27 +45,24 @@
  */
 
 #include <flatland_plugins/laser.h>
-#include <flatland_server/model_body_plugin.h>
+#include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
 TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
-  pluginlib::ClassLoader<flatland_server::ModelBodyPlugin> loader(
-      "flatland_server", "flatland_server::ModelBodyPlugin");
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
+      "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::ModelBodyPlugin> laser =
+    boost::shared_ptr<flatland_server::ModelPlugin> laser =
         loader.createInstance("flatland_plugins::Laser");
 
-    ros::NodeHandle handle;
-    YAML::Node node;
-
-    laser->initialize(handle, node);
+    laser->Initialize("LaserTest", NULL, YAML::Node());
   } catch (pluginlib::PluginlibException& e) {
-    printf("%s", e.what());
-    // FAIL() << "Failed to load Laser plugin. " << e.what();
+    FAIL() << "Failed to load Laser plugin. " << e.what();
   }
 }
 

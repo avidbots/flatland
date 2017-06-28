@@ -44,19 +44,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_body_plugin.h>
+#include <flatland_server/model_plugin.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
 
 namespace flatland_plugins {
 
-class Laser : public flatland_server::ModelBodyPlugin {
+class Laser : public flatland_server::ModelPlugin {
  public:
-  void initialize(ros::NodeHandle handle, YAML::Node &config);
-  void update(double timestep);
-  void collisionWithMap(b2EdgeShape &edge);
-  void collisionWithModel(void *model);
+  virtual void OnInitialize(const YAML::Node &config);
 };
 };
 

@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	  laser.cpp
- * @brief   Laser plugin
- * @author  Chunshang Li
+ * @name	model_plugin.cpp
+ * @brief	Implementation for ModelPlugin pluginlib plugins
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,15 +44,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/laser.h>
+
 #include <flatland_server/model_plugin.h>
-#include <pluginlib/class_list_macros.h>
 
-namespace flatland_plugins {
+namespace flatland_server {
 
-void Laser::OnInitialize(const YAML::Node &config) {
-  ROS_INFO_NAMED("LaserPlugin", "Laser Initialized");
+void ModelPlugin::Initialize(const std::string &name, Model *model,
+                             const YAML::Node &config) {
+  name_ = name;
+  model_ = model;
+  OnInitialize(config);
 }
-};
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::Laser, flatland_server::ModelPlugin)
+};      // namespace flatland_server

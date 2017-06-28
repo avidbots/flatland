@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_body_plugin.h
- * @brief	Interface for ModelBodyPlugin pluginlib plugins
+ * @name	model_plugin.h
+ * @brief	Interface for ModelPlugin pluginlib plugins
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,28 +44,35 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
-#define FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+#ifndef FLATLAND_SERVER_MODEL_PLUGIN_H
+#define FLATLAND_SERVER_MODEL_PLUGIN_H
 
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
+#include <flatland_server/model.h>
+#include <flatland_server/layer.h>
 
 namespace flatland_server {
-class ModelBodyPlugin {
+class ModelPlugin {
  public:
-  /**
-   * @param handle The ROS nodehandle for this plugin instance
-   * @param config The yaml config file for this plugin
-   */
-  virtual void initialize(ros::NodeHandle handle, YAML::Node &config) = 0;
-  virtual void update(double timestep) = 0;
-  virtual void collisionWithMap(b2EdgeShape &edge) = 0;
-  virtual void collisionWithModel(void *model) = 0;
-  virtual ~ModelBodyPlugin() {}
+
+  std::string name_;
+  ros::NodeHandle nh_;
+  Model *model_;
+
+  void Initialize(const std::string &name, Model *model_,
+    const YAML::Node &config);
+  virtual void OnInitialize(const YAML::Node &config) = 0;
+  virtual void WorldUpdateBegin(double timestep) {}
+  virtual void WorldUpdateEnd(double timestep) {}
+  virtual void CollisionWithMap(Layer layer, b2Fixture fixture) {}
+  virtual void CollisionWithModel(Model *model, b2Fixture fixture) {}
+  virtual void Collision(b2Fixture fixture_A, b2Fixture fixture_B) {}
+  virtual ~ModelPlugin() {}
 
  protected:
-  ModelBodyPlugin() {}
+  ModelPlugin() {}
 };
 };      // namespace flatland_server
-#endif  // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+#endif  // FLATLAND_SERVER_MODEL_PLUGIN_H
