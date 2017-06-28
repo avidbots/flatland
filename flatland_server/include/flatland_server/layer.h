@@ -60,7 +60,6 @@ class Layer : public Entity {
  public:
   uint8_t layer_index_;
   std::array<double, 4> color_;  // r, g, b, a
-  std::array<double, 3> origin_;
   cv::Mat bitmap_;
   double resolution_;
   double occupied_thresh_;
@@ -106,8 +105,10 @@ class Layer : public Entity {
   /**
    * @brief Apply the necessary transformations and load the map into the
    * physics simulator
+   * @param[in] origin Coordinate of the lower left corner of the image, in the
+   * form of x, y, theta, rotation theta is ignored
    */
-  void load_edges();
+  void load_edges(const std::array<double, 3> &origin);
 
   /**
    * @brief Factory method to instantiate a layer

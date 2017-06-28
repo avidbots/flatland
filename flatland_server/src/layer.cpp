@@ -64,7 +64,6 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
     : Entity(physics_world, name),
       layer_index_(layer_index),
       color_(color),
-      origin_(origin),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {
@@ -77,7 +76,7 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
   physics_body_->SetUserData(this);
 
   vectorize_bitmap();
-  load_edges();
+  load_edges(origin);
 }
 
 Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
@@ -260,10 +259,10 @@ void Layer::vectorize_bitmap() {
   }
 }
 
-void Layer::load_edges() {
+void Layer::load_edges(const std::array<double, 3> &origin) {
   // rotation from the map yaml origin is ignored
   RotateTranslate transform =
-      Geometry::createTransform(origin_[0], origin_[1], 0);
+      Geometry::createTransform(origin[0], origin[1], 0);
 
   for (const auto &edge : extracted_edges) {
     b2EdgeShape edge_tf;

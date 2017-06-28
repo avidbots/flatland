@@ -161,9 +161,6 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->color_[3], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[0], 0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[1], -0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[2], 1.57);
   EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
   EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
@@ -179,9 +176,6 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->color_[3], 0.5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[0], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[1], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[2], 0.0);
   EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
   EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
