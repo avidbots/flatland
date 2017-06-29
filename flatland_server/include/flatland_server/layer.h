@@ -77,7 +77,7 @@ class Layer : public Entity {
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
    * @param[in] origin Coordinate of the lower left corner of the image, in the
-   * form of x, y, theta, rotation theta is ignored
+   * form of x, y, theta
    * @param[in] resolution Resolution of the map image in meters per pixel
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
@@ -105,10 +105,8 @@ class Layer : public Entity {
   /**
    * @brief Apply the necessary transformations and load the map into the
    * physics simulator
-   * @param[in] origin Coordinate of the lower left corner of the image, in the
-   * form of x, y, theta, rotation theta is ignored
    */
-  void load_edges(const std::array<double, 3> &origin);
+  void load_edges();
 
   /**
    * @brief Factory method to instantiate a layer

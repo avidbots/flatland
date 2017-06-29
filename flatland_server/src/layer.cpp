@@ -68,11 +68,10 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
       free_thresh_(free_thresh) {
   bitmap.copyTo(bitmap_);
 
-  // set zero transformation and transform each edge later
-  body_ = new Body(physics_world_, this, name, color, {0 ,0 ,0}, b2_staticBody);
+  body_ = new Body(physics_world_, this, name, color, origin, b2_staticBody);
 
   vectorize_bitmap();
-  load_edges(origin);
+  load_edges();
 }
 
 Layer::~Layer() { delete body_; }
@@ -255,10 +254,7 @@ void Layer::vectorize_bitmap() {
   }
 }
 
-void Layer::load_edges(const std::array<double, 3> &origin) {
-  // rotation from the map yaml origin is ignored
-  RotateTranslate transform =
-      Geometry::createTransform(origin[0], origin[1], 0);
+void Layer::load_edges() {
 
   for (const auto &edge : extracted_edges) {
     b2EdgeShape edge_tf;
@@ -275,10 +271,7 @@ void Layer::load_edges(const std::array<double, 3> &origin) {
     v2.x = v2.x * resolution_;
     v2.y = v2.y * resolution_;
 
-    b2Vec2 v1_tf = Geometry::transform(v1, transform);
-    b2Vec2 v2_tf = Geometry::transform(v2, transform);
-
-    edge_tf.Set(v1_tf, v2_tf);
+    edge_tf.Set(v1, v2);
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge_tf;

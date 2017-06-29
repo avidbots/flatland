@@ -54,6 +54,7 @@
 #include <boost/filesystem.hpp>
 #include <regex>
 #include <string>
+#include <flatland_server/geometry.h>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -89,7 +90,7 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
   }
 
   bool float_cmp(double n1, double n2) {
-    bool ret = fabs(n1 - n2) < 1e-5;
+    bool ret = fabs(n1 - n2) < 1e-3;
     return ret;
   }
 
@@ -138,6 +139,15 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
     } else {
       return false;
     }
+  }
+
+  // transform edge to 
+  void transform_edge_to_global(b2Body *body, b2EdgeShape *edge) {
+    RotateTranslate transform = Geometry::createTransform(
+      body->GetPosition().x, body->GetPosition().y, body->GetAngle());
+
+      edge->m_vertex1 = Geometry::transform(edge->m_vertex1, transform);
+      edge->m_vertex2 = Geometry::transform(edge->m_vertex2, transform);
   }
 };
 
@@ -229,8 +239,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
                                      layer1_expected_edges));
 
   // check that bitmap is transformed correctly. This involves flipping the
-  // y coordinates, applying the resolution, and apply the translation
-  // with respect to the map origin
+  // y coordinates, applying the resolution, and apply the translation.
+  // This vector are the vertice of each edge in world coordinates
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_transformed_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.30, 0.20)),
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.25, 0.15)),
@@ -250,14 +260,12 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   for (b2Fixture *f = w->layers_[0]->body_->physics_body_->GetFixtureList(); f;
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+    transform_edge_to_global(w->layers_[0]->body_->physics_body_, &e);
     layer0_transformed_edges.push_back(e);
 
     // check that collision groups are correctly assigned
     EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
     EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
-
-    b2Vec2 v1_tf = e.m_vertex1;
-    b2Vec2 v2_tf = e.m_vertex2;
   }
   EXPECT_EQ(layer0_transformed_edges.size(),
             layer0_expected_transformed_edges.size());
@@ -288,6 +296,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   for (b2Fixture *f = w->layers_[1]->body_->physics_body_->GetFixtureList(); f;
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+    transform_edge_to_global(w->layers_[1]->body_->physics_body_, &e);
     layer1_transformed_edges.push_back(e);
 
     // check that collision groups are correctly assigned
