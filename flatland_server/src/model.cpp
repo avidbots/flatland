@@ -50,7 +50,7 @@
 namespace flatland_server {
 
 Model::Model(b2World *physics_world, const std::string &name)
-    : Entity(physics_world, name) {}
+    : Entity(physics_world), name_(name) {}
 
 Model::~Model() {
   for (int i = 0; i < bodies_.size(); i++) {

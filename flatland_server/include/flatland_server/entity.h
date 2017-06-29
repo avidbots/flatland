@@ -55,10 +55,9 @@ class Entity {
  public:
   enum Type { LAYER, MODEL };
 
-  std::string name_;
   b2World *physics_world_;
 
-  Entity(b2World *physics_world, std::string name);
+  Entity(b2World *physics_world);
   virtual ~Entity() {};
 
   /* This class should be non-copyable. This will cause the destructor to be

@@ -59,13 +59,14 @@ namespace flatland_server {
 
 class Layer : public Entity {
  public:
-  uint8_t layer_index_;
+  std::string name_;
+  uint8_t layer_id_;
   cv::Mat bitmap_;
   double resolution_;
   double occupied_thresh_;
   double free_thresh_;
 
-  std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
+//   std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
   Body *body_;
 
   /**
@@ -98,15 +99,9 @@ class Layer : public Entity {
   virtual Type type() { return Type::LAYER; }
 
   /**
-   * @brief Vectorize the bitmap into line segments usable by physics simulator
+   * @brief Load the map. It vectorizes the bitmap and apply the transformations
    */
-  void vectorize_bitmap();
-
-  /**
-   * @brief Apply the necessary transformations and load the map into the
-   * physics simulator
-   */
-  void load_edges();
+  void load_map();
 
   /**
    * @brief Factory method to instantiate a layer

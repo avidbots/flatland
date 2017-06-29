@@ -58,7 +58,7 @@ class ModelBody;
   
 class Model : public Entity {
  public:
-
+  std::string name_;
   std::vector<ModelBody*> bodies_;
   // std::vector<ModelJoint*> joints_
   YAML::Node plugins_node_;
