@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.h
- * @brief	 Loads world file
- * @author Joseph Duchesne
+ * @name	 joint.h
+ * @brief	 Defines Joint
+ * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,60 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_WORLD_H
-#define FLATLAND_SERVER_WORLD_H
+#ifndef FLATLAND_JOINT_H
+#define FLATLAND_JOINT_H
 
-#include <Box2D/Box2D.h>
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <string>
-#include <vector>
+#include <flatland_server/entity.h>
 
 namespace flatland_server {
 
-class World {
+class Joint {
+
  public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer*> layers_;
-  std::vector<Model*> models_;
+  Entity *entity_;
+  std::string name_;
+  b2Joint *physics_joint_;
 
-  /**
-   * @brief Constructor for the world class. All data required for
-   * initialization should be passed in here
-   */
-  World();
+  Joint(b2World *physics_world, Entity *entity, const std::string &name, 
+    const std::array<double, 3> &origin, 
+    b2JointType joint_type);
+  virtual ~Joint();
 
-  /**
-   * @brief Destructor for the world class
-   */
-  ~World();
-
-  /**
-   * @brief load layers into the world. Throws flatland server YAML exceptions
-   * @param[in] yaml_path Path to the world yaml file containing list of layers
-   */
-  void load_layers(std::string yaml_path);
-
-  /**
-   * @brief load models into the world. Throws flatland server YAML exceptions
-   * @param[in] yaml_path Path to the world yaml file containing list of models
-   */
-  void load_models(std::string yaml_path);
-
-  /**
-   * brief @load models into the world. Throws flatland server YAML exceptions
-   * @param[in] yaml_path Path to the model yaml file
-   */
-  void load_model(std::string yaml_path);
-
-  /**
-   * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class. Throws flatland server 
-   * YAML exceptions
-   * @param[in] yaml_path Path to the world yaml file
-   */
-  static World *make_world(std::string yaml_path);
+  Joint(const Joint &) = delete;
+  Joint &operator=(const Joint &) = delete;
 };
 };      // namespace flatland_server
-#endif  // FLATLAND_SERVER_WORLD_H
+#endif  // FLATLAND_MODEL_JOINT_H

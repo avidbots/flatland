@@ -68,26 +68,38 @@ World::~World() {
 }
 
 World *World::make_world(std::string yaml_path) {
-  boost::filesystem::path path(yaml_path);
 
   // parse the world YAML file
   YAML::Node yaml;
 
   try {
-    yaml = YAML::LoadFile(path.string());
+    yaml = YAML::LoadFile(yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
+    throw YAMLException("Error loading " + yaml_path, e.msg, e.mark);
   }
 
+
   if (yaml["properties"] && yaml["properties"].IsMap()) {
-    // TODO (Chunshang Li): parse properties
+    try {
+      // TODO (Chunshang): parse properties
+    } catch (const YAML::Exception &e) {
+      throw YAMLException("Error loading world properties from" + yaml_path, 
+        e.msg, e.mark);
+    }
   } else {
     throw YAMLException("Missing/invalid world param \"properties\"");
   }
 
   World *w = new World();
-  w->load_layers(yaml_path);
-  w->load_models(yaml_path);
+  
+  try {
+    w->load_layers(yaml_path);
+    w->load_models(yaml_path);
+  } catch (const YAMLException &e) {
+    delete w;
+    throw e;
+  }
+
   return w;
 }
 
@@ -113,8 +125,15 @@ void World::load_layers(std::string yaml_path) {
 
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer = Layer::make_layer(physics_world_, layers_.size(), 
-                                     path.parent_path(), yaml["layers"][i]);
+    Layer *layer;
+
+    try {
+      layer = Layer::make_layer(physics_world_, layers_.size(), 
+                                path.parent_path(), yaml["layers"][i]);
+    } catch (const YAML::Exception &e) {
+      throw YAMLException("Error loading layer from " + yaml_path, 
+        e.msg, e.mark);
+    }
 
     layers_.push_back(layer);
     ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());

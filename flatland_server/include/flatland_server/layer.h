@@ -73,7 +73,7 @@ class Layer : public Entity {
    * @brief Constructor for the Layer class. All data required for
    * initialization should be passed in here
    * @param[in] physics_world Pointer to the box2d physics world
-   * @param[in] layer_index Unique index of the layer
+   * @param[in] layer_id Unique id of the layer
    * @param[in] name Name of the layer
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
@@ -83,7 +83,7 @@ class Layer : public Entity {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
-  Layer(b2World *physics_world, uint8_t layer_index, const std::string &name,
+  Layer(b2World *physics_world, uint8_t layer_id, const std::string &name,
         const cv::Mat &bitmap, const std::array<double, 4> &color,
         const std::array<double, 3> &origin, double resolution,
         double occupied_thresh, double free_thresh);
@@ -106,12 +106,12 @@ class Layer : public Entity {
   /**
    * @brief Factory method to instantiate a layer
    * @param[in] physics_world Pointer to the box2d physics world
-   * @param[in] layer_index Index of the layer, in the order of yaml definition
+   * @param[in] layer_id id of the layer, in the order of yaml definition
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
    */
-  static Layer *make_layer(b2World *physics_world, uint8_t layer_index,
+  static Layer *make_layer(b2World *physics_world, uint8_t layer_id,
                            const boost::filesystem::path &world_yaml_dir,
                            const YAML::Node &layer_node);
 };
