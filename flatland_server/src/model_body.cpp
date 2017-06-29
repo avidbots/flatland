@@ -112,6 +112,8 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
   } else {
     m->load_footprints(body_node["footprints"]);
   }
+
+  return m;
 }
 
 void ModelBody::load_footprints(const YAML::Node &footprints_node) {
