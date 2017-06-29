@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>flatland_viz</name>
+  <version>1.0.0</version>
+  <description>The flatland gui and visualization</description>
+  <license>BSD</license>
+  <url type="website">https://bitbucket.org/avidbots/flatland</url>
+
+  <maintainer email="joseph@avidbots.com">Joseph Duchesne</maintainer>
+  <author email="joseph@avidbots.com">Joseph Duchesne</author>
+  <author>Chunshang Li</author>
+  <author>Mike Brousseau</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>cmake_modules</build_depend>
+
+  <depend>qtbase5-dev</depend>
+  <depend>libqt5-core</depend>
+  <depend>libqt5-gui</depend>
+  <depend>libqt5-widgets</depend>
+  <depend>roscpp</depend>
+  <depend>rviz</depend>
+  <depend>flatland_server</depend>
+
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+</package>
