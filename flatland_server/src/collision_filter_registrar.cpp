@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model_body.h
- * @brief	 Defines Model Body
+ * @name	 collision_filter_registrar.cpp
+ * @brief	 Implements Collision Filter Registrar
  * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,28 +44,60 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_BODY_H
-#define FLATLAND_SERVER_MODEL_BODY_H
-
-#include <flatland_server/body.h>
-#include <flatland_server/model.h>
-#include <yaml-cpp/yaml.h>
+#include <flatland_server/collision_filter_registrar.h>
 
 namespace flatland_server {
 
-class Model;
 
-class ModelBody : public Body {
- public:
+CollisionFilterRegistrar::CollisionFilterRegistrar()
+  : no_collide_group_cnt_(0), collide_group_cnt_(0){}
 
-  ModelBody(b2World *physics_world, Model *model, const std::string &name, 
-    const std::array<double, 4> &color, const std::array<double, 3> &origin, 
-    b2BodyType body_type);
+int CollisionFilterRegistrar::RegisterCollide() {
+  return 0;
+}
 
-  void load_footprints(const YAML::Node &footprints_node);
+int CollisionFilterRegistrar::RegisterNoCollide() {
+  return 0;
+}
 
-  static ModelBody *make_body(b2World *physics_world, Model *model,
-    YAML::Node body_node);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_MODEL_BODY_H
+bool CollisionFilterRegistrar::IsLayersFull() {
+  return layer_id_table_.size() >= MAX_LAYERS;
+}
+
+int CollisionFilterRegistrar::RegisterLayer(std::string layer_name) {
+  if (IsLayersFull()) {
+    return false;
+  }
+
+  if (layer_id_table_.count(layer_name) > 0) {
+    return LAYER_ALREADY_EXIST;
+  }
+
+  // You have maximum number of ID you can assign. Loop through all the ones
+  // assigned currently and find on that is not used
+  int i;
+  for (i = 0; i < MAX_LAYERS; i++) {
+    std::map<std::string, int>::iterator it;
+    for (it = layer_id_table_.begin(); it != layer_id_table_.end(); it++) {
+      if (it->second == i) {
+        break;
+      }
+    }
+
+    if (it == layer_id_table_.end()) {
+      layer_id_table_[layer_name] = i;
+      break;
+    }
+  }
+
+  return i;
+}
+
+int CollisionFilterRegistrar::LookUpLayerId(std::string layer_name) {
+  if (layer_id_table_.count(layer_name) == 0) {
+    return LAYER_NOT_EXIST;
+  }
+  return layer_id_table_[layer_name];
+}
+
+}; // namespace flatland_server

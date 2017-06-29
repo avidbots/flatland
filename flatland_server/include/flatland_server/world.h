@@ -50,6 +50,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <flatland_server/collision_filter_registrar.h>
 #include <string>
 #include <vector>
 
@@ -61,6 +62,7 @@ class World {
   b2Vec2 gravity_;
   std::vector<Layer*> layers_;
   std::vector<Model*> models_;
+  CollisionFilterRegistrar cfr_;
 
   /**
    * @brief Constructor for the world class. All data required for

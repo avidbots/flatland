@@ -49,18 +49,20 @@
 
 #include <flatland_server/entity.h>
 #include <flatland_server/model_body.h>
+#include <flatland_server/joint.h>
 #include <boost/filesystem.hpp>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
 class ModelBody;
-  
+class Joint;
+
 class Model : public Entity {
  public:
   std::string name_;
   std::vector<ModelBody*> bodies_;
-  // std::vector<ModelJoint*> joints_
+  std::vector<Joint*> joints_;
   YAML::Node plugins_node_;
 
   Model(b2World *physics_world, const std::string &name);

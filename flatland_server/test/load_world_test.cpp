@@ -165,7 +165,6 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
-  EXPECT_EQ(w->layers_[0]->layer_id_, 0);
   EXPECT_EQ(w->layers_[0]->type(), Entity::Type::LAYER);
   EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[0], 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[1], 1);
@@ -180,7 +179,6 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
-  EXPECT_EQ(w->layers_[1]->layer_id_, 1);
   EXPECT_EQ(w->layers_[1]->type(), Entity::Type::LAYER);
   EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[0], 1.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[1], 0.0);

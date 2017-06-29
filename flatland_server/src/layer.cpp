@@ -56,27 +56,28 @@
 
 namespace flatland_server {
 
-Layer::Layer(b2World *physics_world, uint8_t layer_id,
+Layer::Layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
              const std::string &name, const cv::Mat &bitmap,
              const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
              double occupied_thresh, double free_thresh)
     : Entity(physics_world),
-      layer_id_(layer_id),
+      cfr_(cfr),
       name_(name),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {
   bitmap.copyTo(bitmap_);
 
-  body_ = new Body(physics_world_, this, name, color, origin, b2_staticBody);
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
+  cfr->RegisterLayer(name_);
 
   load_map();
 }
 
 Layer::~Layer() { delete body_; }
 
-Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_id,
+Layer *Layer::make_layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
                          const boost::filesystem::path &world_yaml_dir,
                          const YAML::Node &layer_node) {
   std::string name;
@@ -169,25 +170,27 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_id,
     throw YAMLException("Missing \"image\" in " + name + " layer");
   }
 
-  return new Layer(physics_world, layer_id, name, bitmap, color, origin,
+  return new Layer(physics_world, cfr, name, bitmap, color, origin,
                    resolution, occupied_thresh, free_thresh);
 }
 
 void Layer::load_map() {
 
-  auto add_edge = [this](double x1, double y1, double x2, double y2) {
+  int layer_id = cfr_->LookUpLayerId(name_);
+
+  auto add_edge = [this, layer_id](double x1, double y1, double x2, double y2) {
     b2EdgeShape edge;
-    double rows = this->bitmap_.rows;
-    double res = this->resolution_;
+    double rows = bitmap_.rows;
+    double res = resolution_;
 
     edge.Set(b2Vec2(res * x1, res * (rows - y1)), 
       b2Vec2(res * x2, res * (rows - y2)));
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
-    fixture_def.filter.categoryBits = 1 << layer_id_;
+    fixture_def.filter.categoryBits = 1 << layer_id;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
-    this->body_->physics_body_->CreateFixture(&fixture_def);
+    body_->physics_body_->CreateFixture(&fixture_def);
   };
 
 

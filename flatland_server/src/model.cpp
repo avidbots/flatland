@@ -57,9 +57,9 @@ Model::~Model() {
     delete bodies_[i];
   }
   
-  // for (int i = 0; i < joints_.size(); i++) {
-  //   delete joints_[i];
-  // }
+  for (int i = 0; i < joints_.size(); i++) {
+    delete joints_[i];
+  }
 }
 
 Model *Model::make_model(b2World *physics_world,
@@ -109,16 +109,15 @@ void Model::load_bodies(const YAML::Node &bodies_node) {
 
 void Model::load_joints(const YAML::Node &joints_node) {
 
-  // if (joints_node && !joints_node.IsSequence()) {
-  //   // if joints exists and it is not a sequence, it is okay to have no joints
-  //   throw YAMLException("Invalid \"joints\" in " + name + " model");
-  // } else {
-  //   for (const auto &joint_node : joints_node) {
-  //     ModelJoint *j = ModelBody::make_joint(physics_body_, joints_.size(),
-  //       joint_node);
-  //     joints_.push_back(j);
-  //   }
-  // }
+  if (joints_node && !joints_node.IsSequence()) {
+    // if joints exists and it is not a sequence, it is okay to have no joints
+    throw YAMLException("Invalid \"joints\" in " + name_ + " model");
+  } else {
+    for (const auto &joint_node : joints_node) {
+      Joint *j = Joint::make_joint(physics_world_, this, joint_node);
+      joints_.push_back(j);
+    }
+  }
 }
 
 };  // namespace flatland_server

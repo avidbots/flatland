@@ -118,17 +118,18 @@ void World::load_layers(std::string yaml_path) {
     throw YAMLException("Missing/invalid world param \"layers\"");
   }
 
-  // Box 2d has 16 collision categories we can use
-  if (yaml["layers"].size() > 16) {
-    throw YAMLException("Maximum number of layers is 16");
-  }
-
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
     Layer *layer;
 
+    if (cfr_.IsLayersFull()) {
+      throw YAMLException("Max number of layers reached, max is " + 
+        cfr_.MAX_LAYERS);
+    }
+
     try {
-      layer = Layer::make_layer(physics_world_, layers_.size(), 
+
+      layer = Layer::make_layer(physics_world_, &cfr_, 
                                 path.parent_path(), yaml["layers"][i]);
     } catch (const YAML::Exception &e) {
       throw YAMLException("Error loading layer from " + yaml_path, 

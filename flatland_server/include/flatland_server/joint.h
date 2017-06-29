@@ -44,27 +44,33 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_JOINT_H
-#define FLATLAND_JOINT_H
+#ifndef FLATLAND_SERVER_JOINT_H
+#define FLATLAND_SERVER_JOINT_H
 
-#include <flatland_server/entity.h>
+#include <flatland_server/model.h>
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
+
+class Model;
 
 class Joint {
 
  public:
-  Entity *entity_;
+  Model *model_;
   std::string name_;
   b2Joint *physics_joint_;
+  b2World *physics_world_;
 
-  Joint(b2World *physics_world, Entity *entity, const std::string &name, 
-    const std::array<double, 3> &origin, 
-    b2JointType joint_type);
-  virtual ~Joint();
+  Joint(b2World *physics_world, Model *model, const std::string &name,
+    b2JointDef *joint_def);
+  ~Joint();
 
   Joint(const Joint &) = delete;
   Joint &operator=(const Joint &) = delete;
+
+  static Joint *make_joint(b2World *physics_world, Model *model,
+    YAML::Node joint_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model_body.h
- * @brief	 Defines Model Body
+ * @name	 joint.cpp
+ * @brief	 Implements Joint
  * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,28 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_BODY_H
-#define FLATLAND_SERVER_MODEL_BODY_H
-
-#include <flatland_server/body.h>
-#include <flatland_server/model.h>
-#include <yaml-cpp/yaml.h>
+#include <flatland_server/joint.h>
 
 namespace flatland_server {
 
-class Model;
+Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
+  b2JointDef *joint_def)
+  : physics_world_(physics_world),
+    model_(model),
+    name_(name) {
+  
+  physics_joint_ = physics_world->CreateJoint(joint_def);
+  physics_joint_->SetUserData(this);
+}
 
-class ModelBody : public Body {
- public:
+Joint::~Joint() {
+  physics_world_->DestroyJoint(physics_joint_);
+}
 
-  ModelBody(b2World *physics_world, Model *model, const std::string &name, 
-    const std::array<double, 4> &color, const std::array<double, 3> &origin, 
-    b2BodyType body_type);
+Joint *Joint::make_joint(b2World *physics_world, Model *model,
+  YAML::Node joint_node) {
 
-  void load_footprints(const YAML::Node &footprints_node);
+}
 
-  static ModelBody *make_body(b2World *physics_world, Model *model,
-    YAML::Node body_node);
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_MODEL_BODY_H
+}; // namespace flatland_server

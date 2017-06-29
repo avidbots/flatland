@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model_body.h
- * @brief	 Defines Model Body
+ * @name	 collision_filter_registrar.h
+ * @brief	 Defines Collision Filter Registrar
  * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,28 +44,34 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_BODY_H
-#define FLATLAND_SERVER_MODEL_BODY_H
+#ifndef FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H
+#define FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H
 
-#include <flatland_server/body.h>
-#include <flatland_server/model.h>
-#include <yaml-cpp/yaml.h>
+#include <map>
+#include <string>
 
 namespace flatland_server {
 
-class Model;
+class CollisionFilterRegistrar {
 
-class ModelBody : public Body {
  public:
+  static const int LAYER_NOT_EXIST = -1;
+  static const int LAYER_ALREADY_EXIST = -2;
+  static const int LAYERS_FULL = -3;
+  static const int MAX_LAYERS = 16;
+  
+  int no_collide_group_cnt_;
+  int collide_group_cnt_;
+  std::map<std::string, int> layer_id_table_;
 
-  ModelBody(b2World *physics_world, Model *model, const std::string &name, 
-    const std::array<double, 4> &color, const std::array<double, 3> &origin, 
-    b2BodyType body_type);
+  CollisionFilterRegistrar();
 
-  void load_footprints(const YAML::Node &footprints_node);
-
-  static ModelBody *make_body(b2World *physics_world, Model *model,
-    YAML::Node body_node);
+  int RegisterCollide();
+  int RegisterNoCollide();
+  bool IsLayersFull();
+  int RegisterLayer(std::string layer);
+  int LookUpLayerId(std::string name);
+  
 };
 };      // namespace flatland_server
-#endif  // FLATLAND_MODEL_BODY_H
+#endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H

@@ -78,7 +78,9 @@ add_library(flatland_lib
   src/debug_visualization.cpp
   src/geometry.cpp
   src/body.cpp
+  src/joint.cpp
   src/model_body.cpp
+  src/collision_filter_registrar.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib
