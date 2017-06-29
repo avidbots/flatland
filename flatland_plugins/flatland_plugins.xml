@@ -1,5 +1,5 @@
-<library path="lib/libflatland_plugins">
-  <class type="flatland_plugins::Laser" base_class_type="flatland_server::ModelBodyPlugin">
+<library path="lib/libflatland_plugins_lib">
+  <class type="flatland_plugins::Laser" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland laser plugin</description>
   </class>
 </library>

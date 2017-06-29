@@ -77,6 +77,7 @@ add_library(flatland_lib
   src/entity.cpp
   src/debug_visualization.cpp
   src/geometry.cpp
+  src/model_plugin.cpp
 )
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib
