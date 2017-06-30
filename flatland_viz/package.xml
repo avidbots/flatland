@@ -19,6 +19,7 @@
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
   <depend>libqt5-widgets</depend>
+  <depend>libogre-dev</depend>
   <depend>roscpp</depend>
   <depend>rviz</depend>
   <depend>flatland_server</depend>

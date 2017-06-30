@@ -24,11 +24,26 @@ if("${COVERAGE}" STREQUAL "ON")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
 endif()
 
+########################
+## Ogre Include Stuff ##
+########################
+
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(OGRE_OV OGRE OGRE-Overlay)
+
+# Old versions of OGRE (pre 1.9) included OGRE-Overlay in the main package
+# (i.e. there was no OGRE-Overlay component).  So if the above
+# pkg_check_modules() failed, try looking for just OGRE.
+if(NOT OGRE_OV_FOUND)
+  pkg_check_modules(OGRE_OV REQUIRED OGRE)
+endif(NOT OGRE_OV_FOUND)
+
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include ${OGRE_OV_INCLUDE_DIRS}
   CATKIN_DEPENDS roscpp rviz
 )
 
@@ -37,7 +52,7 @@ catkin_package(
 ## Build ##
 ###########
 
-include_directories(include ${catkin_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${OGRE_OV_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
 ## This setting causes Qt's "MOC" generation to happen automatically.
@@ -64,6 +79,8 @@ add_executable(flatland_viz
   src/flatland_viz_node.cpp
   src/flatland_viz.cpp
   include/flatland_viz/flatland_viz.h
+  src/flatland_window.cpp
+  include/flatland_viz/flatland_window.h
 )
 add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 
