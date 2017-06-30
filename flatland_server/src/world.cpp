@@ -75,17 +75,12 @@ World *World::make_world(std::string yaml_path) {
   try {
     yaml = YAML::LoadFile(yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + yaml_path, e.msg, e.mark);
+    throw YAMLException("Error loading " + yaml_path, e);
   }
 
 
   if (yaml["properties"] && yaml["properties"].IsMap()) {
-    try {
-      // TODO (Chunshang): parse properties
-    } catch (const YAML::Exception &e) {
-      throw YAMLException("Error loading world properties from" + yaml_path, 
-        e.msg, e.mark);
-    }
+    // TODO (Chunshang): parse properties
   } else {
     throw YAMLException("Missing/invalid world param \"properties\"");
   }
@@ -95,9 +90,8 @@ World *World::make_world(std::string yaml_path) {
   try {
     w->load_layers(yaml_path);
     w->load_models(yaml_path);
-  } catch (const YAMLException &e) {
-    delete w;
-    throw e;
+  } catch (const YAML::Exception &e) {
+    throw YAMLException(e);
   }
 
   return w;
@@ -111,7 +105,7 @@ void World::load_layers(std::string yaml_path) {
   try {
     yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
+    throw YAMLException("Error loading " + path.string(), e);
   }
 
   if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
@@ -127,14 +121,8 @@ void World::load_layers(std::string yaml_path) {
         cfr_.MAX_LAYERS);
     }
 
-    try {
-
-      layer = Layer::make_layer(physics_world_, &cfr_, 
-                                path.parent_path(), yaml["layers"][i]);
-    } catch (const YAML::Exception &e) {
-      throw YAMLException("Error loading layer from " + yaml_path, 
-        e.msg, e.mark);
-    }
+    layer = Layer::make_layer(physics_world_, &cfr_, 
+                              path.parent_path(), yaml["layers"][i]);
 
     layers_.push_back(layer);
     ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());

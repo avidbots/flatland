@@ -106,18 +106,23 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
 
   ModelBody *m = new ModelBody(physics_world, model, name, color, origin, type);
 
-  if (!body_node["footprints"] || !body_node["footprints"].IsSequence() ||
-       body_node["footprints"].size() <= 0) {
-    throw YAMLException("Missing/Invalid \"footprints\" in " + name + " body");
-  } else {
+  try {
     m->load_footprints(body_node["footprints"]);
+  } catch (const YAML::Exception & e) {
+    delete m;
+    throw m;
   }
 
   return m;
 }
 
 void ModelBody::load_footprints(const YAML::Node &footprints_node) {
-
+  if (footprints_node || !footprints_node.IsSequence() ||
+       footprints_node.size() <= 0) {
+    throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
+  } else {
+    //
+  }
 }
 
 };  // namespace flatland_server

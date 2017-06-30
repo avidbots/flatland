@@ -76,27 +76,27 @@ class World {
   ~World();
 
   /**
-   * @brief load layers into the world. Throws flatland server YAML exceptions
+   * @brief load layers into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of layers
    */
   void load_layers(std::string yaml_path);
 
   /**
-   * @brief load models into the world. Throws flatland server YAML exceptions
+   * @brief load models into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of models
    */
   void load_models(std::string yaml_path);
 
   /**
-   * brief @load models into the world. Throws flatland server YAML exceptions
+   * brief @load models into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the model yaml file
    */
   void load_model(std::string yaml_path);
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class. Throws flatland server 
-   * YAML exceptions
+   * the inputs before instantiation of the class. Throws derivatives of
+   * YAML::Exception
    * @param[in] yaml_path Path to the world yaml file
    */
   static World *make_world(std::string yaml_path);

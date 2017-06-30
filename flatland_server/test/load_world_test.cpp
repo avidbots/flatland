@@ -77,7 +77,7 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
       delete w;
 
       FAIL() << "Expected YAMLException, it passed instead";
-    } catch (YAMLException &e) {
+    } catch (const YAML::Exception &e) {
       // do a regex match against error messages
       std::cmatch match;
       std::regex regex(regex_str);

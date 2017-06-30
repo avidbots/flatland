@@ -70,8 +70,7 @@ Model *Model::make_model(b2World *physics_world,
   try {
     yaml = YAML::LoadFile(yaml_path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + yaml_path.string(), e.msg,
-                        e.mark);
+    throw YAMLException("Error loading " + yaml_path.string(), e);
   }
 
   if (yaml["name"]) {
@@ -90,8 +89,15 @@ Model *Model::make_model(b2World *physics_world,
     m->plugins_node_ = yaml["plugins"];
   }
 
-  m->load_bodies(yaml["bodies"]);
-  m->load_joints(yaml["joints"]);
+  try {
+    m->load_bodies(yaml["bodies"]);
+    m->load_joints(yaml["joints"]);
+  } catch (const YAML::Exception &e) {
+    delete m;
+    throw e;  
+  }
+
+  return m;
 }
 
 void Model::load_bodies(const YAML::Node &bodies_node) {
