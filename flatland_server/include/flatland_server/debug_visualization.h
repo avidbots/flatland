@@ -76,6 +76,7 @@ class DebugVisualization {
   void reset(std::string name);
   void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
                      float r, float g, float b, float a);
+  void RefreshDebugTopicList();
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

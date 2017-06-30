@@ -198,6 +198,7 @@ void DebugVisualization::visualize(std::string name, b2Body* body, float r,
     topics_[name] = {
         node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
         visualization_msgs::MarkerArray()};
+    RefreshDebugTopicList();
   }
 
   bodyToMarkers(topics_[name].markers, body, r, g, b, a);
@@ -214,4 +215,14 @@ void DebugVisualization::reset(std::string name) {
     topics_[name].needs_publishing = true;
   }
 }
+
+/**
+ * @brief Publish an updated version of the debug topic list
+ */
+void RefreshDebugTopicList() {
+  // @TODO(joseph) Needs DebugTopicList.msg
+  // @TODO(joseph) update flatland_viz to use this
+  // @TODO(joseph) then needs unit test check
+}
+
 };  // namespace flatland_server
