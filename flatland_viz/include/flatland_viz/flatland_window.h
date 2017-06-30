@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
+ * @name   flatland_window.cpp
+ * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,41 +44,24 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-
-#include <Box2D/Box2D.h>
 #include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
-#include "flatland_server/DebugTopicList.h"
+#include <QLabel>
+#include <QMainWindow>
+#include <QWidget>
+#include "flatland_viz/flatland_viz.h"
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
-
-class DebugVisualization {
- private:
-  DebugVisualization();
-
+class FlatlandWindow : public QMainWindow {
+  Q_OBJECT
  public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
+  FlatlandWindow(QWidget* parent = 0);
 
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-  void RefreshDebugTopicList();
+  QLabel* fps_label_;
+
+ protected Q_SLOTS:
+  void UpdateFps();
+
+ private:
+  FlatlandViz* viz_;
+  int frame_count_;
+  ros::WallTime last_fps_calc_time_;
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

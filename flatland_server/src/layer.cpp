@@ -45,7 +45,6 @@
  */
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/layer.h>

@@ -226,24 +226,22 @@ TEST(TestSuite, testBodyToMarkersMultifixture) {
   visualization_msgs::MarkerArray markers;
   flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
-  // check that marker was created
-  ASSERT_EQ(markers.markers.size(), 2);
+  // check that one marker was created
+  ASSERT_EQ(markers.markers.size(), 1);
 
   // Check the 1st marker
   ASSERT_EQ(markers.markers[0].type, markers.markers[0].LINE_LIST);
-  ASSERT_EQ(markers.markers[0].points.size(), 2);
+  ASSERT_EQ(markers.markers[0].points.size(), 4);
   ASSERT_NEAR(markers.markers[0].points[0].x, 0.0, 1e-5);
   ASSERT_NEAR(markers.markers[0].points[0].y, 1.0, 1e-5);
   ASSERT_NEAR(markers.markers[0].points[1].x, 1.0, 1e-5);
   ASSERT_NEAR(markers.markers[0].points[1].y, 2.0, 1e-5);
 
-  // check the 2nd marker
-  ASSERT_EQ(markers.markers[1].type, markers.markers[0].LINE_LIST);
-  ASSERT_EQ(markers.markers[1].points.size(), 2);
-  ASSERT_NEAR(markers.markers[1].points[0].x, -1.0, 1e-5);
-  ASSERT_NEAR(markers.markers[1].points[0].y, 3.0, 1e-5);
-  ASSERT_NEAR(markers.markers[1].points[1].x, 5.0, 1e-5);
-  ASSERT_NEAR(markers.markers[1].points[1].y, 7.0, 1e-5);
+  // check the "2nd marker"
+  ASSERT_NEAR(markers.markers[0].points[2].x, -1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[2].y, 3.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[3].x, 5.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[3].y, 7.0, 1e-5);
 }
 
 // test bodyToMarkers with multiple bodies
@@ -274,23 +272,21 @@ TEST(TestSuite, testBodyToMarkersMultibody) {
   flatland_server::DebugVisualization::get().bodyToMarkers(markers, body2, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
-  ASSERT_EQ(markers.markers.size(), 2);
+  ASSERT_EQ(markers.markers.size(), 1);
 
   // Check the 1st marker
   ASSERT_EQ(markers.markers[0].type, markers.markers[0].LINE_LIST);
-  ASSERT_EQ(markers.markers[0].points.size(), 2);
+  ASSERT_EQ(markers.markers[0].points.size(), 4);
   ASSERT_NEAR(markers.markers[0].points[0].x, 0.0, 1e-5);
   ASSERT_NEAR(markers.markers[0].points[0].y, 1.0, 1e-5);
   ASSERT_NEAR(markers.markers[0].points[1].x, 1.0, 1e-5);
   ASSERT_NEAR(markers.markers[0].points[1].y, 2.0, 1e-5);
 
-  // check the 2nd marker
-  ASSERT_EQ(markers.markers[1].type, markers.markers[0].LINE_LIST);
-  ASSERT_EQ(markers.markers[1].points.size(), 2);
-  ASSERT_NEAR(markers.markers[1].points[0].x, -1.0, 1e-5);
-  ASSERT_NEAR(markers.markers[1].points[0].y, 3.0, 1e-5);
-  ASSERT_NEAR(markers.markers[1].points[1].x, 5.0, 1e-5);
-  ASSERT_NEAR(markers.markers[1].points[1].y, 7.0, 1e-5);
+  // check the "2nd marker"
+  ASSERT_NEAR(markers.markers[0].points[2].x, -1.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[2].y, 3.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[3].x, 5.0, 1e-5);
+  ASSERT_NEAR(markers.markers[0].points[3].y, 7.0, 1e-5);
 }
 
 // A helper class to accept MarkerArray message callbacks

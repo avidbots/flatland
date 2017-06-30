@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
+ * @name   flatland_window.cpp
+ * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,41 +44,45 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#include "flatland_viz/flatland_window.h"
+#include <QDesktopWidget>
+#include <QLabel>
+#include <QStatusBar>
+#include <QToolButton>
+#include <QWidget>
+#include "rviz/visualization_manager.h"
 
-#include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
-#include "flatland_server/DebugTopicList.h"
+FlatlandWindow::FlatlandWindow(QWidget* parent) : QMainWindow(parent) {
+  // Create the main viewport
+  viz_ = new FlatlandViz(this);
+  setCentralWidget(viz_);
+  resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
+  // Todo: configure the toolbar
 
-class DebugVisualization {
- private:
-  DebugVisualization();
+  // Configure the status bar
+  fps_label_ = new QLabel("");
+  fps_label_->setMinimumWidth(40);
+  fps_label_->setAlignment(Qt::AlignRight);
+  statusBar()->addPermanentWidget(fps_label_, 0);
 
- public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
+  // Set the title
+  setWindowTitle("Flatland Viz");
 
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-  void RefreshDebugTopicList();
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+  // Register for updates
+  connect(viz_->manager_, &rviz::VisualizationManager::preUpdate, this,
+          &FlatlandWindow::UpdateFps);
+}
+
+void FlatlandWindow::UpdateFps() {
+  frame_count_++;
+  ros::WallDuration wall_diff = ros::WallTime::now() - last_fps_calc_time_;
+
+  if (wall_diff.toSec() > 1.0) {
+    float fps = frame_count_ / wall_diff.toSec();
+    frame_count_ = 0;
+    last_fps_calc_time_ = ros::WallTime::now();
+
+    fps_label_->setText(QString::number(int(fps)) + QString(" fps"));
+  }
+}

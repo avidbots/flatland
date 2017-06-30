@@ -92,6 +92,11 @@ class World {
    * @param[in] yaml_path Path to the world yaml file
    */
   static World *make_world(std::string yaml_path);
+
+  /**
+   * @brief Publish debug visualizations for everything
+   */
+  void DebugVisualize();
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

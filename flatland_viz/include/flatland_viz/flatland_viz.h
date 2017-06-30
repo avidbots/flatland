@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
+ * @name   flatland_viz.h
+ * @brief  Manages the librviz viewport for flatland
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,41 +44,51 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
+#define FLATLAND_VIZ_FLATLAND_VIZ_H
 
-#include <Box2D/Box2D.h>
 #include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
+#include <QWidget>
+#include <set>
 #include "flatland_server/DebugTopicList.h"
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
+namespace rviz {
+class Display;
+class RenderPanel;
+class VisualizationManager;
+}
 
-class DebugVisualization {
- private:
-  DebugVisualization();
+class FlatlandWindow;
 
+class FlatlandViz : public QWidget {
+  Q_OBJECT
  public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
+  /**
+   * @brief Construct FlatlandViz and subscribe to debug topic list
+   *
+   * @param parent The parent widget
+   */
+  FlatlandViz(FlatlandWindow* parent = 0);
 
-  static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-  void RefreshDebugTopicList();
+  /**
+   * @brief Recieve a new DebugTopicList msg and add any new displays required
+   *
+   * @param msg The DebugTopicList message
+   */
+  void RecieveDebugTopics(const flatland_server::DebugTopicList::ConstPtr& msg);
+
+  /**
+   * @brief Destruct
+   */
+  virtual ~FlatlandViz();
+
+  rviz::VisualizationManager* manager_;
+
+ private:
+  rviz::RenderPanel* render_panel_;
+  rviz::Display* grid_;
+  std::set<std::string> debug_topics_;
+  ros::Subscriber debug_topic_subscriber_;
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+
+#endif  // FLATLAND_VIZ_FLATLAND_VIZ_H
