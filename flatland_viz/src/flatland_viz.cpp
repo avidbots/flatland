@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 
 #include <ros/ros.h>
+#include <stdlib.h>
 
 #include "rviz/display.h"
 #include "rviz/render_panel.h"
@@ -41,12 +42,18 @@ FlatlandViz::FlatlandViz(QWidget* parent) : QWidget(parent) {
   render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
   auto markers = manager_->createDisplay("rviz/MarkerArray", "2d", true);
-  ROS_FATAL_COND(markers == nullptr, "NarkerArray failed to instantiate");
+  if (markers == nullptr) {
+    ROS_FATAL("NarkerArray failed to instantiate");
+    exit(1);
+  }
   markers->subProp("Marker Topic")->setValue("/flatland_server/debug/layer_2d");
 
   // Create a Grid display.
   grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
-  ROS_FATAL_COND(grid_ == nullptr, "Grid failed to instantiate");
+  if (grid_ == nullptr) {
+    ROS_FATAL("Grid failed to instantiate");
+    exit(1);
+  }
 
   // Configure the GridDisplay the way we like it.
   grid_->subProp("Line Style")->setValue("Lines");
