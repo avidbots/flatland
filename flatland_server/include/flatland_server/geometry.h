@@ -59,8 +59,8 @@ struct RotateTranslate {
 
 class Geometry {
  public:
-  static RotateTranslate createTransform(float dx, float dy, float a);
-  static b2Vec2 transform(const b2Vec2& in, const RotateTranslate& rt);
+  static RotateTranslate CreateTransform(float dx, float dy, float a);
+  static b2Vec2 Transform(const b2Vec2& in, const RotateTranslate& rt);
 };
 
 };      // namespace flatland_server

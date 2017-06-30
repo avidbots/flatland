@@ -71,7 +71,7 @@ TEST(TestSuite, testBodyToMarkersPolygon) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.5, 0.7);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -133,7 +133,7 @@ TEST(TestSuite, testBodyToMarkersCircle) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -161,7 +161,7 @@ TEST(TestSuite, testBodyToMarkersEdge) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -195,7 +195,7 @@ TEST(TestSuite, testBodyToMarkersUnsupported) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was not created
   ASSERT_EQ(markers.markers.size(), 0);
@@ -224,7 +224,7 @@ TEST(TestSuite, testBodyToMarkersMultifixture) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 2);
@@ -269,9 +269,9 @@ TEST(TestSuite, testBodyToMarkersMultibody) {
   body2->CreateFixture(&fixtureDef2);
 
   visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::get().bodyToMarkers(markers, body2, 1.0,
+  flatland_server::DebugVisualization::get().BodyToMarkers(markers, body2, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 2);
@@ -350,7 +350,7 @@ TEST(TestSuite, testPublishMarkers) {
       nh.subscribe("/debug_visualization_test/debug/example", 0,
                    &MarkerArraySubscriptionHelper::callback, &helper);
 
-  flatland_server::DebugVisualization::get().visualize("example", body, 1.0,
+  flatland_server::DebugVisualization::get().Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
 
   // Check pre publish conditions
@@ -366,33 +366,33 @@ TEST(TestSuite, testPublishMarkers) {
   EXPECT_EQ(sub.getNumPublishers(), 1);
 
   // Publish
-  flatland_server::DebugVisualization::get().publish();
+  flatland_server::DebugVisualization::get().Publish();
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(1));
   EXPECT_EQ(helper.markers_.markers.size(), 1);
 
   // Publish again (should have no change- nothing needs publishing)
-  flatland_server::DebugVisualization::get().publish();
+  flatland_server::DebugVisualization::get().Publish();
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(1));
   EXPECT_EQ(1, helper.markers_.markers.size());
 
   // Publish some more markers
-  flatland_server::DebugVisualization::get().visualize("example", body, 1.0,
+  flatland_server::DebugVisualization::get().Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::get().visualize("example", body, 1.0,
+  flatland_server::DebugVisualization::get().Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::get().publish();
+  flatland_server::DebugVisualization::get().Publish();
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
   EXPECT_EQ(3, helper.markers_.markers.size());  // 3 markers in latest msg
 
   // Reset marker list
-  flatland_server::DebugVisualization::get().reset("example");
-  flatland_server::DebugVisualization::get().publish();
+  flatland_server::DebugVisualization::get().Reset("example");
+  flatland_server::DebugVisualization::get().Publish();
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(3));    // Published three times

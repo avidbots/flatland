@@ -59,7 +59,7 @@ namespace flatland_server {
  *
  * @return THe RotateTranslate object
  */
-RotateTranslate Geometry::createTransform(float dx, float dy, float a) {
+RotateTranslate Geometry::CreateTransform(float dx, float dy, float a) {
   RotateTranslate out = {dx, dy, cosf(a), sinf(a)};
   return out;
 }
@@ -72,7 +72,7 @@ RotateTranslate Geometry::createTransform(float dx, float dy, float a) {
  *
  * @return
  */
-b2Vec2 Geometry::transform(const b2Vec2& in, const RotateTranslate& rt) {
+b2Vec2 Geometry::Transform(const b2Vec2& in, const RotateTranslate& rt) {
   b2Vec2 out;
   out.x = in.x * rt.cos - in.y * rt.sin + rt.dx;
   out.y = in.x * rt.sin + in.y * rt.cos + rt.dy;

@@ -73,7 +73,7 @@ DebugVisualization& DebugVisualization::get() {
  * @param b blue color 0.0->1.0
  * @param a alpha color 0.0->1.0
  */
-void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
+void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
                                        b2Body* body, float r, float g, float b,
                                        float a) {
   b2Fixture* fixture = body->GetFixtureList();
@@ -150,7 +150,7 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
 /**
  * @brief Publish all marker array topics_ that need publishing
  */
-void DebugVisualization::publish() {
+void DebugVisualization::Publish() {
   // Iterate over the topics_ map as pair(name, topic)
   for (auto& topic : topics_) {
     if (!topic.second.needs_publishing) {
@@ -172,7 +172,7 @@ void DebugVisualization::publish() {
  * @param b blue color 0.0->1.0
  * @param a alpha color 0.0->1.0
  */
-void DebugVisualization::visualize(std::string name, b2Body* body, float r,
+void DebugVisualization::Visualize(std::string name, b2Body* body, float r,
                                    float g, float b, float a) {
   // If the topic doesn't exist, create it
   if (topics_.count(name) == 0) {  // If the topic doesn't exist yet, create it
@@ -181,7 +181,7 @@ void DebugVisualization::visualize(std::string name, b2Body* body, float r,
         visualization_msgs::MarkerArray()};
   }
 
-  bodyToMarkers(topics_[name].markers, body, r, g, b, a);
+  BodyToMarkers(topics_[name].markers, body, r, g, b, a);
   topics_[name].needs_publishing = true;
 }
 
@@ -189,7 +189,7 @@ void DebugVisualization::visualize(std::string name, b2Body* body, float r,
  * @brief Remove all elements in a visualiation topic
  * @param name
  */
-void DebugVisualization::reset(std::string name) {
+void DebugVisualization::Reset(std::string name) {
   if (topics_.count(name) > 0) {  // If the topic exists, clear it
     topics_[name].markers.markers.clear();
     topics_[name].needs_publishing = true;

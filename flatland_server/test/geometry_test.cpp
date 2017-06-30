@@ -51,7 +51,7 @@
 // Test the CreateTransform method
 TEST(TestSuite, testCreateTransform) {
   flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::createTransform(2.0, 1.0, 1.1);
+      flatland_server::Geometry::CreateTransform(2.0, 1.0, 1.1);
 
   EXPECT_NEAR(rt.dx, 2.0, 1e-5);
   EXPECT_NEAR(rt.dy, 1.0, 1e-5);
@@ -59,37 +59,37 @@ TEST(TestSuite, testCreateTransform) {
   EXPECT_NEAR(rt.sin, sinf(1.1), 1e-5);
 }
 
-// Test the transform method, translation
+// Test the Transform method, translation
 TEST(TestSuite, testTransformTranslate) {
   flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::createTransform(2.0, 1.5, 0.0);
+      flatland_server::Geometry::CreateTransform(2.0, 1.5, 0.0);
 
   b2Vec2 in(1.0, 2.0);
-  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
 
   EXPECT_NEAR(out.x, 3.0, 1e-5);
   EXPECT_NEAR(out.y, 3.5, 1e-5);
 }
 
-// Test the transform method, rotation
+// Test the Transform method, rotation
 TEST(TestSuite, testTransformRotate) {
   flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::createTransform(0.0, 0.0, M_PI_2);
+      flatland_server::Geometry::CreateTransform(0.0, 0.0, M_PI_2);
 
   b2Vec2 in(1.0, 2.0);
-  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
 
   EXPECT_NEAR(out.x, -2.0, 1e-5);
   EXPECT_NEAR(out.y, 1.0, 1e-5);
 }
 
-// Test the transform method, translation + rotation
+// Test the Transform method, translation + rotation
 TEST(TestSuite, testTransformTranslateAndRotate) {
   flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::createTransform(1.0, 0.5, -M_PI);
+      flatland_server::Geometry::CreateTransform(1.0, 0.5, -M_PI);
 
   b2Vec2 in(-1.0, 1.5);
-  b2Vec2 out = flatland_server::Geometry::transform(in, rt);
+  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
 
   EXPECT_NEAR(out.x, 2.0, 1e-5);
   EXPECT_NEAR(out.y, -1.0, 1e-5);

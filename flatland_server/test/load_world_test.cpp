@@ -140,15 +140,6 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
       return false;
     }
   }
-
-  // transform edge to
-  void transform_edge_to_global(b2Body *body, b2EdgeShape *edge) {
-    RotateTranslate transform = Geometry::createTransform(
-        body->GetPosition().x, body->GetPosition().y, body->GetAngle());
-
-    edge->m_vertex1 = Geometry::transform(edge->m_vertex1, transform);
-    edge->m_vertex2 = Geometry::transform(edge->m_vertex2, transform);
-  }
 };
 
 /**
