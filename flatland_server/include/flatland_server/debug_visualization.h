@@ -50,10 +50,10 @@
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
-#include "flatland_server/DebugTopicList.h"
 #include <map>
 #include <string>
 #include <vector>
+#include "flatland_server/DebugTopicList.h"
 
 namespace flatland_server {
 struct DebugTopic {
