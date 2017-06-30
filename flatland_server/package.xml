@@ -14,6 +14,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>cmake_modules</build_depend>
+  <build_depend>message_generation</build_depend>
 
   <depend>box2d-dev</depend>
   <depend>libopencv-dev</depend>
@@ -25,6 +26,8 @@
   <depend>geometry_msgs</depend>
   <depend>yaml-cpp</depend>
   <depend>visualization_msgs</depend>
+
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->

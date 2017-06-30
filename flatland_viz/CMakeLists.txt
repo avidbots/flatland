@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rostest
   roscpp
   rviz
+  flatland_server
 )
 
 ##############
@@ -44,7 +45,7 @@ endif(NOT OGRE_OV_FOUND)
 ###################################
 catkin_package(
   INCLUDE_DIRS include ${OGRE_OV_INCLUDE_DIRS}
-  CATKIN_DEPENDS roscpp rviz
+  CATKIN_DEPENDS roscpp rviz flatland_server
 )
 
 

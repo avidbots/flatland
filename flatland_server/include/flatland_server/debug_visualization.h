@@ -50,6 +50,7 @@
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "flatland_server/DebugTopicList.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -68,6 +69,7 @@ class DebugVisualization {
  public:
   std::map<std::string, DebugTopic> topics_;
   ros::NodeHandle node_;
+  ros::Publisher topic_list_publisher_;
 
   static DebugVisualization& get();
   void publish();

@@ -55,7 +55,10 @@
 
 namespace flatland_server {
 
-DebugVisualization::DebugVisualization() : node_("~debug") {}
+DebugVisualization::DebugVisualization() : node_("~debug") {
+  topic_list_publisher_ =
+      node_.advertise<flatland_server::DebugTopicList>("topics", 0, true);
+}
 
 /**
  * @brief Return the singleton object
@@ -219,10 +222,11 @@ void DebugVisualization::reset(std::string name) {
 /**
  * @brief Publish an updated version of the debug topic list
  */
-void RefreshDebugTopicList() {
-  // @TODO(joseph) Needs DebugTopicList.msg
-  // @TODO(joseph) update flatland_viz to use this
-  // @TODO(joseph) then needs unit test check
+void DebugVisualization::RefreshDebugTopicList() {
+  DebugTopicList topic_list;
+  for (auto const& topic_pair : topics_)
+    topic_list.topics.push_back(topic_pair.first);
+  topic_list_publisher_.publish(topic_list);
 }
 
 };  // namespace flatland_server
