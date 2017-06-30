@@ -48,6 +48,7 @@
 #define FLATLAND_SERVER_MODEL_BODY_H
 
 #include <flatland_server/body.h>
+#include <flatland_server/collision_filter_registrar.h>
 #include <flatland_server/model.h>
 #include <yaml-cpp/yaml.h>
 
@@ -57,14 +58,21 @@ class Model;
 
 class ModelBody : public Body {
  public:
-  ModelBody(b2World *physics_world, Model *model, const std::string &name,
-            const std::array<double, 4> &color,
+  CollisionFilterRegistrar *cfr_;
+
+  ModelBody(b2World *physics_world, CollisionFilterRegistrar *cfr, Model *model,
+            const std::string &name, const std::array<double, 4> &color,
             const std::array<double, 3> &origin, b2BodyType body_type);
 
-  void load_footprints(const YAML::Node &footprints_node);
+  void LoadFootprints(const YAML::Node &footprints_node);
+  void ConfigFootprintCollision(const YAML::Node &footprint_node,
+                                b2FixtureDef *fixture_def);
+  void LoadCircleFootprint(const YAML::Node &footprint_node);
+  void LoadPolygonFootprint(const YAML::Node &footprint_node);
 
-  static ModelBody *make_body(b2World *physics_world, Model *model,
-                              YAML::Node body_node);
+  static ModelBody *MakeBody(b2World *physics_world,
+                             CollisionFilterRegistrar *cfr, Model *model,
+                             const YAML::Node &body_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H

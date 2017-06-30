@@ -49,14 +49,15 @@
 
 namespace flatland_server {
 
-ModelBody::ModelBody(b2World *physics_world, Model *model,
-                     const std::string &name,
+ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistrar *cfr,
+                     Model *model, const std::string &name,
                      const std::array<double, 4> &color,
                      const std::array<double, 3> &origin, b2BodyType body_type)
-    : Body(physics_world, model, name, color, origin, body_type) {}
+    : Body(physics_world, model, name, color, origin, body_type), cfr_(cfr) {}
 
-ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
-                                YAML::Node body_node) {
+ModelBody *ModelBody::MakeBody(b2World *physics_world,
+                               CollisionFilterRegistrar *cfr, Model *model,
+                               const YAML::Node &body_node) {
   std::string name;
   std::array<double, 4> color;
   std::array<double, 3> origin;
@@ -105,10 +106,11 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
     throw YAMLException("Missing \"type\" in " + name + " body");
   }
 
-  ModelBody *m = new ModelBody(physics_world, model, name, color, origin, type);
+  ModelBody *m =
+      new ModelBody(physics_world, cfr, model, name, color, origin, type);
 
   try {
-    m->load_footprints(body_node["footprints"]);
+    m->LoadFootprints(body_node["footprints"]);
   } catch (const YAML::Exception &e) {
     delete m;
     throw m;
@@ -117,28 +119,25 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
   return m;
 }
 
-void ModelBody::load_footprints(const YAML::Node &footprints_node) {
+void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
   const YAML::Node &node = footprints_node;
 
   if (node || !node.IsSequence() || node.size() <= 0) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
     for (int i = 0; i < node.size(); i++) {
-
       const YAML::Node &n = node[i];
 
       if (node["type"]) {
         std::string type = node["type"].as<std::string>();
 
         if (type == "circle") {
-          load_circle(n);
-        }
-        (type == "polygon") {
-          load_polygon(n);
-        }
-        else {
-          throw YAMLException("Invalid footprint \"type\" in " + name_ + " body,
-            must be either circle or polygon");
+          LoadCircleFootprint(n);
+        } else if (type == "polygon") {
+          LoadPolygonFootprint(n);
+        } else {
+          throw YAMLException("Invalid footprint \"type\" in " + name_ +
+                              " body, must be either circle or polygon");
         }
       } else {
         throw YAMLException("Missing footprint \"type\" in " + name_ + " body");
@@ -147,15 +146,128 @@ void ModelBody::load_footprints(const YAML::Node &footprints_node) {
   }
 }
 
-void ModeBody::load_circle(const YAML::Node &footprint_node) {
+void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
+                                         b2FixtureDef *fixture_def) {
   const YAML::Node &n = footprint_node;
 
-  
+  std::vector<std::string> layers;
+  bool is_sensor = false;
+  bool self_collide = false;
 
+  if (n["is_sensor"]) {
+    is_sensor = n["is_sensor"].as<bool>();
+  }
+
+  if (n["self_collide"]) {
+    is_sensor = n["is_sensor"].as<bool>();
+  }
+
+  if (n["layers"] && !n["layers"].IsSequence()) {
+    throw YAMLException("Invalid footprint \"layer\" in " + name_ +
+                        " body, must be a sequence");
+  }
+  if (n["layers"] && n["layers"].IsSequence()) {
+    for (int i = 0; i < n["layers"].size(); i++) {
+      std::string layer_name = n["layers"][i].as<std::string>();
+      layers.push_back(layer_name);
+    }
+  } else {
+    layers = {"all"};
+  }
+
+  if (is_sensor) {
+    fixture_def->isSensor = true;
+  }
+
+  if (self_collide) {
+    fixture_def->filter.groupIndex = cfr_->RegisterCollide();
+  } else {
+    fixture_def->filter.groupIndex =
+        (dynamic_cast<Model *>(entity_))->no_collide_group_index_;
+  }
+
+  for (const auto &layer : layers) {
+    int layer_id = cfr_->LookUpLayerId(layer);
+
+    if (layer_id < 0) {
+      throw YAMLException("Invalid footprint \"layer\" in " + name_ +
+                          " body, it does not exist");
+    } else {
+      fixture_def->filter.categoryBits |= 1 << layer_id;
+    }
+  }
+
+  fixture_def->filter.maskBits = fixture_def->filter.categoryBits;
 }
 
-void ModelBody::load_polygon(const YAML::Node &footprint_nod) {
+void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
   const YAML::Node &n = footprint_node;
+
+  double x, y, radius;
+
+  if (n["center"] && n["center"].IsSequence() && n["center"].size() == 2) {
+    x = n["center"][0].as<double>();
+    y = n["center"][1].as<double>();
+  } else {
+    throw YAMLException("Missing/invalid circle footprint \"center\" in " +
+                        name_ + " body");
+  }
+
+  if (n["radius"]) {
+    radius = n["radius"].as<double>();
+  } else {
+    throw YAMLException("Missing circle footprint \"radius\" in " + name_ +
+                        " body");
+  }
+
+  b2FixtureDef fixture_def;
+  ConfigFootprintCollision(n, &fixture_def);
+
+  b2CircleShape shape;
+  shape.m_p.Set(x, y);
+  shape.m_radius = radius;
+
+  fixture_def.shape = &shape;
+  physics_body_->CreateFixture(&fixture_def);
+}
+
+void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
+  const YAML::Node &n = footprint_node;
+
+  std::vector<b2Vec2> points;
+
+  if (n["points"] && n["points"].IsSequence() && n["points"].size() >= 3) {
+    for (int i = 0; i < n["points"].size(); i++) {
+      YAML::Node np = n["points"][i];
+
+      if (np.IsSequence() && np.size() == 2) {
+        b2Vec2 p(np[0].as<double>(), np[1].as<double>());
+        points.push_back(p);
+
+      } else {
+        throw YAMLException(
+            "Missing/invalid polygon footprint \"point\" index=" +
+            std::to_string(i) + " in " + name_ +
+            " must be a sequence of exactly two items");
+      }
+
+      std::string layer_name = n["layers"][i].as<std::string>();
+    }
+  } else {
+    throw YAMLException("Missing/invalid polygon footprint \"points\" in " +
+                        name_ +
+                        " body, must be a sequence with at least 3 "
+                        "items");
+  }
+
+  b2FixtureDef fixture_def;
+  ConfigFootprintCollision(n, &fixture_def);
+
+  b2PolygonShape shape;
+  shape.Set(points.data(), points.size());
+
+  fixture_def.shape = &shape;
+  physics_body_->CreateFixture(&fixture_def);
 }
 
 };  // namespace flatland_server

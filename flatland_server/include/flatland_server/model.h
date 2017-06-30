@@ -47,6 +47,7 @@
 #ifndef FLATLAND_SERVER_MODEL_H
 #define FLATLAND_SERVER_MODEL_H
 
+#include <flatland_server/collision_filter_registrar.h>
 #include <flatland_server/entity.h>
 #include <flatland_server/joint.h>
 #include <flatland_server/model_body.h>
@@ -64,8 +65,11 @@ class Model : public Entity {
   std::vector<ModelBody *> bodies_;
   std::vector<Joint *> joints_;
   YAML::Node plugins_node_;
+  CollisionFilterRegistrar *cfr_;
+  int no_collide_group_index_;
 
-  Model(b2World *physics_world, const std::string &name);
+  Model(b2World *physics_world, CollisionFilterRegistrar *cfr,
+        const std::string &name);
 
   /**
    * @brief Destructor for the layer class
@@ -80,6 +84,7 @@ class Model : public Entity {
   void load_bodies(const YAML::Node &bodies_node);
   void load_joints(const YAML::Node &joints_node);
   static Model *make_model(b2World *physics_world,
+                           CollisionFilterRegistrar *cfr,
                            const boost::filesystem::path &yaml_path,
                            const YAML::Node &model_node);
 };

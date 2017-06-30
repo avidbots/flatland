@@ -49,8 +49,11 @@
 
 namespace flatland_server {
 
-Model::Model(b2World *physics_world, const std::string &name)
-    : Entity(physics_world), name_(name) {}
+Model::Model(b2World *physics_world, CollisionFilterRegistrar *cfr,
+             const std::string &name)
+    : Entity(physics_world), name_(name), cfr_(cfr) {
+  no_collide_group_index_ = cfr->RegisterNoCollide();
+}
 
 Model::~Model() {
   for (int i = 0; i < bodies_.size(); i++) {
@@ -62,7 +65,7 @@ Model::~Model() {
   }
 }
 
-Model *Model::make_model(b2World *physics_world,
+Model *Model::make_model(b2World *physics_world, CollisionFilterRegistrar *cfr,
                          const boost::filesystem::path &yaml_path,
                          const YAML::Node &model_node) {
   YAML::Node yaml;
@@ -80,7 +83,7 @@ Model *Model::make_model(b2World *physics_world,
     throw YAMLException("Missing model name");
   }
 
-  Model *m = new Model(physics_world, name);
+  Model *m = new Model(physics_world, cfr, name);
 
   // it is okay to have no plugins
   if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
@@ -109,7 +112,7 @@ void Model::load_bodies(const YAML::Node &bodies_node) {
                         "must a be list of bodies of at least size 1");
   } else {
     for (const auto &body_node : bodies_node) {
-      ModelBody *b = ModelBody::make_body(physics_world_, this, body_node);
+      ModelBody *b = ModelBody::MakeBody(physics_world_, cfr_, this, body_node);
       bodies_.push_back(b);
     }
   }

@@ -51,9 +51,15 @@ namespace flatland_server {
 CollisionFilterRegistrar::CollisionFilterRegistrar()
     : no_collide_group_cnt_(0), collide_group_cnt_(0) {}
 
-int CollisionFilterRegistrar::RegisterCollide() { return 0; }
+int CollisionFilterRegistrar::RegisterCollide() {
+  collide_group_cnt_++;
+  return collide_group_cnt_;
+}
 
-int CollisionFilterRegistrar::RegisterNoCollide() { return 0; }
+int CollisionFilterRegistrar::RegisterNoCollide() {
+  no_collide_group_cnt_--;
+  return no_collide_group_cnt_;
+}
 
 bool CollisionFilterRegistrar::IsLayersFull() {
   return layer_id_table_.size() >= MAX_LAYERS;
