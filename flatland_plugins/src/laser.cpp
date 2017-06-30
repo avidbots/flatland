@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_body_plugin.h
- * @brief	Interface for ModelBodyPlugin pluginlib plugins
- * @author Joseph Duchesne
+ * @name	  laser.cpp
+ * @brief   Laser plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,28 +44,15 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
-#define FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+#include <flatland_plugins/laser.h>
+#include <flatland_server/model_plugin.h>
+#include <pluginlib/class_list_macros.h>
 
-#include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <yaml-cpp/yaml.h>
+namespace flatland_plugins {
 
-namespace flatland_server {
-class ModelBodyPlugin {
- public:
-  /**
-   * @param handle The ROS nodehandle for this plugin instance
-   * @param config The yaml config file for this plugin
-   */
-  virtual void initialize(ros::NodeHandle handle, YAML::Node &config) = 0;
-  virtual void update(double timestep) = 0;
-  virtual void collisionWithMap(b2EdgeShape &edge) = 0;
-  virtual void collisionWithModel(void *model) = 0;
-  virtual ~ModelBodyPlugin() {}
-
- protected:
-  ModelBodyPlugin() {}
+void Laser::OnInitialize(const YAML::Node &config) {
+  ROS_INFO_NAMED("LaserPlugin", "Laser Initialized");
+}
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_MODEL_BODY_PLUGIN_H
+
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::Laser, flatland_server::ModelPlugin)
