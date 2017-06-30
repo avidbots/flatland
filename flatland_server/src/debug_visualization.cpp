@@ -46,6 +46,7 @@
 
 #include "flatland_server/debug_visualization.h"
 #include <Box2D/Box2D.h>
+#include <ros/master.h>
 #include <ros/ros.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -54,7 +55,9 @@
 
 namespace flatland_server {
 
-DebugVisualization::DebugVisualization() : node_("~debug") {}
+DebugVisualization::DebugVisualization() : node_("~debug") {
+  master_online_ = ros::master::check();
+}
 
 /**
  * @brief Return the singleton object
@@ -76,6 +79,10 @@ DebugVisualization& DebugVisualization::get() {
 void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
                                        b2Body* body, float r, float g, float b,
                                        float a) {
+  if (!master_online_) {
+    return;
+  }
+
   b2Fixture* fixture = body->GetFixtureList();
 
   while (fixture != NULL) {  // traverse fixture linked list
@@ -169,6 +176,10 @@ void DebugVisualization::bodyToMarkers(visualization_msgs::MarkerArray& markers,
  * @brief Publish all marker array topics_ that need publishing
  */
 void DebugVisualization::publish() {
+  if (!master_online_) {
+    return;
+  }
+
   // Iterate over the topics_ map as pair(name, topic)
   for (auto& topic : topics_) {
     if (!topic.second.needs_publishing) {
@@ -192,6 +203,10 @@ void DebugVisualization::publish() {
  */
 void DebugVisualization::visualize(std::string name, b2Body* body, float r,
                                    float g, float b, float a) {
+  if (!master_online_) {
+    return;
+  }
+
   // If the topic doesn't exist, create it
   if (topics_.count(name) == 0) {  // If the topic doesn't exist yet, create it
     topics_[name] = {

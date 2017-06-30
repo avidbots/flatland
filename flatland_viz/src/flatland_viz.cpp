@@ -36,7 +36,7 @@ FlatlandViz::FlatlandViz(QWidget* parent) : QWidget(parent) {
 
   // Set view controller to top down
   manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
-  render_panel_->setBackgroundColor(Ogre::ColourValue(1, 1, 1));
+  render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
   manager_->createDisplay("rviz/MarkerArray", "2d", true)
       ->subProp("Marker Topic")
@@ -47,10 +47,11 @@ FlatlandViz::FlatlandViz(QWidget* parent) : QWidget(parent) {
   ROS_ASSERT(grid_ != NULL);
 
   // Configure the GridDisplay the way we like it.
-  grid_->subProp("Line Style")->setValue("Billboards");
-  grid_->subProp("Color")->setValue(QColor(Qt::black));
-  grid_->subProp("Line Style")->subProp("Line Width")->setValue(0.1);
+  grid_->subProp("Line Style")->setValue("Lines");
+  grid_->subProp("Color")->setValue(QColor(Qt::white));
   grid_->subProp("Cell Size")->setValue(1.0);
+  grid_->subProp("Plane Cell Count")->setValue(100);
+  grid_->subProp("Alpha")->setValue(0.1);
 }
 
 // Destructor.
