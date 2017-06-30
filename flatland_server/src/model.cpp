@@ -44,8 +44,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model.h>
 #include <flatland_server/exceptions.h>
+#include <flatland_server/model.h>
 
 namespace flatland_server {
 
@@ -56,14 +56,15 @@ Model::~Model() {
   for (int i = 0; i < bodies_.size(); i++) {
     delete bodies_[i];
   }
-  
+
   for (int i = 0; i < joints_.size(); i++) {
     delete joints_[i];
   }
 }
 
 Model *Model::make_model(b2World *physics_world,
-  const boost::filesystem::path &yaml_path, const YAML::Node &model_node) {
+                         const boost::filesystem::path &yaml_path,
+                         const YAML::Node &model_node) {
   YAML::Node yaml;
   std::string name;
 
@@ -83,7 +84,8 @@ Model *Model::make_model(b2World *physics_world,
 
   // it is okay to have no plugins
   if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
-    throw YAMLException("Invalid \"plugins\" in " + name + " model, not a"
+    throw YAMLException("Invalid \"plugins\" in " + name +
+                        " model, not a"
                         "list");
   } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
     m->plugins_node_ = yaml["plugins"];
@@ -94,16 +96,16 @@ Model *Model::make_model(b2World *physics_world,
     m->load_joints(yaml["joints"]);
   } catch (const YAML::Exception &e) {
     delete m;
-    throw e;  
+    throw e;
   }
 
   return m;
 }
 
 void Model::load_bodies(const YAML::Node &bodies_node) {
-
   if (!bodies_node || !bodies_node.IsSequence() || bodies_node.size() <= 0) {
-    throw YAMLException("Invalid \"bodies\" in " + name_ + " model, "
+    throw YAMLException("Invalid \"bodies\" in " + name_ +
+                        " model, "
                         "must a be list of bodies of at least size 1");
   } else {
     for (const auto &body_node : bodies_node) {
@@ -114,7 +116,6 @@ void Model::load_bodies(const YAML::Node &bodies_node) {
 }
 
 void Model::load_joints(const YAML::Node &joints_node) {
-
   if (joints_node && !joints_node.IsSequence()) {
     // if joints exists and it is not a sequence, it is okay to have no joints
     throw YAMLException("Invalid \"joints\" in " + name_ + " model");

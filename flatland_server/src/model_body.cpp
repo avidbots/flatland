@@ -44,18 +44,19 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_body.h>
 #include <flatland_server/exceptions.h>
+#include <flatland_server/model_body.h>
 
 namespace flatland_server {
 
-ModelBody::ModelBody(b2World *physics_world, 
-  Model *model, const std::string &name, const std::array<double, 4> &color, 
-  const std::array<double, 3> &origin, b2BodyType body_type)
+ModelBody::ModelBody(b2World *physics_world, Model *model,
+                     const std::string &name,
+                     const std::array<double, 4> &color,
+                     const std::array<double, 3> &origin, b2BodyType body_type)
     : Body(physics_world, model, name, color, origin, body_type) {}
 
-ModelBody *ModelBody::make_body(b2World *physics_world, Model *model, 
-  YAML::Node body_node) {
+ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
+                                YAML::Node body_node) {
   std::string name;
   std::array<double, 4> color;
   std::array<double, 3> origin;
@@ -75,7 +76,6 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
   } else {
     throw YAMLException("Missing/invalid \"origin\" in " + name + " body");
   }
-
 
   if (body_node["color"] && body_node["color"].IsSequence() &&
       body_node["color"].size() == 3) {
@@ -97,7 +97,8 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
     } else if (type_str == "dynamic") {
       type = b2_dynamicBody;
     } else {
-      throw YAMLException("Invalid \"type\" in " + name + " body, must be "
+      throw YAMLException("Invalid \"type\" in " + name +
+                          " body, must be "
                           "either static, kinematic, or dynamic");
     }
   } else {
@@ -108,7 +109,7 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
 
   try {
     m->load_footprints(body_node["footprints"]);
-  } catch (const YAML::Exception & e) {
+  } catch (const YAML::Exception &e) {
     delete m;
     throw m;
   }
@@ -117,12 +118,44 @@ ModelBody *ModelBody::make_body(b2World *physics_world, Model *model,
 }
 
 void ModelBody::load_footprints(const YAML::Node &footprints_node) {
-  if (footprints_node || !footprints_node.IsSequence() ||
-       footprints_node.size() <= 0) {
+  const YAML::Node &node = footprints_node;
+
+  if (node || !node.IsSequence() || node.size() <= 0) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
-    //
+    for (int i = 0; i < node.size(); i++) {
+
+      const YAML::Node &n = node[i];
+
+      if (node["type"]) {
+        std::string type = node["type"].as<std::string>();
+
+        if (type == "circle") {
+          load_circle(n);
+        }
+        (type == "polygon") {
+          load_polygon(n);
+        }
+        else {
+          throw YAMLException("Invalid footprint \"type\" in " + name_ + " body,
+            must be either circle or polygon");
+        }
+      } else {
+        throw YAMLException("Missing footprint \"type\" in " + name_ + " body");
+      }
+    }
   }
+}
+
+void ModeBody::load_circle(const YAML::Node &footprint_node) {
+  const YAML::Node &n = footprint_node;
+
+  
+
+}
+
+void ModelBody::load_polygon(const YAML::Node &footprint_nod) {
+  const YAML::Node &n = footprint_node;
 }
 
 };  // namespace flatland_server

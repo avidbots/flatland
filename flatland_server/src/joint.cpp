@@ -49,22 +49,15 @@
 namespace flatland_server {
 
 Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
-  b2JointDef *joint_def)
-  : physics_world_(physics_world),
-    model_(model),
-    name_(name) {
-  
+             b2JointDef *joint_def)
+    : physics_world_(physics_world), model_(model), name_(name) {
   physics_joint_ = physics_world->CreateJoint(joint_def);
   physics_joint_->SetUserData(this);
 }
 
-Joint::~Joint() {
-  physics_world_->DestroyJoint(physics_joint_);
-}
+Joint::~Joint() { physics_world_->DestroyJoint(physics_joint_); }
 
 Joint *Joint::make_joint(b2World *physics_world, Model *model,
-  YAML::Node joint_node) {
+                         YAML::Node joint_node) {}
 
-}
-
-}; // namespace flatland_server
+};  // namespace flatland_server

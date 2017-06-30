@@ -57,15 +57,14 @@ class Model;
 
 class ModelBody : public Body {
  public:
-
-  ModelBody(b2World *physics_world, Model *model, const std::string &name, 
-    const std::array<double, 4> &color, const std::array<double, 3> &origin, 
-    b2BodyType body_type);
+  ModelBody(b2World *physics_world, Model *model, const std::string &name,
+            const std::array<double, 4> &color,
+            const std::array<double, 3> &origin, b2BodyType body_type);
 
   void load_footprints(const YAML::Node &footprints_node);
 
   static ModelBody *make_body(b2World *physics_world, Model *model,
-    YAML::Node body_node);
+                              YAML::Node body_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H

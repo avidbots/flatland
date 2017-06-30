@@ -48,17 +48,12 @@
 
 namespace flatland_server {
 
-
 CollisionFilterRegistrar::CollisionFilterRegistrar()
-  : no_collide_group_cnt_(0), collide_group_cnt_(0){}
+    : no_collide_group_cnt_(0), collide_group_cnt_(0) {}
 
-int CollisionFilterRegistrar::RegisterCollide() {
-  return 0;
-}
+int CollisionFilterRegistrar::RegisterCollide() { return 0; }
 
-int CollisionFilterRegistrar::RegisterNoCollide() {
-  return 0;
-}
+int CollisionFilterRegistrar::RegisterNoCollide() { return 0; }
 
 bool CollisionFilterRegistrar::IsLayersFull() {
   return layer_id_table_.size() >= MAX_LAYERS;
@@ -100,4 +95,4 @@ int CollisionFilterRegistrar::LookUpLayerId(std::string layer_name) {
   return layer_id_table_[layer_name];
 }
 
-}; // namespace flatland_server
+};  // namespace flatland_server

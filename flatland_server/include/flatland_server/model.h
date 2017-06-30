@@ -48,10 +48,10 @@
 #define FLATLAND_SERVER_MODEL_H
 
 #include <flatland_server/entity.h>
-#include <flatland_server/model_body.h>
 #include <flatland_server/joint.h>
-#include <boost/filesystem.hpp>
+#include <flatland_server/model_body.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/filesystem.hpp>
 
 namespace flatland_server {
 
@@ -61,8 +61,8 @@ class Joint;
 class Model : public Entity {
  public:
   std::string name_;
-  std::vector<ModelBody*> bodies_;
-  std::vector<Joint*> joints_;
+  std::vector<ModelBody *> bodies_;
+  std::vector<Joint *> joints_;
   YAML::Node plugins_node_;
 
   Model(b2World *physics_world, const std::string &name);
@@ -80,7 +80,8 @@ class Model : public Entity {
   void load_bodies(const YAML::Node &bodies_node);
   void load_joints(const YAML::Node &joints_node);
   static Model *make_model(b2World *physics_world,
-    const boost::filesystem::path &yaml_path, const YAML::Node &model_node);
+                           const boost::filesystem::path &yaml_path,
+                           const YAML::Node &model_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

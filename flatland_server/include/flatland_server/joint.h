@@ -55,7 +55,6 @@ namespace flatland_server {
 class Model;
 
 class Joint {
-
  public:
   Model *model_;
   std::string name_;
@@ -63,14 +62,14 @@ class Joint {
   b2World *physics_world_;
 
   Joint(b2World *physics_world, Model *model, const std::string &name,
-    b2JointDef *joint_def);
+        b2JointDef *joint_def);
   ~Joint();
 
   Joint(const Joint &) = delete;
   Joint &operator=(const Joint &) = delete;
 
   static Joint *make_joint(b2World *physics_world, Model *model,
-    YAML::Node joint_node);
+                           YAML::Node joint_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

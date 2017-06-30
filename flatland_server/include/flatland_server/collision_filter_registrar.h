@@ -53,13 +53,12 @@
 namespace flatland_server {
 
 class CollisionFilterRegistrar {
-
  public:
   static const int LAYER_NOT_EXIST = -1;
   static const int LAYER_ALREADY_EXIST = -2;
   static const int LAYERS_FULL = -3;
   static const int MAX_LAYERS = 16;
-  
+
   int no_collide_group_cnt_;
   int collide_group_cnt_;
   std::map<std::string, int> layer_id_table_;
@@ -71,7 +70,6 @@ class CollisionFilterRegistrar {
   bool IsLayersFull();
   int RegisterLayer(std::string layer);
   int LookUpLayerId(std::string name);
-  
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H

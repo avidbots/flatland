@@ -169,12 +169,11 @@ Layer *Layer::make_layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
     throw YAMLException("Missing \"image\" in " + name + " layer");
   }
 
-  return new Layer(physics_world, cfr, name, bitmap, color, origin,
-                   resolution, occupied_thresh, free_thresh);
+  return new Layer(physics_world, cfr, name, bitmap, color, origin, resolution,
+                   occupied_thresh, free_thresh);
 }
 
 void Layer::load_map() {
-
   int layer_id = cfr_->LookUpLayerId(name_);
 
   auto add_edge = [this, layer_id](double x1, double y1, double x2, double y2) {
@@ -182,8 +181,8 @@ void Layer::load_map() {
     double rows = bitmap_.rows;
     double res = resolution_;
 
-    edge.Set(b2Vec2(res * x1, res * (rows - y1)), 
-      b2Vec2(res * x2, res * (rows - y2)));
+    edge.Set(b2Vec2(res * x1, res * (rows - y1)),
+             b2Vec2(res * x2, res * (rows - y2)));
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
@@ -191,7 +190,6 @@ void Layer::load_map() {
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     body_->physics_body_->CreateFixture(&fixture_def);
   };
-
 
   cv::Mat padded_map, obstacle_map;
 

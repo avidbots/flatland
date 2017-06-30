@@ -48,9 +48,9 @@
 #define FLATLAND_SERVER_WORLD_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/collision_filter_registrar.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
-#include <flatland_server/collision_filter_registrar.h>
 #include <string>
 #include <vector>
 
@@ -60,8 +60,8 @@ class World {
  public:
   b2World *physics_world_;
   b2Vec2 gravity_;
-  std::vector<Layer*> layers_;
-  std::vector<Model*> models_;
+  std::vector<Layer *> layers_;
+  std::vector<Model *> models_;
   CollisionFilterRegistrar cfr_;
 
   /**

@@ -52,16 +52,15 @@
 namespace flatland_server {
 
 class Body {
-
  public:
   Entity *entity_;
   std::string name_;
   b2Body *physics_body_;
   std::array<double, 4> color_;
 
-  Body(b2World *physics_world, Entity *entity, const std::string &name, 
-    const std::array<double, 4> &color, const std::array<double, 3> &origin, 
-    b2BodyType body_type);
+  Body(b2World *physics_world, Entity *entity, const std::string &name,
+       const std::array<double, 4> &color, const std::array<double, 3> &origin,
+       b2BodyType body_type);
   virtual ~Body();
 
   Body(const Body &) = delete;

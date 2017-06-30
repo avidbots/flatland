@@ -55,9 +55,7 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) {
-  physics_world_ = new b2World(gravity_);
-}
+World::World() : gravity_(0, 0) { physics_world_ = new b2World(gravity_); }
 
 World::~World() {
   for (int i = 0; i < layers_.size(); i++) {
@@ -68,7 +66,6 @@ World::~World() {
 }
 
 World *World::make_world(std::string yaml_path) {
-
   // parse the world YAML file
   YAML::Node yaml;
 
@@ -78,7 +75,6 @@ World *World::make_world(std::string yaml_path) {
     throw YAMLException("Error loading " + yaml_path, e);
   }
 
-
   if (yaml["properties"] && yaml["properties"].IsMap()) {
     // TODO (Chunshang): parse properties
   } else {
@@ -86,7 +82,7 @@ World *World::make_world(std::string yaml_path) {
   }
 
   World *w = new World();
-  
+
   try {
     w->load_layers(yaml_path);
     w->load_models(yaml_path);
@@ -117,21 +113,19 @@ void World::load_layers(std::string yaml_path) {
     Layer *layer;
 
     if (cfr_.IsLayersFull()) {
-      throw YAMLException("Max number of layers reached, max is " + 
-        cfr_.MAX_LAYERS);
+      throw YAMLException("Max number of layers reached, max is " +
+                          cfr_.MAX_LAYERS);
     }
 
-    layer = Layer::make_layer(physics_world_, &cfr_, 
-                              path.parent_path(), yaml["layers"][i]);
+    layer = Layer::make_layer(physics_world_, &cfr_, path.parent_path(),
+                              yaml["layers"][i]);
 
     layers_.push_back(layer);
     ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());
   }
 }
 
-void World::load_model(std::string yaml_path) {
-  
-}
+void World::load_model(std::string yaml_path) {}
 
 void World::load_models(std::string yaml_path) {}
 

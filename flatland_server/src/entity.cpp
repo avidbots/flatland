@@ -49,7 +49,6 @@
 
 namespace flatland_server {
 
-Entity::Entity(b2World *physics_world)
-    : physics_world_(physics_world) {}
+Entity::Entity(b2World *physics_world) : physics_world_(physics_world) {}
 
 };  // namespace flatland_server

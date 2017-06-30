@@ -47,6 +47,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
+#include <flatland_server/geometry.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <ros/package.h>
@@ -54,7 +55,6 @@
 #include <boost/filesystem.hpp>
 #include <regex>
 #include <string>
-#include <flatland_server/geometry.h>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -141,13 +141,13 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
     }
   }
 
-  // transform edge to 
+  // transform edge to
   void transform_edge_to_global(b2Body *body, b2EdgeShape *edge) {
     RotateTranslate transform = Geometry::createTransform(
-      body->GetPosition().x, body->GetPosition().y, body->GetAngle());
+        body->GetPosition().x, body->GetPosition().y, body->GetAngle());
 
-      edge->m_vertex1 = Geometry::transform(edge->m_vertex1, transform);
-      edge->m_vertex2 = Geometry::transform(edge->m_vertex2, transform);
+    edge->m_vertex1 = Geometry::transform(edge->m_vertex1, transform);
+    edge->m_vertex2 = Geometry::transform(edge->m_vertex2, transform);
   }
 };
 
@@ -195,20 +195,19 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   // coordinates and apply the resolution. Note that the translation and
   // rotation is performed internally by Box2D
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.25, 0.25)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.20, 0.20)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.15, 0.15)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.10), b2Vec2(0.15, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.05), b2Vec2(0.20, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.00), b2Vec2(0.25, 0.00)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.25, 0.25)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.20, 0.20)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.15, 0.15)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.10), b2Vec2(0.15, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.05), b2Vec2(0.20, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.00), b2Vec2(0.25, 0.00)),
 
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.00, 0.00)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.15), b2Vec2(0.15, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.20), b2Vec2(0.20, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.25), b2Vec2(0.25, 0.00))
-  };
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.00, 0.00)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.15), b2Vec2(0.15, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.20), b2Vec2(0.20, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.25), b2Vec2(0.25, 0.00))};
 
   std::vector<b2EdgeShape> layer0_edges;
   for (b2Fixture *f = w->layers_[0]->body_->physics_body_->GetFixtureList(); f;
@@ -220,10 +219,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
     EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
     EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
   }
-  EXPECT_EQ(layer0_edges.size(),
-            layer0_expected_edges.size());
-  EXPECT_TRUE(do_edges_exactly_match(layer0_edges,
-                                     layer0_expected_edges));
+  EXPECT_EQ(layer0_edges.size(), layer0_expected_edges.size());
+  EXPECT_TRUE(do_edges_exactly_match(layer0_edges, layer0_expected_edges));
 
   // layer[1] has origin of [0, 0, 0], so there should be no transform, just
   // apply the inversion of y coordinates and scale by resolution
@@ -255,10 +252,8 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
     EXPECT_EQ(f->GetFilterData().categoryBits, 0x2);
     EXPECT_EQ(f->GetFilterData().maskBits, 0x2);
   }
-  EXPECT_EQ(layer1_edges.size(),
-            layer1_expected_edges.size());
-  EXPECT_TRUE(do_edges_exactly_match(layer1_edges,
-                                     layer1_expected_edges));
+  EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
+  EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
   delete w;
 }
