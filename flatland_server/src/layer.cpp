@@ -45,7 +45,6 @@
  */
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/layer.h>
@@ -77,9 +76,6 @@ Layer::Layer(b2World *physics_world, uint8_t layer_index,
 
   vectorize_bitmap();
   load_edges();
-  DebugVisualization::get().visualize(std::string("layer_") + name,
-                                      physics_body_, color_[0], color_[1],
-                                      color_[2], color_[3]);
 
   ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
 }

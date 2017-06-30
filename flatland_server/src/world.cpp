@@ -45,6 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
@@ -114,6 +115,14 @@ void World::load_layers(std::string yaml_path) {
                                      yaml["layers"][i]);
 
     layers_.push_back(layer);
+  }
+}
+
+void World::DebugVisualize() {
+  for (auto &layer : layers_) {
+    DebugVisualization::get().visualize(
+        std::string("layer_") + layer->name_, layer->physics_body_,
+        layer->color_[0], layer->color_[1], layer->color_[2], layer->color_[3]);
   }
 }
 

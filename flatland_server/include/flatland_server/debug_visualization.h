@@ -64,7 +64,6 @@ struct DebugTopic {
 class DebugVisualization {
  private:
   DebugVisualization();
-  bool master_online_;
 
  public:
   std::map<std::string, DebugTopic> topics_;

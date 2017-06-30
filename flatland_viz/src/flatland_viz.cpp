@@ -1,10 +1,12 @@
+#include <OgreColourValue.h>
 #include <QColor>
 #include <QGridLayout>
 #include <QLabel>
 #include <QSlider>
 #include <QVBoxLayout>
 
-#include <OgreColourValue.h>
+#include <ros/ros.h>
+
 #include "rviz/display.h"
 #include "rviz/render_panel.h"
 #include "rviz/view_manager.h"
@@ -38,13 +40,13 @@ FlatlandViz::FlatlandViz(QWidget* parent) : QWidget(parent) {
   manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
   render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
-  manager_->createDisplay("rviz/MarkerArray", "2d", true)
-      ->subProp("Marker Topic")
-      ->setValue("/flatland_server/debug/layer_2d");
+  auto markers = manager_->createDisplay("rviz/MarkerArray", "2d", true);
+  ROS_FATAL_COND(markers == nullptr, "NarkerArray failed to instantiate");
+  markers->subProp("Marker Topic")->setValue("/flatland_server/debug/layer_2d");
 
   // Create a Grid display.
   grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
-  ROS_ASSERT(grid_ != NULL);
+  ROS_FATAL_COND(grid_ == nullptr, "Grid failed to instantiate");
 
   // Configure the GridDisplay the way we like it.
   grid_->subProp("Line Style")->setValue("Lines");
