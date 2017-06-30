@@ -52,11 +52,16 @@ endif()
 ################
 add_message_files(FILES
   DebugTopicList.msg
+  ModelSpritesArray.msg
+  ModelSprites.msg
+  Sprite.msg
+  SpritePaths.msg
 )
 
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
 )
 
 ###################################
