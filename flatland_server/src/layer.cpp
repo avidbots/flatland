@@ -72,14 +72,14 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
   body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
   cfr->RegisterLayer(name_);
 
-  load_map();
+  LoadMap();
 }
 
 Layer::~Layer() { delete body_; }
 
-Layer *Layer::make_layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
-                         const boost::filesystem::path &world_yaml_dir,
-                         const YAML::Node &layer_node) {
+Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistrar *cfr,
+                        const boost::filesystem::path &world_yaml_dir,
+                        const YAML::Node &layer_node) {
   std::string name;
   cv::Mat bitmap;
   std::array<double, 4> color;
@@ -176,7 +176,7 @@ Layer *Layer::make_layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
                    occupied_thresh, free_thresh);
 }
 
-void Layer::load_map() {
+void Layer::LoadMap() {
   int layer_id = cfr_->LookUpLayerId(name_);
 
   auto add_edge = [this, layer_id](double x1, double y1, double x2, double y2) {

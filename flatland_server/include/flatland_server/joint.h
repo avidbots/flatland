@@ -68,8 +68,8 @@ class Joint {
   Joint(const Joint &) = delete;
   Joint &operator=(const Joint &) = delete;
 
-  static Joint *make_joint(b2World *physics_world, Model *model,
-                           YAML::Node joint_node);
+  static Joint *MakeJoint(b2World *physics_world, Model *model,
+                          YAML::Node joint_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

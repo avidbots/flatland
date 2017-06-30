@@ -79,14 +79,13 @@ class Model : public Entity {
   /**
    * @brief Return the type of entity
    */
-  virtual Type type() { return Type::MODEL; }
+  virtual EntityType Type() { return EntityType::MODEL; }
 
-  void load_bodies(const YAML::Node &bodies_node);
-  void load_joints(const YAML::Node &joints_node);
-  static Model *make_model(b2World *physics_world,
-                           CollisionFilterRegistrar *cfr,
-                           const boost::filesystem::path &yaml_path,
-                           const YAML::Node &model_node);
+  void LoadBodies(const YAML::Node &bodies_node);
+  void LoadJoints(const YAML::Node &joints_node);
+  static Model *MakeModel(b2World *physics_world, CollisionFilterRegistrar *cfr,
+                          const boost::filesystem::path &yaml_path,
+                          const YAML::Node &model_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

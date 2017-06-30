@@ -72,7 +72,7 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
   // message matches the given regex string
   void test_yaml_fail(std::string regex_str) {
     try {
-      World *w = World::make_world(world_yaml.string());
+      World *w = World::MakeWorld(world_yaml.string());
 
       delete w;
 
@@ -159,13 +159,13 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
 TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
-  World *w = World::make_world(world_yaml.string());
+  World *w = World::MakeWorld(world_yaml.string());
 
   ASSERT_EQ(w->layers_.size(), 2);
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
-  EXPECT_EQ(w->layers_[0]->type(), Entity::Type::LAYER);
+  EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[0], 0);
   EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[1], 1);
   EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[2], 0);
@@ -179,7 +179,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
-  EXPECT_EQ(w->layers_[1]->type(), Entity::Type::LAYER);
+  EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
   EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[0], 1.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[1], 0.0);
   EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[2], 0.0);

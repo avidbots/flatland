@@ -65,7 +65,7 @@ World::~World() {
   delete physics_world_;
 }
 
-World *World::make_world(std::string yaml_path) {
+World *World::MakeWorld(std::string yaml_path) {
   // parse the world YAML file
   YAML::Node yaml;
 
@@ -84,8 +84,8 @@ World *World::make_world(std::string yaml_path) {
   World *w = new World();
 
   try {
-    w->load_layers(yaml_path);
-    w->load_models(yaml_path);
+    w->LoadLayers(yaml_path);
+    w->LoadModels(yaml_path);
   } catch (const YAML::Exception &e) {
     throw YAMLException(e);
   }
@@ -93,7 +93,7 @@ World *World::make_world(std::string yaml_path) {
   return w;
 }
 
-void World::load_layers(std::string yaml_path) {
+void World::LoadLayers(std::string yaml_path) {
   boost::filesystem::path path(yaml_path);
 
   YAML::Node yaml;
@@ -117,16 +117,16 @@ void World::load_layers(std::string yaml_path) {
                           cfr_.MAX_LAYERS);
     }
 
-    layer = Layer::make_layer(physics_world_, &cfr_, path.parent_path(),
-                              yaml["layers"][i]);
+    layer = Layer::MakeLayer(physics_world_, &cfr_, path.parent_path(),
+                             yaml["layers"][i]);
 
     layers_.push_back(layer);
     ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());
   }
 }
 
-void World::load_model(std::string yaml_path) {}
+void World::LoadModel(std::string yaml_path) {}
 
-void World::load_models(std::string yaml_path) {}
+void World::LoadModels(std::string yaml_path) {}
 
 };  // namespace flatland_server

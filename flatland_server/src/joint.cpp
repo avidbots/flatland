@@ -57,7 +57,7 @@ Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
 
 Joint::~Joint() { physics_world_->DestroyJoint(physics_joint_); }
 
-Joint *Joint::make_joint(b2World *physics_world, Model *model,
-                         YAML::Node joint_node) {}
+Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
+                        YAML::Node joint_node) {}
 
 };  // namespace flatland_server

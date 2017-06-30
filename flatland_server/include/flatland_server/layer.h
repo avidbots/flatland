@@ -97,12 +97,12 @@ class Layer : public Entity {
   /**
    * @brief Return the type of entity
    */
-  virtual Type type() { return Type::LAYER; }
+  virtual EntityType Type() { return EntityType::LAYER; }
 
   /**
    * @brief Load the map. It vectorizes the bitmap and apply the transformations
    */
-  void load_map();
+  void LoadMap();
 
   /**
    * @brief Factory method to instantiate a layer
@@ -112,10 +112,9 @@ class Layer : public Entity {
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
    */
-  static Layer *make_layer(b2World *physics_world,
-                           CollisionFilterRegistrar *cfr,
-                           const boost::filesystem::path &world_yaml_dir,
-                           const YAML::Node &layer_node);
+  static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistrar *cfr,
+                          const boost::filesystem::path &world_yaml_dir,
+                          const YAML::Node &layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

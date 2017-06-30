@@ -65,9 +65,9 @@ Model::~Model() {
   }
 }
 
-Model *Model::make_model(b2World *physics_world, CollisionFilterRegistrar *cfr,
-                         const boost::filesystem::path &yaml_path,
-                         const YAML::Node &model_node) {
+Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistrar *cfr,
+                        const boost::filesystem::path &yaml_path,
+                        const YAML::Node &model_node) {
   YAML::Node yaml;
   std::string name;
 
@@ -95,8 +95,8 @@ Model *Model::make_model(b2World *physics_world, CollisionFilterRegistrar *cfr,
   }
 
   try {
-    m->load_bodies(yaml["bodies"]);
-    m->load_joints(yaml["joints"]);
+    m->LoadBodies(yaml["bodies"]);
+    m->LoadJoints(yaml["joints"]);
   } catch (const YAML::Exception &e) {
     delete m;
     throw e;
@@ -105,7 +105,7 @@ Model *Model::make_model(b2World *physics_world, CollisionFilterRegistrar *cfr,
   return m;
 }
 
-void Model::load_bodies(const YAML::Node &bodies_node) {
+void Model::LoadBodies(const YAML::Node &bodies_node) {
   if (!bodies_node || !bodies_node.IsSequence() || bodies_node.size() <= 0) {
     throw YAMLException("Invalid \"bodies\" in " + name_ +
                         " model, "
@@ -118,13 +118,13 @@ void Model::load_bodies(const YAML::Node &bodies_node) {
   }
 }
 
-void Model::load_joints(const YAML::Node &joints_node) {
+void Model::LoadJoints(const YAML::Node &joints_node) {
   if (joints_node && !joints_node.IsSequence()) {
     // if joints exists and it is not a sequence, it is okay to have no joints
     throw YAMLException("Invalid \"joints\" in " + name_ + " model");
   } else {
     for (const auto &joint_node : joints_node) {
-      Joint *j = Joint::make_joint(physics_world_, this, joint_node);
+      Joint *j = Joint::MakeJoint(physics_world_, this, joint_node);
       joints_.push_back(j);
     }
   }

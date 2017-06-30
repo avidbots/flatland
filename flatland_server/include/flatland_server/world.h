@@ -79,19 +79,19 @@ class World {
    * @brief load layers into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of layers
    */
-  void load_layers(std::string yaml_path);
+  void LoadLayers(std::string yaml_path);
 
   /**
    * @brief load models into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of models
    */
-  void load_models(std::string yaml_path);
+  void LoadModels(std::string yaml_path);
 
   /**
    * brief @load models into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the model yaml file
    */
-  void load_model(std::string yaml_path);
+  void LoadModel(std::string yaml_path);
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
@@ -99,7 +99,7 @@ class World {
    * YAML::Exception
    * @param[in] yaml_path Path to the world yaml file
    */
-  static World *make_world(std::string yaml_path);
+  static World *MakeWorld(std::string yaml_path);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

@@ -53,7 +53,7 @@ namespace flatland_server {
 
 class Entity {
  public:
-  enum Type { LAYER, MODEL };
+  enum EntityType { LAYER, MODEL };
 
   b2World *physics_world_;
 
@@ -65,7 +65,7 @@ class Entity {
   Entity(const Entity &) = delete;
   Entity &operator=(const Entity &) = delete;
 
-  virtual Type type() = 0;
+  virtual EntityType Type() = 0;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_ENTITY_H
