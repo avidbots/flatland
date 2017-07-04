@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>flatland_server</name>
+  <name>flatland_viz</name>
   <version>1.0.0</version>
-  <description>The flatland_server package</description>
+  <description>The flatland gui and visualization</description>
   <license>BSD</license>
   <url type="website">https://bitbucket.org/avidbots/flatland</url>
 
@@ -14,20 +14,15 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>cmake_modules</build_depend>
-  <build_depend>message_generation</build_depend>
 
-  <depend>box2d-dev</depend>
-  <depend>libopencv-dev</depend>
-  <depend>pluginlib</depend>
+  <depend>qtbase5-dev</depend>
+  <depend>libqt5-core</depend>
+  <depend>libqt5-gui</depend>
+  <depend>libqt5-widgets</depend>
+  <depend>libogre-dev</depend>
   <depend>roscpp</depend>
-  <depend>std_msgs</depend>
-  <depend>tf2</depend>
-  <depend>tf2_geometry_msgs</depend>
-  <depend>geometry_msgs</depend>
-  <depend>yaml-cpp</depend>
-  <depend>visualization_msgs</depend>
-
-  <exec_depend>message_runtime</exec_depend>
+  <depend>rviz</depend>
+  <depend>flatland_server</depend>
 
   <export>
     <!-- Other tools can request additional information be placed here -->

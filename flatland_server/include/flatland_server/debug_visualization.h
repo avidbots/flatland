@@ -53,6 +53,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "flatland_server/DebugTopicList.h"
 
 namespace flatland_server {
 struct DebugTopic {
@@ -68,6 +69,7 @@ class DebugVisualization {
  public:
   std::map<std::string, DebugTopic> topics_;
   ros::NodeHandle node_;
+  ros::Publisher topic_list_publisher_;
 
   static DebugVisualization& get();
   void Publish();
@@ -76,6 +78,7 @@ class DebugVisualization {
   void Reset(std::string name);
   void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
                      float r, float g, float b, float a);
+  void RefreshDebugTopicList();
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

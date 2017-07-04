@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.h
- * @brief	 Loads world file
+ * @name   flatland_window.cpp
+ * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,67 +44,45 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_WORLD_H
-#define FLATLAND_SERVER_WORLD_H
+#include "flatland_viz/flatland_window.h"
+#include <QDesktopWidget>
+#include <QLabel>
+#include <QStatusBar>
+#include <QToolButton>
+#include <QWidget>
+#include "rviz/visualization_manager.h"
 
-#include <Box2D/Box2D.h>
-#include <flatland_server/collision_filter_registrar.h>
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <string>
-#include <vector>
+FlatlandWindow::FlatlandWindow(QWidget* parent) : QMainWindow(parent) {
+  // Create the main viewport
+  viz_ = new FlatlandViz(this);
+  setCentralWidget(viz_);
+  resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
 
-namespace flatland_server {
+  // Todo: configure the toolbar
 
-class World {
- public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer *> layers_;
-  std::vector<Model *> models_;
-  CollisionFilterRegistrar cfr_;
+  // Configure the status bar
+  fps_label_ = new QLabel("");
+  fps_label_->setMinimumWidth(40);
+  fps_label_->setAlignment(Qt::AlignRight);
+  statusBar()->addPermanentWidget(fps_label_, 0);
 
-  /**
-   * @brief Constructor for the world class. All data required for
-   * initialization should be passed in here
-   */
-  World();
+  // Set the title
+  setWindowTitle("Flatland Viz");
 
-  /**
-   * @brief Destructor for the world class
-   */
-  ~World();
+  // Register for updates
+  connect(viz_->manager_, &rviz::VisualizationManager::preUpdate, this,
+          &FlatlandWindow::UpdateFps);
+}
 
-  /**
-   * @brief load layers into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of layers
-   */
-  void LoadLayers(std::string yaml_path);
+void FlatlandWindow::UpdateFps() {
+  frame_count_++;
+  ros::WallDuration wall_diff = ros::WallTime::now() - last_fps_calc_time_;
 
-  /**
-   * @brief load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of models
-   */
-  void LoadModels(std::string yaml_path);
+  if (wall_diff.toSec() > 1.0) {
+    float fps = frame_count_ / wall_diff.toSec();
+    frame_count_ = 0;
+    last_fps_calc_time_ = ros::WallTime::now();
 
-  /**
-   * brief @load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the model yaml file
-   */
-  void LoadModel(std::string yaml_path);
-
-  /**
-   * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class. Throws derivatives of
-   * YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file
-   */
-  static World *MakeWorld(std::string yaml_path);
-
-  /**
-   * @brief Publish debug visualizations for everything
-   */
-  void DebugVisualize();
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_WORLD_H
+    fps_label_->setText(QString::number(int(fps)) + QString(" fps"));
+  }
+}

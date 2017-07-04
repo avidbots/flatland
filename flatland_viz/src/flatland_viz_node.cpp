@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.h
- * @brief	 Loads world file
+ * @name   flatland_viz_node.cpp
+ * @brief  The main ROS node for flatland_viz
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,67 +44,21 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_WORLD_H
-#define FLATLAND_SERVER_WORLD_H
+#include <ros/ros.h>
+#include <QApplication>
+#include "flatland_viz/flatland_window.h"
 
-#include <Box2D/Box2D.h>
-#include <flatland_server/collision_filter_registrar.h>
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <string>
-#include <vector>
+int main(int argc, char** argv) {
+  if (!ros::isInitialized()) {
+    ros::init(argc, argv, "flatland_viz", ros::init_options::AnonymousName);
+  }
 
-namespace flatland_server {
+  QApplication app(argc, argv);
 
-class World {
- public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer *> layers_;
-  std::vector<Model *> models_;
-  CollisionFilterRegistrar cfr_;
+  FlatlandWindow* w = new FlatlandWindow();
+  w->show();
 
-  /**
-   * @brief Constructor for the world class. All data required for
-   * initialization should be passed in here
-   */
-  World();
+  app.exec();
 
-  /**
-   * @brief Destructor for the world class
-   */
-  ~World();
-
-  /**
-   * @brief load layers into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of layers
-   */
-  void LoadLayers(std::string yaml_path);
-
-  /**
-   * @brief load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of models
-   */
-  void LoadModels(std::string yaml_path);
-
-  /**
-   * brief @load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the model yaml file
-   */
-  void LoadModel(std::string yaml_path);
-
-  /**
-   * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class. Throws derivatives of
-   * YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file
-   */
-  static World *MakeWorld(std::string yaml_path);
-
-  /**
-   * @brief Publish debug visualizations for everything
-   */
-  void DebugVisualize();
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_WORLD_H
+  delete w;
+}

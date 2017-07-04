@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 world.h
- * @brief	 Loads world file
+ * @name   flatland_viz.h
+ * @brief  Manages the librviz viewport for flatland
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,67 +44,51 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_WORLD_H
-#define FLATLAND_SERVER_WORLD_H
+#ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
+#define FLATLAND_VIZ_FLATLAND_VIZ_H
 
-#include <Box2D/Box2D.h>
-#include <flatland_server/collision_filter_registrar.h>
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <string>
-#include <vector>
+#include <ros/ros.h>
+#include <QWidget>
+#include <set>
+#include "flatland_server/DebugTopicList.h"
 
-namespace flatland_server {
+namespace rviz {
+class Display;
+class RenderPanel;
+class VisualizationManager;
+}
 
-class World {
+class FlatlandWindow;
+
+class FlatlandViz : public QWidget {
+  Q_OBJECT
  public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer *> layers_;
-  std::vector<Model *> models_;
-  CollisionFilterRegistrar cfr_;
+  /**
+   * @brief Construct FlatlandViz and subscribe to debug topic list
+   *
+   * @param parent The parent widget
+   */
+  FlatlandViz(FlatlandWindow* parent = 0);
 
   /**
-   * @brief Constructor for the world class. All data required for
-   * initialization should be passed in here
+   * @brief Recieve a new DebugTopicList msg and add any new displays required
+   *
+   * @param msg The DebugTopicList message
    */
-  World();
+  void RecieveDebugTopics(const flatland_server::DebugTopicList::ConstPtr& msg);
 
   /**
-   * @brief Destructor for the world class
+   * @brief Destruct
    */
-  ~World();
+  virtual ~FlatlandViz();
 
-  /**
-   * @brief load layers into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of layers
-   */
-  void LoadLayers(std::string yaml_path);
+  rviz::VisualizationManager* manager_;
 
-  /**
-   * @brief load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of models
-   */
-  void LoadModels(std::string yaml_path);
-
-  /**
-   * brief @load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the model yaml file
-   */
-  void LoadModel(std::string yaml_path);
-
-  /**
-   * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class. Throws derivatives of
-   * YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file
-   */
-  static World *MakeWorld(std::string yaml_path);
-
-  /**
-   * @brief Publish debug visualizations for everything
-   */
-  void DebugVisualize();
+ private:
+  rviz::RenderPanel* render_panel_;
+  rviz::Display* grid_;
+  std::set<std::string> debug_topics_;
+  ros::Subscriber debug_topic_subscriber_;
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_WORLD_H
+
+#endif  // FLATLAND_VIZ_FLATLAND_VIZ_H

@@ -46,6 +46,7 @@
 
 #include "flatland_server/debug_visualization.h"
 #include <Box2D/Box2D.h>
+#include <ros/master.h>
 #include <ros/ros.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
@@ -54,7 +55,10 @@
 
 namespace flatland_server {
 
-DebugVisualization::DebugVisualization() : node_("~debug") {}
+DebugVisualization::DebugVisualization() : node_("~debug") {
+  topic_list_publisher_ =
+      node_.advertise<flatland_server::DebugTopicList>("topics", 0, true);
+}
 
 /**
  * @brief Return the singleton object
@@ -92,6 +96,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
     tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
     q.setRPY(0, 0, body->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
+    bool add_marker = true;
 
     // Get the shape from the fixture
     switch (fixture->GetType()) {
@@ -119,18 +124,33 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
 
       } break;
 
-      case b2Shape::e_edge: {  // Convert b2Edge -> LINE_LIST
-        b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
-        marker.type = marker.LINE_LIST;
-        marker.scale.x = 0.03;  // 3cm wide lines
-
+      case b2Shape::e_edge: {    // Convert b2Edge -> LINE_LIST
         geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
-        p.x = edge->m_vertex1.x;
-        p.y = edge->m_vertex1.y;
-        marker.points.push_back(p);
-        p.x = edge->m_vertex2.x;
-        p.y = edge->m_vertex2.y;
-        marker.points.push_back(p);
+        b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
+
+        // If the last marker is a line list, extend it
+        if (markers.markers.size() > 0 &&
+            markers.markers.back().type == marker.LINE_LIST) {
+          add_marker = false;
+          p.x = edge->m_vertex1.x;
+          p.y = edge->m_vertex1.y;
+          markers.markers.back().points.push_back(p);
+          p.x = edge->m_vertex2.x;
+          p.y = edge->m_vertex2.y;
+          markers.markers.back().points.push_back(p);
+
+        } else {  // otherwise create a new line list
+
+          marker.type = marker.LINE_LIST;
+          marker.scale.x = 0.03;  // 3cm wide lines
+
+          p.x = edge->m_vertex1.x;
+          p.y = edge->m_vertex1.y;
+          marker.points.push_back(p);
+          p.x = edge->m_vertex2.x;
+          p.y = edge->m_vertex2.y;
+          marker.points.push_back(p);
+        }
 
       } break;
 
@@ -142,8 +162,10 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
         break;
     }
 
-    markers.markers.push_back(marker);  // Add the new marker
-    fixture = fixture->GetNext();       // Traverse the linked list of fixtures
+    if (add_marker) {
+      markers.markers.push_back(marker);  // Add the new marker
+    }
+    fixture = fixture->GetNext();  // Traverse the linked list of fixtures
   }
 }
 
@@ -179,6 +201,7 @@ void DebugVisualization::Visualize(std::string name, b2Body* body, float r,
     topics_[name] = {
         node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
         visualization_msgs::MarkerArray()};
+    RefreshDebugTopicList();
   }
 
   BodyToMarkers(topics_[name].markers, body, r, g, b, a);
@@ -194,6 +217,16 @@ void DebugVisualization::Reset(std::string name) {
     topics_[name].markers.markers.clear();
     topics_[name].needs_publishing = true;
   }
+}
+
+/**
+ * @brief Publish an updated version of the debug topic list
+ */
+void DebugVisualization::RefreshDebugTopicList() {
+  DebugTopicList topic_list;
+  for (auto const& topic_pair : topics_)
+    topic_list.topics.push_back(topic_pair.first);
+  topic_list_publisher_.publish(topic_list);
 }
 
 };  // namespace flatland_server
