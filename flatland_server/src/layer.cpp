@@ -55,7 +55,7 @@
 
 namespace flatland_server {
 
-Layer::Layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
+Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &name, const cv::Mat &bitmap,
              const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
@@ -76,7 +76,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
 
 Layer::~Layer() { delete body_; }
 
-Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistrar *cfr,
+Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const boost::filesystem::path &world_yaml_dir,
                         const YAML::Node &layer_node) {
   std::string name;

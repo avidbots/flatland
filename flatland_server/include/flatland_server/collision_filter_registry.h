@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 collision_filter_registrar.h
+ * @name	 collision_filter_registry.h
  * @brief	 Defines Collision Filter Registrar
  * @author   Chunshang Li
  *
@@ -44,15 +44,15 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H
-#define FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H
+#ifndef FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
+#define FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
 
 #include <map>
 #include <string>
 
 namespace flatland_server {
 
-class CollisionFilterRegistrar {
+class CollisionFilterRegistry {
  public:
   static const int LAYER_NOT_EXIST = -1;
   static const int LAYER_ALREADY_EXIST = -2;
@@ -63,7 +63,7 @@ class CollisionFilterRegistrar {
   int collide_group_cnt_;
   std::map<std::string, int> layer_id_table_;
 
-  CollisionFilterRegistrar();
+  CollisionFilterRegistry();
 
   int RegisterCollide();
   int RegisterNoCollide();
@@ -72,4 +72,4 @@ class CollisionFilterRegistrar {
   int LookUpLayerId(std::string name);
 };
 };      // namespace flatland_server
-#endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRAR_H
+#endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H

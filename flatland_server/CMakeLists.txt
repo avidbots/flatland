@@ -92,7 +92,7 @@ add_library(flatland_lib
   src/body.cpp
   src/joint.cpp
   src/model_body.cpp
-  src/collision_filter_registrar.cpp
+  src/collision_filter_registry.cpp
   src/model_plugin.cpp
 )
 

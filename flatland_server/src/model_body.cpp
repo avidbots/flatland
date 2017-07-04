@@ -49,14 +49,14 @@
 
 namespace flatland_server {
 
-ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistrar *cfr,
+ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
                      Model *model, const std::string &name,
                      const std::array<double, 4> &color,
                      const std::array<double, 3> &origin, b2BodyType body_type)
     : Body(physics_world, model, name, color, origin, body_type), cfr_(cfr) {}
 
 ModelBody *ModelBody::MakeBody(b2World *physics_world,
-                               CollisionFilterRegistrar *cfr, Model *model,
+                               CollisionFilterRegistry *cfr, Model *model,
                                const YAML::Node &body_node) {
   std::string name;
   std::array<double, 4> color;

@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 collision_filter_registrar.cpp
+ * @name	 collision_filter_registry.cpp
  * @brief	 Implements Collision Filter Registrar
  * @author   Chunshang Li
  *
@@ -44,28 +44,28 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/collision_filter_registrar.h>
+#include <flatland_server/collision_filter_registry.h>
 
 namespace flatland_server {
 
-CollisionFilterRegistrar::CollisionFilterRegistrar()
+CollisionFilterRegistry::CollisionFilterRegistry()
     : no_collide_group_cnt_(0), collide_group_cnt_(0) {}
 
-int CollisionFilterRegistrar::RegisterCollide() {
+int CollisionFilterRegistry::RegisterCollide() {
   collide_group_cnt_++;
   return collide_group_cnt_;
 }
 
-int CollisionFilterRegistrar::RegisterNoCollide() {
+int CollisionFilterRegistry::RegisterNoCollide() {
   no_collide_group_cnt_--;
   return no_collide_group_cnt_;
 }
 
-bool CollisionFilterRegistrar::IsLayersFull() {
+bool CollisionFilterRegistry::IsLayersFull() {
   return layer_id_table_.size() >= MAX_LAYERS;
 }
 
-int CollisionFilterRegistrar::RegisterLayer(std::string layer_name) {
+int CollisionFilterRegistry::RegisterLayer(std::string layer_name) {
   if (IsLayersFull()) {
     return false;
   }
@@ -94,7 +94,7 @@ int CollisionFilterRegistrar::RegisterLayer(std::string layer_name) {
   return i;
 }
 
-int CollisionFilterRegistrar::LookUpLayerId(std::string layer_name) {
+int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) {
   if (layer_id_table_.count(layer_name) == 0) {
     return LAYER_NOT_EXIST;
   }

@@ -49,7 +49,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_server/body.h>
-#include <flatland_server/collision_filter_registrar.h>
+#include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/entity.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
@@ -61,7 +61,7 @@ namespace flatland_server {
 class Layer : public Entity {
  public:
   std::string name_;
-  CollisionFilterRegistrar *cfr_;
+  CollisionFilterRegistry *cfr_;
   cv::Mat bitmap_;
   double resolution_;
   double occupied_thresh_;
@@ -84,7 +84,7 @@ class Layer : public Entity {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
-  Layer(b2World *physics_world, CollisionFilterRegistrar *cfr,
+  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::string &name, const cv::Mat &bitmap,
         const std::array<double, 4> &color, const std::array<double, 3> &origin,
         double resolution, double occupied_thresh, double free_thresh);
@@ -112,7 +112,7 @@ class Layer : public Entity {
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
    */
-  static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistrar *cfr,
+  static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const boost::filesystem::path &world_yaml_dir,
                           const YAML::Node &layer_node);
 };

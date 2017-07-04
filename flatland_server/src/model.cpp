@@ -49,7 +49,7 @@
 
 namespace flatland_server {
 
-Model::Model(b2World *physics_world, CollisionFilterRegistrar *cfr,
+Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &name)
     : Entity(physics_world), name_(name), cfr_(cfr) {
   no_collide_group_index_ = cfr->RegisterNoCollide();
@@ -65,7 +65,7 @@ Model::~Model() {
   }
 }
 
-Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistrar *cfr,
+Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const boost::filesystem::path &yaml_path,
                         const YAML::Node &model_node) {
   YAML::Node yaml;
