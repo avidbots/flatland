@@ -79,19 +79,19 @@ class World {
    * @brief load layers into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of layers
    */
-  void LoadLayers(std::string yaml_path);
+  void LoadLayers(const std::string &yaml_path);
 
   /**
    * @brief load models into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of models
    */
-  void LoadModels(std::string yaml_path);
+  void LoadModels(const std::string &yaml_path);
 
   /**
    * brief @load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the model yaml file
+   * @param[in] model_yaml_path Path to the model yaml file
    */
-  void LoadModel(std::string yaml_path);
+  void LoadModel(const boost::filesystem::path &model_yaml_path);
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
@@ -99,7 +99,7 @@ class World {
    * YAML::Exception
    * @param[in] yaml_path Path to the world yaml file
    */
-  static World *MakeWorld(std::string yaml_path);
+  static World *MakeWorld(const std::string &yaml_path);
 
   /**
    * @brief Publish debug visualizations for everything

@@ -66,7 +66,7 @@ World::~World() {
   delete physics_world_;
 }
 
-World *World::MakeWorld(std::string yaml_path) {
+World *World::MakeWorld(const std::string &yaml_path) {
   // parse the world YAML file
   YAML::Node yaml;
 
@@ -94,7 +94,7 @@ World *World::MakeWorld(std::string yaml_path) {
   return w;
 }
 
-void World::LoadLayers(std::string yaml_path) {
+void World::LoadLayers(const std::string &yaml_path) {
   boost::filesystem::path path(yaml_path);
 
   YAML::Node yaml;
@@ -126,9 +126,47 @@ void World::LoadLayers(std::string yaml_path) {
   }
 }
 
-void World::LoadModel(std::string yaml_path) {}
+void World::LoadModels(const std::string &yaml_path) {
 
-void World::LoadModels(std::string yaml_path) {}
+  boost::filesystem::path path(yaml_path);
+  YAML::Node yaml;
+
+  try {
+    yaml = YAML::LoadFile(path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + path.string(), e);
+  }
+
+  // models is optional
+  if (yaml["models"] && !yaml["models"].IsSequence()) {
+    throw YAMLException("Invalid world param \"layers\", must be a sequence");
+  } else if (yaml["models"]) {
+    for (int i = 0; i < yaml["models"].size(); i++) {
+      boost::filesystem::path model_path(yaml["models"][i].as<std::string>());
+
+      if (model_path.string().front() != '/') {
+        model_path = path.parent_path() / model_path;
+      }
+
+      LoadModel(model_path);
+    }
+  }
+
+}
+
+void World::LoadModel(const boost::filesystem::path &model_yaml_path) {
+  YAML::Node n;
+
+  try {
+    n = YAML::LoadFile(model_yaml_path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + model_yaml_path.string(), e);
+  }
+
+  Model *model = Model::MakeModel(physics_world_, &cfr_, model_yaml_path, n);
+
+  models_.push_back(model);
+}
 
 void World::DebugVisualize() {
   for (auto &layer : layers_) {
