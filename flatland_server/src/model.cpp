@@ -66,19 +66,11 @@ Model::~Model() {
 }
 
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const boost::filesystem::path &yaml_path,
                         const YAML::Node &model_node) {
-  YAML::Node yaml;
   std::string name;
 
-  try {
-    yaml = YAML::LoadFile(yaml_path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + yaml_path.string(), e);
-  }
-
-  if (yaml["name"]) {
-    name = yaml["name"].as<std::string>();
+  if (model_node["name"]) {
+    name = model_node["name"].as<std::string>();
   } else {
     throw YAMLException("Missing model name");
   }
@@ -86,19 +78,19 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
   Model *m = new Model(physics_world, cfr, name);
 
   // it is okay to have no plugins
-  if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
+  if (model_node["plugins"] && !model_node["plugins"].IsSequence()) {
     throw YAMLException("Invalid \"plugins\" in " + name +
                         " model, not a list");
-  } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
-    m->plugins_node_ = yaml["plugins"];
+  } else if (model_node["plugins"] && !model_node["plugins"].IsSequence()) {
+    m->plugins_node_ = model_node["plugins"];
   }
 
   try {
-    m->LoadBodies(yaml["bodies"]);
-    m->LoadJoints(yaml["joints"]);
+    m->LoadBodies(model_node["bodies"]);
+    m->LoadJoints(model_node["joints"]);
   } catch (const YAML::Exception &e) {
     delete m;
-    throw e;
+    throw YAMLException(e);
   }
 
   return m;

@@ -101,4 +101,13 @@ int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) {
   return layer_id_table_[layer_name];
 }
 
+void CollisionFilterRegistry::ListAllLayers(std::vector<std::string> &layer_names) {
+  layer_names.clear();
+
+  std::map<std::string, int>::iterator it;
+  for (it = layer_id_table_.begin(); it != layer_id_table_.end(); it++) {
+    layer_names.push_back(it->first);
+  }
+}
+
 };  // namespace flatland_server

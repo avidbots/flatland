@@ -147,21 +147,21 @@ void World::LoadModels(const std::string &yaml_path) {
         model_path = path.parent_path() / model_path;
       }
 
-      LoadModel(model_path);
+      LoadModel(model_path.string());
     }
   }
 }
 
-void World::LoadModel(const boost::filesystem::path &model_yaml_path) {
+void World::LoadModel(const std::string &model_yaml_path) {
   YAML::Node n;
 
   try {
-    n = YAML::LoadFile(model_yaml_path.string());
+    n = YAML::LoadFile(model_yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + model_yaml_path.string(), e);
+    throw YAMLException("Error loading " + model_yaml_path, e);
   }
 
-  Model *model = Model::MakeModel(physics_world_, &cfr_, model_yaml_path, n);
+  Model *model = Model::MakeModel(physics_world_, &cfr_, n);
 
   models_.push_back(model);
 }

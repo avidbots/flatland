@@ -79,7 +79,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   }
 
   if (body_node["color"] && body_node["color"].IsSequence() &&
-      body_node["color"].size() == 3) {
+      body_node["color"].size() == 4) {
     color[0] = body_node["color"][0].as<double>();
     color[1] = body_node["color"][1].as<double>();
     color[2] = body_node["color"][2].as<double>();
@@ -113,7 +113,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
     m->LoadFootprints(body_node["footprints"]);
   } catch (const YAML::Exception &e) {
     delete m;
-    throw m;
+    throw YAMLException(e);
   }
 
   return m;
@@ -122,19 +122,22 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
   const YAML::Node &node = footprints_node;
 
-  if (node || !node.IsSequence() || node.size() <= 0) {
+  bool is_node = node;
+
+  printf("************** %d, %d, %lu\n", is_node, node.IsSequence(), node.size());
+
+  if (!node || !node.IsSequence() || node.size() <= 0) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
     for (int i = 0; i < node.size(); i++) {
-      const YAML::Node &n = node[i];
 
-      if (node["type"]) {
-        std::string type = node["type"].as<std::string>();
+      if (node[i]["type"]) {
+        std::string type = node[i]["type"].as<std::string>();
 
         if (type == "circle") {
-          LoadCircleFootprint(n);
+          LoadCircleFootprint(node[i]);
         } else if (type == "polygon") {
-          LoadPolygonFootprint(n);
+          LoadPolygonFootprint(node[i]);
         } else {
           throw YAMLException("Invalid footprint \"type\" in " + name_ +
                               " body, support footprints are: circle, polygon");
@@ -175,6 +178,11 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
     layers = {"all"};
   }
 
+  if (layers.size() == 1 && layers[0] == "all") {
+    layers.clear();
+    cfr_->ListAllLayers(layers);
+  }
+
   if (is_sensor) {
     fixture_def.isSensor = true;
   }
@@ -191,7 +199,7 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
 
     if (layer_id < 0) {
       throw YAMLException("Invalid footprint \"layer\" in " + name_ +
-                          " body, it does not exist");
+                          " body, " + layer + " does not exist");
     } else {
       fixture_def.filter.categoryBits |= 1 << layer_id;
     }

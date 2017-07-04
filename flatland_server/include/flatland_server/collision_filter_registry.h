@@ -48,6 +48,7 @@
 #define FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
 
 #include <map>
+#include <vector>
 #include <string>
 
 namespace flatland_server {
@@ -70,6 +71,7 @@ class CollisionFilterRegistry {
   bool IsLayersFull();
   int RegisterLayer(std::string layer);
   int LookUpLayerId(std::string name);
+  void ListAllLayers(std::vector<std::string> &layer_names);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H

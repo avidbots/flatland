@@ -85,7 +85,6 @@ class Model : public Entity {
   void LoadJoints(const YAML::Node &joints_node);
   ModelBody *GetBody(const std::string &name);
   static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                          const boost::filesystem::path &yaml_path,
                           const YAML::Node &model_node);
 };
 };      // namespace flatland_server
