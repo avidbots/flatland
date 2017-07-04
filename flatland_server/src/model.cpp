@@ -88,8 +88,7 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
   // it is okay to have no plugins
   if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
     throw YAMLException("Invalid \"plugins\" in " + name +
-                        " model, not a"
-                        "list");
+                        " model, not a list");
   } else if (yaml["plugins"] && !yaml["plugins"].IsSequence()) {
     m->plugins_node_ = yaml["plugins"];
   }
