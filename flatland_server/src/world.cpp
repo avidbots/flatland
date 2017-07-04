@@ -127,7 +127,6 @@ void World::LoadLayers(const std::string &yaml_path) {
 }
 
 void World::LoadModels(const std::string &yaml_path) {
-
   boost::filesystem::path path(yaml_path);
   YAML::Node yaml;
 
@@ -151,7 +150,6 @@ void World::LoadModels(const std::string &yaml_path) {
       LoadModel(model_path);
     }
   }
-
 }
 
 void World::LoadModel(const boost::filesystem::path &model_yaml_path) {
