@@ -62,14 +62,24 @@ class Joint {
   b2World *physics_world_;
 
   Joint(b2World *physics_world, Model *model, const std::string &name,
-        b2JointDef *joint_def);
+        const b2JointDef &joint_def);
   ~Joint();
 
   Joint(const Joint &) = delete;
   Joint &operator=(const Joint &) = delete;
 
   static Joint *MakeJoint(b2World *physics_world, Model *model,
-                          YAML::Node joint_node);
+                          const YAML::Node &joint_node);
+  static Joint *MakeRevoluteJoint(b2World *physics_world, Model *model,
+                                  const YAML::Node &joint_node,
+                                  const std::string &name);
+  static Joint *MakeWeldJoint(b2World *physics_world, Model *model,
+                              const YAML::Node &joint_node,
+                              const std::string &name);
+  static void ParseJointCommon(Model *model, const YAML::Node &joint_node,
+                               const std::string &joint_name, b2Body *&body_A,
+                               b2Vec2 &anchor_A, b2Body *&body_B,
+                               b2Vec2 &anchor_B, bool &collide_connected);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

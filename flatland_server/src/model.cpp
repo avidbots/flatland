@@ -130,4 +130,13 @@ void Model::LoadJoints(const YAML::Node &joints_node) {
   }
 }
 
+ModelBody *Model::GetBody(const std::string &name) {
+  for (int i = 0; i < bodies_.size(); i++) {
+    if (bodies_[i]->name_ == name) {
+      return bodies_[i];
+    }
+  }
+  return NULL;
+}
+
 };  // namespace flatland_server

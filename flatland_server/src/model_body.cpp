@@ -66,7 +66,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   if (body_node["name"]) {
     name = body_node["name"].as<std::string>();
   } else {
-    throw YAMLException("Missing body name");
+    throw YAMLException("Missing a body name");
   }
 
   if (body_node["origin"] && body_node["origin"].IsSequence() &&
@@ -99,8 +99,8 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
       type = b2_dynamicBody;
     } else {
       throw YAMLException("Invalid \"type\" in " + name +
-                          " body, must be "
-                          "either static, kinematic, or dynamic");
+                          " body, supported body types are: "
+                          "static, kinematic, dynamic");
     }
   } else {
     throw YAMLException("Missing \"type\" in " + name + " body");
@@ -137,7 +137,7 @@ void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
           LoadPolygonFootprint(n);
         } else {
           throw YAMLException("Invalid footprint \"type\" in " + name_ +
-                              " body, must be either circle or polygon");
+                              " body, support footprints are: circle, polygon");
         }
       } else {
         throw YAMLException("Missing footprint \"type\" in " + name_ + " body");
@@ -147,7 +147,7 @@ void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
 }
 
 void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
-                                         b2FixtureDef *fixture_def) {
+                                         b2FixtureDef &fixture_def) {
   const YAML::Node &n = footprint_node;
 
   std::vector<std::string> layers;
@@ -176,13 +176,13 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
   }
 
   if (is_sensor) {
-    fixture_def->isSensor = true;
+    fixture_def.isSensor = true;
   }
 
   if (self_collide) {
-    fixture_def->filter.groupIndex = cfr_->RegisterCollide();
+    fixture_def.filter.groupIndex = cfr_->RegisterCollide();
   } else {
-    fixture_def->filter.groupIndex =
+    fixture_def.filter.groupIndex =
         (dynamic_cast<Model *>(entity_))->no_collide_group_index_;
   }
 
@@ -193,11 +193,11 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
       throw YAMLException("Invalid footprint \"layer\" in " + name_ +
                           " body, it does not exist");
     } else {
-      fixture_def->filter.categoryBits |= 1 << layer_id;
+      fixture_def.filter.categoryBits |= 1 << layer_id;
     }
   }
 
-  fixture_def->filter.maskBits = fixture_def->filter.categoryBits;
+  fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
 }
 
 void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
@@ -221,7 +221,7 @@ void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
   }
 
   b2FixtureDef fixture_def;
-  ConfigFootprintCollision(n, &fixture_def);
+  ConfigFootprintCollision(n, fixture_def);
 
   b2CircleShape shape;
   shape.m_p.Set(x, y);
@@ -261,7 +261,7 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
   }
 
   b2FixtureDef fixture_def;
-  ConfigFootprintCollision(n, &fixture_def);
+  ConfigFootprintCollision(n, fixture_def);
 
   b2PolygonShape shape;
   shape.Set(points.data(), points.size());

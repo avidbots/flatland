@@ -66,7 +66,7 @@ class ModelBody : public Body {
 
   void LoadFootprints(const YAML::Node &footprints_node);
   void ConfigFootprintCollision(const YAML::Node &footprint_node,
-                                b2FixtureDef *fixture_def);
+                                b2FixtureDef &fixture_def);
   void LoadCircleFootprint(const YAML::Node &footprint_node);
   void LoadPolygonFootprint(const YAML::Node &footprint_node);
 
