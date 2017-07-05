@@ -168,18 +168,23 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(load_world_test
     ${catkin_LIBRARIES}
     ${GTEST_LIBRARIES}
-    Box2D_shared
     flatland_lib
   )
   
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test
-    flatland_lib Box2D_shared)
+    flatland_lib)
+
+  catkin_add_gtest(collision_filter_registry_test
+    test/collision_filter_registry_test.cpp)
+  target_link_libraries(collision_filter_registry_test
+    flatland_lib)
 
   add_rostest_gtest(debug_visualization_test
     test/debug_visualization.test
     test/debug_visualization_test.cpp)
   target_link_libraries(debug_visualization_test
-    flatland_lib Box2D_shared)
+    flatland_lib)
+
 
 endif()

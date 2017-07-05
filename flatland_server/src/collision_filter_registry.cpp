@@ -48,6 +48,11 @@
 
 namespace flatland_server {
 
+const int CollisionFilterRegistry::LAYER_NOT_EXIST;
+const int CollisionFilterRegistry::LAYER_ALREADY_EXIST;
+const int CollisionFilterRegistry::LAYERS_FULL;
+const int CollisionFilterRegistry::MAX_LAYERS;
+
 CollisionFilterRegistry::CollisionFilterRegistry()
     : no_collide_group_cnt_(0), collide_group_cnt_(0) {}
 
@@ -67,7 +72,7 @@ bool CollisionFilterRegistry::IsLayersFull() {
 
 int CollisionFilterRegistry::RegisterLayer(std::string layer_name) {
   if (IsLayersFull()) {
-    return false;
+    return LAYERS_FULL;
   }
 
   if (layer_id_table_.count(layer_name) > 0) {

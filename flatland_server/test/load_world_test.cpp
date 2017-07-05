@@ -50,8 +50,6 @@
 #include <flatland_server/geometry.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <ros/package.h>
-#include <ros/ros.h>
 #include <boost/filesystem.hpp>
 #include <regex>
 #include <string>
@@ -59,12 +57,12 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-class FlatlandServerLoadWorldTest : public ::testing::Test {
+class LoadWorldTest : public ::testing::Test {
  protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
 
-  FlatlandServerLoadWorldTest() {
+  LoadWorldTest() {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
   }
 
@@ -147,7 +145,7 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
  * yaml file and checks that all configurations, data, and calculations are
  * correct after instantiation
  */
-TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
+TEST_F(LoadWorldTest, simple_test_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::MakeWorld(world_yaml.string());
@@ -255,7 +253,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
  * This test tries to loads a non-existent world yaml file. It should throw
  * an exception
  */
-TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
+TEST_F(LoadWorldTest, wrong_world_path) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
   test_yaml_fail("Error loading.*world.yaml.*bad file");
@@ -265,7 +263,7 @@ TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
  * This test tries to loads a invalid world yaml file. It should throw
  * an exception.
  */
-TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
+TEST_F(LoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
   test_yaml_fail("Missing/invalid world param \"properties\"");
@@ -275,7 +273,7 @@ TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
  * This test tries to loads a invalid world yaml file. It should throw
  * an exception.
  */
-TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
+TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail("Missing/invalid \"color\" in 2d layer");
@@ -285,7 +283,7 @@ TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
  * This test tries to loads valid world yaml file which in turn tries to
  * load a invalid map yaml file. It should throw an exception.
  */
-TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
+TEST_F(LoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
   test_yaml_fail("Missing/invalid \"origin\" in 2d layer");
@@ -296,7 +294,7 @@ TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
  * file which then inturn tries to load a non-exists map image file. It should
  * throw an exception
  */
-TEST_F(FlatlandServerLoadWorldTest, map_invalid_B) {
+TEST_F(LoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
   test_yaml_fail("Failed to load .*.png");
