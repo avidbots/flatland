@@ -113,7 +113,7 @@ void Model::LoadJoints(const YAML::Node &joints_node) {
   if (joints_node && !joints_node.IsSequence()) {
     // if joints exists and it is not a sequence, it is okay to have no joints
     throw YAMLException("Invalid \"joints\" in " + name_ + " model");
-  } else {
+  } else if (joints_node) {
     for (const auto &joint_node : joints_node) {
       Joint *j = Joint::MakeJoint(physics_world_, this, joint_node);
       joints_.push_back(j);

@@ -5,7 +5,7 @@ bodies:  # List of named bodies
   - name: base
     origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
     type: dynamic  # dynamic | static | kinematic, default dynamic
-    color: [0.5, 0.5, 0.5, 1] # r g b a
+    color: [1, 1, 0, 0.25] # r g b a
     footprints:
       - type: circle
         center: [0, 0]  # relative to body origin
@@ -13,6 +13,80 @@ bodies:  # List of named bodies
         layers: ["all"] # any other layers, default is all
         is_sensor: false # Box2d Sensor, false is default
         self_collide: false # collides with other bodies, default is false
+
+  - name: left_wheel
+    origin: [-0.125, 0, 0] 
+    type: dynamic  
+    color: [1, 0, 0, 0.25] 
+    footprints:
+      - type: polygon
+        is_sensor: true
+        points: [[-0.02, 0.1], [-0.02, -0.1], [0.02, -0.1], [0.02, 0.1]]
+
+  - name: right_wheel
+    origin: [0.125, 0, 0] 
+    type: dynamic  
+    color: [0, 1, 0, 0.25] 
+    footprints:
+      - type: polygon
+        points: [[-0.02, 0.1], [-0.02, -0.1], [0.02, -0.1], [0.02, 0.1]]
+
+  - name: tail
+    origin: [0, 0, 0] 
+    type: dynamic  
+    color: [0, 0, 0, 0.5] 
+    footprints:
+      - type: polygon
+        layers: ["3d"]
+        points: [[-0.02, 0], [-0.02, -0.75], [0.02, 0.75], [0.02, 0]]
+
+  - name: antenna
+    origin: [0, 0.1, 0] 
+    type: dynamic  
+    color: [0.2, 0.4, 0.6, 1] 
+    footprints:
+      - type: circle
+        center: [0, 0]
+        radius: 0.01
+        self_collide: true
+        layers: []
+
+# joints:
+#   - name: left_wheel_weld
+#     type: weld
+#     angle: 1.57079633
+#     collide_connected: false
+#     bodies:
+#       - name: base
+#         anchor: [0, 0]
+#       - name: left_wheel
+#         anchor: [-0.125, 0]
+
+#   - name: right_wheel_weld
+#     type: weld
+#     bodies:
+#       - name: base
+#         anchor: [0, 0]
+#       - name: right_wheel
+#         anchor: [0.125, 0]
+
+#   - name: tail_revolute:
+#     type: revolute
+#     bodies:
+#       - name: base
+#         anchor: [0, 0]
+#       - name: right_wheel
+#         anchor: [0, 0]
+
+#   - name: antenna_revolute:
+#     type: revolute
+#     limits: [-0.002, 3.735]
+#     bodies:
+#       - name: base
+#         anchor: [0, 0]
+#       - name: antenna
+#         anchor: [0, 0]
+#       - collide_connected: true
 
 
 plugins:

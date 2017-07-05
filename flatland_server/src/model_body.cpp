@@ -124,8 +124,6 @@ void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
 
   bool is_node = node;
 
-  printf("************** %d, %d, %lu\n", is_node, node.IsSequence(), node.size());
-
   if (!node || !node.IsSequence() || node.size() <= 0) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
@@ -174,6 +172,9 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
       std::string layer_name = n["layers"][i].as<std::string>();
       layers.push_back(layer_name);
     }
+  } else if (n["layers"]) {
+    throw YAMLException("Invalid footprint \"layer\" in " + name_ + " body, "
+                        "must be a sequence");
   } else {
     layers = {"all"};
   }
@@ -244,6 +245,8 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
 
   std::vector<b2Vec2> points;
 
+
+
   if (n["points"] && n["points"].IsSequence() && n["points"].size() >= 3) {
     for (int i = 0; i < n["points"].size(); i++) {
       YAML::Node np = n["points"][i];
@@ -253,13 +256,13 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
         points.push_back(p);
 
       } else {
+
+  // printf("******* %d, %d, %lu", (bool) np, np.IsSequence(),  np.size());
         throw YAMLException(
             "Missing/invalid polygon footprint \"point\" index=" +
             std::to_string(i) + " in " + name_ +
             " must be a sequence of exactly two items");
       }
-
-      std::string layer_name = n["layers"][i].as<std::string>();
     }
   } else {
     throw YAMLException("Missing/invalid polygon footprint \"points\" in " +
