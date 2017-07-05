@@ -48,8 +48,8 @@
 #define FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace flatland_server {
 

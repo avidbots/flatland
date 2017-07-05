@@ -101,7 +101,8 @@ int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) {
   return layer_id_table_[layer_name];
 }
 
-void CollisionFilterRegistry::ListAllLayers(std::vector<std::string> &layer_names) {
+void CollisionFilterRegistry::ListAllLayers(
+    std::vector<std::string> &layer_names) {
   layer_names.clear();
 
   std::map<std::string, int>::iterator it;

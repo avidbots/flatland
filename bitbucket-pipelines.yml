@@ -14,7 +14,7 @@ pipelines:
           - rosdep install -y --from-paths src --ignore-src
           - source /opt/ros/*/setup.bash
           - cd  $BITBUCKET_CLONE_DIR
-          - git ls-files | grep -E '\.[ch](pp)?$' |  xargs clang-format-3.8 --style=file -i && git diff --exit-code || { git reset --hard; false; }
+          - git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -i && git diff --exit-code || { git reset --hard; false; }
           - cd ~/catkin_ws
           - scan-build-3.8 --status-bugs catkin_make -j1
           - ./src/coverage.sh

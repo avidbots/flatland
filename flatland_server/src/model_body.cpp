@@ -128,7 +128,6 @@ void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
     for (int i = 0; i < node.size(); i++) {
-
       if (node[i]["type"]) {
         std::string type = node[i]["type"].as<std::string>();
 
@@ -166,8 +165,7 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
   if (n["layers"] && !n["layers"].IsSequence()) {
     throw YAMLException("Invalid footprint \"layer\" in " + name_ +
                         " body, must be a sequence");
-  }
-  else if (n["layers"] && n["layers"].IsSequence()) {
+  } else if (n["layers"] && n["layers"].IsSequence()) {
     for (int i = 0; i < n["layers"].size(); i++) {
       std::string layer_name = n["layers"][i].as<std::string>();
       layers.push_back(layer_name);

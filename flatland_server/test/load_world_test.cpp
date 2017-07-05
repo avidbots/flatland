@@ -247,7 +247,6 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
   // Check loaded model data
-  
 
   delete w;
 }
