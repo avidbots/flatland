@@ -160,7 +160,7 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
   }
 
   if (n["self_collide"]) {
-    is_sensor = n["self_collide"].as<bool>();
+    self_collide = n["self_collide"].as<bool>();
   }
 
   if (n["layers"] && !n["layers"].IsSequence()) {
@@ -242,8 +242,6 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
 
   std::vector<b2Vec2> points;
 
-
-
   if (n["points"] && n["points"].IsSequence() && n["points"].size() >= 3) {
     for (int i = 0; i < n["points"].size(); i++) {
       YAML::Node np = n["points"][i];
@@ -253,8 +251,6 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
         points.push_back(p);
 
       } else {
-
-  // printf("******* %d, %d, %lu", (bool) np, np.IsSequence(),  np.size());
         throw YAMLException(
             "Missing/invalid polygon footprint \"point\" index=" +
             std::to_string(i) + " in " + name_ +
