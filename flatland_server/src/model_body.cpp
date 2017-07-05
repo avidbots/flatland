@@ -160,21 +160,18 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
   }
 
   if (n["self_collide"]) {
-    is_sensor = n["is_sensor"].as<bool>();
+    is_sensor = n["self_collide"].as<bool>();
   }
 
   if (n["layers"] && !n["layers"].IsSequence()) {
     throw YAMLException("Invalid footprint \"layer\" in " + name_ +
                         " body, must be a sequence");
   }
-  if (n["layers"] && n["layers"].IsSequence()) {
+  else if (n["layers"] && n["layers"].IsSequence()) {
     for (int i = 0; i < n["layers"].size(); i++) {
       std::string layer_name = n["layers"][i].as<std::string>();
       layers.push_back(layer_name);
     }
-  } else if (n["layers"]) {
-    throw YAMLException("Invalid footprint \"layer\" in " + name_ + " body, "
-                        "must be a sequence");
   } else {
     layers = {"all"};
   }

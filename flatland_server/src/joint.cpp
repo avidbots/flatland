@@ -105,7 +105,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
     throw YAMLException("Invalid \"limits\" in " + name +
                         " joint, must be "
                         "a sequence of exactly two items");
-  } else {
+  } else if (n["limits"]) {
     lower_limit = n["limits"][0].as<double>();
     upper_limit = n["limits"][1].as<double>();
     has_limits = true;
@@ -149,7 +149,7 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   }
 
   if (n["frequency"]) {
-    frequency = n["angle"].as<double>();
+    frequency = n["frequency"].as<double>();
   }
 
   if (n["damping"]) {
@@ -184,7 +184,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
     collide_connected = n["collide_connected"].as<bool>();
   }
 
-  if (n["bodies"] && !n["bodies"].IsSequence() && n["bodies"].size() == 2) {
+  if (n["bodies"] && n["bodies"].IsSequence() && n["bodies"].size() == 2) {
     for (int i = 0; i < 2; i++) {
       YAML::Node body = n["bodies"][i];
       if (body["name"]) {
@@ -212,8 +212,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
       } else {
         throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
                             " joint body index=" + std::to_string(i) +
-                            ". must"
-                            " be a sequence of exactly two numbers");
+                            ". must be a sequence of exactly two numbers");
       }
     }
 
@@ -224,8 +223,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
 
   } else {
     throw YAMLException("Missing/invalid \"bodies\" in " + joint_name +
-                        " joint, must"
-                        " be a sequence of exactly two items");
+                        " joint, must be a sequence of exactly two items");
   }
 }
 

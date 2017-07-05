@@ -60,9 +60,8 @@ Model::~Model() {
     delete bodies_[i];
   }
 
-  for (int i = 0; i < joints_.size(); i++) {
-    delete joints_[i];
-  }
+  // No need to destroy joints since destruction of model will destroy the
+  // joint, the creation of a joint must always have bodies attached to it
 }
 
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,

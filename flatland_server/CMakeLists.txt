@@ -35,7 +35,6 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 # OpenCV
 find_package(OpenCV REQUIRED)
 
-
 ##############
 ## coverage ##
 ##############
@@ -80,6 +79,8 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
+add_subdirectory("thirdparty/Box2D")
+
 ## Flatland server library
 add_library(flatland_lib
   src/simulation_manager.cpp
@@ -100,7 +101,7 @@ add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  Box2D
+  Box2D_shared
   yaml-cpp
 )
 
@@ -117,7 +118,7 @@ add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  Box2D
+  Box2D_shared
   yaml-cpp
   flatland_lib
 )
@@ -167,18 +168,18 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(load_world_test
     ${catkin_LIBRARIES}
     ${GTEST_LIBRARIES}
-    Box2D
+    Box2D_shared
     flatland_lib
   )
   
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test
-    flatland_lib Box2D)
+    flatland_lib Box2D_shared)
 
   add_rostest_gtest(debug_visualization_test
     test/debug_visualization.test
     test/debug_visualization_test.cpp)
   target_link_libraries(debug_visualization_test
-    flatland_lib Box2D)
+    flatland_lib Box2D_shared)
 
 endif()
