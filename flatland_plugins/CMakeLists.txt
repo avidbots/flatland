@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  rostest
   pluginlib
   roscpp
   flatland_server
@@ -45,7 +46,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
-  CATKIN_DEPENDS pluginlib roscpp
+  CATKIN_DEPENDS pluginlib roscpp flatland_server
   DEPENDS YAML_CPP
 )
 
@@ -67,7 +68,6 @@ add_library(flatland_plugins_lib
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_plugins_lib
   ${catkin_LIBRARIES}
-  Box2D
   yaml-cpp
 )
 
