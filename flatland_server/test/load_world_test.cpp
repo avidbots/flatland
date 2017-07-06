@@ -165,6 +165,14 @@ class LoadWorldTest : public ::testing::Test {
     return ret;
   }
 
+  bool CircleEq() {
+
+  }
+
+  bool PolygonEq() {
+
+  }
+
   std::vector<b2Fixture *> GetBodyFixtures(Body *body) {
     std::vector<b2Fixture *> fixtures;
 
@@ -283,7 +291,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
-  /*
+  
   // Check loaded model data
   Model *m0 = w->models_[0];
   Model *m1 = w->models_[0];
@@ -299,12 +307,23 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_TRUE(BodyPoseEq(m0->bodies_[0], {0, 0, 0}));
   EXPECT_EQ(m0->bodies_[0].physics_body_.GetType(), b2_dynamicBody);
 
-  // check model 1 fixtures, not box2d's linked list returns the the items
+  // check model 1 fixtures, note that box2d's linked list returns the the items
   // in the opposite order of being added
-  auto fixtures = GetBodyFixtures(m0->bodies_[0]);
-  ASSERT_EQ(fixtures.size(), 2);
+  auto fs = GetBodyFixtures(m0->bodies_[0]);
+  ASSERT_EQ(fs.size(), 2);
+  EXPECT_EQ(fs[0].GetType(), b2Shape::e_circle);
+  EXPECT_FALSE(fs[0].IsSensor());
+  EXPECT_EQ(fs[0].GetFilterData().groupIndex, -1);
+  EXPECT_EQ(fs[0].GetFilterData().categoryBits, 0b11);
+  EXPECT_EQ(fs[0].GetFilterData().maskBits, 0b11);
+  EXPECT_EQ(fs[0].GetFilterData().maskBits, 0b11);
+  EXPECT_EQ(fs[0].GetDensity(), 0);
+  EXPECT_EQ(fs[0].GetFriction(), 0);
+  EXPECT_EQ(fs[0].GetRestitution(), 0);
 
-*/
+  EXPECT_EQ(fs[0].GetShape(), b2Shape::e_circle);
+
+
 
   // for (int i = 0; i < m0->bodies_.size(); i++) {
   //   DebugVisualization::get().Visualize(

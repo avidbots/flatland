@@ -18,7 +18,7 @@ bodies:  # List of named bodies
       - type: polygon
         density: 982.24
         friction: 0.59
-        restitution: 0.234
+        resitution: 0.234
         points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
 
   - name: left_wheel
