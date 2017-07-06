@@ -66,6 +66,8 @@ World::~World() {
   delete physics_world_;
 }
 
+void World::Update(double timestep) { physics_world_->Step(timestep, 10, 10); }
+
 World *World::MakeWorld(const std::string &yaml_path) {
   // parse the world YAML file
   YAML::Node yaml;

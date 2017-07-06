@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	simulation_manager.cpp
- * @brief	Simulation manager runs the physics+event loop
- * @author Joseph Duchesne
+ * @name	 plugin_manager.cpp
+ * @brief	 Implementation for plugin manager
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,61 +44,35 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/simulation_manager.h"
-#include <flatland_server/layer.h>
+
+#include <flatland_server/model_plugin.h>
 #include <flatland_server/model.h>
-#include <flatland_server/world.h>
-#include <ros/ros.h>
-#include <string>
-#include "flatland_server/debug_visualization.h"
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
-/**
- * @name  Simulation Manager constructor
- * @param world_file   The path to the world.yaml file we wish to load
- * @param initial_rate The physics step frequency in Hz
- */
-SimulationManager::SimulationManager(std::string world_file, float initial_rate)
-    : initial_rate_(initial_rate) {
-  ROS_INFO_NAMED("SimMan", "Initializing");
-
-  world_ = World::MakeWorld(world_file);
-  ROS_INFO_NAMED("World", "World loaded");
-  world_->DebugVisualize();
-
-  // Todo: Initialize SimTime class here once written
-}
-
-void SimulationManager::Main() {
-  ROS_INFO_NAMED("SimMan", "Main starting");
-
-  ros::Rate rate(initial_rate_);
-
-  while (ros::ok() && run_simulator_) {
-    // Step physics by ros cycle time
-    world_->Update(rate.expectedCycleTime().toSec());
-
-    ros::spinOnce();  // Normal ROS event loop
-    // Todo: Update bodies
-
-    DebugVisualization::get().Publish();  // Publish debug visualization output
-
-    rate.sleep();
-
-    ROS_INFO_THROTTLE_NAMED(
-        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
-        rate.cycleTime().toSec() * 1000,
-        rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
+void PluginManager::BeforePhysicsStep(double timestep) {
+  for (const auto &model_plugin : model_plugins) {
+    model_plugin.BeforePhysicsStep(timestep);
   }
-
-  ROS_INFO_NAMED("SimMan", "Main exiting");
 }
 
-void SimulationManager::Shutdown() {
-  ROS_INFO_NAMED("SimMan", "Shutdown called");
-  delete world_;
+void PluginManager::AfterPhysicsStep(double timestep) {
+  for (const auto &model_plugin : model_plugins) {
+    model_plugin.BeforePhysicsStep(timestep);
+  }
 }
 
-};  // namespace flatland_server
+void PluginManager::LoadModelPlugin(const std::string &name, Model *model_,
+                  const YAML::Node &config) {
+  try {
+    boost::shared_ptr<flatland_server::ModelPlugin> laser =
+        loader.createInstance("flatland_plugins::Laser");
+
+    laser->Initialize("LaserTest", nullptr, YAML::Node());
+  } catch (pluginlib::PluginlibException& e) {
+    FAIL() << "Failed to load Laser plugin. " << e.what();
+  }
+}
+
+};      // namespace flatland_server

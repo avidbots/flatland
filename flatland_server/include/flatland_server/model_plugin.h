@@ -63,8 +63,8 @@ class ModelPlugin {
   void Initialize(const std::string &name, Model *model_,
                   const YAML::Node &config);
   virtual void OnInitialize(const YAML::Node &config) = 0;
-  virtual void WorldUpdateBegin(double timestep) {}
-  virtual void WorldUpdateEnd(double timestep) {}
+  virtual void BeforePhysicsStep(double timestep) {}
+  virtual void AfterPhysicsStep(double timestep) {}
   virtual void CollisionWithMap(Layer layer, b2Fixture fixture) {}
   virtual void CollisionWithModel(Model *model, b2Fixture fixture) {}
   virtual void Collision(b2Fixture fixture_A, b2Fixture fixture_B) {}

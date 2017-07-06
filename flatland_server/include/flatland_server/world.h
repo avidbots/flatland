@@ -8,7 +8,7 @@
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	 world.h
- * @brief	 Loads world file
+ * @brief	 Definition for the simulation world
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -74,6 +74,12 @@ class World {
    * @brief Destructor for the world class
    */
   ~World();
+
+  /**
+   * @brief trigger world update include all physics and plugins
+   * @param[in] timestep The amount of simulation time to elapse in seconds
+   */
+  void Update(double timestep);
 
   /**
    * @brief load layers into the world. Throws derivatives of YAML::Exception
