@@ -6,4 +6,10 @@ layers:
   - name: "3d"
     map: "map3d.yaml"
     color: [1.0, 0.0, 0.0, 0.5]
-models: ["turtlebot.model.yaml"]
+models:  
+  - name: turtlebot1 
+    pose: [0, 0, 0]
+    model: "turtlebot.model.yaml"
+  - name: turtlebot2
+    pose: [0, 0, 0]
+    model: "turtlebot.model.yaml"

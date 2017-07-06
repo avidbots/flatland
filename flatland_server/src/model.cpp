@@ -65,13 +65,13 @@ Model::~Model() {
 }
 
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const YAML::Node &model_node) {
-  std::string name;
-
-  if (model_node["name"]) {
-    name = model_node["name"].as<std::string>();
-  } else {
-    throw YAMLException("Missing model name");
+                        const std::string &name,
+                        const std::string &model_yaml_path) {
+  YAML::Node model_node;
+  try {
+    model_node = YAML::LoadFile(model_yaml_path);
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + model_yaml_path, e);
   }
 
   Model *m = new Model(physics_world, cfr, name);
@@ -127,6 +127,12 @@ ModelBody *Model::GetBody(const std::string &name) {
     }
   }
   return NULL;
+}
+
+void Model::SetPose(const std::array<double, 3> &pose) {
+  for (int i = 0; i < bodies_.size(); i++) {
+    bodies_[i]->physics_body_->SetTransform(b2Vec2(pose[0], pose[1]), pose[2]);
+  }
 }
 
 };  // namespace flatland_server

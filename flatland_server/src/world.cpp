@@ -141,27 +141,48 @@ void World::LoadModels(const std::string &yaml_path) {
     throw YAMLException("Invalid world param \"layers\", must be a sequence");
   } else if (yaml["models"]) {
     for (int i = 0; i < yaml["models"].size(); i++) {
-      boost::filesystem::path model_path(yaml["models"][i].as<std::string>());
+      const YAML::Node &node = yaml["models"][i];
+      std::string name;
+      std::array<double, 3> pose;
+      boost::filesystem::path model_path;
+
+      if (node["name"]) {
+        name = node["name"].as<std::string>();
+      } else {
+        throw YAMLException("Missing model name in model index=" +
+                            std::to_string(i));
+      }
+
+      if (node["pose"] && node["pose"].IsSequence() &&
+          node["pose"].size() == 3) {
+        pose[0] = node["pose"][0].as<double>();
+        pose[1] = node["pose"][1].as<double>();
+        pose[2] = node["pose"][2].as<double>();
+      } else {
+        throw YAMLException("Missing/invalid \"pose\" in " + name + " model");
+      }
+
+      if (node["model"]) {
+        model_path = boost::filesystem::path(node["model"].as<std::string>());
+      } else {
+        throw YAMLException("Missing \"model\" in " + name + " model");
+      }
 
       if (model_path.string().front() != '/') {
         model_path = path.parent_path() / model_path;
       }
 
-      LoadModel(model_path.string());
+      LoadModel(model_path.string(), name, pose);
     }
   }
 }
 
-void World::LoadModel(const std::string &model_yaml_path) {
-  YAML::Node n;
+void World::LoadModel(const std::string &model_yaml_path,
+                      const std::string &name,
+                      const std::array<double, 3> pose) {
+  Model *model = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
 
-  try {
-    n = YAML::LoadFile(model_yaml_path);
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + model_yaml_path, e);
-  }
-
-  Model *model = Model::MakeModel(physics_world_, &cfr_, n);
+  model->SetPose(pose);
 
   models_.push_back(model);
 }

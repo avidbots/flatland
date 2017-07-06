@@ -84,8 +84,10 @@ class Model : public Entity {
   void LoadBodies(const YAML::Node &bodies_node);
   void LoadJoints(const YAML::Node &joints_node);
   ModelBody *GetBody(const std::string &name);
+  void SetPose(const std::array<double, 3> &pose);
   static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                          const YAML::Node &model_node);
+                          const std::string &name,
+                          const std::string &model_yaml_path);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

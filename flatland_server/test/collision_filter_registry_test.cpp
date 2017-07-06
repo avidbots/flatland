@@ -46,8 +46,8 @@
 
 #include <flatland_server/collision_filter_registry.h>
 #include <gtest/gtest.h>
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 using namespace flatland_server;
 
@@ -84,7 +84,6 @@ TEST_F(CollisionFilterRegistryTest, register_no_collide_test) {
 }
 
 TEST_F(CollisionFilterRegistryTest, register_layers_test) {
-
   EXPECT_EQ(CFR::MAX_LAYERS, 16);
 
   EXPECT_EQ(cfr.RegisterLayer("layer1"), 0);
@@ -103,16 +102,16 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
   cfr.ListAllLayers(layer_names);
   EXPECT_EQ(layer_names.size(), 5);
 
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer1") 
-    != layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer2") 
-    != layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer3") 
-    != layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer4") 
-    != layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer5") 
-    != layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer1") !=
+              layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer2") !=
+              layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer3") !=
+              layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer4") !=
+              layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer5") !=
+              layer_names.end());
 
   EXPECT_EQ(cfr.RegisterLayer("layer5"), CFR::LAYER_ALREADY_EXIST);
   EXPECT_EQ(cfr.RegisterLayer("layer6"), 5);

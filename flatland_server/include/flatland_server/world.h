@@ -91,7 +91,8 @@ class World {
    * brief @load models into the world. Throws derivatives of YAML::Exception
    * @param[in] model_yaml_path Path to the model yaml file
    */
-  void LoadModel(const std::string &model_yaml_path);
+  void LoadModel(const std::string &model_yaml_path, const std::string &name,
+                 const std::array<double, 3> pose);
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
