@@ -44,35 +44,59 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#include <flatland_server/model_plugin.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
+#include <flatland_server/plugin_manager.h>
+#include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
 void PluginManager::BeforePhysicsStep(double timestep) {
   for (const auto &model_plugin : model_plugins) {
-    model_plugin.BeforePhysicsStep(timestep);
+    model_plugin->BeforePhysicsStep(timestep);
   }
 }
 
 void PluginManager::AfterPhysicsStep(double timestep) {
   for (const auto &model_plugin : model_plugins) {
-    model_plugin.BeforePhysicsStep(timestep);
+    model_plugin->BeforePhysicsStep(timestep);
   }
 }
 
-void PluginManager::LoadModelPlugin(const std::string &name, Model *model_,
-                  const YAML::Node &config) {
+void PluginManager::LoadModelPlugin(Model *model,
+                                    const YAML::Node &plugins_node) {
+  const YAML::Node &n = plugins_node;
+
+  std::string name;
+  std::string type;
+
+  if (n["name"]) {
+    name = n["name"].as<std::string>();
+  } else {
+    throw YAMLException("Missing plugin name");
+  }
+
+  if (n["type"]) {
+    type = n["type"].as<std::string>();
+  } else {
+    throw YAMLException("Missing \"type\" in plugin " + name);
+  }
+
+  boost::shared_ptr<ModelPlugin> model_plugin;
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
+      "flatland_server", "flatland_server::ModelPlugin");
+
   try {
-    boost::shared_ptr<flatland_server::ModelPlugin> laser =
-        loader.createInstance("flatland_plugins::Laser");
-
-    laser->Initialize("LaserTest", nullptr, YAML::Node());
-  } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Laser plugin. " << e.what();
+    model_plugin = loader.createInstance("flatland_plugins::" + type);
+  } catch (pluginlib::PluginlibException &e) {
+    ROS_ERROR("Failed to load %s plugin of type %s (%s)", name.c_str(),
+              type.c_str(), e.what());
+    return;  // TODO (Chunshang): handle this exception properly
   }
+
+  model_plugin->Initialize(name, model, plugins_node);
 }
 
-};      // namespace flatland_server
+};  // namespace flatland_server

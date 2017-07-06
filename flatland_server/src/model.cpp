@@ -77,13 +77,7 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   Model *m = new Model(physics_world, cfr, name);
 
-  // it is okay to have no plugins
-  if (model_node["plugins"] && !model_node["plugins"].IsSequence()) {
-    throw YAMLException("Invalid \"plugins\" in " + name +
-                        " model, not a list");
-  } else if (model_node["plugins"] && !model_node["plugins"].IsSequence()) {
-    m->plugins_node_ = model_node["plugins"];
-  }
+  m->plugins_node_ = model_node["plugins"];
 
   try {
     m->LoadBodies(model_node["bodies"]);

@@ -90,6 +90,7 @@ World *World::MakeWorld(const std::string &yaml_path) {
     w->LoadLayers(yaml_path);
     w->LoadModels(yaml_path);
   } catch (const YAML::Exception &e) {
+    delete w;
     throw YAMLException(e);
   }
 
@@ -182,11 +183,19 @@ void World::LoadModels(const std::string &yaml_path) {
 void World::LoadModel(const std::string &model_yaml_path,
                       const std::string &name,
                       const std::array<double, 3> pose) {
-  Model *model = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
+  Model *m = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
+  m->TransformAll(pose);
+  models_.push_back(m);
 
-  model->TransformAll(pose);
-
-  models_.push_back(model);
+  // load model plugins, it is okay to have no plugins
+  if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
+    throw YAMLException("Invalid \"plugins\" in " + name +
+                        " model, not a list");
+  } else if (m->plugins_node_) {
+    for (const auto &plugin_node : m->plugins_node_) {
+      plugin_manager_.LoadModelPlugin(m, plugin_node);
+    }
+  }
 }
 
 void World::DebugVisualize() {

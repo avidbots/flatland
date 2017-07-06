@@ -95,6 +95,7 @@ add_library(flatland_lib
   src/model_body.cpp
   src/collision_filter_registry.cpp
   src/model_plugin.cpp
+  src/plugin_manager.cpp
 )
 
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

@@ -51,6 +51,7 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <flatland_server/plugin_manager.h>
 #include <string>
 #include <vector>
 
@@ -63,6 +64,7 @@ class World {
   std::vector<Layer *> layers_;
   std::vector<Model *> models_;
   CollisionFilterRegistry cfr_;
+  PluginManager plugin_manager_;
 
   /**
    * @brief Constructor for the world class. All data required for

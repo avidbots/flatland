@@ -47,25 +47,22 @@
 #ifndef FLATLAND_PLUGIN_MANAGER_H
 #define FLATLAND_PLUGIN_MANAGER_H
 
-#include <flatland_server/model_plugin.h>
 #include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
 class PluginManager {
  public:
-
   std::vector<boost::shared_ptr<ModelPlugin>> model_plugins;
 
   void BeforePhysicsStep(double timestep);
   void AfterPhysicsStep(double timestep);
 
-  void AddModelPlugin(const std::string &name, Model *model_,
-                      const YAML::Node &config);
+  void LoadModelPlugin(Model *model, const YAML::Node &plugins_node);
 
   // TODO (Chunshang): collision listener
-  
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H
