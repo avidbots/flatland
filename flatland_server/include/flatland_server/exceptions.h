@@ -74,7 +74,7 @@ class YAMLException : public YAML::Exception {
     const YAMLException *const e2 =
         dynamic_cast<const YAMLException *const>(&e);
 
-    if (e2 == NULL) {
+    if (e2 == nullptr) {
       msg_ = ErrorMsg(msg, e.msg, e.mark);
     } else {
       msg_ = e2->what();

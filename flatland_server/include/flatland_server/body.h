@@ -60,7 +60,7 @@ class Body {
 
   Body(b2World *physics_world, Entity *entity, const std::string &name,
        const std::array<double, 4> &color, const std::array<double, 3> &origin,
-       b2BodyType body_type);
+       b2BodyType body_type, double linear_damping, double angular_damping);
   virtual ~Body();
 
   Body(const Body &) = delete;

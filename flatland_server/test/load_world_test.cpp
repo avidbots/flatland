@@ -45,6 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
@@ -137,6 +138,44 @@ class LoadWorldTest : public ::testing::Test {
     } else {
       return false;
     }
+  }
+
+  bool ColorEq(const std::array<double, 4> &c1,
+               const std::array<double, 4> &c2) {
+    for (int i = 0; i < 4; i++) {
+      if (c1[i] != c2[i]) {
+        printf("[%f,%f,%f,%f] != [%f,%f,%f,%f]\n", c1[0], c1[1], c1[2], c1[3],
+               c2[0], c2[1], c2[2], c2[3]);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool BodyPoseEq(Body *body, const std::array<double, 3> &p) {
+    b2Vec2 t = body->physics_body_->GetPosition();
+    double a = body->physics_body_->GetAngle();
+
+    bool ret = t.x == p[0] && t.y == p[1] && a == p[2];
+
+    if (!ret) {
+      printf("[%f,%f,%f] != [%f,%f,%f]", t.x, t.y, a, p[0], p[1], p[2]);
+    }
+
+    return ret;
+  }
+
+  std::vector<b2Fixture *> GetBodyFixtures(Body *body) {
+    std::vector<b2Fixture *> fixtures;
+
+    b2Body *b = body->physics_body_;
+    for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
+      fixtures.push_back(f);
+    }
+
+    std::reverse(fixtures.begin(), fixtures.end());
+
+    return fixtures;
   }
 };
 
@@ -244,7 +283,38 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
+  /*
   // Check loaded model data
+  Model *m0 = w->models_[0];
+  Model *m1 = w->models_[0];
+
+  // Check model 1
+  EXPECT_STREQ(m0->name_.c_str(), "");
+  EXPECT_EQ(m0->no_collide_group_index_, -1);
+  ASSERT_EQ(m0->bodies_.size(), 5);
+  ASSERT_EQ(m0->joints_.size(), 4);
+
+  EXPECT_STREQ(m0->bodies_[0]->name_.c_str(), "");
+  EXPECT_TRUE(ColorEq(m0->bodies_[0]->color_, {1, 1, 0, 0.25}));
+  EXPECT_TRUE(BodyPoseEq(m0->bodies_[0], {0, 0, 0}));
+  EXPECT_EQ(m0->bodies_[0].physics_body_.GetType(), b2_dynamicBody);
+
+  // check model 1 fixtures, not box2d's linked list returns the the items
+  // in the opposite order of being added
+  auto fixtures = GetBodyFixtures(m0->bodies_[0]);
+  ASSERT_EQ(fixtures.size(), 2);
+
+*/
+
+  // for (int i = 0; i < m0->bodies_.size(); i++) {
+  //   DebugVisualization::get().Visualize(
+  //       "b1", m0->bodies_[i]->physics_body_, m0->bodies_[i]->color_[0],
+  //       m0->bodies_[i]->color_[1], m0->bodies_[i]->color_[2],
+  //       m0->bodies_[i]->color_[3]);
+  // }
+
+  // DebugVisualization::get().Publish();
+  // ros::spin();
 
   delete w;
 }
@@ -302,6 +372,7 @@ TEST_F(LoadWorldTest, map_invalid_B) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "Node");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -84,7 +84,7 @@ class Model : public Entity {
   void LoadBodies(const YAML::Node &bodies_node);
   void LoadJoints(const YAML::Node &joints_node);
   ModelBody *GetBody(const std::string &name);
-  void SetPose(const std::array<double, 3> &pose);
+  void TransformAll(const std::array<double, 3> &pose);
   static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &name,
                           const std::string &model_yaml_path);

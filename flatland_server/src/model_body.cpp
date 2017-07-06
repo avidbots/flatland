@@ -52,8 +52,11 @@ namespace flatland_server {
 ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
                      Model *model, const std::string &name,
                      const std::array<double, 4> &color,
-                     const std::array<double, 3> &origin, b2BodyType body_type)
-    : Body(physics_world, model, name, color, origin, body_type), cfr_(cfr) {}
+                     const std::array<double, 3> &origin, b2BodyType body_type,
+                     double linear_damping, double angular_damping)
+    : Body(physics_world, model, name, color, origin, body_type, linear_damping,
+           angular_damping),
+      cfr_(cfr) {}
 
 ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
@@ -61,6 +64,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   std::string name;
   std::array<double, 4> color;
   std::array<double, 3> origin;
+  double linear_damping = 0, angular_damping = 0;
   b2BodyType type;
 
   if (body_node["name"]) {
@@ -106,8 +110,16 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
     throw YAMLException("Missing \"type\" in " + name + " body");
   }
 
-  ModelBody *m =
-      new ModelBody(physics_world, cfr, model, name, color, origin, type);
+  if (body_node["linear_damping"]) {
+    linear_damping = body_node["linear_damping"].as<double>();
+  }
+
+  if (body_node["angular_damping"]) {
+    angular_damping = body_node["angular_damping"].as<double>();
+  }
+
+  ModelBody *m = new ModelBody(physics_world, cfr, model, name, color, origin,
+                               type, linear_damping, angular_damping);
 
   try {
     m->LoadFootprints(body_node["footprints"]);
@@ -204,6 +216,30 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
   fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
 }
 
+void ModelBody::ConfigFootprintCommon(const YAML::Node &footprint_node,
+                                      b2FixtureDef &fixture_def) {
+  const YAML::Node &n = footprint_node;
+  double density = 0, friction = 0, restitution = 0;
+
+  if (n["density"]) {
+    density = n["density"].as<double>();
+  }
+
+  if (n["friction"]) {
+    friction = n["friction"].as<double>();
+  }
+
+  if (n["restitution"]) {
+    restitution = n["restitution"].as<double>();
+  }
+
+  fixture_def.density = density;
+  fixture_def.friction = friction;
+  fixture_def.restitution = restitution;
+
+  ConfigFootprintCollision(n, fixture_def);
+}
+
 void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
   const YAML::Node &n = footprint_node;
 
@@ -225,7 +261,7 @@ void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
   }
 
   b2FixtureDef fixture_def;
-  ConfigFootprintCollision(n, fixture_def);
+  ConfigFootprintCommon(n, fixture_def);
 
   b2CircleShape shape;
   shape.m_p.Set(x, y);
@@ -263,7 +299,7 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
   }
 
   b2FixtureDef fixture_def;
-  ConfigFootprintCollision(n, fixture_def);
+  ConfigFootprintCommon(n, fixture_def);
 
   b2PolygonShape shape;
   shape.Set(points.data(), points.size());

@@ -192,7 +192,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
 
         bodies[i] = model->GetBody(name);
 
-        if (body == NULL) {
+        if (bodies[i] == nullptr) {
           throw YAMLException("Cannot find body with name " + name +
                               " in joint " + joint_name);
         }

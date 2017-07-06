@@ -6,48 +6,55 @@ bodies:  # List of named bodies
     origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
     type: dynamic  # dynamic | static | kinematic, default dynamic
     color: [1, 1, 0, 0.25] # r g b a
+    linear_damping: 0.1
+    angular_damping: 0.125
     footprints:
       - type: circle
         center: [0, 0]  # relative to body origin
-        radius: 0.1777  # m
+        radius: 1.777  # m
         layers: ["all"] # any other layers, default is all
         is_sensor: false # Box2d Sensor, false is default
         self_collide: false # collides with other bodies, default is false
+      - type: polygon
+        density: 982.24
+        friction: 0.59
+        restitution: 0.234
+        points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
 
   - name: left_wheel
-    origin: [-0.125, 0, 0] 
+    origin: [-1, 0, 0] 
     type: dynamic  
     color: [1, 0, 0, 0.25] 
     footprints:
       - type: polygon
         is_sensor: true
-        points: [[-0.02, 0.1], [-0.02, -0.1], [0.02, -0.1], [0.02, 0.1]]
+        points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   - name: right_wheel
-    origin: [0.125, 0, 0] 
+    origin: [1, 0, 0] 
     type: dynamic  
     color: [0, 1, 0, 0.25] 
     footprints:
       - type: polygon
-        points: [[-0.02, 0.1], [-0.02, -0.1], [0.02, -0.1], [0.02, 0.1]]
+        points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   - name: tail
-    origin: [0, 0, 0] 
+    origin: [0, 0, 0.52] 
     type: dynamic  
     color: [0, 0, 0, 0.5] 
     footprints:
       - type: polygon
         layers: ["3d"]
-        points: [[-0.02, 0], [-0.02, -0.75], [0.02, 0.75], [0.02, 0]]
+        points: [[-0.2, 0], [-0.2, -5], [0.2, -5], [0.2, 0]]
 
   - name: antenna
-    origin: [0, 0.1, 0] 
+    origin: [0, 0.5, 0] 
     type: dynamic  
     color: [0.2, 0.4, 0.6, 1] 
     footprints:
       - type: circle
         center: [0, 0]
-        radius: 0.01
+        radius: 0.25
         self_collide: true
         layers: []
 

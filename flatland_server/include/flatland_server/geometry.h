@@ -52,14 +52,14 @@
 namespace flatland_server {
 
 struct RotateTranslate {
-  float dx, dy;
-  float cos;
-  float sin;
+  double dx, dy;
+  double cos;
+  double sin;
 };
 
 class Geometry {
  public:
-  static RotateTranslate CreateTransform(float dx, float dy, float a);
+  static RotateTranslate CreateTransform(double dx, double dy, double a);
   static b2Vec2 Transform(const b2Vec2& in, const RotateTranslate& rt);
 };
 

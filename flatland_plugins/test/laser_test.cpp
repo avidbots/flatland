@@ -60,7 +60,7 @@ TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
     boost::shared_ptr<flatland_server::ModelPlugin> laser =
         loader.createInstance("flatland_plugins::Laser");
 
-    laser->Initialize("LaserTest", NULL, YAML::Node());
+    laser->Initialize("LaserTest", nullptr, YAML::Node());
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Laser plugin. " << e.what();
   }

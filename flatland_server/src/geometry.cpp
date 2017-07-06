@@ -59,7 +59,7 @@ namespace flatland_server {
  *
  * @return THe RotateTranslate object
  */
-RotateTranslate Geometry::CreateTransform(float dx, float dy, float a) {
+RotateTranslate Geometry::CreateTransform(double dx, double dy, double a) {
   RotateTranslate out = {dx, dy, cosf(a), sinf(a)};
   return out;
 }

@@ -68,7 +68,8 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
       free_thresh_(free_thresh) {
   bitmap.copyTo(bitmap_);
 
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
+  body_ =
+      new Body(physics_world_, this, name_, color, origin, b2_staticBody, 0, 0);
   cfr->RegisterLayer(name_);
 
   LoadMap();

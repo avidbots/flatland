@@ -45,6 +45,7 @@
  */
 
 #include <flatland_server/exceptions.h>
+#include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
 
 namespace flatland_server {
@@ -126,12 +127,27 @@ ModelBody *Model::GetBody(const std::string &name) {
       return bodies_[i];
     }
   }
-  return NULL;
+  return nullptr;
 }
 
-void Model::SetPose(const std::array<double, 3> &pose) {
+void Model::TransformAll(const std::array<double, 3> &pose) {
+  //     --                --   --                --
+  //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |
+  //     | sin(a)  cos(a) y | x | sin(b)  cos(b) v |
+  //     | 0       0      1 |   | 0       0      1 |
+  //     --                --   --                --
+  //       --                                          --
+  //       | cos(a+b) -sin(a+b) x + u*cos(a) - v*sin(a) |
+  //     = | sin(a+b)  cos(a+b) y + u*sin(a) + v*cos(a) |
+  //       | 0         0        1                       |
+  //       --                                          --
+
+  RotateTranslate tf = Geometry::CreateTransform(pose[0], pose[1], pose[2]);
+
   for (int i = 0; i < bodies_.size(); i++) {
-    bodies_[i]->physics_body_->SetTransform(b2Vec2(pose[0], pose[1]), pose[2]);
+    bodies_[i]->physics_body_->SetTransform(
+        Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
+        bodies_[i]->physics_body_->GetAngle() + pose[2]);
   }
 }
 

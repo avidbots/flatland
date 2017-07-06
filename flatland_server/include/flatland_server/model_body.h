@@ -62,11 +62,14 @@ class ModelBody : public Body {
 
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
             const std::string &name, const std::array<double, 4> &color,
-            const std::array<double, 3> &origin, b2BodyType body_type);
+            const std::array<double, 3> &origin, b2BodyType body_type,
+            double linear_damping, double angular_damping);
 
   void LoadFootprints(const YAML::Node &footprints_node);
   void ConfigFootprintCollision(const YAML::Node &footprint_node,
                                 b2FixtureDef &fixture_def);
+  void ConfigFootprintCommon(const YAML::Node &footprint_node,
+                             b2FixtureDef &fixture_def);
   void LoadCircleFootprint(const YAML::Node &footprint_node);
   void LoadPolygonFootprint(const YAML::Node &footprint_node);
 

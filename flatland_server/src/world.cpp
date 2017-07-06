@@ -182,7 +182,7 @@ void World::LoadModel(const std::string &model_yaml_path,
                       const std::array<double, 3> pose) {
   Model *model = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
 
-  model->SetPose(pose);
+  model->TransformAll(pose);
 
   models_.push_back(model);
 }
