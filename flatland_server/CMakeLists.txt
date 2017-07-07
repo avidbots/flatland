@@ -62,7 +62,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include thirdparty
   LIBRARIES flatland_lib
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs message_runtime
   DEPENDS OpenCV YAML_CPP
