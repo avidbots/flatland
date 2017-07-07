@@ -326,10 +326,62 @@ class LoadWorldTest : public ::testing::Test {
 
     return true;
   }
+
+  bool JointEq(Joint *joint, const std::string name, Body *body_A,
+               const std::array<double, 2> &anchor_A, Body *body_B,
+               const std::array<double, 2> &anchor_B, bool collide_connected) {
+    b2Joint *j = joint->physics_joint_;
+
+    if (name != joint->name_) {
+      printf("Name Actual:%s != Expected:%s\n", joint->name_.c_str(),
+             name.c_str());
+      return false;
+    }
+
+    if (j->GetBodyA() != body_A->physics_body_) {
+      printf("BodyA ptr Actual %p != Expected:%p\n",
+             joint - physics_joint_->> GetBodyA(), body_A->physics_body_);
+      return false;
+    }
+
+    if (j->GetBodyB() != body_B->physics_body_) {
+      printf("BodyB ptr Actual %p != Expected:%p\n", j->GetBodyB(),
+             body_B->physics_body_);
+      return false;
+    }
+
+    if (!float_cmp(j->GetAnchorA().x, anchor_A[0]) ||
+        !float_cmp(j->GetAnchorA().y, anchor_A[1])) {
+      printf("Anchor A Actual:[%f,%f] != Expected:[%f,%f]\n",
+             j->GetAnchorA().x,
+             j->GetAnchorA().y, anchorA[0], anchorA[1]);
+    }
+
+    if (!float_cmp(j->GetAnchorB().x, anchor_B[0]) ||
+        !float_cmp(j->GetAnchorB().y, anchor_B[1])) {
+      printf("Anchor B Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetAnchorB().x,
+             j->GetAnchorB().y, anchorB[0], anchorB[1]);
+    }
+
+    if (collide_connected != j->GetCollideConnected()) {
+      printf("Collide connected Actual:%d != Expected:%d\n",
+             j->GetCollideConnected(), collide_connected);
+    }
+  }
+
+  bool WeldEq(Joint *joint, double angle, double freq, double damping) {
+
+    if ()
+
+    // if (angle != j->Get)
+  }
+
+  bool RevoluteEq(Joint *joint, bool is_limit_enabled,
+                  const std::array<double, 2> limits) {}
 };
 
 /**
- * This test loads the world, layers, models (TODO) from the given world
+ * This test loads the world, layers, models from the given world
  * yaml file and checks that all configurations, data, and calculations are
  * correct after instantiation
  */
@@ -486,15 +538,11 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_TRUE(FixtureEq(fs[0], false, 1, 0b0, 0b0, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 0.25));
 
-  // for (int i = 0; i < m0->bodies_.size(); i++) {
-  //   DebugVisualization::get().Visualize(
-  //       "b1", m0->bodies_[i]->physics_body_, m0->bodies_[i]->color_[0],
-  //       m0->bodies_[i]->color_[1], m0->bodies_[i]->color_[2],
-  //       m0->bodies_[i]->color_[3]);
-  // }
+  // Check loaded joint data
 
-  // DebugVisualization::get().Publish();
-  // ros::spin();
+  // Check model 1 is same yaml file as model 1, simply do a simple sanity check
+
+  // Check model 2
 
   delete w;
 }
