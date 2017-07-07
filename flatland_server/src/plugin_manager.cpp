@@ -97,6 +97,7 @@ void PluginManager::LoadModelPlugin(Model *model,
   }
 
   model_plugin->Initialize(name, model, plugins_node);
+  model_plugins.push_back(model_plugin);
 }
 
 };  // namespace flatland_server
