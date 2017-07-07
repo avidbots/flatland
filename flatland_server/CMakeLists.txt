@@ -77,6 +77,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  thirdparty
 )
 
 add_subdirectory("thirdparty/Box2D")
