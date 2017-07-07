@@ -89,7 +89,7 @@ class LoadWorldTest : public ::testing::Test {
   }
 
   bool float_cmp(double n1, double n2) {
-    bool ret = fabs(n1 - n2) < 1e-3;
+    bool ret = fabs(n1 - n2) < 1e-5;
     return ret;
   }
 
@@ -143,34 +143,130 @@ class LoadWorldTest : public ::testing::Test {
   bool ColorEq(const std::array<double, 4> &c1,
                const std::array<double, 4> &c2) {
     for (int i = 0; i < 4; i++) {
-      if (c1[i] != c2[i]) {
-        printf("[%f,%f,%f,%f] != [%f,%f,%f,%f]\n", c1[0], c1[1], c1[2], c1[3],
-               c2[0], c2[1], c2[2], c2[3]);
+      if (!float_cmp(c1[i], c2[i])) {
+        printf("Color Actual:[%f,%f,%f,%f] != Expected:[%f,%f,%f,%f]\n", c1[0],
+               c1[1], c1[2], c1[3], c2[0], c2[1], c2[2], c2[3]);
         return false;
       }
     }
     return true;
   }
 
-  bool BodyPoseEq(Body *body, const std::array<double, 3> &p) {
+  bool BodyEq(Body *body, const std::string name, b2BodyType type,
+              const std::array<double, 3> &pose,
+              const std::array<double, 4> &color, double linear_damping,
+              double angular_damping) {
     b2Vec2 t = body->physics_body_->GetPosition();
     double a = body->physics_body_->GetAngle();
 
-    bool ret = t.x == p[0] && t.y == p[1] && a == p[2];
-
-    if (!ret) {
-      printf("[%f,%f,%f] != [%f,%f,%f]", t.x, t.y, a, p[0], p[1], p[2]);
+    if (name != body->name_) {
+      printf("Name Actual:%s != Expected:%s\n", body->name_.c_str(),
+             name.c_str());
+      return false;
     }
 
-    return ret;
+    if (type != body->physics_body_->GetType()) {
+      printf("Body type Actual:%d != Expected:%d\n",
+             body->physics_body_->GetType(), type);
+      return false;
+    }
+
+    if (!float_cmp(t.x, pose[0]) || !float_cmp(t.y, pose[1]) ||
+        !float_cmp(a, pose[2])) {
+      printf("Pose Actual:[%f,%f,%f] != Expected:[%f,%f,%f]\n", t.x, t.y, a,
+             pose[0], pose[1], pose[2]);
+      return false;
+    }
+
+    if (!ColorEq(body->color_, color)) {
+      return false;
+    }
+
+    if (!float_cmp(linear_damping, body->physics_body_->GetLinearDamping())) {
+      printf("Linear Damping Actual:%f != Expected:%f\n",
+             body->physics_body_->GetLinearDamping(), linear_damping);
+      return false;
+    }
+
+    if (!float_cmp(angular_damping, body->physics_body_->GetAngularDamping())) {
+      printf("Angular Damping Actual %f != Expected:%f\n",
+             body->physics_body_->GetAngularDamping(), angular_damping);
+      return false;
+    }
+
+    return true;
   }
 
-  bool CircleEq() {
+  bool CircleEq(b2Fixture *f, double x, double y, double r) {
+    if (f->GetShape()->GetType() != b2Shape::e_circle) {
+      printf("Shape is not of type b2Shape::e_circle\n");
+      return false;
+    }
 
+    b2CircleShape *s = dynamic_cast<b2CircleShape *>(f->GetShape());
+
+    if (!float_cmp(r, s->m_radius) || !float_cmp(x, s->m_p.x) ||
+        !float_cmp(y, s->m_p.y)) {
+      printf("Actual:[x=%f,y=%f,r=%f] != Expected:[%f,%f,%f] \n", s->m_radius,
+             s->m_p.x, s->m_p.y, x, y, r);
+      return false;
+    }
+    return true;
   }
 
-  bool PolygonEq() {
+  bool PolygonEq(b2Fixture *f, std::vector<std::pair<double, double>> points) {
+    if (f->GetShape()->GetType() != b2Shape::e_polygon) {
+      printf("Shape is not of type b2Shape::e_polygon\n");
+      return false;
+    }
 
+    b2PolygonShape *s = dynamic_cast<b2PolygonShape *>(f->GetShape());
+    int cnt = s->GetVertexCount();
+    if (cnt != points.size()) {
+      printf("Number of points Actual:%d != Expected:%lu\n", cnt,
+             points.size());
+      return false;
+    }
+
+    auto pts = points;
+
+    for (int i = 0; i < cnt; i++) {
+      const b2Vec2 p = s->GetVertex(i);
+
+      bool found_match = false;
+      int j;
+      for (j = 0; j < pts.size(); j++) {
+        if (!float_cmp(p.x, points[i].first) ||
+            !float_cmp(p.y, points[i].second)) {
+          found_match = true;
+          break;
+        }
+      }
+
+      if (!found_match) {
+        // cannot find a matching point, print the expected and actual points
+        printf("Actual: [");
+        for (int k = 0; k < cnt; k++) {
+          printf("[%f,%f],", s->GetVertex(k).x, s->GetVertex(k).y);
+        }
+
+        printf("] != Expected: [");
+        for (int k = 0; k < points.size(); k++) {
+          printf("[%f,%f],", points[k].first, points[k].second);
+        }
+        printf("]\n");
+
+        return false;
+      }
+
+      pts.erase(pts.begin() + j);
+    }
+
+    if (pts.size() == 0) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   std::vector<b2Fixture *> GetBodyFixtures(Body *body) {
@@ -184,6 +280,51 @@ class LoadWorldTest : public ::testing::Test {
     std::reverse(fixtures.begin(), fixtures.end());
 
     return fixtures;
+  }
+
+  bool FixtureEq(b2Fixture *f, bool is_sensor, int group_index,
+                 uint16_t category_bits, uint16_t mask_bits, double density,
+                 double friction, double restitution) {
+    if (f->IsSensor() != is_sensor) {
+      printf("is_sensor Actual:%d != Expected:%d\n", f->IsSensor(), is_sensor);
+      return false;
+    }
+
+    if (f->GetFilterData().groupIndex != group_index) {
+      printf("group_index Actual:%d != Expected:%d\n",
+             f->GetFilterData().groupIndex, group_index);
+      return false;
+    }
+
+    if (f->GetFilterData().categoryBits != category_bits) {
+      printf("category_bits Actual:0x%X != Expected:0x%X\n",
+             f->GetFilterData().categoryBits, category_bits);
+      return false;
+    }
+
+    if (f->GetFilterData().maskBits != mask_bits) {
+      printf("mask_bits Actual:0x%X != Expected:0x%X\n",
+             f->GetFilterData().maskBits, mask_bits);
+      return false;
+    }
+
+    if (!float_cmp(f->GetDensity(), density)) {
+      printf("density Actual:%f != Expected:%f\n", f->GetDensity(), density);
+      return false;
+    }
+
+    if (!float_cmp(f->GetFriction(), friction)) {
+      printf("friction Actual:%f != Expected:%f\n", f->GetFriction(), friction);
+      return false;
+    }
+
+    if (!float_cmp(f->GetRestitution(), restitution)) {
+      printf("restitution Actual:%f != Expected:%f\n", f->GetRestitution(),
+             restitution);
+      return false;
+    }
+
+    return true;
   }
 };
 
@@ -202,30 +343,29 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[0], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[1], 1);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[2], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->body_->color_[3], 0);
+  EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
+                     {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
   EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
   EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
   EXPECT_DOUBLE_EQ(w->layers_[0]->resolution_, 0.05);
   EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
   EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
   EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[0], 1.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[1], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[2], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->body_->color_[3], 0.5);
+  EXPECT_TRUE(BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0},
+                     {1, 0, 0, 0.5}, 0, 0));
   EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
   EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
   EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 1.5);
   EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
   EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("3d"), 1);
 
   // check that bitmap is transformed correctly. This involves flipping the y
   // coordinates and apply the resolution. Note that the translation and
@@ -291,39 +431,60 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
-  
   // Check loaded model data
   Model *m0 = w->models_[0];
   Model *m1 = w->models_[0];
 
-  // Check model 1
-  EXPECT_STREQ(m0->name_.c_str(), "");
+  // Check model 0
+  EXPECT_STREQ(m0->name_.c_str(), "turtlebot1");
   EXPECT_EQ(m0->no_collide_group_index_, -1);
   ASSERT_EQ(m0->bodies_.size(), 5);
   ASSERT_EQ(m0->joints_.size(), 4);
 
-  EXPECT_STREQ(m0->bodies_[0]->name_.c_str(), "");
-  EXPECT_TRUE(ColorEq(m0->bodies_[0]->color_, {1, 1, 0, 0.25}));
-  EXPECT_TRUE(BodyPoseEq(m0->bodies_[0], {0, 0, 0}));
-  EXPECT_EQ(m0->bodies_[0].physics_body_.GetType(), b2_dynamicBody);
-
-  // check model 1 fixtures, note that box2d's linked list returns the the items
-  // in the opposite order of being added
+  // check model 0 body 0
+  EXPECT_TRUE(BodyEq(m0->bodies_[0], "base", b2_dynamicBody, {0, 0, 0},
+                     {1, 1, 0, 0.25}, 0.1, 0.125));
   auto fs = GetBodyFixtures(m0->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_EQ(fs[0].GetType(), b2Shape::e_circle);
-  EXPECT_FALSE(fs[0].IsSensor());
-  EXPECT_EQ(fs[0].GetFilterData().groupIndex, -1);
-  EXPECT_EQ(fs[0].GetFilterData().categoryBits, 0b11);
-  EXPECT_EQ(fs[0].GetFilterData().maskBits, 0b11);
-  EXPECT_EQ(fs[0].GetFilterData().maskBits, 0b11);
-  EXPECT_EQ(fs[0].GetDensity(), 0);
-  EXPECT_EQ(fs[0].GetFriction(), 0);
-  EXPECT_EQ(fs[0].GetRestitution(), 0);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
+  EXPECT_TRUE(FixtureEq(fs[1], false, -1, 0b11, 0b11, 982.24, 0.59, 0.234));
+  EXPECT_TRUE(
+      PolygonEq(fs[1], {{-0.1, 0.1}, {-0.1, -0.1}, {0.1, -0.1}, {0.1, 0.1}}));
 
-  EXPECT_EQ(fs[0].GetShape(), b2Shape::e_circle);
+  // check model 0 body 1
+  EXPECT_TRUE(BodyEq(m0->bodies_[1], "left_wheel", b2_dynamicBody, {-1, 0, 0},
+                     {1, 0, 0, 0.25}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[1]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], true, -1, 0b01, 0b01, 0, 0, 0));
+  EXPECT_TRUE(PolygonEq(
+      fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
 
+  // check model 0 body 2
+  EXPECT_TRUE(BodyEq(m0->bodies_[2], "right_wheel", b2_dynamicBody, {1, 0, 0},
+                     {0, 1, 0, 0.25}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[2]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(PolygonEq(
+      fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
 
+  // check model 0 body 3
+  EXPECT_TRUE(BodyEq(m0->bodies_[3], "tail", b2_dynamicBody, {0, 0, 0.52},
+                     {0, 0, 0, 0.5}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[3]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b10, 0b10, 0, 0, 0));
+  EXPECT_TRUE(PolygonEq(fs[0], {{-0.2, 0}, {-0.2, -5}, {0.2, -5}, {0.2, 0}}));
+
+  // check model 0 body 4
+  EXPECT_TRUE(BodyEq(m0->bodies_[4], "antenna", b2_dynamicBody, {0, 0.5, 0},
+                     {0.2, 0.4, 0.6, 1}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[4]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], false, 1, 0b0, 0b0, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 0.25));
 
   // for (int i = 0; i < m0->bodies_.size(); i++) {
   //   DebugVisualization::get().Visualize(
@@ -379,7 +540,8 @@ TEST_F(LoadWorldTest, map_invalid_A) {
 }
 
 /**
- * This test tries to loads valid world yaml file which in turn load a map yaml
+ * This test tries to loads valid world yaml file which in turn load a map
+ * yaml
  * file which then inturn tries to load a non-exists map image file. It should
  * throw an exception
  */

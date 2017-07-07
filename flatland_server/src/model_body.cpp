@@ -202,6 +202,8 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
         (dynamic_cast<Model *>(entity_))->no_collide_group_index_;
   }
 
+  fixture_def.filter.categoryBits = 0x0;
+
   for (const auto &layer : layers) {
     int layer_id = cfr_->LookUpLayerId(layer);
 

@@ -18,7 +18,7 @@ bodies:  # List of named bodies
       - type: polygon
         density: 982.24
         friction: 0.59
-        resitution: 0.234
+        restitution: 0.234
         points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
 
   - name: left_wheel
@@ -27,6 +27,7 @@ bodies:  # List of named bodies
     color: [1, 0, 0, 0.25] 
     footprints:
       - type: polygon
+        layers: ["2d"]
         is_sensor: true
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
