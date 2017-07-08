@@ -166,6 +166,14 @@ class LoadWorldTest : public ::testing::Test {
     }
 
     if (type != body->physics_body_->GetType()) {
+      /*
+      enum b2BodyType
+      {
+        b2_staticBody = 0,
+        b2_kinematicBody,
+        b2_dynamicBody
+      };
+      */
       printf("Body type Actual:%d != Expected:%d\n",
              body->physics_body_->GetType(), type);
       return false;
@@ -199,7 +207,18 @@ class LoadWorldTest : public ::testing::Test {
 
   bool CircleEq(b2Fixture *f, double x, double y, double r) {
     if (f->GetShape()->GetType() != b2Shape::e_circle) {
-      printf("Shape is not of type b2Shape::e_circle\n");
+      /*
+      enum Type
+      {
+        e_circle = 0,
+        e_edge = 1,
+        e_polygon = 2,
+        e_chain = 3,
+        e_typeCount = 4
+      };
+      */
+      printf("Shape is not of type b2Shape::e_circle, Actual=%d\n",
+             f->GetShape()->GetType());
       return false;
     }
 
@@ -216,12 +235,23 @@ class LoadWorldTest : public ::testing::Test {
 
   bool PolygonEq(b2Fixture *f, std::vector<std::pair<double, double>> points) {
     if (f->GetShape()->GetType() != b2Shape::e_polygon) {
-      printf("Shape is not of type b2Shape::e_polygon\n");
+      /*
+      enum Type
+      {
+        e_circle = 0,
+        e_edge = 1,
+        e_polygon = 2,
+        e_chain = 3,
+        e_typeCount = 4
+      };
+      */
+      printf("Shape is not of type b2Shape::e_polygon, Actual=%d\n",
+             f->GetShape()->GetType());
       return false;
     }
 
     b2PolygonShape *s = dynamic_cast<b2PolygonShape *>(f->GetShape());
-    int cnt = s->GetVertexCount();
+    int cnt = s->m_count;
     if (cnt != points.size()) {
       printf("Number of points Actual:%d != Expected:%lu\n", cnt,
              points.size());
@@ -231,7 +261,7 @@ class LoadWorldTest : public ::testing::Test {
     auto pts = points;
 
     for (int i = 0; i < cnt; i++) {
-      const b2Vec2 p = s->GetVertex(i);
+      const b2Vec2 p = s->m_vertices[i];
 
       bool found_match = false;
       int j;
@@ -247,7 +277,7 @@ class LoadWorldTest : public ::testing::Test {
         // cannot find a matching point, print the expected and actual points
         printf("Actual: [");
         for (int k = 0; k < cnt; k++) {
-          printf("[%f,%f],", s->GetVertex(k).x, s->GetVertex(k).y);
+          printf("[%f,%f],", s->m_vertices[k].x, s->m_vertices[k].y);
         }
 
         printf("] != Expected: [");
@@ -340,7 +370,7 @@ class LoadWorldTest : public ::testing::Test {
 
     if (j->GetBodyA() != body_A->physics_body_) {
       printf("BodyA ptr Actual %p != Expected:%p\n",
-             joint - physics_joint_->> GetBodyA(), body_A->physics_body_);
+             joint->physics_joint_->GetBodyA(), body_A->physics_body_);
       return false;
     }
 
@@ -352,32 +382,113 @@ class LoadWorldTest : public ::testing::Test {
 
     if (!float_cmp(j->GetAnchorA().x, anchor_A[0]) ||
         !float_cmp(j->GetAnchorA().y, anchor_A[1])) {
-      printf("Anchor A Actual:[%f,%f] != Expected:[%f,%f]\n",
-             j->GetAnchorA().x,
-             j->GetAnchorA().y, anchorA[0], anchorA[1]);
+      printf("Anchor A Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetAnchorA().x,
+             j->GetAnchorA().y, anchor_A[0], anchor_A[1]);
+      return false;
     }
 
     if (!float_cmp(j->GetAnchorB().x, anchor_B[0]) ||
         !float_cmp(j->GetAnchorB().y, anchor_B[1])) {
       printf("Anchor B Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetAnchorB().x,
-             j->GetAnchorB().y, anchorB[0], anchorB[1]);
+             j->GetAnchorB().y, anchor_B[0], anchor_B[1]);
+      return false;
     }
 
     if (collide_connected != j->GetCollideConnected()) {
       printf("Collide connected Actual:%d != Expected:%d\n",
              j->GetCollideConnected(), collide_connected);
+      return false;
     }
+
+    return true;
   }
 
   bool WeldEq(Joint *joint, double angle, double freq, double damping) {
+    b2WeldJoint *j = dynamic_cast<b2WeldJoint *>(joint->physics_joint_);
 
-    if ()
+    if (j->GetType() != e_weldJoint) {
+      /*
+      enum b2JointType
+      {
+        e_unknownJoint, --> C++ should defaults intialize at zero?
+        e_revoluteJoint,
+        e_prismaticJoint,
+        e_distanceJoint,
+        e_pulleyJoint,
+        e_mouseJoint,
+        e_gearJoint,
+        e_wheelJoint,
+        e_weldJoint,
+        e_frictionJoint,
+        e_ropeJoint,
+        e_motorJoint
+      };
+      */
+      printf("Joint type Actual:%d != Expected:%d(weld joint)\n", j->GetType(),
+             e_weldJoint);
+      return false;
+    }
 
-    // if (angle != j->Get)
+    if (angle != j->GetReferenceAngle()) {
+      printf("Angle Actual:%f != Expected:%f\n", angle, j->GetReferenceAngle());
+      return false;
+    }
+
+    if (freq != j->GetFrequency()) {
+      printf("Frequency Actual:%f != Expected:%f\n", freq, j->GetFrequency());
+      return false;
+    }
+
+    if (damping != j->GetDampingRatio()) {
+      printf("Damping Actual:%f != Expected:%f\n", damping,
+             j->GetDampingRatio());
+      return false;
+    }
+
+    return true;
   }
 
   bool RevoluteEq(Joint *joint, bool is_limit_enabled,
-                  const std::array<double, 2> limits) {}
+                  const std::array<double, 2> limits) {
+    b2RevoluteJoint *j = dynamic_cast<b2RevoluteJoint *>(joint->physics_joint_);
+
+    if (j->GetType() != e_revoluteJoint) {
+      /*
+      enum b2JointType
+      {
+        e_unknownJoint, --> C++ defaults intialize at zero?
+        e_revoluteJoint,
+        e_prismaticJoint,
+        e_distanceJoint,
+        e_pulleyJoint,
+        e_mouseJoint,
+        e_gearJoint,
+        e_wheelJoint,
+        e_weldJoint,
+        e_frictionJoint,
+        e_ropeJoint,
+        e_motorJoint
+      };
+      */
+      printf("Joint type Actual:%d != Expected:%d(revolute joint)\n",
+             j->GetType(), e_revoluteJoint);
+      return false;
+    }
+
+    if (is_limit_enabled != j->IsLimitEnabled()) {
+      printf("Limits enabled Actual:%d != Expected:%d\n", is_limit_enabled,
+             j->IsLimitEnabled());
+      return false;
+    }
+
+    if (limits[0] != j->GetLowerLimit() || limits[1] != j->GetUpperLimit()) {
+      printf("Limits Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetLowerLimit(),
+             j->GetLowerLimit(), limits[0], limits[1]);
+      return false;
+    }
+
+    return true;
+  }
 };
 
 /**
