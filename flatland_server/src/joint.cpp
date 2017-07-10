@@ -208,7 +208,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
         double x = body["anchor"][0].as<double>();
         double y = body["anchor"][1].as<double>();
 
-        anchors[0].Set(x, y);
+        anchors[i].Set(x, y);
       } else {
         throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
                             " joint body index=" + std::to_string(i) +

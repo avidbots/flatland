@@ -13,3 +13,6 @@ models:
   - name: turtlebot2
     pose: [3, 4.5, 3.14159]
     model: "turtlebot.model.yaml"
+  - name: chair1
+    pose: [1.2, 3.5, 2.123]
+    model: "chair.model.yaml"

@@ -68,24 +68,24 @@ joints:
     collide_connected: false
     bodies:
       - name: base
-        anchor: [0, 0]
+        anchor: [-1, 0]
       - name: left_wheel
-        anchor: [-0.125, 0]
+        anchor: [0, 0]
 
   - name: right_wheel_weld
     type: weld
     bodies:
       - name: base
-        anchor: [0, 0]
+        anchor: [1, 0]
       - name: right_wheel
-        anchor: [0.125, 0]
+        anchor: [0, 0]
 
   - name: tail_revolute
     type: revolute
     bodies:
       - name: base
         anchor: [0, 0]
-      - name: right_wheel
+      - name: tail
         anchor: [0, 0]
 
   - name: antenna_revolute

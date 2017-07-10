@@ -380,17 +380,22 @@ class LoadWorldTest : public ::testing::Test {
       return false;
     }
 
-    if (!float_cmp(j->GetAnchorA().x, anchor_A[0]) ||
-        !float_cmp(j->GetAnchorA().y, anchor_A[1])) {
-      printf("Anchor A Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetAnchorA().x,
-             j->GetAnchorA().y, anchor_A[0], anchor_A[1]);
+    // GetAnchor returns world coordinates, we want to verify against
+    // local coordinates
+    b2Vec2 local_anchor_A = j->GetAnchorA() - j->GetBodyA()->GetPosition();
+    b2Vec2 local_anchor_B = j->GetAnchorB() - j->GetBodyB()->GetPosition();
+
+    if (!float_cmp(local_anchor_A.x, anchor_A[0]) ||
+        !float_cmp(local_anchor_A.y, anchor_A[1])) {
+      printf("Anchor A Actual:[%f,%f] != Expected:[%f,%f]\n", local_anchor_A.x,
+             local_anchor_A.y, anchor_A[0], anchor_A[1]);
       return false;
     }
 
-    if (!float_cmp(j->GetAnchorB().x, anchor_B[0]) ||
-        !float_cmp(j->GetAnchorB().y, anchor_B[1])) {
-      printf("Anchor B Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetAnchorB().x,
-             j->GetAnchorB().y, anchor_B[0], anchor_B[1]);
+    if (!float_cmp(local_anchor_B.x, anchor_B[0]) ||
+        !float_cmp(local_anchor_B.y, anchor_B[1])) {
+      printf("Anchor B Actual:[%f,%f] != Expected:[%f,%f]\n", local_anchor_B.x,
+             local_anchor_B.y, anchor_B[0], anchor_B[1]);
       return false;
     }
 
@@ -410,7 +415,7 @@ class LoadWorldTest : public ::testing::Test {
       /*
       enum b2JointType
       {
-        e_unknownJoint, --> C++ should defaults intialize at zero?
+        e_unknownJoint, --> C++ should defaults initialize at zero?
         e_revoluteJoint,
         e_prismaticJoint,
         e_distanceJoint,
@@ -429,17 +434,17 @@ class LoadWorldTest : public ::testing::Test {
       return false;
     }
 
-    if (angle != j->GetReferenceAngle()) {
+    if (!float_cmp(angle, j->GetReferenceAngle())) {
       printf("Angle Actual:%f != Expected:%f\n", angle, j->GetReferenceAngle());
       return false;
     }
 
-    if (freq != j->GetFrequency()) {
+    if (!float_cmp(freq, j->GetFrequency())) {
       printf("Frequency Actual:%f != Expected:%f\n", freq, j->GetFrequency());
       return false;
     }
 
-    if (damping != j->GetDampingRatio()) {
+    if (!float_cmp(damping, j->GetDampingRatio())) {
       printf("Damping Actual:%f != Expected:%f\n", damping,
              j->GetDampingRatio());
       return false;
@@ -456,7 +461,7 @@ class LoadWorldTest : public ::testing::Test {
       /*
       enum b2JointType
       {
-        e_unknownJoint, --> C++ defaults intialize at zero?
+        e_unknownJoint, --> C++ defaults initialize at zero?
         e_revoluteJoint,
         e_prismaticJoint,
         e_distanceJoint,
@@ -481,7 +486,8 @@ class LoadWorldTest : public ::testing::Test {
       return false;
     }
 
-    if (limits[0] != j->GetLowerLimit() || limits[1] != j->GetUpperLimit()) {
+    if (is_limit_enabled && (!float_cmp(limits[0], j->GetLowerLimit()) ||
+                             !float_cmp(limits[1], j->GetUpperLimit()))) {
       printf("Limits Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetLowerLimit(),
              j->GetLowerLimit(), limits[0], limits[1]);
       return false;
@@ -595,10 +601,8 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
   // Check loaded model data
-  Model *m0 = w->models_[0];
-  Model *m1 = w->models_[0];
-
   // Check model 0
+  Model *m0 = w->models_[0];
   EXPECT_STREQ(m0->name_.c_str(), "turtlebot1");
   EXPECT_EQ(m0->no_collide_group_index_, -1);
   ASSERT_EQ(m0->bodies_.size(), 5);
@@ -650,10 +654,52 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 0.25));
 
   // Check loaded joint data
+  EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", m0->bodies_[0],
+                      {-1, 0}, m0->bodies_[1], {0, 0}, false));
+  EXPECT_TRUE(WeldEq(m0->joints_[0], 1.57079633, 10, 0.5));
+
+  EXPECT_TRUE(JointEq(m0->joints_[1], "right_wheel_weld", m0->bodies_[0],
+                      {1, 0}, m0->bodies_[2], {0, 0}, false));
+  EXPECT_TRUE(WeldEq(m0->joints_[1], 0, 0, 0));
+
+  EXPECT_TRUE(JointEq(m0->joints_[2], "tail_revolute", m0->bodies_[0], {0, 0},
+                      m0->bodies_[3], {0, 0}, false));
+  EXPECT_TRUE(RevoluteEq(m0->joints_[2], false, {}));
+
+  EXPECT_TRUE(JointEq(m0->joints_[3], "antenna_revolute", m0->bodies_[0],
+                      {0, 0}, m0->bodies_[4], {0, 0}, true));
+  EXPECT_TRUE(RevoluteEq(m0->joints_[3], true, {-0.002, 3.735}));
 
   // Check model 1 is same yaml file as model 1, simply do a simple sanity check
+  Model *m1 = w->models_[1];
+  EXPECT_STREQ(m1->name_.c_str(), "turtlebot2");
+  EXPECT_EQ(m1->no_collide_group_index_, -2);
+  ASSERT_EQ(m1->bodies_.size(), 5);
+  ASSERT_EQ(m1->joints_.size(), 4);
 
-  // Check model 2
+  // check the applied transformation just for the first body
+  EXPECT_TRUE(BodyEq(m1->bodies_[0], "base", b2_dynamicBody, {3, 4.5, 3.14159},
+                     {1, 1, 0, 0.25}, 0.1, 0.125));
+
+  // Check model 2 which is the chair
+  Model *m2 = w->models_[2];
+  EXPECT_STREQ(m2->name_.c_str(), "chair1");
+  EXPECT_EQ(m2->no_collide_group_index_, -3);
+  ASSERT_EQ(m2->bodies_.size(), 1);
+  ASSERT_EQ(m2->joints_.size(), 0);
+
+  // Check model 2 fixtures
+  EXPECT_TRUE(BodyEq(m2->bodies_[0], "chair", b2_dynamicBody, {1.2, 3.5, 2.123},
+                     {1, 1, 1, 0.25}, 0, 0));
+  fs = GetBodyFixtures(m2->bodies_[0]);
+  ASSERT_EQ(fs.size(), 2);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1));
+
+  // the groupIndex is 3 since the first two turtlebots has one self collide
+  // fixtures each
+  EXPECT_TRUE(FixtureEq(fs[1], false, 3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[1], 0, 0, 0.2));
 
   delete w;
 }
