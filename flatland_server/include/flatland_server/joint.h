@@ -54,28 +54,76 @@ namespace flatland_server {
 
 class Model;
 
+/**
+ * This class defines a joint in the simulation world. It wraps around the Box2D
+ * physics joints providing extra data and useful methods
+ */
 class Joint {
  public:
-  Model *model_;
-  std::string name_;
-  b2Joint *physics_joint_;
-  b2World *physics_world_;
+  Model *model_;            ///< Model the joint belongs to
+  std::string name_;        ///< Name of the joint
+  b2Joint *physics_joint_;  ///< Box2D physics joint
+  b2World *physics_world_;  ///< Box2D physics world
 
+  /**
+   * @brief Constructor for the joint
+   * @param[in] physics_world Box2D physics world
+   * @param[in] model Model the joint belongs to
+   * @param[in] name Name of the joint
+   * @param[in] joint_def Box2D joint definition
+   */
   Joint(b2World *physics_world, Model *model, const std::string &name,
         const b2JointDef &joint_def);
   ~Joint();
 
+  /// Disallow copying of joints, problematic for constructors and destructors
   Joint(const Joint &) = delete;
   Joint &operator=(const Joint &) = delete;
 
+  /**
+   * @brief Creates a joint for the given params
+   * @param[in] physics_world Box2D physics world
+   * @param[in] model Model the joint belongs to
+   * @param[in] joint_node YAML node that contains joint information
+   * @return A new joint as defined by the input data
+   */
   static Joint *MakeJoint(b2World *physics_world, Model *model,
                           const YAML::Node &joint_node);
+
+  /**
+   * @brief Creates a revolute joint for the given params
+   * @param[in] physics_world Box2D physics world
+   * @param[in] model Model the joint belongs to
+   * @param[in] joint_node YAML node that contains joint information
+   * @param[in] name Name of the joint
+   * @return A new joint as defined by the input data
+   */
   static Joint *MakeRevoluteJoint(b2World *physics_world, Model *model,
                                   const YAML::Node &joint_node,
                                   const std::string &name);
+
+  /**
+   * @brief Creates a weld joint for the given params
+   * @param[in] physics_world Box2D physics world
+   * @param[in] model Model the joint belongs to
+   * @param[in] joint_node YAML node that contains joint information
+   * @param[in] name Name of the joint
+   * @return A new joint as defined by the input data
+   */
   static Joint *MakeWeldJoint(b2World *physics_world, Model *model,
                               const YAML::Node &joint_node,
                               const std::string &name);
+
+  /**
+   * @brief Helper method to configure paramters common to joints
+   * @param[in] model Model the joint belongs to
+   * @param[in] joint_node YAML node that contains joint information
+   * @param[in] name Name of the joint
+   * @param[out] body_A pointer to the first body
+   * @param[out] anchor_B anchor point on the first body
+   * @param[out] body_B pointer to the second body
+   * @param[out] anchor_B anchor point on the second body
+   */
   static void ParseJointCommon(Model *model, const YAML::Node &joint_node,
                                const std::string &joint_name, b2Body *&body_A,
                                b2Vec2 &anchor_A, b2Body *&body_B,

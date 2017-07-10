@@ -130,7 +130,7 @@ ModelBody *Model::GetBody(const std::string &name) {
   return nullptr;
 }
 
-void Model::TransformAll(const std::array<double, 3> &pose) {
+void Model::TransformAll(const std::array<double, 3> &pose_delta) {
   //     --                --   --                --
   //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |
   //     | sin(a)  cos(a) y | x | sin(b)  cos(b) v |

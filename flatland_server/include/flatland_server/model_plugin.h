@@ -54,12 +54,21 @@
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
+
+/**
+ * This class defines a model plugin. All implemented model plugins will inherit
+ * from it A model plugin is a plugin that is directly tied to a single model in
+ * the world
+ */
 class ModelPlugin {
  public:
-  std::string name_;
-  ros::NodeHandle nh_;
-  Model *model_;
+  std::string name_;    ///< name of the model
+  ros::NodeHandle nh_;  ///< ROS node handle
+  Model *model_;        ///< model this plugin is tied to
 
+  /**
+   * @brief Since pluginlib must have 
+   */
   void Initialize(const std::string &name, Model *model_,
                   const YAML::Node &config);
   virtual void OnInitialize(const YAML::Node &config) = 0;

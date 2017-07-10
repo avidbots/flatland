@@ -56,10 +56,28 @@ namespace flatland_server {
 
 class Model;
 
+/**
+ * This class defines a model body which is a body that is always used together
+ * with a model. It contains members and useful methods that is specfic for a
+ * body in a model
+ */
 class ModelBody : public Body {
  public:
-  CollisionFilterRegistry *cfr_;
+  CollisionFilterRegistry *cfr_;  ///< collision filter registry
 
+  /**
+   * @brief Constructor for the Model Body
+   * @param[in] physics_world Box2D physics world
+   * @param[in] cfr Collision filter registry
+   * @param[in] model Model the body belongs to
+   * @param[in] name Name of the body
+   * @param[in] color Color of the body for visualization
+   * @param[in] origin Specifying the origin the coordinate system
+   * @param[in] body_type Type of Box2D body, either dynamic, static, or
+   * kinematic
+   * @param[in] linear_damping Box2D body linear damping
+   * @param[in] angular_damping Box2D body angular damping
+   */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
             const std::string &name, const std::array<double, 4> &color,
             const std::array<double, 3> &origin, b2BodyType body_type,
