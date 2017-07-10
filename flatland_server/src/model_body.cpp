@@ -133,9 +133,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 
 void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
   const YAML::Node &node = footprints_node;
-
-  bool is_node = node;
-
+  
   if (!node || !node.IsSequence() || node.size() <= 0) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
