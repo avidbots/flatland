@@ -709,8 +709,8 @@ TEST_F(LoadWorldTest, simple_test_A) {
   ASSERT_EQ(m3->joints_.size(), 0);
 
   // check the body only
-  EXPECT_TRUE(BodyEq(m3->bodies_[0], "body", b2_kinematicBody,
-                     {0, 1, 2}, {0, 0.75, 0.75, 0.25}, 0, 0));
+  EXPECT_TRUE(BodyEq(m3->bodies_[0], "body", b2_kinematicBody, {0, 1, 2},
+                     {0, 0.75, 0.75, 0.25}, 0, 0));
 
   delete w;
 }
