@@ -4,7 +4,7 @@
 bodies:  # List of named bodies
   - name: base
     origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
-    type: dynamic  # dynamic | static | kinematic, default dynamic
+    type: dynamic  # dynamic | static | kinematic
     color: [1, 1, 0, 0.25] # r g b a
     linear_damping: 0.1
     angular_damping: 0.125

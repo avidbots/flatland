@@ -16,3 +16,6 @@ models:
   - name: chair1
     pose: [1.2, 3.5, 2.123]
     model: "chair.model.yaml"
+  - name: person1
+    pose: [0, 1, 2]
+    model: "person.model.yaml"

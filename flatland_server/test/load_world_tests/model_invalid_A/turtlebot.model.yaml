@@ -1,0 +1,13 @@
+# Turtlebot
+
+bodies:
+  - name: base
+    # origin: [0, 0, 0] # invalid missing origin
+    type: dynamic
+    color: [1, 1, 0, 0.25]
+    footprints:
+      - type: circle
+        center: [0, 0]
+        radius: 1.777
+      - type: polygon
+        points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]

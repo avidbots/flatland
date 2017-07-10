@@ -81,8 +81,8 @@ class LoadWorldTest : public ::testing::Test {
       std::cmatch match;
       std::regex regex(regex_str);
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
-          << "'" + std::string(e.what()) + "'" + " did not match against " +
-                 "'" + regex_str + "'";
+          << "Exception Message '" + std::string(e.what()) + "'" +
+                 " did not match against regex '" + regex_str + "'";
     } catch (...) {
       FAIL() << "Expected YAMLException, another exception was caught instead";
     }
@@ -689,7 +689,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   ASSERT_EQ(m2->joints_.size(), 0);
 
   // Check model 2 fixtures
-  EXPECT_TRUE(BodyEq(m2->bodies_[0], "chair", b2_dynamicBody, {1.2, 3.5, 2.123},
+  EXPECT_TRUE(BodyEq(m2->bodies_[0], "chair", b2_staticBody, {1.2, 3.5, 2.123},
                      {1, 1, 1, 0.25}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
@@ -700,6 +700,17 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // fixtures each
   EXPECT_TRUE(FixtureEq(fs[1], false, 3, 0b11, 0b11, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[1], 0, 0, 0.2));
+
+  // Check model 3 which is the chair
+  Model *m3 = w->models_[3];
+  EXPECT_STREQ(m3->name_.c_str(), "person1");
+  EXPECT_EQ(m3->no_collide_group_index_, -4);
+  ASSERT_EQ(m3->bodies_.size(), 1);
+  ASSERT_EQ(m3->joints_.size(), 0);
+
+  // check the body only
+  EXPECT_TRUE(BodyEq(m3->bodies_[0], "body", b2_kinematicBody,
+                     {0, 1, 2}, {0, 0.75, 0.75, 0.25}, 0, 0));
 
   delete w;
 }
@@ -754,6 +765,43 @@ TEST_F(LoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
   test_yaml_fail("Failed to load .*.png");
+}
+
+TEST_F(LoadWorldTest, model_invalid_A) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
+  test_yaml_fail("Missing/invalid \"origin\" in base body");
+}
+
+TEST_F(LoadWorldTest, model_invalid_B) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
+  test_yaml_fail(
+      "Missing/invalid polygon footprint \"points\" in base body, must be a "
+      "sequence with at least 3 items");
+}
+
+TEST_F(LoadWorldTest, model_invalid_C) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
+  test_yaml_fail(
+      "Missing/invalid body \"anchor\" in right_wheel_weld joint body index=1, "
+      "must be a sequence of exactly two numbers");
+}
+
+TEST_F(LoadWorldTest, model_invalid_D) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
+  test_yaml_fail(
+      "Cannot find body with name left_wheel_123 from joint left_wheel_weld");
+}
+
+TEST_F(LoadWorldTest, model_invalid_E) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
+  test_yaml_fail(
+      "Invalid footprint \"layer\" in left_wheel body, random_layer does not "
+      "exist");
 }
 
 // Run all the tests that were declared with TEST()

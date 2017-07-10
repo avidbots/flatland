@@ -290,7 +290,7 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
         throw YAMLException(
             "Missing/invalid polygon footprint \"point\" index=" +
             std::to_string(i) + " in " + name_ +
-            " must be a sequence of exactly two items");
+            ", must be a sequence of exactly two items");
       }
     }
   } else {

@@ -194,7 +194,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
 
         if (bodies[i] == nullptr) {
           throw YAMLException("Cannot find body with name " + name +
-                              " in joint " + joint_name);
+                              " from joint " + joint_name);
         }
       } else {
         throw YAMLException("Missing body \"name\" in " + joint_name +
@@ -212,7 +212,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
       } else {
         throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
                             " joint body index=" + std::to_string(i) +
-                            ". must be a sequence of exactly two numbers");
+                            ", must be a sequence of exactly two numbers");
       }
     }
 
