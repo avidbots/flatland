@@ -115,7 +115,7 @@ void World::LoadLayers(const std::string &yaml_path) {
 
     if (cfr_.IsLayersFull()) {
       throw YAMLException("Max number of layers reached, max is " +
-                          cfr_.MAX_LAYERS);
+                          std::to_string(cfr_.MAX_LAYERS));
     }
 
     layer = Layer::MakeLayer(physics_world_, &cfr_, path.parent_path(),

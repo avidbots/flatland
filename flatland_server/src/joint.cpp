@@ -101,7 +101,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
   b2Body *body_A, *body_B;
   b2Vec2 anchor_A, anchor_B;
 
-  if (n["limits"] && (!n["limits"].IsSequence() || !n["limits"].size() == 2)) {
+  if (n["limits"] && (!n["limits"].IsSequence() || n["limits"].size() != 2)) {
     throw YAMLException("Invalid \"limits\" in " + name +
                         " joint, must be "
                         "a sequence of exactly two items");
