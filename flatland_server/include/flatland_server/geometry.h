@@ -62,21 +62,20 @@ struct RotateTranslate {
 
 class Geometry {
  public:
-
- /**
-  * @brief Creates a transform for given position and yaw delta
-  * @param[in] dx Delta x
-  * @param[in] dy Delta y
-  * @param[in] a Yaw
-  * @return The transformation
-  */
+  /**
+   * @brief Creates a transform for given position and yaw delta
+   * @param[in] dx Delta x
+   * @param[in] dy Delta y
+   * @param[in] a Yaw
+   * @return The transformation
+   */
   static RotateTranslate CreateTransform(double dx, double dy, double a);
 
   /**
    * @brief Transform a point for given transformation
    * @param[in] in A point to transform
    * @param[in] rt Defined transformation
-   * @return Transformed point 
+   * @return Transformed point
    */
   static b2Vec2 Transform(const b2Vec2& in, const RotateTranslate& rt);
 };

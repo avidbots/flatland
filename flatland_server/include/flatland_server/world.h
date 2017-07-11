@@ -59,7 +59,7 @@ namespace flatland_server {
 /**
  * This class defines a world in the simulation. A world contains layers
  * that can represent environments at multiple levels, and models which are
- * can be robots or obstacles. 
+ * can be robots or obstacles.
  */
 class World {
  public:
