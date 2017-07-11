@@ -101,40 +101,47 @@ class ModelPlugin {
    * @brief This method is called when the model starts to collide with the map
    * (layer)
    * @param[in] layer The layer that collided with the model
-   * @param[in] fixture The fixture in the model that collided with the map
+   * @param[in] layer_fixture The fixture in the collided layer
+   * @param[in] this_fixture The fixture in the model that collided with the map
    * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void BeginContactWithMap(Layer *layer, b2Fixture *fixture,
+  virtual void BeginContactWithMap(Layer *layer, b2Fixture *layer_fixture,
+                                   b2Fixture *this_fixture,
                                    b2Contact *contact) {}
 
   /**
-   * @brief This method is called when the model starts to collided with another
-   * model
+   * @brief This method is called when this model starts to collided with
+   * the other model
    * @param[in] model The other model that this model collided with
-   * @param[in] fixture The fixture in this model that collide with the other
+   * @param[in] model_fixture The fixture in the other model
+   * @param[in] this_fixture The fixture in this model
    * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void BeginContactWithModel(Model *model, b2Fixture *fixture,
+  virtual void BeginContactWithModel(Model *model, b2Fixture *model_fixture,
+                                     b2Fixture *this_fixture,
                                      b2Contact *contact) {}
 
   /**
    * @brief This method is called when the model stopped collide with another
    * model, i.e. the model and layer are no longer contacting
    * @param[in] layer The layer that collided with the model
-   * @param[in] fixture The fixture in the model that collided with the map
+   * @param[in] layer_fixture The fixture in the collided layer
+   * @param[in] this_fixture The fixture in the model that collided with the map
    * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void EndContactWithMap(Layer *layer, b2Fixture *fixture,
-                                 b2Contact *contact) {}
+  virtual void EndContactWithMap(Layer *layer, b2Fixture *layer_fixture,
+                                 b2Fixture *this_fixture, b2Contact *contact) {}
 
   /**
-   * @brief This method is called when the model stopped collide with another
-   * model, i.e. the models are no longer contacting
+   * @brief This method is called when this model stopped colliding with the
+   * other model, i.e. the models are no longer contacting
    * @param[in] model The other model that this model collided with
-   * @param[in] fixture The fixture in this model that collide with the other
+   * @param[in] model_fixture The fixture in the other model
+   * @param[in] this_fixture The fixture in this model
    * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void BeginContactWithModel(Layer *layer, b2Fixture *fixture,
+  virtual void EndContactWithModel(Model *model, b2Fixture *model_fixture,
+                                     b2Fixture *this_fixture,
                                      b2Contact *contact) {}
 
   /**

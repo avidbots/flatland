@@ -204,7 +204,6 @@ void World::LoadModel(const std::string &model_yaml_path,
 }
 
 void World::LoadPlugins() {
-
   // Load the model plugins
   for (const auto &m : models_) {
     // load model plugins, it is okay to have no plugins

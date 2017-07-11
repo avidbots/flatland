@@ -94,13 +94,13 @@ class PluginManager {
    * @brief Method called for a box2D begin contact
    * @param[in] contact Box2D contact information
    */
-  void BeginContact(b2Contact *contact) {}
+  void BeginContact(b2Contact *contact);
 
   /**
    * @brief Method called for a box2D end contact
    * @param[in] contact Box2D contact information
    */
-  void EndContact(b2Contact *contact) {}
+  void EndContact(b2Contact *contact);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H

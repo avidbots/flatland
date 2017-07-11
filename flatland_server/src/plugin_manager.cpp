@@ -67,7 +67,7 @@ void PluginManager::BeforePhysicsStep(double timestep) {
 
 void PluginManager::AfterPhysicsStep(double timestep) {
   for (const auto &model_plugin : model_plugins) {
-    model_plugin->BeforePhysicsStep(timestep);
+    model_plugin->AfterPhysicsStep(timestep);
   }
 }
 
@@ -96,11 +96,68 @@ void PluginManager::LoadModelPlugin(Model *model,
     model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException("ModelPlugin", type, name, e.what());
-    // return;  // TODO (Chunshang): find a better way to handle this
   }
 
   model_plugin->Initialize(type, name, model, plugin_node);
   model_plugins.push_back(model_plugin);
+}
+
+void PluginManager::BeginContact(b2Contact *contact) {
+  b2Fixture *f_A = contact->GetFixtureA();
+  b2Fixture *f_B = contact->GetFixtureB();
+  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
+  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
+  Entity *e_A = b_A->entity_;
+  Entity *e_B = b_B->entity_;
+
+  for (auto &model_plugin : model_plugins) {
+    Model *m = model_plugin->model_;
+
+    if (e_A == m && e_B->Type() == Entity::LAYER) {
+      model_plugin->BeginContactWithMap(dynamic_cast<Layer *>(e_B), f_B, f_A,
+                                        contact);
+    } else if (e_A == m && e_B->Type() == Entity::MODEL) {
+      model_plugin->BeginContactWithModel(dynamic_cast<Model *>(e_B), f_B, f_A,
+                                          contact);
+    } else if (e_B == m && e_A->Type() == Entity::LAYER) {
+      model_plugin->BeginContactWithMap(dynamic_cast<Layer *>(e_A), f_A, f_B,
+                                        contact);
+    } else if (e_B == m && e_A->Type() == Entity::MODEL) {
+      model_plugin->BeginContactWithModel(dynamic_cast<Model *>(e_A), f_A, f_B,
+                                          contact);
+    }
+
+    model_plugin->BeginContact(contact);
+  }
+}
+
+void PluginManager::EndContact(b2Contact *contact) {
+  b2Fixture *f_A = contact->GetFixtureA();
+  b2Fixture *f_B = contact->GetFixtureB();
+  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
+  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
+  Entity *e_A = b_A->entity_;
+  Entity *e_B = b_B->entity_;
+
+  for (auto &model_plugin : model_plugins) {
+    Model *m = model_plugin->model_;
+
+    if (e_A == m && e_B->Type() == Entity::LAYER) {
+      model_plugin->EndContactWithMap(dynamic_cast<Layer *>(e_B), f_B, f_A,
+                                      contact);
+    } else if (e_A == m && e_B->Type() == Entity::MODEL) {
+      model_plugin->EndContactWithModel(dynamic_cast<Model *>(e_B), f_B, f_A,
+                                        contact);
+    } else if (e_B == m && e_A->Type() == Entity::LAYER) {
+      model_plugin->EndContactWithMap(dynamic_cast<Layer *>(e_A), f_A, f_B,
+                                      contact);
+    } else if (e_B == m && e_A->Type() == Entity::MODEL) {
+      model_plugin->EndContactWithModel(dynamic_cast<Model *>(e_A), f_A, f_B,
+                                        contact);
+    }
+
+    model_plugin->EndContact(contact);
+  }
 }
 
 };  // namespace flatland_server
