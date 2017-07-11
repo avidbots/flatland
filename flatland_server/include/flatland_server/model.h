@@ -94,13 +94,13 @@ class Model : public Entity {
   virtual EntityType Type() { return EntityType::MODEL; }
 
   /**
-   * @brief load bodies to this model
+   * @brief load bodies to this model, throws exceptions upon failure
    * @param[in] bodies_node YAML node containing the list of bodies
    */
   void LoadBodies(const YAML::Node &bodies_node);
 
   /**
-   * @brief load joints to this model
+   * @brief load joints to this model, throws exceptions upon failure
    * @param[in] joints_node YAML node containing the list of joints
    */
   void LoadJoints(const YAML::Node &joints_node);
@@ -119,7 +119,7 @@ class Model : public Entity {
   void TransformAll(const std::array<double, 3> &pose_delta);
 
   /**
-   * @brief Create a model
+   * @brief Create a model, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
    * @param[in] name Name of the model

@@ -83,14 +83,47 @@ class ModelBody : public Body {
             const std::array<double, 3> &origin, b2BodyType body_type,
             double linear_damping, double angular_damping);
 
+  /**
+   * @brief Load footprints (Box2D fixtures) into the body
+   * @param[in] footprints_node Node containing the footprints parameters
+   */
   void LoadFootprints(const YAML::Node &footprints_node);
+
+  /**
+   * @brief Configures collision properties of footprints
+   * @param[in] footprint_node Node containing the footprint parameters
+   * @param[out] fixture_def Box2D fixture definition
+   */
   void ConfigFootprintCollision(const YAML::Node &footprint_node,
                                 b2FixtureDef &fixture_def);
+
+  /**
+   * @brief Configures the common properties of footprints
+   * @param[in] footprint_node Node containing the footprint parameters
+   * @param[out] fixture_def Box2D fixture definition
+   */
   void ConfigFootprintCommon(const YAML::Node &footprint_node,
                              b2FixtureDef &fixture_def);
+
+  /**
+   * @brief Loads a circle footprint
+   * @param[in] footprint_node Node containing the footprint parameters
+   */
   void LoadCircleFootprint(const YAML::Node &footprint_node);
+
+  /**
+   * @brief Loads a circle footprint
+   * @param[in] footprint_node Node containing the footprint parameters
+   */
   void LoadPolygonFootprint(const YAML::Node &footprint_node);
 
+  /**
+   * @brief Factory method to create a model body
+   * @param[in] physics_world Box2D physics world
+   * @param[in] cfr Collision filter registry
+   * @param[in] model The model this model body belongs to
+   * @param[in] body_node Node containing the body parameters
+   */
   static ModelBody *MakeBody(b2World *physics_world,
                              CollisionFilterRegistry *cfr, Model *model,
                              const YAML::Node &body_node);

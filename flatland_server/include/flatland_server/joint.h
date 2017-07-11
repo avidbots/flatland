@@ -81,7 +81,7 @@ class Joint {
   Joint &operator=(const Joint &) = delete;
 
   /**
-   * @brief Creates a joint for the given params
+   * @brief Creates a joint for the given params, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
@@ -91,31 +91,34 @@ class Joint {
                           const YAML::Node &joint_node);
 
   /**
-   * @brief Creates a revolute joint for the given params
+   * @brief Creates a revolute joint for the given params, throws exceptions
+   * upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
    * @param[in] name Name of the joint
-   * @return A new joint as defined by the input data
+   * @return A new revolute joint as defined by the input data
    */
   static Joint *MakeRevoluteJoint(b2World *physics_world, Model *model,
                                   const YAML::Node &joint_node,
                                   const std::string &name);
 
   /**
-   * @brief Creates a weld joint for the given params
+   * @brief Creates a weld joint for the given params, throws exceptions upon
+   * failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
    * @param[in] name Name of the joint
-   * @return A new joint as defined by the input data
+   * @return A new weld joint as defined by the input data
    */
   static Joint *MakeWeldJoint(b2World *physics_world, Model *model,
                               const YAML::Node &joint_node,
                               const std::string &name);
 
   /**
-   * @brief Helper method to configure paramters common to joints
+   * @brief Helper method to configure paramters common to joints, throws
+   * exceptions upon failure
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
    * @param[in] name Name of the joint
@@ -123,6 +126,8 @@ class Joint {
    * @param[out] anchor_B anchor point on the first body
    * @param[out] body_B pointer to the second body
    * @param[out] anchor_B anchor point on the second body
+   * @param[out] collide_connected Should two bodies connected by this joint
+   * collide
    */
   static void ParseJointCommon(Model *model, const YAML::Node &joint_node,
                                const std::string &joint_name, b2Body *&body_A,

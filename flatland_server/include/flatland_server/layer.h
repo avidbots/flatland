@@ -109,7 +109,8 @@ class Layer : public Entity {
   void LoadMap();
 
   /**
-   * @brief Factory method to instantiate a layer
+   * @brief Factory method to instantiate a layer, throws exceptions upon
+   * failure
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
