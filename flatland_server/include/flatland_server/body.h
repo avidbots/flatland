@@ -51,18 +51,41 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a body in the simulation. It wraps around the Box2D
+ * physics body providing extra data and useful methods
+ */
 class Body {
  public:
-  Entity *entity_;
-  std::string name_;
-  b2Body *physics_body_;
-  std::array<double, 4> color_;
+  Entity *entity_;               ///< The entity the body belongs to
+  std::string name_;             ///< name of the body, unique within a model
+  b2Body *physics_body_;         ///< Box2D physics body
+  std::array<double, 4> color_;  ///< color, for visualization
 
+  /**
+   * @brief constructor for body, takes in all the required parameters
+   * @param[in] physics_world Box2D physics world
+   * @param[in] entity Entity the body is tied to
+   * @param[in] name Name for the body
+   * @param[in] color Color in r, g, b, a
+   * @param[in] origin Origin of body's coordinate system in x, y, yaw
+   * @param[in] body_type Box2D body type either dynamic, kinematic, or static
+   * @param[in] linear_damping Box2D body linear damping
+   * @param[in] angular_damping Box2D body angular damping
+   */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
        const std::array<double, 4> &color, const std::array<double, 3> &origin,
        b2BodyType body_type, double linear_damping, double angular_damping);
+
+  /**
+   * Destructor for the body
+   */
   virtual ~Body();
 
+  /**
+   * Prevent copying since it is creates complications with constructing
+   * and destructing bodies
+   */
   Body(const Body &) = delete;
   Body &operator=(const Body &) = delete;
 };

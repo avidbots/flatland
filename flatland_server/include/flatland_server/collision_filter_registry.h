@@ -53,24 +53,65 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a collision filter registry. It allows layers to register
+ * for unique ID's, which are used for setting Box2D collision categories
+ * and mask bits. The footprints in the model will use this to put itself on
+ * the correct collision category. It also hands out unique collide (positive
+ * numbers) and no collide (negative numbers) Box2D collision groups.
+ */
 class CollisionFilterRegistry {
  public:
-  static const int LAYER_NOT_EXIST = -1;
-  static const int LAYER_ALREADY_EXIST = -2;
-  static const int LAYERS_FULL = -3;
-  static const int MAX_LAYERS = 16;
+  static const int LAYER_NOT_EXIST = -1;      ///< No such layer
+  static const int LAYER_ALREADY_EXIST = -2;  ///< Layer exists
+  static const int LAYERS_FULL = -3;          ///< Cannot add more layers
+  static const int MAX_LAYERS = 16;  ///< 16 is the maximum as defined by Box2D
 
+  /// internal counter to keep track of no collides groups
   int no_collide_group_cnt_;
+  /// internal counter to keep track of collide groups
   int collide_group_cnt_;
-  std::map<std::string, int> layer_id_table_;
+  std::map<std::string, int> layer_id_table_;  ///< Layer name to ID LUT
 
+  /**
+   * @brief Constructor for the collision filter registry
+   */
   CollisionFilterRegistry();
 
+  /**
+   * @brief Get a new and unique collision group, +ve numbers
+   */
   int RegisterCollide();
+
+  /**
+   * @brief Get a new and unique no collision group, -ve numbers
+   */
   int RegisterNoCollide();
+
+  /**
+   * @brief Check if the number of layers maxed out
+   */
   bool IsLayersFull();
+
+  /**
+   * @brief Register a new layer
+   * @param[in] layer Name of the layer
+   * @return assigned ID for the registered layer, or error codes LAYERS_FULL or
+   * LAYER_ALREADY_EXIST
+   */
   int RegisterLayer(std::string layer);
+
+  /**
+   * @brief get layer ID
+   * @param[in] name Name of the layer
+   * @return the id of the layer, or LAYER_NOT_EXIST
+   */
   int LookUpLayerId(std::string name);
+
+  /**
+   * @brief Get all registered layers
+   * @param[in] vector to store layer names in, will be cleared
+   */
   void ListAllLayers(std::vector<std::string> &layer_names);
 };
 };      // namespace flatland_server

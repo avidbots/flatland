@@ -54,24 +54,80 @@
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
+
+/**
+ * This class defines a model plugin. All implemented model plugins will inherit
+ * from it A model plugin is a plugin that is directly tied to a single model in
+ * the world
+ */
 class ModelPlugin {
  public:
-  std::string name_;
-  ros::NodeHandle nh_;
-  Model *model_;
+  std::string name_;    ///< name of the model
+  ros::NodeHandle nh_;  ///< ROS node handle
+  Model *model_;        ///< model this plugin is tied to
 
-  void Initialize(const std::string &name, Model *model_,
+  /**
+   * @brief The method to initialize the ModelPlugin, required since Pluginlib
+   * require the class to have a default constructor
+   * @param[in] name Name of the plugin
+   * @param[in] model The model associated with this model plugin
+   * @param[in] config THe plugin YAML node
+   */
+  void Initialize(const std::string &name, Model *model,
                   const YAML::Node &config);
+
+  /**
+   * @brief The method for the particular model plugin to override and provide
+   * its own initialization
+   * @param[in] config The plugin YAML node
+   */
   virtual void OnInitialize(const YAML::Node &config) = 0;
+
+  /**
+   * @brief This method is called before the Box2D physics step
+   * @param[in] timestep how much the physics time will increment
+   */
   virtual void BeforePhysicsStep(double timestep) {}
+
+  /**
+   * @brief This method is called after the Box2D physics step
+   * @param[in] timestep how much the physics time have incremented
+   */
   virtual void AfterPhysicsStep(double timestep) {}
-  virtual void CollisionWithMap(Layer layer, b2Fixture fixture) {}
-  virtual void CollisionWithModel(Model *model, b2Fixture fixture) {}
-  virtual void Collision(b2Fixture fixture_A, b2Fixture fixture_B) {}
-  virtual ~ModelPlugin() {}
+
+  /**
+   * @brief This method is called when the model collided with the map (layer)
+   * @param[in] layer The layer that it collided with the model
+   * @param[in] fixture The fixture in the model that collided with the map
+   */
+  virtual void CollisionWithMap(Layer *layer, b2Fixture *fixture) {}
+
+  /**
+   * @brief This method is called when the model is collided with another model
+   * @param[in] model The other model that this model collided with
+   * @param[in] fixture The fixture in this model that collide with the other
+   * model
+   */
+  virtual void CollisionWithModel(Model *model, b2Fixture *fixture) {}
+
+  /**
+   * @brief This method is called whenever things in the world collide, provides
+   * access to unfiltered collision
+   * @param[in] fixture_A One of the fixture in the collision
+   * @param[in] fixture_B The other fixture in the collision
+   */
+  virtual void Collision(b2Fixture *fixture_A, b2Fixture *fixture_B) {}
+
+  /**
+   * @brief Model plugin destructor
+   */
+  virtual ~ModelPlugin() = default;
 
  protected:
-  ModelPlugin() {}
+  /**
+   * @brief Model plugin default constructor
+   */
+  ModelPlugin() = default;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_PLUGIN_H

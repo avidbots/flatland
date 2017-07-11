@@ -53,14 +53,27 @@
 #include "flatland_server/world.h"
 
 namespace flatland_server {
+
 class SimulationManager {
  public:
-  bool run_simulator_ = true;  // While true, keep running the simulation loop
-  World *world_;
-  float initial_rate_;
+  bool run_simulator_ = true;  ///<  While true, keep running the sim loop
+  World *world_;               ///< Simulation world
+  float initial_rate_;         ///< initial sim loop rate
 
+  /**
+   * @brief constructor for the simulation manager
+   *
+   */
   SimulationManager(std::string world_file, float initial_rate);
+
+  /**
+   * This method contains the loop that runs the simulation
+   */
   void Main();
+
+  /**
+   * Kill the world
+   */
   void Shutdown();
 };
 };      // namespace flatland_server

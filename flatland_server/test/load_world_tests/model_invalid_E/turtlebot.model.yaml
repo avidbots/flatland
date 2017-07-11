@@ -1,0 +1,34 @@
+# Turtlebot
+
+
+bodies:  # List of named bodies
+  - name: base
+    origin: [0, 0, 0] 
+    type: dynamic 
+    color: [1, 1, 0, 0.25]
+    linear_damping: 0.1
+    angular_damping: 0.125
+    footprints:
+      - type: circle
+        center: [0, 0] 
+        radius: 1.777 
+      - type: polygon
+        points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
+
+  - name: left_wheel
+    origin: [-1, 0, 0] 
+    type: dynamic  
+    color: [1, 0, 0, 0.25] 
+    footprints:
+      - type: polygon
+        layers: ["3d", "random_layer"] # invalid, random_layer does not exist
+        is_sensor: true
+        points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+
+  - name: right_wheel
+    origin: [1, 0, 0] 
+    type: dynamic  
+    color: [0, 1, 0, 0.25] 
+    footprints:
+      - type: polygon
+        points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]

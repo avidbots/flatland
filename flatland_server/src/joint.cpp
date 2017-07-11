@@ -101,7 +101,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
   b2Body *body_A, *body_B;
   b2Vec2 anchor_A, anchor_B;
 
-  if (n["limits"] && (!n["limits"].IsSequence() || !n["limits"].size() == 2)) {
+  if (n["limits"] && (!n["limits"].IsSequence() || n["limits"].size() != 2)) {
     throw YAMLException("Invalid \"limits\" in " + name +
                         " joint, must be "
                         "a sequence of exactly two items");
@@ -194,7 +194,7 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
 
         if (bodies[i] == nullptr) {
           throw YAMLException("Cannot find body with name " + name +
-                              " in joint " + joint_name);
+                              " from joint " + joint_name);
         }
       } else {
         throw YAMLException("Missing body \"name\" in " + joint_name +
@@ -208,11 +208,11 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
         double x = body["anchor"][0].as<double>();
         double y = body["anchor"][1].as<double>();
 
-        anchors[0].Set(x, y);
+        anchors[i].Set(x, y);
       } else {
         throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
                             " joint body index=" + std::to_string(i) +
-                            ". must be a sequence of exactly two numbers");
+                            ", must be a sequence of exactly two numbers");
       }
     }
 

@@ -4,7 +4,7 @@
 bodies:  # List of named bodies
   - name: base
     origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
-    type: dynamic  # dynamic | static | kinematic, default dynamic
+    type: dynamic  # dynamic | static | kinematic
     color: [1, 1, 0, 0.25] # r g b a
     linear_damping: 0.1
     angular_damping: 0.125
@@ -27,6 +27,7 @@ bodies:  # List of named bodies
     color: [1, 0, 0, 0.25] 
     footprints:
       - type: polygon
+        layers: ["2d"]
         is_sensor: true
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
@@ -67,24 +68,24 @@ joints:
     collide_connected: false
     bodies:
       - name: base
-        anchor: [0, 0]
+        anchor: [-1, 0]
       - name: left_wheel
-        anchor: [-0.125, 0]
+        anchor: [0, 0]
 
   - name: right_wheel_weld
     type: weld
     bodies:
       - name: base
-        anchor: [0, 0]
+        anchor: [1, 0]
       - name: right_wheel
-        anchor: [0.125, 0]
+        anchor: [0, 0]
 
   - name: tail_revolute
     type: revolute
     bodies:
       - name: base
         anchor: [0, 0]
-      - name: right_wheel
+      - name: tail
         anchor: [0, 0]
 
   - name: antenna_revolute
