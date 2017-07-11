@@ -722,7 +722,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
 TEST_F(LoadWorldTest, wrong_world_path) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
-  test_yaml_fail("Error loading.*world.yaml.*bad file");
+  test_yaml_fail("Flatland YAML: Error loading.*world.yaml.*bad file");
 }
 
 /**
@@ -732,7 +732,7 @@ TEST_F(LoadWorldTest, wrong_world_path) {
 TEST_F(LoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
-  test_yaml_fail("Missing/invalid world param \"properties\"");
+  test_yaml_fail("Flatland YAML: Missing/invalid world param \"properties\"");
 }
 
 /**
@@ -742,7 +742,7 @@ TEST_F(LoadWorldTest, world_invalid_A) {
 TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
-  test_yaml_fail("Missing/invalid \"color\" in 2d layer");
+  test_yaml_fail("Flatland YAML: Missing/invalid \"color\" in 2d layer");
 }
 
 /**
@@ -752,7 +752,7 @@ TEST_F(LoadWorldTest, world_invalid_B) {
 TEST_F(LoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
-  test_yaml_fail("Missing/invalid \"origin\" in 2d layer");
+  test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in 2d layer");
 }
 
 /**
@@ -764,44 +764,45 @@ TEST_F(LoadWorldTest, map_invalid_A) {
 TEST_F(LoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
-  test_yaml_fail("Failed to load .*.png");
+  test_yaml_fail("Flatland YAML: Failed to load .*.png");
 }
 
 TEST_F(LoadWorldTest, model_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
-  test_yaml_fail("Missing/invalid \"origin\" in base body");
+  test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in base body");
 }
 
 TEST_F(LoadWorldTest, model_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
   test_yaml_fail(
-      "Missing/invalid polygon footprint \"points\" in base body, must be a "
-      "sequence with at least 3 items");
+      "Flatland YAML: Missing/invalid polygon footprint \"points\" in base "
+      "body, must be a sequence with at least 3 items");
 }
 
 TEST_F(LoadWorldTest, model_invalid_C) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
   test_yaml_fail(
-      "Missing/invalid body \"anchor\" in right_wheel_weld joint body index=1, "
-      "must be a sequence of exactly two numbers");
+      "Flatland YAML: Missing/invalid body \"anchor\" in right_wheel_weld "
+      "joint body index=1, must be a sequence of exactly two numbers");
 }
 
 TEST_F(LoadWorldTest, model_invalid_D) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
   test_yaml_fail(
-      "Cannot find body with name left_wheel_123 from joint left_wheel_weld");
+      "Flatland YAML: Cannot find body with name left_wheel_123 from joint "
+      "left_wheel_weld");
 }
 
 TEST_F(LoadWorldTest, model_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
   test_yaml_fail(
-      "Invalid footprint \"layer\" in left_wheel body, random_layer does not "
-      "exist");
+      "Flatland YAML: Invalid footprint \"layer\" in left_wheel body, "
+      "random_layer does not exist");
 }
 
 // Run all the tests that were declared with TEST()

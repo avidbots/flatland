@@ -95,9 +95,8 @@ void PluginManager::LoadModelPlugin(Model *model,
   try {
     model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
-    ROS_ERROR("Failed to load %s plugin of type %s (%s)", name.c_str(),
-              type.c_str(), e.what());
-    return;  // TODO (Chunshang): handle this exception properly
+    throw PluginException("ModelPlugin", type, name, e.what());
+    // return;  // TODO (Chunshang): find a better way to handle this
   }
 
   model_plugin->Initialize(type, name, model, plugin_node);

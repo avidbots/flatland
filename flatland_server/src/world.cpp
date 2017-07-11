@@ -101,11 +101,14 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     w->LoadLayers(yaml_path);
     w->LoadModels(yaml_path);
+    w->LoadPlugins();
   } catch (const YAML::Exception &e) {
     delete w;
     throw YAMLException(e);
+  } catch (const PluginException &e) {
+    delete w;
+    throw e;
   }
-
   return w;
 }
 
@@ -198,16 +201,24 @@ void World::LoadModel(const std::string &model_yaml_path,
   Model *m = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
   m->TransformAll(pose);
   models_.push_back(m);
+}
 
-  // load model plugins, it is okay to have no plugins
-  if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
-    throw YAMLException("Invalid \"plugins\" in " + name +
-                        " model, not a list");
-  } else if (m->plugins_node_) {
-    for (const auto &plugin_node : m->plugins_node_) {
-      plugin_manager_.LoadModelPlugin(m, plugin_node);
+void World::LoadPlugins() {
+
+  // Load the model plugins
+  for (const auto &m : models_) {
+    // load model plugins, it is okay to have no plugins
+    if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
+      throw YAMLException("Invalid \"plugins\" in " + m->name_ +
+                          " model, not a list");
+    } else if (m->plugins_node_) {
+      for (const auto &plugin_node : m->plugins_node_) {
+        plugin_manager_.LoadModelPlugin(m, plugin_node);
+      }
     }
   }
+
+  // TODO (Chunshang): World plugins down the line
 }
 
 void World::DebugVisualize() {

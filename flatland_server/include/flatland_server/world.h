@@ -112,13 +112,18 @@ class World : public b2ContactListener {
   void LoadModels(const std::string &yaml_path);
 
   /**
-   * brief @load models into the world. Throws derivatives of YAML::Exception
+   * @brief load models into the world. Throws derivatives of YAML::Exception
    * @param[in] model_yaml_path Path to the model yaml file
    * @param[in] name Name of the model
    * @param[in] pose Initial pose of the model in x, y, yaw
    */
   void LoadModel(const std::string &model_yaml_path, const std::string &name,
                  const std::array<double, 3> pose);
+
+  /**
+   * @brief load all the plugins
+   */
+  void LoadPlugins();
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
