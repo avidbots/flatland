@@ -44,7 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/laser.h>
+#include <flatland_plugins/dummy_model_plugin.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
@@ -52,21 +52,24 @@
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
-TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
+TEST(DummyModelPluginTest, pluginlib_load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::ModelPlugin> laser =
-        loader.createInstance("flatland_plugins::Laser");
+    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
+        loader.createInstance("flatland_plugins::DummyModelPlugin");
+
+    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", nullptr,
+                       YAML::Node());
   } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Laser plugin. " << e.what();
+    FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "laser_test");
+  ros::init(argc, argv, "dummy_model_plugin_test");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

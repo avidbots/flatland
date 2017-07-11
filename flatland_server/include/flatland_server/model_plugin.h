@@ -141,8 +141,8 @@ class ModelPlugin {
    * @param[in] contact Box2D contact contain all relevant contact data
    */
   virtual void EndContactWithModel(Model *model, b2Fixture *model_fixture,
-                                     b2Fixture *this_fixture,
-                                     b2Contact *contact) {}
+                                   b2Fixture *this_fixture,
+                                   b2Contact *contact) {}
 
   /**
    * @brief A method that is called for all Box2D begin contacts

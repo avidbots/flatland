@@ -172,6 +172,10 @@ if(CATKIN_ENABLE_TESTING)
     ${GTEST_LIBRARIES}
     flatland_lib
   )
+
+  catkin_add_gtest(plugin_manager_test test/plugin_manager_test.cpp)
+  target_link_libraries(plugin_manager_test
+    flatland_lib)
   
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test

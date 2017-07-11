@@ -63,6 +63,7 @@ include_directories(
 # Declare a C++ library
 add_library(flatland_plugins_lib
   src/laser.cpp
+  src/dummy_model_plugin.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -122,5 +123,9 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
+
+  add_rostest_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.test
+                    test/dummy_model_plugin_test.cpp)
+  target_link_libraries(dummy_model_plugin_test flatland_plugins_lib flatland_lib)
 
 endif()

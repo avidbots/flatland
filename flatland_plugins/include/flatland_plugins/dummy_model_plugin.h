@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  laser_test.cpp
- * @brief test laser plugin
- * @author Chunshang Li
+ * @name	  dummy_model_plugin.h
+ * @brief   Dummy model plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,29 +44,17 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/laser.h>
-#include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
-#include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
-#include <ros/ros.h>
-#include <yaml-cpp/yaml.h>
 
-TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
-      "flatland_server", "flatland_server::ModelPlugin");
+#ifndef FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
+#define FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
 
-  try {
-    boost::shared_ptr<flatland_server::ModelPlugin> laser =
-        loader.createInstance("flatland_plugins::Laser");
-  } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Laser plugin. " << e.what();
-  }
-}
+namespace flatland_plugins {
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
-  ros::init(argc, argv, "laser_test");
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+class DummyModelPlugin : public flatland_server::ModelPlugin {
+ public:
+  void OnInitialize(const YAML::Node &config) override;
+};
+};
+
+#endif

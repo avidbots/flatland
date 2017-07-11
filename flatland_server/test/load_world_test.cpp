@@ -767,12 +767,18 @@ TEST_F(LoadWorldTest, map_invalid_B) {
   test_yaml_fail("Flatland YAML: Failed to load .*.png");
 }
 
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
 TEST_F(LoadWorldTest, model_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
   test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in base body");
 }
 
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
 TEST_F(LoadWorldTest, model_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
@@ -781,6 +787,9 @@ TEST_F(LoadWorldTest, model_invalid_B) {
       "body, must be a sequence with at least 3 items");
 }
 
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
 TEST_F(LoadWorldTest, model_invalid_C) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
@@ -789,6 +798,9 @@ TEST_F(LoadWorldTest, model_invalid_C) {
       "joint body index=1, must be a sequence of exactly two numbers");
 }
 
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
 TEST_F(LoadWorldTest, model_invalid_D) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
@@ -797,6 +809,9 @@ TEST_F(LoadWorldTest, model_invalid_D) {
       "left_wheel_weld");
 }
 
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
 TEST_F(LoadWorldTest, model_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
@@ -807,7 +822,6 @@ TEST_F(LoadWorldTest, model_invalid_E) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "Node");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
