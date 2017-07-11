@@ -48,10 +48,16 @@
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/plugin_manager.h>
-#include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
+
+PluginManager::PluginManager() {
+  class_loader_ = new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
+      "flatland_server", "flatland_server::ModelPlugin");
+}
+
+PluginManager::~PluginManager() { delete class_loader_; }
 
 void PluginManager::BeforePhysicsStep(double timestep) {
   for (const auto &model_plugin : model_plugins) {
@@ -66,8 +72,8 @@ void PluginManager::AfterPhysicsStep(double timestep) {
 }
 
 void PluginManager::LoadModelPlugin(Model *model,
-                                    const YAML::Node &plugins_node) {
-  const YAML::Node &n = plugins_node;
+                                    const YAML::Node &plugin_node) {
+  const YAML::Node &n = plugin_node;
 
   std::string name;
   std::string type;
@@ -85,18 +91,16 @@ void PluginManager::LoadModelPlugin(Model *model,
   }
 
   boost::shared_ptr<ModelPlugin> model_plugin;
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
-      "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    model_plugin = loader.createInstance("flatland_plugins::" + type);
+    model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
     ROS_ERROR("Failed to load %s plugin of type %s (%s)", name.c_str(),
               type.c_str(), e.what());
     return;  // TODO (Chunshang): handle this exception properly
   }
 
-  model_plugin->Initialize(name, model, plugins_node);
+  model_plugin->Initialize(type, name, model, plugin_node);
   model_plugins.push_back(model_plugin);
 }
 

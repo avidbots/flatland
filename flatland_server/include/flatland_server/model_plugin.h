@@ -62,19 +62,21 @@ namespace flatland_server {
  */
 class ModelPlugin {
  public:
-  std::string name_;    ///< name of the model
+  std::string type_;    ///< type of the plugin
+  std::string name_;    ///< name of the plugin
   ros::NodeHandle nh_;  ///< ROS node handle
   Model *model_;        ///< model this plugin is tied to
 
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
    * require the class to have a default constructor
+   * @param[in] type Type of the plugin
    * @param[in] name Name of the plugin
    * @param[in] model The model associated with this model plugin
-   * @param[in] config THe plugin YAML node
+   * @param[in] config The plugin YAML node
    */
-  void Initialize(const std::string &name, Model *model,
-                  const YAML::Node &config);
+  void Initialize(const std::string &type, const std::string &name,
+                  Model *model, const YAML::Node &config);
 
   /**
    * @brief The method for the particular model plugin to override and provide
@@ -96,27 +98,54 @@ class ModelPlugin {
   virtual void AfterPhysicsStep(double timestep) {}
 
   /**
-   * @brief This method is called when the model collided with the map (layer)
-   * @param[in] layer The layer that it collided with the model
+   * @brief This method is called when the model starts to collide with the map
+   * (layer)
+   * @param[in] layer The layer that collided with the model
    * @param[in] fixture The fixture in the model that collided with the map
+   * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void CollisionWithMap(Layer *layer, b2Fixture *fixture) {}
+  virtual void BeginContactWithMap(Layer *layer, b2Fixture *fixture,
+                                   b2Contact *contact) {}
 
   /**
-   * @brief This method is called when the model is collided with another model
+   * @brief This method is called when the model starts to collided with another
+   * model
    * @param[in] model The other model that this model collided with
    * @param[in] fixture The fixture in this model that collide with the other
-   * model
+   * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void CollisionWithModel(Model *model, b2Fixture *fixture) {}
+  virtual void BeginContactWithModel(Model *model, b2Fixture *fixture,
+                                     b2Contact *contact) {}
 
   /**
-   * @brief This method is called whenever things in the world collide, provides
-   * access to unfiltered collision
-   * @param[in] fixture_A One of the fixture in the collision
-   * @param[in] fixture_B The other fixture in the collision
+   * @brief This method is called when the model stopped collide with another
+   * model, i.e. the model and layer are no longer contacting
+   * @param[in] layer The layer that collided with the model
+   * @param[in] fixture The fixture in the model that collided with the map
+   * @param[in] contact Box2D contact contain all relevant contact data
    */
-  virtual void Collision(b2Fixture *fixture_A, b2Fixture *fixture_B) {}
+  virtual void EndContactWithMap(Layer *layer, b2Fixture *fixture,
+                                 b2Contact *contact) {}
+
+  /**
+   * @brief This method is called when the model stopped collide with another
+   * model, i.e. the models are no longer contacting
+   * @param[in] model The other model that this model collided with
+   * @param[in] fixture The fixture in this model that collide with the other
+   * @param[in] contact Box2D contact contain all relevant contact data
+   */
+  virtual void BeginContactWithModel(Layer *layer, b2Fixture *fixture,
+                                     b2Contact *contact) {}
+
+  /**
+   * @brief A method that is called for all Box2D begin contacts
+   */
+  virtual void BeginContact(b2Contact *contact) {}
+
+  /**
+   * @brief A method that is called for all Box2D end contacts
+   */
+  virtual void EndContact(b2Contact *contact) {}
 
   /**
    * @brief Model plugin destructor

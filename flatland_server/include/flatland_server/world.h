@@ -62,14 +62,14 @@ namespace flatland_server {
  * that can represent environments at multiple levels, and models which are
  * can be robots or obstacles.
  */
-class World {
+class World : public b2ContactListener {
  public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer *> layers_;
-  std::vector<Model *> models_;
-  CollisionFilterRegistry cfr_;
-  PluginManager plugin_manager_;
+  b2World *physics_world_;        ///< Box2D physics world
+  b2Vec2 gravity_;                ///< Box2D world gravity, always (0, 0)
+  std::vector<Layer *> layers_;   ///< list of layers
+  std::vector<Model *> models_;   ///< list of models
+  CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
+  PluginManager plugin_manager_;  ///< for loading and updating plugins
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -87,6 +87,17 @@ class World {
    * @param[in] timestep The amount of simulation time to elapse in seconds
    */
   void Update(double timestep);
+
+  /**
+   * @brief Box2D inherited begin contact
+   * @param[in] contact Box2D contact information
+   */
+  void BeginContact(b2Contact *contact) override;
+  /**
+   * @brief Box2D inherited end contact
+   * @param[in] contact Box2D contact information
+   */
+  void EndContact(b2Contact *contact) override;
 
   /**
    * @brief load layers into the world. Throws derivatives of YAML::Exception

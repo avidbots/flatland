@@ -47,22 +47,60 @@
 #ifndef FLATLAND_PLUGIN_MANAGER_H
 #define FLATLAND_PLUGIN_MANAGER_H
 
+#include <Box2D/Box2D.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
+#include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
 class PluginManager {
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
+
  public:
   std::vector<boost::shared_ptr<ModelPlugin>> model_plugins;
 
+  /**
+   * @brief Plugin manager constructor
+   */
+  PluginManager();
+
+  /**
+   * @brief Plugin manager destructor
+   */
+  ~PluginManager();
+
+  /**
+   * @brief This method is called before the Box2D physics step
+   * @param[in] timestep how much the physics time will increment
+   */
   void BeforePhysicsStep(double timestep);
+
+  /**
+   * @brief This method is called after the Box2D physics step
+   * @param[in] timestep how much the physics time have incremented
+   */
   void AfterPhysicsStep(double timestep);
 
-  void LoadModelPlugin(Model *model, const YAML::Node &plugins_node);
+  /**
+   * @brief Load model plugins
+   * @param[in] model The model that this plugin is tied to
+   * @param[in] plugin_node The YAML node with the plugin parameter
+   */
+  void LoadModelPlugin(Model *model, const YAML::Node &plugin_node);
 
-  // TODO (Chunshang): collision listener
+  /**
+   * @brief Method called for a box2D begin contact
+   * @param[in] contact Box2D contact information
+   */
+  void BeginContact(b2Contact *contact) {}
+
+  /**
+   * @brief Method called for a box2D end contact
+   * @param[in] contact Box2D contact information
+   */
+  void EndContact(b2Contact *contact) {}
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H
