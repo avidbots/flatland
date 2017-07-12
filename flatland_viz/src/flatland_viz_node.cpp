@@ -45,20 +45,44 @@
  */
 
 #include <ros/ros.h>
+#include <signal.h>
 #include <QApplication>
 #include "flatland_viz/flatland_window.h"
 
+FlatlandWindow* window = nullptr;
+
+/**
+ * @name        SigintHandler
+ * @brief       Interrupt handler - sends shutdown signal to simulation_manager
+ * @param[in]   sig: signal itself
+ */
+void SigintHandler(int sig) {
+  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+
+  if (window != nullptr) {
+    delete window;
+    window = nullptr;
+  }
+  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
+  ros::shutdown();
+}
+
 int main(int argc, char** argv) {
   if (!ros::isInitialized()) {
-    ros::init(argc, argv, "flatland_viz", ros::init_options::AnonymousName);
+    ros::init(argc, argv, "flatland_viz", ros::init_options::NoSigintHandler);
   }
 
   QApplication app(argc, argv);
 
-  FlatlandWindow* w = new FlatlandWindow();
-  w->show();
+  window = new FlatlandWindow();
+  window->show();
+
+  // Register sigint shutdown handler
+  signal(SIGINT, SigintHandler);
 
   app.exec();
 
-  delete w;
+  delete window;
+  window = nullptr;
+  return 0;
 }
