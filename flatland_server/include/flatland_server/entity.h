@@ -51,22 +51,35 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a entity in the simulation world. It provides a class
+ * for high level physical things in the world to inherit from (layers and
+ * models)
+ */
 class Entity {
  public:
-  enum Type { LAYER, MODEL };
+  /// Defines the type of entity
+  enum EntityType { LAYER, MODEL };
 
-  std::string name_;
-  b2World *physics_world_;
-  b2Body *physics_body_;
+  b2World *physics_world_;  ///< Box2D physics world
 
-  Entity(b2World *physics_world, std::string name);
+  /**
+   * @brief Constructor for the entity
+   * @param[in] physics_world Box2D physics_world
+   */
+  Entity(b2World *physics_world);
+  virtual ~Entity() = default;
 
-  /* This class should be non-copyable. This will cause the destructor to be
-      called twice for a given b2Body*/
+  /// This class should be non-copyable. This will cause the destructor to be
+  /// called twice for a given b2Body
   Entity(const Entity &) = delete;
   Entity &operator=(const Entity &) = delete;
 
-  virtual Type type() = 0;
+  /**
+   * @brief Get the type of entity, subclasses must override
+   * @return the type of entity
+   */
+  virtual EntityType Type() = 0;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_ENTITY_H

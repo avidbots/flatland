@@ -56,11 +56,7 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) {
-  physics_world_ = new b2World(gravity_);
-
-  ROS_INFO_NAMED("World", "World constructed");
-}
+World::World() : gravity_(0, 0) { physics_world_ = new b2World(gravity_); }
 
 World::~World() {
   for (int i = 0; i < layers_.size(); i++) {
@@ -70,31 +66,35 @@ World::~World() {
   delete physics_world_;
 }
 
-World *World::make_world(std::string yaml_path) {
-  boost::filesystem::path path(yaml_path);
-
+World *World::MakeWorld(const std::string &yaml_path) {
   // parse the world YAML file
   YAML::Node yaml;
 
   try {
-    yaml = YAML::LoadFile(path.string());
+    yaml = YAML::LoadFile(yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
+    throw YAMLException("Error loading " + yaml_path, e);
   }
 
   if (yaml["properties"] && yaml["properties"].IsMap()) {
-    // TODO (Chunshang Li): parse properties
+    // TODO (Chunshang): parse properties
   } else {
-    throw YAMLException("Invalid world param \"properties\"");
+    throw YAMLException("Missing/invalid world param \"properties\"");
   }
 
   World *w = new World();
-  w->load_layers(yaml_path);
-  w->load_models(yaml_path);
+
+  try {
+    w->LoadLayers(yaml_path);
+    w->LoadModels(yaml_path);
+  } catch (const YAML::Exception &e) {
+    throw YAMLException(e);
+  }
+
   return w;
 }
 
-void World::load_layers(std::string yaml_path) {
+void World::LoadLayers(const std::string &yaml_path) {
   boost::filesystem::path path(yaml_path);
 
   YAML::Node yaml;
@@ -102,30 +102,98 @@ void World::load_layers(std::string yaml_path) {
   try {
     yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e.msg, e.mark);
+    throw YAMLException("Error loading " + path.string(), e);
   }
 
   if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
-    throw YAMLException("Invalid world param \"layers\"");
+    throw YAMLException("Missing/invalid world param \"layers\"");
   }
 
   // loop through each layer and parse the data
   for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer = Layer::make_layer(physics_world_, i, path.parent_path(),
-                                     yaml["layers"][i]);
+    Layer *layer;
+
+    if (cfr_.IsLayersFull()) {
+      throw YAMLException("Max number of layers reached, max is " +
+                          std::to_string(cfr_.MAX_LAYERS));
+    }
+
+    layer = Layer::MakeLayer(physics_world_, &cfr_, path.parent_path(),
+                             yaml["layers"][i]);
 
     layers_.push_back(layer);
+    ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());
   }
+}
+
+void World::LoadModels(const std::string &yaml_path) {
+  boost::filesystem::path path(yaml_path);
+  YAML::Node yaml;
+
+  try {
+    yaml = YAML::LoadFile(path.string());
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading " + path.string(), e);
+  }
+
+  // models is optional
+  if (yaml["models"] && !yaml["models"].IsSequence()) {
+    throw YAMLException("Invalid world param \"layers\", must be a sequence");
+  } else if (yaml["models"]) {
+    for (int i = 0; i < yaml["models"].size(); i++) {
+      const YAML::Node &node = yaml["models"][i];
+      std::string name;
+      std::array<double, 3> pose;
+      boost::filesystem::path model_path;
+
+      if (node["name"]) {
+        name = node["name"].as<std::string>();
+      } else {
+        throw YAMLException("Missing model name in model index=" +
+                            std::to_string(i));
+      }
+
+      if (node["pose"] && node["pose"].IsSequence() &&
+          node["pose"].size() == 3) {
+        pose[0] = node["pose"][0].as<double>();
+        pose[1] = node["pose"][1].as<double>();
+        pose[2] = node["pose"][2].as<double>();
+      } else {
+        throw YAMLException("Missing/invalid \"pose\" in " + name + " model");
+      }
+
+      if (node["model"]) {
+        model_path = boost::filesystem::path(node["model"].as<std::string>());
+      } else {
+        throw YAMLException("Missing \"model\" in " + name + " model");
+      }
+
+      if (model_path.string().front() != '/') {
+        model_path = path.parent_path() / model_path;
+      }
+
+      LoadModel(model_path.string(), name, pose);
+    }
+  }
+}
+
+void World::LoadModel(const std::string &model_yaml_path,
+                      const std::string &name,
+                      const std::array<double, 3> pose) {
+  Model *model = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
+
+  model->TransformAll(pose);
+
+  models_.push_back(model);
 }
 
 void World::DebugVisualize() {
   for (auto &layer : layers_) {
-    DebugVisualization::get().visualize(
-        std::string("layer_") + layer->name_, layer->physics_body_,
-        layer->color_[0], layer->color_[1], layer->color_[2], layer->color_[3]);
+    DebugVisualization::get().Visualize(
+        std::string("layer_") + layer->name_, layer->body_->physics_body_,
+        layer->body_->color_[0], layer->body_->color_[1],
+        layer->body_->color_[2], layer->body_->color_[3]);
   }
 }
-
-void World::load_models(std::string yaml_path) {}
 
 };  // namespace flatland_server

@@ -48,6 +48,7 @@
 #define FLATLAND_SERVER_WORLD_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <string>
@@ -55,11 +56,18 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a world in the simulation. A world contains layers
+ * that can represent environments at multiple levels, and models which are
+ * can be robots or obstacles.
+ */
 class World {
  public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer *> layers_;
+  b2World *physics_world_;       ///< Box2D physics world
+  b2Vec2 gravity_;               ///< Box2D world gravity, always (0, 0)
+  std::vector<Layer *> layers_;  ///< list of layers
+  std::vector<Model *> models_;  ///< list of models
+  CollisionFilterRegistry cfr_;  ///< collision registry for layers and models
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -73,25 +81,34 @@ class World {
   ~World();
 
   /**
-   * @brief load layers into the world. Throws yaml-cpp exceptions and
-   * flatland server exceptions.
+   * @brief load layers into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of layers
    */
-  void load_layers(std::string yaml_path);
+  void LoadLayers(const std::string &yaml_path);
 
   /**
-   * @brief load models into the world. Throws yaml-cpp exceptions and
-   * flatland server exceptions.
+   * @brief load models into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of models
    */
-  void load_models(std::string yaml_path);
+  void LoadModels(const std::string &yaml_path);
+
+  /**
+   * brief @load models into the world. Throws derivatives of YAML::Exception
+   * @param[in] model_yaml_path Path to the model yaml file
+   * @param[in] name Name of the model
+   * @param[in] pose Initial pose of the model in x, y, yaw
+   */
+  void LoadModel(const std::string &model_yaml_path, const std::string &name,
+                 const std::array<double, 3> pose);
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class.
+   * the inputs before instantiation of the class. Throws derivatives of
+   * YAML::Exception
    * @param[in] yaml_path Path to the world yaml file
+   * @return pointer to a new world
    */
-  static World *make_world(std::string yaml_path);
+  static World *MakeWorld(const std::string &yaml_path);
 
   /**
    * @brief Publish debug visualizations for everything

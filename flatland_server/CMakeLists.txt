@@ -35,7 +35,6 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 # OpenCV
 find_package(OpenCV REQUIRED)
 
-
 ##############
 ## coverage ##
 ##############
@@ -63,7 +62,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  INCLUDE_DIRS include
+  INCLUDE_DIRS include thirdparty
   LIBRARIES flatland_lib
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs message_runtime
   DEPENDS OpenCV YAML_CPP
@@ -78,7 +77,10 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  thirdparty
 )
+
+add_subdirectory("thirdparty/Box2D")
 
 ## Flatland server library
 add_library(flatland_lib
@@ -89,13 +91,18 @@ add_library(flatland_lib
   src/entity.cpp
   src/debug_visualization.cpp
   src/geometry.cpp
+  src/body.cpp
+  src/joint.cpp
+  src/model_body.cpp
+  src/collision_filter_registry.cpp
   src/model_plugin.cpp
 )
+
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  Box2D
+  Box2D_shared
   yaml-cpp
 )
 
@@ -112,7 +119,7 @@ add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  Box2D
+  Box2D_shared
   yaml-cpp
   flatland_lib
 )
@@ -162,18 +169,23 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(load_world_test
     ${catkin_LIBRARIES}
     ${GTEST_LIBRARIES}
-    Box2D
     flatland_lib
   )
   
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test
-    flatland_lib Box2D)
+    flatland_lib)
+
+  catkin_add_gtest(collision_filter_registry_test
+    test/collision_filter_registry_test.cpp)
+  target_link_libraries(collision_filter_registry_test
+    flatland_lib)
 
   add_rostest_gtest(debug_visualization_test
     test/debug_visualization.test
     test/debug_visualization_test.cpp)
   target_link_libraries(debug_visualization_test
-    flatland_lib Box2D)
+    flatland_lib)
+
 
 endif()

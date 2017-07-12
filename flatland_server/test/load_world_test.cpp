@@ -45,12 +45,12 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
+#include <flatland_server/geometry.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <ros/package.h>
-#include <ros/ros.h>
 #include <boost/filesystem.hpp>
 #include <regex>
 #include <string>
@@ -58,12 +58,12 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-class FlatlandServerLoadWorldTest : public ::testing::Test {
+class LoadWorldTest : public ::testing::Test {
  protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
 
-  FlatlandServerLoadWorldTest() {
+  LoadWorldTest() {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
   }
 
@@ -71,18 +71,18 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
   // message matches the given regex string
   void test_yaml_fail(std::string regex_str) {
     try {
-      World *w = World::make_world(world_yaml.string());
+      World *w = World::MakeWorld(world_yaml.string());
 
       delete w;
 
       FAIL() << "Expected YAMLException, it passed instead";
-    } catch (YAMLException &e) {
+    } catch (const YAML::Exception &e) {
       // do a regex match against error messages
       std::cmatch match;
       std::regex regex(regex_str);
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
-          << "'" + std::string(e.what()) + "'" + " did not match against " +
-                 "'" + regex_str + "'";
+          << "Exception Message '" + std::string(e.what()) + "'" +
+                 " did not match against regex '" + regex_str + "'";
     } catch (...) {
       FAIL() << "Expected YAMLException, another exception was caught instead";
     }
@@ -93,7 +93,7 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
     return ret;
   }
 
-  // return the index if found, -1 otherwise
+  // return the id if found, -1 otherwise
   int does_edge_exist(const b2EdgeShape &edge,
                       const std::vector<std::pair<b2Vec2, b2Vec2>> &edges) {
     for (int i = 0; i < edges.size(); i++) {
@@ -139,140 +139,437 @@ class FlatlandServerLoadWorldTest : public ::testing::Test {
       return false;
     }
   }
+
+  bool ColorEq(const std::array<double, 4> &c1,
+               const std::array<double, 4> &c2) {
+    for (int i = 0; i < 4; i++) {
+      if (!float_cmp(c1[i], c2[i])) {
+        printf("Color Actual:[%f,%f,%f,%f] != Expected:[%f,%f,%f,%f]\n", c1[0],
+               c1[1], c1[2], c1[3], c2[0], c2[1], c2[2], c2[3]);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool BodyEq(Body *body, const std::string name, b2BodyType type,
+              const std::array<double, 3> &pose,
+              const std::array<double, 4> &color, double linear_damping,
+              double angular_damping) {
+    b2Vec2 t = body->physics_body_->GetPosition();
+    double a = body->physics_body_->GetAngle();
+
+    if (name != body->name_) {
+      printf("Name Actual:%s != Expected:%s\n", body->name_.c_str(),
+             name.c_str());
+      return false;
+    }
+
+    if (type != body->physics_body_->GetType()) {
+      /*
+      enum b2BodyType
+      {
+        b2_staticBody = 0,
+        b2_kinematicBody,
+        b2_dynamicBody
+      };
+      */
+      printf("Body type Actual:%d != Expected:%d\n",
+             body->physics_body_->GetType(), type);
+      return false;
+    }
+
+    if (!float_cmp(t.x, pose[0]) || !float_cmp(t.y, pose[1]) ||
+        !float_cmp(a, pose[2])) {
+      printf("Pose Actual:[%f,%f,%f] != Expected:[%f,%f,%f]\n", t.x, t.y, a,
+             pose[0], pose[1], pose[2]);
+      return false;
+    }
+
+    if (!ColorEq(body->color_, color)) {
+      return false;
+    }
+
+    if (!float_cmp(linear_damping, body->physics_body_->GetLinearDamping())) {
+      printf("Linear Damping Actual:%f != Expected:%f\n",
+             body->physics_body_->GetLinearDamping(), linear_damping);
+      return false;
+    }
+
+    if (!float_cmp(angular_damping, body->physics_body_->GetAngularDamping())) {
+      printf("Angular Damping Actual %f != Expected:%f\n",
+             body->physics_body_->GetAngularDamping(), angular_damping);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool CircleEq(b2Fixture *f, double x, double y, double r) {
+    if (f->GetShape()->GetType() != b2Shape::e_circle) {
+      /*
+      enum Type
+      {
+        e_circle = 0,
+        e_edge = 1,
+        e_polygon = 2,
+        e_chain = 3,
+        e_typeCount = 4
+      };
+      */
+      printf("Shape is not of type b2Shape::e_circle, Actual=%d\n",
+             f->GetShape()->GetType());
+      return false;
+    }
+
+    b2CircleShape *s = dynamic_cast<b2CircleShape *>(f->GetShape());
+
+    if (!float_cmp(r, s->m_radius) || !float_cmp(x, s->m_p.x) ||
+        !float_cmp(y, s->m_p.y)) {
+      printf("Actual:[x=%f,y=%f,r=%f] != Expected:[%f,%f,%f] \n", s->m_radius,
+             s->m_p.x, s->m_p.y, x, y, r);
+      return false;
+    }
+    return true;
+  }
+
+  bool PolygonEq(b2Fixture *f, std::vector<std::pair<double, double>> points) {
+    if (f->GetShape()->GetType() != b2Shape::e_polygon) {
+      /*
+      enum Type
+      {
+        e_circle = 0,
+        e_edge = 1,
+        e_polygon = 2,
+        e_chain = 3,
+        e_typeCount = 4
+      };
+      */
+      printf("Shape is not of type b2Shape::e_polygon, Actual=%d\n",
+             f->GetShape()->GetType());
+      return false;
+    }
+
+    b2PolygonShape *s = dynamic_cast<b2PolygonShape *>(f->GetShape());
+    int cnt = s->m_count;
+    if (cnt != points.size()) {
+      printf("Number of points Actual:%d != Expected:%lu\n", cnt,
+             points.size());
+      return false;
+    }
+
+    auto pts = points;
+
+    for (int i = 0; i < cnt; i++) {
+      const b2Vec2 p = s->m_vertices[i];
+
+      bool found_match = false;
+      int j;
+      for (j = 0; j < pts.size(); j++) {
+        if (!float_cmp(p.x, points[i].first) ||
+            !float_cmp(p.y, points[i].second)) {
+          found_match = true;
+          break;
+        }
+      }
+
+      if (!found_match) {
+        // cannot find a matching point, print the expected and actual points
+        printf("Actual: [");
+        for (int k = 0; k < cnt; k++) {
+          printf("[%f,%f],", s->m_vertices[k].x, s->m_vertices[k].y);
+        }
+
+        printf("] != Expected: [");
+        for (int k = 0; k < points.size(); k++) {
+          printf("[%f,%f],", points[k].first, points[k].second);
+        }
+        printf("]\n");
+
+        return false;
+      }
+
+      pts.erase(pts.begin() + j);
+    }
+
+    if (pts.size() == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  std::vector<b2Fixture *> GetBodyFixtures(Body *body) {
+    std::vector<b2Fixture *> fixtures;
+
+    b2Body *b = body->physics_body_;
+    for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
+      fixtures.push_back(f);
+    }
+
+    std::reverse(fixtures.begin(), fixtures.end());
+
+    return fixtures;
+  }
+
+  bool FixtureEq(b2Fixture *f, bool is_sensor, int group_index,
+                 uint16_t category_bits, uint16_t mask_bits, double density,
+                 double friction, double restitution) {
+    if (f->IsSensor() != is_sensor) {
+      printf("is_sensor Actual:%d != Expected:%d\n", f->IsSensor(), is_sensor);
+      return false;
+    }
+
+    if (f->GetFilterData().groupIndex != group_index) {
+      printf("group_index Actual:%d != Expected:%d\n",
+             f->GetFilterData().groupIndex, group_index);
+      return false;
+    }
+
+    if (f->GetFilterData().categoryBits != category_bits) {
+      printf("category_bits Actual:0x%X != Expected:0x%X\n",
+             f->GetFilterData().categoryBits, category_bits);
+      return false;
+    }
+
+    if (f->GetFilterData().maskBits != mask_bits) {
+      printf("mask_bits Actual:0x%X != Expected:0x%X\n",
+             f->GetFilterData().maskBits, mask_bits);
+      return false;
+    }
+
+    if (!float_cmp(f->GetDensity(), density)) {
+      printf("density Actual:%f != Expected:%f\n", f->GetDensity(), density);
+      return false;
+    }
+
+    if (!float_cmp(f->GetFriction(), friction)) {
+      printf("friction Actual:%f != Expected:%f\n", f->GetFriction(), friction);
+      return false;
+    }
+
+    if (!float_cmp(f->GetRestitution(), restitution)) {
+      printf("restitution Actual:%f != Expected:%f\n", f->GetRestitution(),
+             restitution);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool JointEq(Joint *joint, const std::string name, Body *body_A,
+               const std::array<double, 2> &anchor_A, Body *body_B,
+               const std::array<double, 2> &anchor_B, bool collide_connected) {
+    b2Joint *j = joint->physics_joint_;
+
+    if (name != joint->name_) {
+      printf("Name Actual:%s != Expected:%s\n", joint->name_.c_str(),
+             name.c_str());
+      return false;
+    }
+
+    if (j->GetBodyA() != body_A->physics_body_) {
+      printf("BodyA ptr Actual %p != Expected:%p\n",
+             joint->physics_joint_->GetBodyA(), body_A->physics_body_);
+      return false;
+    }
+
+    if (j->GetBodyB() != body_B->physics_body_) {
+      printf("BodyB ptr Actual %p != Expected:%p\n", j->GetBodyB(),
+             body_B->physics_body_);
+      return false;
+    }
+
+    // GetAnchor returns world coordinates, we want to verify against
+    // local coordinates
+    b2Vec2 local_anchor_A = j->GetAnchorA() - j->GetBodyA()->GetPosition();
+    b2Vec2 local_anchor_B = j->GetAnchorB() - j->GetBodyB()->GetPosition();
+
+    if (!float_cmp(local_anchor_A.x, anchor_A[0]) ||
+        !float_cmp(local_anchor_A.y, anchor_A[1])) {
+      printf("Anchor A Actual:[%f,%f] != Expected:[%f,%f]\n", local_anchor_A.x,
+             local_anchor_A.y, anchor_A[0], anchor_A[1]);
+      return false;
+    }
+
+    if (!float_cmp(local_anchor_B.x, anchor_B[0]) ||
+        !float_cmp(local_anchor_B.y, anchor_B[1])) {
+      printf("Anchor B Actual:[%f,%f] != Expected:[%f,%f]\n", local_anchor_B.x,
+             local_anchor_B.y, anchor_B[0], anchor_B[1]);
+      return false;
+    }
+
+    if (collide_connected != j->GetCollideConnected()) {
+      printf("Collide connected Actual:%d != Expected:%d\n",
+             j->GetCollideConnected(), collide_connected);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool WeldEq(Joint *joint, double angle, double freq, double damping) {
+    b2WeldJoint *j = dynamic_cast<b2WeldJoint *>(joint->physics_joint_);
+
+    if (j->GetType() != e_weldJoint) {
+      /*
+      enum b2JointType
+      {
+        e_unknownJoint, --> C++ should defaults initialize at zero?
+        e_revoluteJoint,
+        e_prismaticJoint,
+        e_distanceJoint,
+        e_pulleyJoint,
+        e_mouseJoint,
+        e_gearJoint,
+        e_wheelJoint,
+        e_weldJoint,
+        e_frictionJoint,
+        e_ropeJoint,
+        e_motorJoint
+      };
+      */
+      printf("Joint type Actual:%d != Expected:%d(weld joint)\n", j->GetType(),
+             e_weldJoint);
+      return false;
+    }
+
+    if (!float_cmp(angle, j->GetReferenceAngle())) {
+      printf("Angle Actual:%f != Expected:%f\n", angle, j->GetReferenceAngle());
+      return false;
+    }
+
+    if (!float_cmp(freq, j->GetFrequency())) {
+      printf("Frequency Actual:%f != Expected:%f\n", freq, j->GetFrequency());
+      return false;
+    }
+
+    if (!float_cmp(damping, j->GetDampingRatio())) {
+      printf("Damping Actual:%f != Expected:%f\n", damping,
+             j->GetDampingRatio());
+      return false;
+    }
+
+    return true;
+  }
+
+  bool RevoluteEq(Joint *joint, bool is_limit_enabled,
+                  const std::array<double, 2> limits) {
+    b2RevoluteJoint *j = dynamic_cast<b2RevoluteJoint *>(joint->physics_joint_);
+
+    if (j->GetType() != e_revoluteJoint) {
+      /*
+      enum b2JointType
+      {
+        e_unknownJoint, --> C++ defaults initialize at zero?
+        e_revoluteJoint,
+        e_prismaticJoint,
+        e_distanceJoint,
+        e_pulleyJoint,
+        e_mouseJoint,
+        e_gearJoint,
+        e_wheelJoint,
+        e_weldJoint,
+        e_frictionJoint,
+        e_ropeJoint,
+        e_motorJoint
+      };
+      */
+      printf("Joint type Actual:%d != Expected:%d(revolute joint)\n",
+             j->GetType(), e_revoluteJoint);
+      return false;
+    }
+
+    if (is_limit_enabled != j->IsLimitEnabled()) {
+      printf("Limits enabled Actual:%d != Expected:%d\n", is_limit_enabled,
+             j->IsLimitEnabled());
+      return false;
+    }
+
+    if (is_limit_enabled && (!float_cmp(limits[0], j->GetLowerLimit()) ||
+                             !float_cmp(limits[1], j->GetUpperLimit()))) {
+      printf("Limits Actual:[%f,%f] != Expected:[%f,%f]\n", j->GetLowerLimit(),
+             j->GetLowerLimit(), limits[0], limits[1]);
+      return false;
+    }
+
+    return true;
+  }
 };
 
 /**
- * This test loads the world, layers, models (TODO) from the given world
+ * This test loads the world, layers, models from the given world
  * yaml file and checks that all configurations, data, and calculations are
  * correct after instantiation
  */
-TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
+TEST_F(LoadWorldTest, simple_test_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
-  World *w = World::make_world(world_yaml.string());
+  World *w = World::MakeWorld(world_yaml.string());
 
   ASSERT_EQ(w->layers_.size(), 2);
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
-  EXPECT_EQ(w->layers_[0]->layer_index_, 0);
-  EXPECT_EQ(w->layers_[0]->type(), Entity::Type::LAYER);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[0], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[1], 1);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[2], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->color_[3], 0);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[0], 0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[1], -0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->origin_[2], 1.57);
+  EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
+  EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
+                     {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
   EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
   EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
   EXPECT_DOUBLE_EQ(w->layers_[0]->resolution_, 0.05);
   EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
   EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
-  EXPECT_EQ(w->layers_[1]->layer_index_, 1);
-  EXPECT_EQ(w->layers_[1]->type(), Entity::Type::LAYER);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[0], 1.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[1], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[2], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->color_[3], 0.5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[0], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[1], 0.0);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->origin_[2], 0.0);
+  EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
+  EXPECT_TRUE(BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0},
+                     {1, 0, 0, 0.5}, 0, 0));
   EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
   EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
   EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 1.5);
   EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
   EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
+  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("3d"), 1);
 
-  // check that bitmap vectorization is performed correctly. The data here
-  // used for comparison is the expect results from the given map images
+  // check that bitmap is transformed correctly. This involves flipping the y
+  // coordinates and apply the resolution. Note that the translation and
+  // rotation is performed internally by Box2D
   std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_edges = {
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(5, 0)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(4, 1)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(3, 2)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(3, 3)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(4, 4)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 5), b2Vec2(5, 5)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.25, 0.25)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.20, 0.20)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.15, 0.15)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.10), b2Vec2(0.15, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.05), b2Vec2(0.20, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.00), b2Vec2(0.25, 0.00)),
 
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 5)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 1), b2Vec2(1, 4)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 2), b2Vec2(2, 3)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 3)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(4, 4)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 0), b2Vec2(5, 5))};
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.00, 0.00)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.15), b2Vec2(0.15, 0.10)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.20), b2Vec2(0.20, 0.05)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.25), b2Vec2(0.25, 0.00))};
 
-  EXPECT_EQ(w->layers_[0]->extracted_edges.size(),
-            layer0_expected_edges.size());
-  EXPECT_TRUE(do_edges_exactly_match(w->layers_[0]->extracted_edges,
-                                     layer0_expected_edges));
-
-  std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(1, 0)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 0), b2Vec2(0, 2)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0, 2), b2Vec2(3, 2)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(3, 2), b2Vec2(3, 4)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 3), b2Vec2(4, 1)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 1), b2Vec2(1, 1)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 0), b2Vec2(1, 1)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 3), b2Vec2(4, 3)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(2, 5), b2Vec2(2, 3)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(3, 4)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 5), b2Vec2(2, 5)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(1, 4), b2Vec2(1, 5)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(5, 4)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 4), b2Vec2(4, 5)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(5, 4), b2Vec2(5, 5)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(4, 5), b2Vec2(5, 5))};
-
-  EXPECT_EQ(w->layers_[1]->extracted_edges.size(),
-            layer1_expected_edges.size());
-  EXPECT_TRUE(do_edges_exactly_match(w->layers_[1]->extracted_edges,
-                                     layer1_expected_edges));
-
-  // check that bitmap is transformed correctly. This involves flipping the
-  // y coordinates, applying the resolution, and apply the translation
-  // with respect to the map origin
-  std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_transformed_edges = {
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.30, 0.20)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.25, 0.15)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.10), b2Vec2(0.20, 0.10)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.05), b2Vec2(0.20, 0.05)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.00), b2Vec2(0.25, 0.00)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, -0.05), b2Vec2(0.30, -0.05)),
-
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, -0.05)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.00)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.10), b2Vec2(0.15, 0.05)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.10), b2Vec2(0.20, 0.05)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.15), b2Vec2(0.25, 0.00)),
-      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.30, 0.20), b2Vec2(0.30, -0.05))};
-
-  std::vector<b2EdgeShape> layer0_transformed_edges;
-  for (b2Fixture *f = w->layers_[0]->physics_body_->GetFixtureList(); f;
+  std::vector<b2EdgeShape> layer0_edges;
+  for (b2Fixture *f = w->layers_[0]->body_->physics_body_->GetFixtureList(); f;
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
-    layer0_transformed_edges.push_back(e);
+    layer0_edges.push_back(e);
 
     // check that collision groups are correctly assigned
     EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
     EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
-
-    b2Vec2 v1_tf = e.m_vertex1;
-    b2Vec2 v2_tf = e.m_vertex2;
   }
-  EXPECT_EQ(layer0_transformed_edges.size(),
-            layer0_expected_transformed_edges.size());
-  EXPECT_TRUE(do_edges_exactly_match(layer0_transformed_edges,
-                                     layer0_expected_transformed_edges));
+  EXPECT_EQ(layer0_edges.size(), layer0_expected_edges.size());
+  EXPECT_TRUE(do_edges_exactly_match(layer0_edges, layer0_expected_edges));
 
   // layer[1] has origin of [0, 0, 0], so there should be no transform, just
   // apply the inversion of y coordinates and scale by resolution
-  std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_transformed_edges = {
+  std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(1.5, 7.5)),
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(0.0, 4.5)),
       std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 4.5), b2Vec2(4.5, 4.5)),
@@ -290,20 +587,130 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
       std::pair<b2Vec2, b2Vec2>(b2Vec2(7.5, 1.5), b2Vec2(7.5, 0.0)),
       std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 0.0), b2Vec2(7.5, 0.0))};
 
-  std::vector<b2EdgeShape> layer1_transformed_edges;
-  for (b2Fixture *f = w->layers_[1]->physics_body_->GetFixtureList(); f;
+  std::vector<b2EdgeShape> layer1_edges;
+  for (b2Fixture *f = w->layers_[1]->body_->physics_body_->GetFixtureList(); f;
        f = f->GetNext()) {
     b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
-    layer1_transformed_edges.push_back(e);
+    layer1_edges.push_back(e);
 
     // check that collision groups are correctly assigned
     EXPECT_EQ(f->GetFilterData().categoryBits, 0x2);
     EXPECT_EQ(f->GetFilterData().maskBits, 0x2);
   }
-  EXPECT_EQ(layer1_transformed_edges.size(),
-            layer1_expected_transformed_edges.size());
-  EXPECT_TRUE(do_edges_exactly_match(layer1_transformed_edges,
-                                     layer1_expected_transformed_edges));
+  EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
+  EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
+
+  // Check loaded model data
+  // Check model 0
+  Model *m0 = w->models_[0];
+  EXPECT_STREQ(m0->name_.c_str(), "turtlebot1");
+  EXPECT_EQ(m0->no_collide_group_index_, -1);
+  ASSERT_EQ(m0->bodies_.size(), 5);
+  ASSERT_EQ(m0->joints_.size(), 4);
+
+  // check model 0 body 0
+  EXPECT_TRUE(BodyEq(m0->bodies_[0], "base", b2_dynamicBody, {0, 0, 0},
+                     {1, 1, 0, 0.25}, 0.1, 0.125));
+  auto fs = GetBodyFixtures(m0->bodies_[0]);
+  ASSERT_EQ(fs.size(), 2);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
+  EXPECT_TRUE(FixtureEq(fs[1], false, -1, 0b11, 0b11, 982.24, 0.59, 0.234));
+  EXPECT_TRUE(
+      PolygonEq(fs[1], {{-0.1, 0.1}, {-0.1, -0.1}, {0.1, -0.1}, {0.1, 0.1}}));
+
+  // check model 0 body 1
+  EXPECT_TRUE(BodyEq(m0->bodies_[1], "left_wheel", b2_dynamicBody, {-1, 0, 0},
+                     {1, 0, 0, 0.25}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[1]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], true, -1, 0b01, 0b01, 0, 0, 0));
+  EXPECT_TRUE(PolygonEq(
+      fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
+
+  // check model 0 body 2
+  EXPECT_TRUE(BodyEq(m0->bodies_[2], "right_wheel", b2_dynamicBody, {1, 0, 0},
+                     {0, 1, 0, 0.25}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[2]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(PolygonEq(
+      fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
+
+  // check model 0 body 3
+  EXPECT_TRUE(BodyEq(m0->bodies_[3], "tail", b2_dynamicBody, {0, 0, 0.52},
+                     {0, 0, 0, 0.5}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[3]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b10, 0b10, 0, 0, 0));
+  EXPECT_TRUE(PolygonEq(fs[0], {{-0.2, 0}, {-0.2, -5}, {0.2, -5}, {0.2, 0}}));
+
+  // check model 0 body 4
+  EXPECT_TRUE(BodyEq(m0->bodies_[4], "antenna", b2_dynamicBody, {0, 0.5, 0},
+                     {0.2, 0.4, 0.6, 1}, 0, 0));
+  fs = GetBodyFixtures(m0->bodies_[4]);
+  ASSERT_EQ(fs.size(), 1);
+  EXPECT_TRUE(FixtureEq(fs[0], false, 1, 0b0, 0b0, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 0.25));
+
+  // Check loaded joint data
+  EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", m0->bodies_[0],
+                      {-1, 0}, m0->bodies_[1], {0, 0}, false));
+  EXPECT_TRUE(WeldEq(m0->joints_[0], 1.57079633, 10, 0.5));
+
+  EXPECT_TRUE(JointEq(m0->joints_[1], "right_wheel_weld", m0->bodies_[0],
+                      {1, 0}, m0->bodies_[2], {0, 0}, false));
+  EXPECT_TRUE(WeldEq(m0->joints_[1], 0, 0, 0));
+
+  EXPECT_TRUE(JointEq(m0->joints_[2], "tail_revolute", m0->bodies_[0], {0, 0},
+                      m0->bodies_[3], {0, 0}, false));
+  EXPECT_TRUE(RevoluteEq(m0->joints_[2], false, {}));
+
+  EXPECT_TRUE(JointEq(m0->joints_[3], "antenna_revolute", m0->bodies_[0],
+                      {0, 0}, m0->bodies_[4], {0, 0}, true));
+  EXPECT_TRUE(RevoluteEq(m0->joints_[3], true, {-0.002, 3.735}));
+
+  // Check model 1 is same yaml file as model 1, simply do a simple sanity check
+  Model *m1 = w->models_[1];
+  EXPECT_STREQ(m1->name_.c_str(), "turtlebot2");
+  EXPECT_EQ(m1->no_collide_group_index_, -2);
+  ASSERT_EQ(m1->bodies_.size(), 5);
+  ASSERT_EQ(m1->joints_.size(), 4);
+
+  // check the applied transformation just for the first body
+  EXPECT_TRUE(BodyEq(m1->bodies_[0], "base", b2_dynamicBody, {3, 4.5, 3.14159},
+                     {1, 1, 0, 0.25}, 0.1, 0.125));
+
+  // Check model 2 which is the chair
+  Model *m2 = w->models_[2];
+  EXPECT_STREQ(m2->name_.c_str(), "chair1");
+  EXPECT_EQ(m2->no_collide_group_index_, -3);
+  ASSERT_EQ(m2->bodies_.size(), 1);
+  ASSERT_EQ(m2->joints_.size(), 0);
+
+  // Check model 2 fixtures
+  EXPECT_TRUE(BodyEq(m2->bodies_[0], "chair", b2_staticBody, {1.2, 3.5, 2.123},
+                     {1, 1, 1, 0.25}, 0, 0));
+  fs = GetBodyFixtures(m2->bodies_[0]);
+  ASSERT_EQ(fs.size(), 2);
+  EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1));
+
+  // the groupIndex is 3 since the first two turtlebots has one self collide
+  // fixtures each
+  EXPECT_TRUE(FixtureEq(fs[1], false, 3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(CircleEq(fs[1], 0, 0, 0.2));
+
+  // Check model 3 which is the chair
+  Model *m3 = w->models_[3];
+  EXPECT_STREQ(m3->name_.c_str(), "person1");
+  EXPECT_EQ(m3->no_collide_group_index_, -4);
+  ASSERT_EQ(m3->bodies_.size(), 1);
+  ASSERT_EQ(m3->joints_.size(), 0);
+
+  // check the body only
+  EXPECT_TRUE(BodyEq(m3->bodies_[0], "body", b2_kinematicBody, {0, 1, 2},
+                     {0, 0.75, 0.75, 0.25}, 0, 0));
 
   delete w;
 }
@@ -312,7 +719,7 @@ TEST_F(FlatlandServerLoadWorldTest, simple_test_A) {
  * This test tries to loads a non-existent world yaml file. It should throw
  * an exception
  */
-TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
+TEST_F(LoadWorldTest, wrong_world_path) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
   test_yaml_fail("Error loading.*world.yaml.*bad file");
@@ -322,45 +729,84 @@ TEST_F(FlatlandServerLoadWorldTest, wrong_world_path) {
  * This test tries to loads a invalid world yaml file. It should throw
  * an exception.
  */
-TEST_F(FlatlandServerLoadWorldTest, world_invalid_A) {
+TEST_F(LoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
-  test_yaml_fail("Invalid world param \"properties\"");
+  test_yaml_fail("Missing/invalid world param \"properties\"");
 }
 
 /**
  * This test tries to loads a invalid world yaml file. It should throw
  * an exception.
  */
-TEST_F(FlatlandServerLoadWorldTest, world_invalid_B) {
+TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
-  test_yaml_fail("Invalid \"color\" in 2d layer");
+  test_yaml_fail("Missing/invalid \"color\" in 2d layer");
 }
 
 /**
  * This test tries to loads valid world yaml file which in turn tries to
  * load a invalid map yaml file. It should throw an exception.
  */
-TEST_F(FlatlandServerLoadWorldTest, map_invalid_A) {
+TEST_F(LoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
-  test_yaml_fail("Invalid \"origin\" in 2d layer");
+  test_yaml_fail("Missing/invalid \"origin\" in 2d layer");
 }
 
 /**
- * This test tries to loads valid world yaml file which in turn load a map yaml
+ * This test tries to loads valid world yaml file which in turn load a map
+ * yaml
  * file which then inturn tries to load a non-exists map image file. It should
  * throw an exception
  */
-TEST_F(FlatlandServerLoadWorldTest, map_invalid_B) {
+TEST_F(LoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
   test_yaml_fail("Failed to load .*.png");
 }
 
+TEST_F(LoadWorldTest, model_invalid_A) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
+  test_yaml_fail("Missing/invalid \"origin\" in base body");
+}
+
+TEST_F(LoadWorldTest, model_invalid_B) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
+  test_yaml_fail(
+      "Missing/invalid polygon footprint \"points\" in base body, must be a "
+      "sequence with at least 3 items");
+}
+
+TEST_F(LoadWorldTest, model_invalid_C) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
+  test_yaml_fail(
+      "Missing/invalid body \"anchor\" in right_wheel_weld joint body index=1, "
+      "must be a sequence of exactly two numbers");
+}
+
+TEST_F(LoadWorldTest, model_invalid_D) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
+  test_yaml_fail(
+      "Cannot find body with name left_wheel_123 from joint left_wheel_weld");
+}
+
+TEST_F(LoadWorldTest, model_invalid_E) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
+  test_yaml_fail(
+      "Invalid footprint \"layer\" in left_wheel body, random_layer does not "
+      "exist");
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "Node");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

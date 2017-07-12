@@ -55,36 +55,31 @@
 
 namespace flatland_server {
 
-Layer::Layer(b2World *physics_world, uint8_t layer_index,
+Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &name, const cv::Mat &bitmap,
              const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
              double occupied_thresh, double free_thresh)
-    : Entity(physics_world, name),
-      layer_index_(layer_index),
-      color_(color),
-      origin_(origin),
+    : Entity(physics_world),
+      cfr_(cfr),
+      name_(name),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {
   bitmap.copyTo(bitmap_);
 
-  b2BodyDef body_def;
-  body_def.type = b2_staticBody;
+  body_ =
+      new Body(physics_world_, this, name_, color, origin, b2_staticBody, 0, 0);
+  cfr->RegisterLayer(name_);
 
-  physics_body_ = physics_world_->CreateBody(&body_def);
-
-  vectorize_bitmap();
-  load_edges();
-
-  ROS_INFO_NAMED("Layer", "Layer %s added", name_.c_str());
+  LoadMap();
 }
 
-Layer::~Layer() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
+Layer::~Layer() { delete body_; }
 
-Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
-                         boost::filesystem::path world_yaml_dir,
-                         YAML::Node layer_node) {
+Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
+                        const boost::filesystem::path &world_yaml_dir,
+                        const YAML::Node &layer_node) {
   std::string name;
   cv::Mat bitmap;
   std::array<double, 4> color;
@@ -96,14 +91,14 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
   if (layer_node["name"]) {
     name = layer_node["name"].as<std::string>();
   } else {
-    throw YAMLException("Invalid \"properties\" in " + name + " layer");
+    throw YAMLException("Invalid layer name");
   }
 
   if (layer_node["map"]) {
     map_yaml_path =
         boost::filesystem::path(layer_node["map"].as<std::string>());
   } else {
-    throw YAMLException("Invalid \"properties\" in " + name + " layer");
+    throw YAMLException("Missing \"map\" in " + name + " layer");
   }
 
   if (layer_node["color"] && layer_node["color"].IsSequence() &&
@@ -113,7 +108,7 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
     color[2] = layer_node["color"][2].as<double>();
     color[3] = layer_node["color"][3].as<double>();
   } else {
-    throw YAMLException("Invalid \"color\" in " + name + " layer");
+    throw YAMLException("Missing/invalid \"color\" in " + name + " layer");
   }
 
   // use absolute path if start with '/', use relative otherwise
@@ -127,14 +122,13 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
   try {
     yaml = YAML::LoadFile(map_yaml_path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + map_yaml_path.string(), e.msg,
-                        e.mark);
+    throw YAMLException("Error loading " + map_yaml_path.string(), e);
   }
 
   if (yaml["resolution"]) {
     resolution = yaml["resolution"].as<double>();
   } else {
-    throw YAMLException("Invalid \"resolution\" in " + name + " layer");
+    throw YAMLException("Missing \"resolution\" in " + name + " layer");
   }
 
   if (yaml["origin"] && yaml["origin"].IsSequence() &&
@@ -143,19 +137,19 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
     origin[1] = yaml["origin"][1].as<double>();
     origin[2] = yaml["origin"][2].as<double>();
   } else {
-    throw YAMLException("Invalid \"origin\" in " + name + " layer");
+    throw YAMLException("Missing/invalid \"origin\" in " + name + " layer");
   }
 
   if (yaml["occupied_thresh"]) {
     occupied_thresh = yaml["occupied_thresh"].as<double>();
   } else {
-    throw YAMLException("Invalid \"occupied_thresh\" in " + name + " layer");
+    throw YAMLException("Missing \"occupied_thresh\" in " + name + " layer");
   }
 
   if (yaml["free_thresh"]) {
     free_thresh = yaml["free_thresh"].as<double>();
   } else {
-    throw YAMLException("Invalid \"free_thresh\" in " + name + " layer");
+    throw YAMLException("Missing \"free_thresh\" in " + name + " layer");
   }
 
   if (yaml["image"]) {
@@ -172,23 +166,36 @@ Layer *Layer::make_layer(b2World *physics_world, uint8_t layer_index,
 
     map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
   } else {
-    throw YAMLException("Invalid \"image\" in " + name + " layer");
+    throw YAMLException("Missing \"image\" in " + name + " layer");
   }
 
-  return new Layer(physics_world, layer_index, name, bitmap, color, origin,
-                   resolution, occupied_thresh, free_thresh);
+  return new Layer(physics_world, cfr, name, bitmap, color, origin, resolution,
+                   occupied_thresh, free_thresh);
 }
 
-void Layer::vectorize_bitmap() {
+void Layer::LoadMap() {
+  int layer_id = cfr_->LookUpLayerId(name_);
+
+  auto add_edge = [this, layer_id](double x1, double y1, double x2, double y2) {
+    b2EdgeShape edge;
+    double rows = bitmap_.rows;
+    double res = resolution_;
+
+    edge.Set(b2Vec2(res * x1, res * (rows - y1)),
+             b2Vec2(res * x2, res * (rows - y2)));
+
+    b2FixtureDef fixture_def;
+    fixture_def.shape = &edge;
+    fixture_def.filter.categoryBits = 1 << layer_id;
+    fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
+    body_->physics_body_->CreateFixture(&fixture_def);
+  };
+
   cv::Mat padded_map, obstacle_map;
 
   // thresholds the map, values between the occupied threshold and 1.0 are
   // considered to be occupied
   cv::inRange(bitmap_, occupied_thresh_, 1.0, obstacle_map);
-
-  // cv::namedWindow( "Display window" );
-  // cv::imshow( "Display window", bitmap_ );
-  // cv::waitKey(0);
 
   // pad the top and bottom of the map each with an empty row (255=white). This
   // helps to look at the transition from one row of pixel to another
@@ -220,9 +227,7 @@ void Layer::vectorize_bitmap() {
         start = j;
         started = true;
       } else if (started && !edge_exists) {
-        b2EdgeShape edge;
-        edge.Set(b2Vec2(start, i), b2Vec2(j, i));
-        extracted_edges.push_back(edge);
+        add_edge(start, i, j, i);
 
         started = false;
       }
@@ -254,46 +259,11 @@ void Layer::vectorize_bitmap() {
         start = j;
         started = true;
       } else if (started && !edge_exists) {
-        b2EdgeShape edge;
-        edge.Set(b2Vec2(i, start), b2Vec2(i, j));
-        extracted_edges.push_back(edge);
+        add_edge(i, start, i, j);
 
         started = false;
       }
     }
-  }
-}
-
-void Layer::load_edges() {
-  // rotation from the map yaml origin is ignored
-  RotateTranslate transform =
-      Geometry::createTransform(origin_[0], origin_[1], 0);
-
-  for (const auto &edge : extracted_edges) {
-    b2EdgeShape edge_tf;
-
-    // creates a copy
-    b2Vec2 v1 = edge.m_vertex1;
-    b2Vec2 v2 = edge.m_vertex2;
-
-    v1.y = bitmap_.rows - v1.y;
-    v2.y = bitmap_.rows - v2.y;
-
-    v1.x = v1.x * resolution_;
-    v1.y = v1.y * resolution_;
-    v2.x = v2.x * resolution_;
-    v2.y = v2.y * resolution_;
-
-    b2Vec2 v1_tf = Geometry::transform(v1, transform);
-    b2Vec2 v2_tf = Geometry::transform(v2, transform);
-
-    edge_tf.Set(v1_tf, v2_tf);
-
-    b2FixtureDef fixture_def;
-    fixture_def.shape = &edge_tf;
-    fixture_def.filter.categoryBits = 1 << layer_index_;
-    fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
-    physics_body_->CreateFixture(&fixture_def);
   }
 }
 

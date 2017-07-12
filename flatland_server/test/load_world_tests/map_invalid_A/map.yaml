@@ -1,4 +1,4 @@
-image: ../all_valid/map.png
+image: ../simple_test_A/map.png
 resolution: 0.050000
 origins: [-16.600000, -6.650000, 0.000000] # invalid
 negate: 0

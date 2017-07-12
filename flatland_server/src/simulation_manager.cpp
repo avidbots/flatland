@@ -63,7 +63,8 @@ SimulationManager::SimulationManager(std::string world_file, float initial_rate)
     : initial_rate_(initial_rate) {
   ROS_INFO_NAMED("SimMan", "Initializing");
 
-  world_ = World::make_world(world_file);
+  world_ = World::MakeWorld(world_file);
+  ROS_INFO_NAMED("World", "World loaded");
   world_->DebugVisualize();
 
   // Todo: Initialize SimTime class here once written
@@ -81,7 +82,7 @@ void SimulationManager::Main() {
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
-    DebugVisualization::get().publish();  // Publish debug visualization output
+    DebugVisualization::get().Publish();  // Publish debug visualization output
 
     rate.sleep();
 

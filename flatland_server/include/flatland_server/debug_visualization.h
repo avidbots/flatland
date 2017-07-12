@@ -72,11 +72,11 @@ class DebugVisualization {
   ros::Publisher topic_list_publisher_;
 
   static DebugVisualization& get();
-  void publish();
-  void visualize(std::string name, b2Body* body, float r, float g, float b,
+  void Publish();
+  void Visualize(std::string name, b2Body* body, float r, float g, float b,
                  float a);
-  void reset(std::string name);
-  void bodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
+  void Reset(std::string name);
+  void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
                      float r, float g, float b, float a);
   void RefreshDebugTopicList();
 };

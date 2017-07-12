@@ -48,6 +48,8 @@
 #define FLATLAND_SERVER_LAYER_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/body.h>
+#include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/entity.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
@@ -56,36 +58,39 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a layer in the simulation world which simulates the
+ * environment in the world
+ */
 class Layer : public Entity {
  public:
-  uint8_t layer_index_;
-  std::array<double, 4> color_;  // r, g, b, a
-  std::array<double, 3> origin_;
-  cv::Mat bitmap_;
-  double resolution_;
-  double occupied_thresh_;
-  double free_thresh_;
+  std::string name_;              ///< name of the layer
+  CollisionFilterRegistry *cfr_;  ///< collision filter registry
+  cv::Mat bitmap_;                ///< OpenCV bitmap storing the image
+  double resolution_;             ///< map resolution m/pixel
+  double occupied_thresh_;  ///< a cell is considered filled over this threshold
+  double free_thresh_;  ///< a cell is considered filled under this threshold
 
-  std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
+  Body *body_;
 
   /**
    * @brief Constructor for the Layer class. All data required for
    * initialization should be passed in here
    * @param[in] physics_world Pointer to the box2d physics world
-   * @param[in] layer_index Unique index of the layer
+   * @param[in] cfr Collision filter registry
    * @param[in] name Name of the layer
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
    * @param[in] origin Coordinate of the lower left corner of the image, in the
-   * form of x, y, theta, rotation theta is ignored
+   * form of x, y, theta
    * @param[in] resolution Resolution of the map image in meters per pixel
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
-  Layer(b2World *physics_world, uint8_t layer_index, const std::string &name,
-        const cv::Mat &bitmap, const std::array<double, 4> &color,
-        const std::array<double, 3> &origin, double resolution,
-        double occupied_thresh, double free_thresh);
+  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+        const std::string &name, const cv::Mat &bitmap,
+        const std::array<double, 4> &color, const std::array<double, 3> &origin,
+        double resolution, double occupied_thresh, double free_thresh);
 
   /**
    * @brief Destructor for the layer class
@@ -94,31 +99,28 @@ class Layer : public Entity {
 
   /**
    * @brief Return the type of entity
+   * @return type indicating it is a layer
    */
-  virtual Type type() { return Type::LAYER; }
+  virtual EntityType Type() { return EntityType::LAYER; }
 
   /**
-   * @brief Vectorize the bitmap into line segments usable by physics simulator
+   * @brief Load the map. It vectorizes the bitmap and apply the transformations
    */
-  void vectorize_bitmap();
+  void LoadMap();
 
   /**
-   * @brief Apply the necessary transformations and load the map into the
-   * physics simulator
-   */
-  void load_edges();
-
-  /**
-   * @brief Factory method to instantiate a layer
+   * @brief Factory method to instantiate a layer, throws exceptions upon
+   * failure
    * @param[in] physics_world Pointer to the box2d physics world
-   * @param[in] layer_index Index of the layer, in the order of yaml definition
+   * @param[in] cfr Collision filter registry
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
+   * @return A new layer
    */
-  static Layer *make_layer(b2World *physics_world, uint8_t layer_index,
-                           boost::filesystem::path world_yaml_dir,
-                           YAML::Node layer_node);
+  static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
+                          const boost::filesystem::path &world_yaml_dir,
+                          const YAML::Node &layer_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
