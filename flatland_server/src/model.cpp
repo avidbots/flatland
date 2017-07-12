@@ -44,6 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
@@ -143,6 +144,17 @@ void Model::TransformAll(const std::array<double, 3> &pose_delta) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
         bodies_[i]->physics_body_->GetAngle() + pose_delta[2]);
+  }
+}
+
+void Model::DebugVisualize() {
+  for (auto &body : bodies_) {
+    std::string name = "model_" + name_ + "_body_" + body->name_;
+
+    DebugVisualization::Get().Reset(name);
+    DebugVisualization::Get().Visualize(name, body->physics_body_,
+                                        body->color_[0], body->color_[1],
+                                        body->color_[2], body->color_[3]);
   }
 }
 

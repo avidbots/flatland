@@ -56,7 +56,10 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) { physics_world_ = new b2World(gravity_); }
+World::World() : gravity_(0, 0) {
+  physics_world_ = new b2World(gravity_);
+  physics_world_->SetContactListener(this);
+}
 
 World::~World() {
   for (int i = 0; i < layers_.size(); i++) {
@@ -220,12 +223,15 @@ void World::LoadPlugins() {
   // TODO (Chunshang): World plugins down the line
 }
 
-void World::DebugVisualize() {
-  for (auto &layer : layers_) {
-    DebugVisualization::get().Visualize(
-        std::string("layer_") + layer->name_, layer->body_->physics_body_,
-        layer->body_->color_[0], layer->body_->color_[1],
-        layer->body_->color_[2], layer->body_->color_[3]);
+void World::DebugVisualize(bool update_layers) {
+  if (update_layers) {
+    for (auto &layer : layers_) {
+      layer->DebugVisualize();
+    }
+  }
+
+  for (auto &model : models_) {
+    model->DebugVisualize();
   }
 }
 

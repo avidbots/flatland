@@ -113,6 +113,11 @@ class Model : public Entity {
   ModelBody *GetBody(const std::string &name);
 
   /**
+   * @brief Publish debug visualizations for model
+   */
+  void DebugVisualize();
+
+  /**
    * @brief transform all bodies in the model
    * @param[in] pose_delta dx, dy, dyaw
    */

@@ -109,6 +109,11 @@ class Layer : public Entity {
   void LoadMap();
 
   /**
+   * @brief Visualize layer for debugging purposes
+   */
+  void DebugVisualize();
+  
+  /**
    * @brief Factory method to instantiate a layer, throws exceptions upon
    * failure
    * @param[in] physics_world Pointer to the box2d physics world

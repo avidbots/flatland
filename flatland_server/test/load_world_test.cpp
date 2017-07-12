@@ -226,8 +226,8 @@ class LoadWorldTest : public ::testing::Test {
 
     if (!float_cmp(r, s->m_radius) || !float_cmp(x, s->m_p.x) ||
         !float_cmp(y, s->m_p.y)) {
-      printf("Actual:[x=%f,y=%f,r=%f] != Expected:[%f,%f,%f] \n", s->m_radius,
-             s->m_p.x, s->m_p.y, x, y, r);
+      printf("Actual:[x=%f,y=%f,r=%f] != Expected:[%f,%f,%f] \n",
+             s->m_p.x, s->m_p.y, s->m_radius, x, y, r);
       return false;
     }
     return true;
@@ -651,7 +651,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   fs = GetBodyFixtures(m0->bodies_[4]);
   ASSERT_EQ(fs.size(), 1);
   EXPECT_TRUE(FixtureEq(fs[0], false, 1, 0b0, 0b0, 0, 0, 0));
-  EXPECT_TRUE(CircleEq(fs[0], 0, 0, 0.25));
+  EXPECT_TRUE(CircleEq(fs[0], 0.01, 0.02, 0.25));
 
   // Check loaded joint data
   EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", m0->bodies_[0],
