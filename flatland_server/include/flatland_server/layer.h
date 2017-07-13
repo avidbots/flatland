@@ -112,7 +112,7 @@ class Layer : public Entity {
    * @brief Visualize layer for debugging purposes
    */
   void DebugVisualize();
-  
+
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon
    * failure

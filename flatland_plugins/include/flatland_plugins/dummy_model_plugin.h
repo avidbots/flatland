@@ -44,10 +44,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_plugin.h>
-#include <flatland_server/model.h>
-#include <flatland_server/layer.h>
 #include <Box2D/Box2D.h>
+#include <flatland_server/layer.h>
+#include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
 #include <yaml-cpp/yaml.h>
 
 #ifndef FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
@@ -59,7 +59,6 @@ namespace flatland_plugins {
 
 class DummyModelPlugin : public flatland_server::ModelPlugin {
  public:
-
   int dummy_param_int_;
   std::string dummy_param_string_;
   double dummy_param_float_;

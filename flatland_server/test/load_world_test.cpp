@@ -226,8 +226,8 @@ class LoadWorldTest : public ::testing::Test {
 
     if (!float_cmp(r, s->m_radius) || !float_cmp(x, s->m_p.x) ||
         !float_cmp(y, s->m_p.y)) {
-      printf("Actual:[x=%f,y=%f,r=%f] != Expected:[%f,%f,%f] \n",
-             s->m_p.x, s->m_p.y, s->m_radius, x, y, r);
+      printf("Actual:[x=%f,y=%f,r=%f] != Expected:[%f,%f,%f] \n", s->m_p.x,
+             s->m_p.y, s->m_radius, x, y, r);
       return false;
     }
     return true;
