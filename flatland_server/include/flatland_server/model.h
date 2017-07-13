@@ -59,15 +59,26 @@ namespace flatland_server {
 class ModelBody;
 class Joint;
 
+/**
+ * This class defines a Model. It can be used to repsent any object in the
+ * environment such robots, chairs, deskes etc.
+ */
 class Model : public Entity {
  public:
-  std::string name_;
-  std::vector<ModelBody *> bodies_;
-  std::vector<Joint *> joints_;
-  YAML::Node plugins_node_;
-  CollisionFilterRegistry *cfr_;
+  std::string name_;                 ///< name of the model
+  std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
+  std::vector<Joint *> joints_;      ///< list of joints in the model
+  YAML::Node plugins_node_;          ///< for storing plugins when paring YAML
+  CollisionFilterRegistry *cfr_;     ///< Collision filter registry
+  /// Box2D collision group assigned to this body by the CFR
   int no_collide_group_index_;
 
+  /**
+   * @brief Constructor for the model
+   * @param[in] physics_world Box2D physics world
+   * @param[in] cfr Collision filter registry
+   * @param[in] name Name of the model
+   */
   Model(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::string &name);
 
@@ -78,13 +89,43 @@ class Model : public Entity {
 
   /**
    * @brief Return the type of entity
+   * @return Model type
    */
   virtual EntityType Type() { return EntityType::MODEL; }
 
+  /**
+   * @brief load bodies to this model, throws exceptions upon failure
+   * @param[in] bodies_node YAML node containing the list of bodies
+   */
   void LoadBodies(const YAML::Node &bodies_node);
+
+  /**
+   * @brief load joints to this model, throws exceptions upon failure
+   * @param[in] joints_node YAML node containing the list of joints
+   */
   void LoadJoints(const YAML::Node &joints_node);
+
+  /**
+   * @brief Get a body in the model using its name
+   * @param[in] name Name of the body
+   * @return pointer to the body, nullptr indicates body cannot be found
+   */
   ModelBody *GetBody(const std::string &name);
-  void TransformAll(const std::array<double, 3> &pose);
+
+  /**
+   * @brief transform all bodies in the model
+   * @param[in] pose_delta dx, dy, dyaw
+   */
+  void TransformAll(const std::array<double, 3> &pose_delta);
+
+  /**
+   * @brief Create a model, throws exceptions upon failure
+   * @param[in] physics_world Box2D physics world
+   * @param[in] cfr Collision filter registry
+   * @param[in] name Name of the model
+   * @param[in] model_yaml_path path to the model yaml file
+   * @return A new model
+   */
   static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &name,
                           const std::string &model_yaml_path);

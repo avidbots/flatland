@@ -134,8 +134,6 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
   const YAML::Node &node = footprints_node;
 
-  bool is_node = node;
-
   if (!node || !node.IsSequence() || node.size() <= 0) {
     throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
   } else {
@@ -201,6 +199,8 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
     fixture_def.filter.groupIndex =
         (dynamic_cast<Model *>(entity_))->no_collide_group_index_;
   }
+
+  fixture_def.filter.categoryBits = 0x0;
 
   for (const auto &layer : layers) {
     int layer_id = cfr_->LookUpLayerId(layer);
@@ -288,7 +288,7 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
         throw YAMLException(
             "Missing/invalid polygon footprint \"point\" index=" +
             std::to_string(i) + " in " + name_ +
-            " must be a sequence of exactly two items");
+            ", must be a sequence of exactly two items");
       }
     }
   } else {

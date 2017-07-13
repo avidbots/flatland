@@ -16,7 +16,7 @@
     <param name="initial_rate" value="$(arg initial_rate)" />
   </node>
 
-  <node name="flatland_viz" pkg="flatland_viz" type="flatland_viz"/>
+  <node name="flatland_viz" pkg="flatland_viz" type="flatland_viz" required="true"/>
 
   <node name="map_server" pkg="map_server" type="map_server" args="$(find flatland_server)/test/conestogo_office_test/map.yaml"/>
 </launch>

@@ -90,9 +90,6 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   if (layer_node["name"]) {
     name = layer_node["name"].as<std::string>();
-    if (name == "all") {
-      throw YAMLException("Layer name all is reserved");
-    }
   } else {
     throw YAMLException("Invalid layer name");
   }
