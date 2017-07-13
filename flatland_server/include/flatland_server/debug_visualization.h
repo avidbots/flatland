@@ -71,7 +71,7 @@ class DebugVisualization {
   ros::NodeHandle node_;
   ros::Publisher topic_list_publisher_;
 
-  static DebugVisualization& get();
+  static DebugVisualization& Get();
   void Publish();
   void Visualize(std::string name, b2Body* body, float r, float g, float b,
                  float a);

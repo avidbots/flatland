@@ -48,11 +48,55 @@
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
 
+using namespace flatland_server;
+
 namespace flatland_plugins {
 
-void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
-  ROS_INFO_NAMED("Dummy Model Plugin", "Initialized");
+DummyModelPlugin::DummyModelPlugin() {
+  ClearTestingVariables();
 }
+
+void DummyModelPlugin::ClearTestingVariables() {
+  initialized = false;
+  cfg = YAML::Node();
+  timestep = -1;
+  layer = nullptr;
+  model = nullptr;
+  fixture_A = nullptr;
+  fixture_B = nullptr;
+  contact = nullptr;
+}
+
+void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
+  cfg = config;
+}
+
+void DummyModelPlugin::BeforePhysicsStep(double timestep) {}
+
+void DummyModelPlugin::AfterPhysicsStep(double timestep) {}
+
+void DummyModelPlugin::BeginContactWithMap(Layer *layer,
+                                           b2Fixture *layer_fixture,
+                                           b2Fixture *this_fixture,
+                                           b2Contact *contact) {}
+
+void DummyModelPlugin::BeginContactWithModel(Model *model,
+                                             b2Fixture *model_fixture,
+                                             b2Fixture *this_fixture,
+                                             b2Contact *contact) {}
+
+void DummyModelPlugin::EndContactWithMap(Layer *layer, b2Fixture *layer_fixture,
+                                         b2Fixture *this_fixture,
+                                         b2Contact *contact) {}
+
+void DummyModelPlugin::EndContactWithModel(Model *model,
+                                           b2Fixture *model_fixture,
+                                           b2Fixture *this_fixture,
+                                           b2Contact *contact) {}
+
+void DummyModelPlugin::BeginContact(b2Contact *contact) {}
+
+void DummyModelPlugin::EndContact(b2Contact *contact) {}
 };
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,

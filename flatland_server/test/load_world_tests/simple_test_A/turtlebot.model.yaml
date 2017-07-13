@@ -54,7 +54,7 @@ bodies:  # List of named bodies
     color: [0.2, 0.4, 0.6, 1] 
     footprints:
       - type: circle
-        center: [0, 0]
+        center: [0.01, 0.02]
         radius: 0.25
         self_collide: true
         layers: []
@@ -97,19 +97,3 @@ joints:
         anchor: [0, 0]
       - name: antenna
         anchor: [0, 0]
-
-
-plugins:
-  - type: DiffDrive # plugin class name
-    name: diff_drive # for registering list of plugins
-    body: base
-    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
-
-  - type: Laser
-    name: hokuyo_laser # every plugin has a unique name
-    topic: scan
-    body: base
-    origin: [0, 0, 0] # w.r.t body origin
-    range: 10 # m
-    angle: {min: -1.1, max: 1.1, increment: 0.01}
-    layer: "2d"

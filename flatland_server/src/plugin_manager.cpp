@@ -110,6 +110,26 @@ void PluginManager::BeginContact(b2Contact *contact) {
   Entity *e_A = b_A->entity_;
   Entity *e_B = b_B->entity_;
 
+  printf("Collided: ");
+
+  if (e_A->Type() == Entity::MODEL) {
+    printf("%s ",((Model*) e_A)->name_.c_str());
+  }
+
+  if (e_B->Type() == Entity::MODEL) {
+    printf("%s ",((Model*) e_B)->name_.c_str());
+  }
+
+  if (e_A->Type() == Entity::LAYER) {
+    printf("%s ",((Layer*) e_A)->name_.c_str());
+  }
+
+  if (e_B->Type() == Entity::LAYER) {
+    printf("%s ",((Layer*) e_B)->name_.c_str());
+  }
+
+  printf("   0x%p 0x%p\n", f_A, f_B);
+
   for (auto &model_plugin : model_plugins) {
     Model *m = model_plugin->model_;
 

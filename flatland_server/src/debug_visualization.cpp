@@ -63,7 +63,7 @@ DebugVisualization::DebugVisualization() : node_("~debug") {
 /**
  * @brief Return the singleton object
  */
-DebugVisualization& DebugVisualization::get() {
+DebugVisualization& DebugVisualization::Get() {
   static DebugVisualization instance;
   return instance;
 }
@@ -106,6 +106,8 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
         marker.type = marker.CYLINDER;
         marker.scale.x = marker.scale.y = circle->m_radius * 2.0;  // diameter
         marker.scale.z = 0.01;                                     // height
+        marker.pose.position.x += circle->m_p.x;
+        marker.pose.position.y += circle->m_p.y;
 
       } break;
 

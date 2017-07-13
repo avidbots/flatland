@@ -136,8 +136,10 @@ class World : public b2ContactListener {
 
   /**
    * @brief Publish debug visualizations for everything
+   * @param[in] update_layers since layers are pretty much static, this
+   * parameter is used to skip updating layers
    */
-  void DebugVisualize();
+  void DebugVisualize(bool update_layers = true);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
