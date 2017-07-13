@@ -1,7 +1,7 @@
 properties: {}
 layers:
   - name: "2d"
-    map: "map.yaml"
+    map: "../load_dummy_test/map.yaml"
     color: [0, 1, 0, 1]
 models:  
   - name: turtlebot1 
@@ -9,4 +9,4 @@ models:
     model: "turtlebot.model.yaml"
   - name: person1
     pose: [-2, 1, 0]
-    model: "person.model.yaml"
+    model: "../load_dummy_test/person.model.yaml"
