@@ -72,10 +72,8 @@ class LoadWorldTest : public ::testing::Test {
   void test_yaml_fail(std::string regex_str) {
     try {
       World *w = World::MakeWorld(world_yaml.string());
-
       delete w;
-
-      FAIL() << "Expected YAMLException, it passed instead";
+      ADD_FAILURE() << "Expected YAMLException, it passed instead";
     } catch (const YAML::Exception &e) {
       // do a regex match against error messages
       std::cmatch match;
@@ -84,7 +82,8 @@ class LoadWorldTest : public ::testing::Test {
           << "Exception Message '" + std::string(e.what()) + "'" +
                  " did not match against regex '" + regex_str + "'";
     } catch (...) {
-      FAIL() << "Expected YAMLException, another exception was caught instead";
+      ADD_FAILURE()
+          << "Expected YAMLException, another exception was caught instead";
     }
   }
 

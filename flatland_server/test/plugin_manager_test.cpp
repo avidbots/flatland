@@ -87,7 +87,7 @@ class TestModelPlugin : public ModelPlugin {
     function_called["EndContact"] = false;
   }
 
-  void OnInitialize(const YAML::Node &config) {
+  void OnInitialize(const YAML::Node &config) override {
     function_called["OnInitialize"] = true;
   }
 
@@ -335,7 +335,8 @@ TEST_F(PluginManagerTest, plugin_throws_exception) {
 
   try {
     World *w = World::MakeWorld(world_yaml.string());
-    FAIL() << "Test passed without raising an exception";
+    delete w;
+    ADD_FAILURE() << "Test passed without raising an exception";
   } catch (const PluginException &e) {
     // do a regex match against error message
     std::string regex_str =
@@ -347,8 +348,8 @@ TEST_F(PluginManagerTest, plugin_throws_exception) {
         << "Exception Message '" + std::string(e.what()) + "'" +
                " did not match against regex '" + regex_str + "'";
   } catch (...) {
-    FAIL() << "Was expecting a PluginException, another exception was caught "
-              "instead";
+    ADD_FAILURE() << "Was expecting a PluginException, another exception was "
+                     "caught instead";
   }
 }
 
@@ -358,7 +359,8 @@ TEST_F(PluginManagerTest, nonexistent_plugin) {
 
   try {
     World *w = World::MakeWorld(world_yaml.string());
-    FAIL() << "Test passed without raising an exception";
+    delete w;
+    ADD_FAILURE() << "Test passed without raising an exception";
   } catch (const PluginException &e) {
     std::cmatch match;
     std::string regex_str =
@@ -369,8 +371,8 @@ TEST_F(PluginManagerTest, nonexistent_plugin) {
         << "Exception Message '" + std::string(e.what()) + "'" +
                " did not match against regex '" + regex_str + "'";
   } catch (...) {
-    FAIL() << "Was expecting a PluginException, another exception was caught "
-              "instead";
+    ADD_FAILURE() << "Was expecting a PluginException, another exception was "
+                     "caught instead";
   }
 }
 
@@ -380,12 +382,13 @@ TEST_F(PluginManagerTest, invalid_plugin_yaml) {
 
   try {
     World *w = World::MakeWorld(world_yaml.string());
-    FAIL() << "Test passed without raising an exception";
+    delete w;
+    ADD_FAILURE() << "Test passed without raising an exception";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(e.what(), "Flatland YAML: Missing plugin name");
   } catch (...) {
-    FAIL() << "Was expecting a YAMLException, another exception was caught "
-              "instead";
+    ADD_FAILURE() << "Was expecting a YAMLException, another exception was "
+                     "caught instead";
   }
 }
 
