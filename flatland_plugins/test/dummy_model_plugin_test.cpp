@@ -60,8 +60,12 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
     boost::shared_ptr<flatland_server::ModelPlugin> plugin =
         loader.createInstance("flatland_plugins::DummyModelPlugin");
 
-    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", nullptr,
-                       YAML::Node());
+    YAML::Node n = YAML::Node();
+    n["dummy_param_float"] = 0.123456;
+    n["dummy_param_string"] = "dummy_test_123456";
+    n["dummy_param_int"] = 123456;
+
+    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", nullptr, n);
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }

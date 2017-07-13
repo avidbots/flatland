@@ -59,45 +59,12 @@ namespace flatland_plugins {
 
 class DummyModelPlugin : public flatland_server::ModelPlugin {
  public:
-  // variables used for testing
-  bool initialized;
-  YAML::Node cfg;
-  double timestep;
-  Layer *layer;
-  Model *model;
-  b2Fixture *fixture_A;
-  b2Fixture *fixture_B;
-  b2Contact *contact;
 
-  DummyModelPlugin();
+  int dummy_param_int_;
+  std::string dummy_param_string_;
+  double dummy_param_float_;
 
   virtual void OnInitialize(const YAML::Node &config) override;
-
-  virtual void BeforePhysicsStep(double timestep) override;
-
-  virtual void AfterPhysicsStep(double timestep) override;
-
-  virtual void BeginContactWithMap(Layer *layer, b2Fixture *layer_fixture,
-                                   b2Fixture *this_fixture,
-                                   b2Contact *contact) override;
-
-  virtual void BeginContactWithModel(Model *model, b2Fixture *model_fixture,
-                                     b2Fixture *this_fixture,
-                                     b2Contact *contact) override;
-
-  virtual void EndContactWithMap(Layer *layer, b2Fixture *layer_fixture,
-                                 b2Fixture *this_fixture,
-                                 b2Contact *contact) override;
-
-  virtual void EndContactWithModel(Model *model, b2Fixture *model_fixture,
-                                   b2Fixture *this_fixture,
-                                   b2Contact *contact) override;
-
-  virtual void BeginContact(b2Contact *contact) override;
-
-  virtual void EndContact(b2Contact *contact) override;
-
-  void ClearTestingVariables();
 };
 };
 

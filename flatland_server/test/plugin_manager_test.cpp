@@ -45,9 +45,11 @@
  */
 
 #include <flatland_server/debug_visualization.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
+#include <regex>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -172,7 +174,7 @@ class PluginManagerTest : public ::testing::Test {
   bool FunctionCallEq(TestModelPlugin *p,
                       std::map<std::string, bool> function_called) {
     if (!key_compare(p->function_called, function_called)) {
-      printf("Two maps does not have the same keys (set of function\n");
+      printf("Two maps does not have the same keys (set of function)\n");
       return false;
     }
 
@@ -252,20 +254,139 @@ TEST_F(PluginManagerTest, collision_test) {
                                  {"EndContact", false}}));
   EXPECT_TRUE(FunctionParamEq(p, 1, 1, l, nullptr));
   EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
+  EXPECT_EQ(p->param_fixture_A->GetType(), b2Shape::e_edge);
+  p->ClearTestingVariables();
 
-  W
+  b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0));
+  // takes two steps for Box2D to genreate collision events, not sure why
+  w->Update(1);
+  w->Update(1);
+  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
+                                 {"BeforePhysicsStep", true},
+                                 {"AfterPhysicsStep", true},
+                                 {"BeginContactWithMap", false},
+                                 {"BeginContactWithModel", false},
+                                 {"EndContactWithMap", true},
+                                 {"EndContactWithModel", false},
+                                 {"BeginContact", false},
+                                 {"EndContact", true}}));
+  EXPECT_TRUE(FunctionParamEq(p, 1, 1, l, nullptr));
+  EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
+  EXPECT_EQ(p->param_fixture_A->GetType(), b2Shape::e_edge);
+  p->ClearTestingVariables();
+
+  b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
+  b1->physics_body_->SetLinearVelocity(b2Vec2(0, -0.5));
+  w->Update(1);
+  w->Update(1);
+  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
+                                 {"BeforePhysicsStep", true},
+                                 {"AfterPhysicsStep", true},
+                                 {"BeginContactWithMap", false},
+                                 {"BeginContactWithModel", true},
+                                 {"EndContactWithMap", false},
+                                 {"EndContactWithModel", false},
+                                 {"BeginContact", true},
+                                 {"EndContact", false}}));
+  EXPECT_TRUE(FunctionParamEq(p, 1, 1, nullptr, m1));
+  EXPECT_EQ(p->param_fixture_A, b1->physics_body_->GetFixtureList());
+  EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
+  p->ClearTestingVariables();
+
+  b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
+  b1->physics_body_->SetLinearVelocity(b2Vec2(0, -1));
+  w->Update(1);
+  w->Update(1);
+  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
+                                 {"BeforePhysicsStep", true},
+                                 {"AfterPhysicsStep", true},
+                                 {"BeginContactWithMap", false},
+                                 {"BeginContactWithModel", false},
+                                 {"EndContactWithMap", false},
+                                 {"EndContactWithModel", true},
+                                 {"BeginContact", false},
+                                 {"EndContact", true}}));
+  EXPECT_TRUE(FunctionParamEq(p, 1, 1, nullptr, m1));
+  EXPECT_EQ(p->param_fixture_A, b1->physics_body_->GetFixtureList());
+  EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
+  p->ClearTestingVariables();
 
   // w->DebugVisualize();
   // DebugVisualization::Get().Publish();
   // ros::spin();
+}
 
-  // ros::Rate rate(10);
-  // while (ros::ok()) {
-  //   w->DebugVisualize();
-  //   DebugVisualization::Get().Publish();
-  //   ros::spinOnce();
-  //   rate.sleep();
-  // }
+TEST_F(PluginManagerTest, load_dummy_test) {
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+
+  World *w = World::MakeWorld(world_yaml.string());
+
+  ModelPlugin *p = w->plugin_manager_.model_plugins[0].get();
+
+  EXPECT_STREQ(p->type_.c_str(), "DummyModelPlugin");
+  EXPECT_STREQ(p->name_.c_str(), "dummy_test_plugin");
+}
+
+TEST_F(PluginManagerTest, plugin_throws_exception) {
+  world_yaml =
+      this_file_dir /
+      fs::path("plugin_manager_tests/plugin_throws_exception/world.yaml");
+
+  try {
+    World *w = World::MakeWorld(world_yaml.string());
+    FAIL() << "Test passed without raising an exception";
+  } catch (const PluginException &e) {
+    // do a regex match against error message
+    std::string regex_str =
+        ".*dummy_param_float must be dummy_test_123456, instead it was "
+        "\"wrong_message\".*";
+    std::cmatch match;
+    std::regex regex(regex_str);
+    EXPECT_TRUE(std::regex_match(e.what(), match, regex))
+        << "Exception Message '" + std::string(e.what()) + "'" +
+               " did not match against regex '" + regex_str + "'";
+  } catch (...) {
+    FAIL() << "Was expecting a PluginException, another exception was caught "
+              "instead";
+  }
+}
+
+TEST_F(PluginManagerTest, nonexistent_plugin) {
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/nonexistent_plugin/world.yaml");
+
+  try {
+    World *w = World::MakeWorld(world_yaml.string());
+    FAIL() << "Test passed without raising an exception";
+  } catch (const PluginException &e) {
+    std::cmatch match;
+    std::string regex_str =
+        ".*RandomPlugin with base class type flatland_server::ModelPlugin does "
+        "not exist.*";
+    std::regex regex(regex_str);
+    EXPECT_TRUE(std::regex_match(e.what(), match, regex))
+        << "Exception Message '" + std::string(e.what()) + "'" +
+               " did not match against regex '" + regex_str + "'";
+  } catch (...) {
+    FAIL() << "Was expecting a PluginException, another exception was caught "
+              "instead";
+  }
+}
+
+TEST_F(PluginManagerTest, invalid_plugin_yaml) {
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/invalid_plugin_yaml/world.yaml");
+
+  try {
+    World *w = World::MakeWorld(world_yaml.string());
+    FAIL() << "Test passed without raising an exception";
+  } catch (const YAMLException &e) {
+    EXPECT_STREQ(e.what(), "Flatland YAML: Missing plugin name");
+  } catch (...) {
+    FAIL() << "Was expecting a YAMLException, another exception was caught "
+              "instead";
+  }
 }
 
 // Run all the tests that were declared with TEST()

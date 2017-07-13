@@ -45,6 +45,7 @@
  */
 
 #include <flatland_plugins/dummy_model_plugin.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
 
@@ -52,51 +53,28 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 
-DummyModelPlugin::DummyModelPlugin() {
-  ClearTestingVariables();
-}
-
-void DummyModelPlugin::ClearTestingVariables() {
-  initialized = false;
-  cfg = YAML::Node();
-  timestep = -1;
-  layer = nullptr;
-  model = nullptr;
-  fixture_A = nullptr;
-  fixture_B = nullptr;
-  contact = nullptr;
-}
-
 void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
-  cfg = config;
+  dummy_param_float_ = config["dummy_param_float"].as<double>();
+  dummy_param_string_ = config["dummy_param_string"].as<std::string>();
+  dummy_param_int_ = config["dummy_param_int"].as<int>();
+
+  if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
+    throw YAMLException(
+        "dummy_param_float must be 0.1253456, instead it was \"" +
+        std::to_string(dummy_param_float_) + "\"");
+  }
+
+  if (dummy_param_int_ != 123456) {
+    throw YAMLException("dummy_param_int must be 1253456, instead it was \"" +
+                        std::to_string(dummy_param_int_) + "\"");
+  }
+
+  if (dummy_param_string_ != "dummy_test_123456") {
+    throw YAMLException(
+        "dummy_param_float must be dummy_test_123456, instead it was \"" +
+        dummy_param_string_ + "\"");
+  }
 }
-
-void DummyModelPlugin::BeforePhysicsStep(double timestep) {}
-
-void DummyModelPlugin::AfterPhysicsStep(double timestep) {}
-
-void DummyModelPlugin::BeginContactWithMap(Layer *layer,
-                                           b2Fixture *layer_fixture,
-                                           b2Fixture *this_fixture,
-                                           b2Contact *contact) {}
-
-void DummyModelPlugin::BeginContactWithModel(Model *model,
-                                             b2Fixture *model_fixture,
-                                             b2Fixture *this_fixture,
-                                             b2Contact *contact) {}
-
-void DummyModelPlugin::EndContactWithMap(Layer *layer, b2Fixture *layer_fixture,
-                                         b2Fixture *this_fixture,
-                                         b2Contact *contact) {}
-
-void DummyModelPlugin::EndContactWithModel(Model *model,
-                                           b2Fixture *model_fixture,
-                                           b2Fixture *this_fixture,
-                                           b2Contact *contact) {}
-
-void DummyModelPlugin::BeginContact(b2Contact *contact) {}
-
-void DummyModelPlugin::EndContact(b2Contact *contact) {}
 };
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,

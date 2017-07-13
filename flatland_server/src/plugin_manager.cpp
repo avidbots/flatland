@@ -98,7 +98,13 @@ void PluginManager::LoadModelPlugin(Model *model,
     throw PluginException("ModelPlugin", type, name, e.what());
   }
 
-  model_plugin->Initialize(type, name, model, plugin_node);
+  try {
+    model_plugin->Initialize(type, name, model, plugin_node);
+  } catch (const std::exception &e) {
+    throw PluginException(
+        "ModelPlugin", type, name,
+        "Error during initialization (" + std::string(e.what()) + ")");
+  }
   model_plugins.push_back(model_plugin);
 }
 
