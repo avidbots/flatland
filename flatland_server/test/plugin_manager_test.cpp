@@ -157,18 +157,36 @@ class PluginManagerTest : public ::testing::Test {
     return ret;
   }
 
+  // checks if tow maps have the same keys
+  bool key_compare(std::map<std::string, bool> const &lhs,
+                   std::map<std::string, bool> const &rhs) {
+    auto pred = [](decltype(*lhs.begin()) a, decltype(a) b) {
+      return a.first == b.first;
+    };
+
+    return lhs.size() == rhs.size() &&
+           std::equal(lhs.begin(), lhs.end(), rhs.begin(), pred);
+  }
+
   // Check the true/false if the function is called
   bool FunctionCallEq(TestModelPlugin *p,
                       std::map<std::string, bool> function_called) {
+    if (!key_compare(p->function_called, function_called)) {
+      printf("Two maps does not have the same keys (set of function\n");
+      return false;
+    }
+
     for (const auto &func : p->function_called) {
+      // printf("%s, Actual:%d Expected:%d\n", func.first.c_str(), func.second,
+      //        function_called[func.first]);
       if (func.second != function_called[func.first]) {
         printf("%s is %s, expected to be %s\n", func.first.c_str(),
-               function_called[func.first] ? "called" : "not called",
-               func.second ? "called" : "not called");
+               func.second ? "called" : "not called",
+               function_called[func.first] ? "called" : "not called");
         return false;
       }
-      return true;
     }
+    return true;
   }
 
   // Check parameters passed into the functions, the checking of specific
@@ -223,7 +241,8 @@ TEST_F(PluginManagerTest, collision_test) {
 
   w->Update(1);
 
-  EXPECT_TRUE(FunctionCallEq(p, {{"BeforePhysicsStep", true},
+  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", true},
+                                 {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},
                                  {"BeginContactWithMap", true},
                                  {"BeginContactWithModel", false},
@@ -231,12 +250,14 @@ TEST_F(PluginManagerTest, collision_test) {
                                  {"EndContactWithModel", false},
                                  {"BeginContact", true},
                                  {"EndContact", false}}));
+  EXPECT_TRUE(FunctionParamEq(p, 1, 1, l, nullptr));
+  EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
 
-  EXPECT_TRUE(FunctionParamEq(p, 1, 1, l, m0));
+  W
 
-  w->DebugVisualize();
-  DebugVisualization::Get().Publish();
-  ros::spin();
+  // w->DebugVisualize();
+  // DebugVisualization::Get().Publish();
+  // ros::spin();
 
   // ros::Rate rate(10);
   // while (ros::ok()) {
