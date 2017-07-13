@@ -69,6 +69,10 @@ class YAMLException : public YAML::Exception {
     msg_ = ErrorMsg(msg, e.msg, e.mark);
   }
 
+  /**
+   * @brief constructor using the YAML Exception
+   * @param[in] a instance of YAML::Exception
+   */
   YAMLException(const YAML::Exception &e)
       : YAML::Exception(YAML::Mark::null_mark(), "") {
     const YAMLException *const e2 =
@@ -89,6 +93,9 @@ class YAMLException : public YAML::Exception {
   YAMLException(const std::string &msg)
       : YAML::Exception(YAML::Mark::null_mark(), ""), msg_(msg) {}
 
+  /**
+   * @brief Overriding to provide the correct what() message
+   */
   const char *what() const noexcept override { return msg_.c_str(); }
 
  private:

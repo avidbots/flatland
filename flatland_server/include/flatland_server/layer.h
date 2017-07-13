@@ -58,23 +58,26 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a layer in the simulation world which simulates the
+ * environment in the world
+ */
 class Layer : public Entity {
  public:
-  std::string name_;
-  CollisionFilterRegistry *cfr_;
-  cv::Mat bitmap_;
-  double resolution_;
-  double occupied_thresh_;
-  double free_thresh_;
+  std::string name_;              ///< name of the layer
+  CollisionFilterRegistry *cfr_;  ///< collision filter registry
+  cv::Mat bitmap_;                ///< OpenCV bitmap storing the image
+  double resolution_;             ///< map resolution m/pixel
+  double occupied_thresh_;  ///< a cell is considered filled over this threshold
+  double free_thresh_;  ///< a cell is considered filled under this threshold
 
-  //   std::vector<b2EdgeShape> extracted_edges;  // edges extracted from bitmap
   Body *body_;
 
   /**
    * @brief Constructor for the Layer class. All data required for
    * initialization should be passed in here
    * @param[in] physics_world Pointer to the box2d physics world
-   * @param[in] layer_id Unique id of the layer
+   * @param[in] cfr Collision filter registry
    * @param[in] name Name of the layer
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
@@ -96,6 +99,7 @@ class Layer : public Entity {
 
   /**
    * @brief Return the type of entity
+   * @return type indicating it is a layer
    */
   virtual EntityType Type() { return EntityType::LAYER; }
 
@@ -105,12 +109,14 @@ class Layer : public Entity {
   void LoadMap();
 
   /**
-   * @brief Factory method to instantiate a layer
+   * @brief Factory method to instantiate a layer, throws exceptions upon
+   * failure
    * @param[in] physics_world Pointer to the box2d physics world
-   * @param[in] layer_id id of the layer, in the order of yaml definition
+   * @param[in] cfr Collision filter registry
    * @param[in] world_yaml_dir Path to the directory containing the world yaml
    * file, this is used to calculate the path to the layermap yaml file
    * @param[in] layer_node YAML node containing data for a layer
+   * @return A new layer
    */
   static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const boost::filesystem::path &world_yaml_dir,

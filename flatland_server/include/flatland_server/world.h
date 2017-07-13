@@ -57,14 +57,18 @@
 
 namespace flatland_server {
 
+/**
+ * This class defines a world in the simulation. A world contains layers
+ * that can represent environments at multiple levels, and models which are
+ * can be robots or obstacles.
+ */
 class World {
  public:
-  b2World *physics_world_;
-  b2Vec2 gravity_;
-  std::vector<Layer *> layers_;
-  std::vector<Model *> models_;
-  CollisionFilterRegistry cfr_;
-  PluginManager plugin_manager_;
+  b2World *physics_world_;       ///< Box2D physics world
+  b2Vec2 gravity_;               ///< Box2D world gravity, always (0, 0)
+  std::vector<Layer *> layers_;  ///< list of layers
+  std::vector<Model *> models_;  ///< list of models
+  CollisionFilterRegistry cfr_;  ///< collision registry for layers and models
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -98,6 +102,8 @@ class World {
   /**
    * brief @load models into the world. Throws derivatives of YAML::Exception
    * @param[in] model_yaml_path Path to the model yaml file
+   * @param[in] name Name of the model
+   * @param[in] pose Initial pose of the model in x, y, yaw
    */
   void LoadModel(const std::string &model_yaml_path, const std::string &name,
                  const std::array<double, 3> pose);
@@ -107,6 +113,7 @@ class World {
    * the inputs before instantiation of the class. Throws derivatives of
    * YAML::Exception
    * @param[in] yaml_path Path to the world yaml file
+   * @return pointer to a new world
    */
   static World *MakeWorld(const std::string &yaml_path);
 

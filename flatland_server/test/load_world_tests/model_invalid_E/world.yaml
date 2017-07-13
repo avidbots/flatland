@@ -1,0 +1,12 @@
+properties: {}
+layers:
+  - name: "2d"
+    map: "../simple_test_A/map.yaml"
+    color: [0, 1, 0, 0]
+  - name: "3d"
+    map: "../simple_test_A/map3d.yaml"
+    color: [1.0, 0.0, 0.0, 0.5]
+models: 
+  - name: turtlebot
+    pose: [0, 0, 0]
+    model: "turtlebot.model.yaml"
