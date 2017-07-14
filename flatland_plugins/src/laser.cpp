@@ -120,7 +120,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   }
 
   std::vector<std::string> failed_layers;
-  layers_bits_ = model_->cfr_->GetCategoryBits(layers, failed_layers);
+  layers_bits_ = model_->cfr_->GetCategoryBits(layers, &failed_layers);
 
   if (!failed_layers.empty()) {
     throw YAMLException("Cannot find layer(s): {" +

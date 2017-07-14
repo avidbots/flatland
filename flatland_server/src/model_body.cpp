@@ -46,6 +46,7 @@
 
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_body.h>
+#include <boost/algorithm/string/join.hpp>
 
 namespace flatland_server {
 
@@ -202,17 +203,16 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
 
   fixture_def.filter.categoryBits = 0x0;
 
-  for (const auto &layer : layers) {
-    int layer_id = cfr_->LookUpLayerId(layer);
+  std::vector<std::string> failed_layers;
+  uint16_t category_bits = cfr_->GetCategoryBits(layers, &failed_layers);
 
-    if (layer_id < 0) {
-      throw YAMLException("Invalid footprint \"layer\" in " + name_ +
-                          " body, " + layer + " does not exist");
-    } else {
-      fixture_def.filter.categoryBits |= 1 << layer_id;
-    }
+  if (!failed_layers.empty()) {
+    throw YAMLException("Invalid footprint \"layer\" in " + name_ + " body, {" +
+                        boost::algorithm::join(failed_layers, ",") +
+                        "} layer(s) does not exist");
   }
 
+  fixture_def.filter.categoryBits = category_bits;
   fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
 }
 

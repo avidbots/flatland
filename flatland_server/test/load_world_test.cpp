@@ -816,7 +816,7 @@ TEST_F(LoadWorldTest, model_invalid_E) {
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
   test_yaml_fail(
       "Flatland YAML: Invalid footprint \"layer\" in left_wheel body, "
-      "random_layer does not exist");
+      "\\{random_layer\\} layer\\(s\\) does not exist");
 }
 
 // Run all the tests that were declared with TEST()

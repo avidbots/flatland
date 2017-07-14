@@ -56,7 +56,6 @@ namespace flatland_plugins {
 
 class Laser : public flatland_server::ModelPlugin {
  public:
-
   ros::Publisher scan_publisher;
 
   std::string topic_;
@@ -67,7 +66,6 @@ class Laser : public flatland_server::ModelPlugin {
   double max_angle_;
   double increment_;
   uint16_t layers_bits_;
-
 
   void OnInitialize(const YAML::Node &config) override;
   void BeforePhysicsStep(double timestep) override;
