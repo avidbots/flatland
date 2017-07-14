@@ -45,15 +45,33 @@
  */
 
 #include <flatland_server/model_plugin.h>
+#include <ros/ros.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
+
+using namespace flatland_server;
 
 namespace flatland_plugins {
 
 class Laser : public flatland_server::ModelPlugin {
  public:
+
+  ros::Publisher scan_publisher;
+
+  std::string topic_;
+  Body *body_;
+  std::array<double, 3> origin_;
+  double range_;
+  double min_angle_;
+  double max_angle_;
+  double increment_;
+  uint16_t layers_bits_;
+
+
   void OnInitialize(const YAML::Node &config) override;
+  void BeforePhysicsStep(double timestep) override;
+  void ParseParameters(const YAML::Node &config);
 };
 };
 

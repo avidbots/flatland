@@ -116,4 +116,24 @@ void CollisionFilterRegistry::ListAllLayers(
   }
 }
 
+uint16_t CollisionFilterRegistry::GetCategoryBits(
+    const std::vector<std::string> &layers,
+    std::vector<std::string> &layers_failed) {
+
+  layers_failed.clear();
+  uint16_t category_bits = 0;
+
+  for (const auto &layer : layers) {
+    int layer_id = LookUpLayerId(layer);
+
+    if (layer_id < 0) {
+      layers_failed.push_back(layer);
+    } else {
+      category_bits |= 1 << layer_id;
+    }
+  }
+
+  return category_bits;
+}
+
 };  // namespace flatland_server

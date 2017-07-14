@@ -45,13 +45,95 @@
  */
 
 #include <flatland_plugins/laser.h>
+#include <flatland_server/collision_filter_registry.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
+#include <sensor_msgs/LaserScan.h>
+#include <boost/algorithm/string/join.hpp>
+
+using namespace flatland_server;
 
 namespace flatland_plugins {
 
 void Laser::OnInitialize(const YAML::Node &config) {
-  ROS_INFO_NAMED("LaserPlugin", "Laser Initialized");
+  ParseParameters(config);
+  scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
+  ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
+}
+
+void Laser::BeforePhysicsStep(double timestep) {}
+
+void Laser::ParseParameters(const YAML::Node &config) {
+  const YAML::Node &n = config;
+  std::string body_name;
+
+  if (n["topic"]) {
+    topic_ = n["topic"].as<std::string>();
+  } else {
+    topic_ = "/scan";
+  }
+
+  if (n["body"]) {
+    body_name = n["body"].as<std::string>();
+  } else {
+    throw YAMLException("Missing \"body\" param");
+  }
+
+  if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
+    origin_[0] = n["origin"][0].as<double>();
+    origin_[1] = n["origin"][1].as<double>();
+    origin_[2] = n["origin"][2].as<double>();
+  } else {
+    throw YAMLException("Missing/invalid \"origin\" param");
+  }
+
+  if (n["range"]) {
+    range_ = n["range"].as<double>();
+  } else {
+    throw YAMLException("Missing \"range\" input");
+  }
+
+  if (n["angle"] && n["angle"].IsMap() && n["angle"]["min"] &&
+      n["angle"]["max"] && n["angle"]["increments"]) {
+    const YAML::Node &angle = n["angle"];
+    min_angle_ = n["min"].as<double>();
+    max_angle_ = n["max"].as<double>();
+    increment_ = n["increment"].as<double>();
+  } else {
+    throw YAMLException(
+        "Missing/invalid \"angle\" param, must be a map with keys \"min\", "
+        "\"max\", and \"increment\"");
+  }
+
+  std::vector<std::string> layers;
+  if (n["layers"] && n["layers"].IsSequence()) {
+    for (int i = 0; i < n["layers"].size(); i++) {
+      layers.push_back(n["layers"].as<std::string>());
+    }
+  }
+
+  body_ = model_->GetBody(body_name);
+
+  if (!body_) {
+    throw YAMLException("Cannot find body with name " + body_name);
+  }
+
+  std::vector<std::string> failed_layers;
+  layers_bits_ = model_->cfr_->GetCategoryBits(layers, failed_layers);
+
+  if (!failed_layers.empty()) {
+    throw YAMLException("Cannot find layer(s): {" +
+                        boost::algorithm::join(failed_layers, ",") + "}");
+  }
+
+  ROS_INFO_NAMED(
+      "LaserPlugin",
+      "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) range(%f) "
+      "angle_min(%f) angle_max(%f) angle_increment(%f) layers(%u %s)",
+      name_.c_str(), topic_.c_str(), body_name.c_str(), body_, origin_[0],
+      origin_[2], origin_[2], range_, min_angle_, max_angle_, increment_,
+      layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }
 };
 

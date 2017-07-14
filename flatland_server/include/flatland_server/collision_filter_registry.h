@@ -113,6 +113,15 @@ class CollisionFilterRegistry {
    * @param[in] vector to store layer names in, will be cleared
    */
   void ListAllLayers(std::vector<std::string> &layer_names);
+
+  /**
+   * @brief: Get the Box2D category bits from a list of layers
+   * @param[in] layers The layers for generating the category bits
+   * @param[out] layers_failed if a given layer does not exist, it is pushed to
+   * this list
+   */
+  uint16_t GetCategoryBits(const std::vector<std::string> &layers,
+                           std::vector<std::string> &layers_failed);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
