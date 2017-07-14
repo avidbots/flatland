@@ -45,6 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/layer.h>
@@ -265,6 +266,15 @@ void Layer::LoadMap() {
       }
     }
   }
+}
+
+void Layer::DebugVisualize() {
+  std::string viz_name = "layer_" + name_;
+
+  DebugVisualization::Get().Reset(viz_name);
+  DebugVisualization::Get().Visualize(viz_name, body_->physics_body_,
+                                      body_->color_[0], body_->color_[1],
+                                      body_->color_[2], body_->color_[3]);
 }
 
 };  // namespace flatland_server

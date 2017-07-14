@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
- * @author Joseph Duchesne
+ * @name  laser_test.cpp
+ * @brief test laser plugin
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,41 +44,36 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-
-#include <Box2D/Box2D.h>
+#include <flatland_plugins/dummy_model_plugin.h>
+#include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
+#include <gtest/gtest.h>
+#include <pluginlib/class_loader.h>
 #include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
-#include "flatland_server/DebugTopicList.h"
+#include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
+TEST(DummyModelPluginTest, pluginlib_load_test) {
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
+      "flatland_server", "flatland_server::ModelPlugin");
 
-class DebugVisualization {
- private:
-  DebugVisualization();
+  try {
+    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
+        loader.createInstance("flatland_plugins::DummyModelPlugin");
 
- public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
+    YAML::Node n = YAML::Node();
+    n["dummy_param_float"] = 0.123456;
+    n["dummy_param_string"] = "dummy_test_123456";
+    n["dummy_param_int"] = 123456;
 
-  static DebugVisualization& Get();
-  void Publish();
-  void Visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void Reset(std::string name);
-  void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-  void RefreshDebugTopicList();
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", nullptr, n);
+  } catch (pluginlib::PluginlibException& e) {
+    FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
+  }
+}
+
+// Run all the tests that were declared with TEST()
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "dummy_model_plugin_test");
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

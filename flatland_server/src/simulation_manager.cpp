@@ -77,12 +77,12 @@ void SimulationManager::Main() {
 
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time
-    world_->physics_world_->Step(rate.expectedCycleTime().toSec(), 10, 10);
+    world_->Update(rate.expectedCycleTime().toSec());
 
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
-    DebugVisualization::get().Publish();  // Publish debug visualization output
+    DebugVisualization::Get().Publish();  // Publish debug visualization output
 
     rate.sleep();
 

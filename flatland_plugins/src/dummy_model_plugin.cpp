@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
- * @author Joseph Duchesne
+ * @name	  dummy_model_plugin.cpp
+ * @brief   Dummy model plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,41 +44,38 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+#include <flatland_plugins/dummy_model_plugin.h>
+#include <flatland_server/exceptions.h>
+#include <flatland_server/model_plugin.h>
+#include <pluginlib/class_list_macros.h>
 
-#include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
-#include "flatland_server/DebugTopicList.h"
+using namespace flatland_server;
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
+namespace flatland_plugins {
+
+void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
+  dummy_param_float_ = config["dummy_param_float"].as<double>();
+  dummy_param_string_ = config["dummy_param_string"].as<std::string>();
+  dummy_param_int_ = config["dummy_param_int"].as<int>();
+
+  if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
+    throw YAMLException(
+        "dummy_param_float must be 0.1253456, instead it was \"" +
+        std::to_string(dummy_param_float_) + "\"");
+  }
+
+  if (dummy_param_int_ != 123456) {
+    throw YAMLException("dummy_param_int must be 1253456, instead it was \"" +
+                        std::to_string(dummy_param_int_) + "\"");
+  }
+
+  if (dummy_param_string_ != "dummy_test_123456") {
+    throw YAMLException(
+        "dummy_param_float must be dummy_test_123456, instead it was \"" +
+        dummy_param_string_ + "\"");
+  }
+}
 };
 
-class DebugVisualization {
- private:
-  DebugVisualization();
-
- public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
-
-  static DebugVisualization& Get();
-  void Publish();
-  void Visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void Reset(std::string name);
-  void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-  void RefreshDebugTopicList();
-};
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,
+                       flatland_server::ModelPlugin)

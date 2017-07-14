@@ -56,7 +56,10 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) { physics_world_ = new b2World(gravity_); }
+World::World() : gravity_(0, 0) {
+  physics_world_ = new b2World(gravity_);
+  physics_world_->SetContactListener(this);
+}
 
 World::~World() {
   for (int i = 0; i < layers_.size(); i++) {
@@ -64,6 +67,20 @@ World::~World() {
   }
 
   delete physics_world_;
+}
+
+void World::Update(double timestep) {
+  plugin_manager_.BeforePhysicsStep(timestep);
+  physics_world_->Step(timestep, 10, 10);
+  plugin_manager_.AfterPhysicsStep(timestep);
+}
+
+void World::BeginContact(b2Contact *contact) {
+  plugin_manager_.BeginContact(contact);
+}
+
+void World::EndContact(b2Contact *contact) {
+  plugin_manager_.EndContact(contact);
 }
 
 World *World::MakeWorld(const std::string &yaml_path) {
@@ -87,10 +104,14 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     w->LoadLayers(yaml_path);
     w->LoadModels(yaml_path);
+    w->LoadPlugins();
   } catch (const YAML::Exception &e) {
+    delete w;
     throw YAMLException(e);
+  } catch (const PluginException &e) {
+    delete w;
+    throw e;
   }
-
   return w;
 }
 
@@ -180,19 +201,37 @@ void World::LoadModels(const std::string &yaml_path) {
 void World::LoadModel(const std::string &model_yaml_path,
                       const std::string &name,
                       const std::array<double, 3> pose) {
-  Model *model = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
-
-  model->TransformAll(pose);
-
-  models_.push_back(model);
+  Model *m = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
+  m->TransformAll(pose);
+  models_.push_back(m);
 }
 
-void World::DebugVisualize() {
-  for (auto &layer : layers_) {
-    DebugVisualization::get().Visualize(
-        std::string("layer_") + layer->name_, layer->body_->physics_body_,
-        layer->body_->color_[0], layer->body_->color_[1],
-        layer->body_->color_[2], layer->body_->color_[3]);
+void World::LoadPlugins() {
+  // Load the model plugins
+  for (const auto &m : models_) {
+    // load model plugins, it is okay to have no plugins
+    if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
+      throw YAMLException("Invalid \"plugins\" in " + m->name_ +
+                          " model, not a list");
+    } else if (m->plugins_node_) {
+      for (const auto &plugin_node : m->plugins_node_) {
+        plugin_manager_.LoadModelPlugin(m, plugin_node);
+      }
+    }
+  }
+
+  // TODO (Chunshang): World plugins down the line
+}
+
+void World::DebugVisualize(bool update_layers) {
+  if (update_layers) {
+    for (auto &layer : layers_) {
+      layer->DebugVisualize();
+    }
+  }
+
+  for (auto &model : models_) {
+    model->DebugVisualize();
   }
 }
 

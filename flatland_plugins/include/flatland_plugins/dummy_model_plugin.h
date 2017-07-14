@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	debug_visualization.h
- * @brief Transform box2d types into published visualization messages
- * @author Joseph Duchesne
+ * @name	  dummy_model_plugin.h
+ * @brief   Dummy model plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,41 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-#define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
-
 #include <Box2D/Box2D.h>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
-#include <map>
-#include <string>
-#include <vector>
-#include "flatland_server/DebugTopicList.h"
+#include <flatland_server/layer.h>
+#include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
+#include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
-struct DebugTopic {
-  ros::Publisher publisher;
-  bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
-};
+#ifndef FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
+#define FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
 
-class DebugVisualization {
- private:
-  DebugVisualization();
+using namespace flatland_server;
 
+namespace flatland_plugins {
+
+class DummyModelPlugin : public flatland_server::ModelPlugin {
  public:
-  std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
+  int dummy_param_int_;
+  std::string dummy_param_string_;
+  double dummy_param_float_;
 
-  static DebugVisualization& Get();
-  void Publish();
-  void Visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
-  void Reset(std::string name);
-  void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
-  void RefreshDebugTopicList();
+  virtual void OnInitialize(const YAML::Node &config) override;
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
+};
+
+#endif

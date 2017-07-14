@@ -96,6 +96,7 @@ add_library(flatland_lib
   src/model_body.cpp
   src/collision_filter_registry.cpp
   src/model_plugin.cpp
+  src/plugin_manager.cpp
 )
 
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -171,7 +172,7 @@ if(CATKIN_ENABLE_TESTING)
     ${GTEST_LIBRARIES}
     flatland_lib
   )
-  
+
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test
     flatland_lib)
@@ -180,6 +181,13 @@ if(CATKIN_ENABLE_TESTING)
     test/collision_filter_registry_test.cpp)
   target_link_libraries(collision_filter_registry_test
     flatland_lib)
+
+  add_rostest_gtest(plugin_manager_test
+    test/plugin_manager_test.test
+    test/plugin_manager_test.cpp)
+  target_link_libraries(plugin_manager_test
+    flatland_lib)
+
 
   add_rostest_gtest(debug_visualization_test
     test/debug_visualization.test

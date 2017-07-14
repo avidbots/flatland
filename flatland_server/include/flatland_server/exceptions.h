@@ -49,9 +49,48 @@
 
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
+#include <exception>
 #include <string>
 
 namespace flatland_server {
+
+class PluginException : public std::runtime_error {
+ public:
+  std::string msg_;
+
+  /**
+   * @brief Constructor for PluginException
+   * @param[in] category plugin category, i.e. World Plugin or Model Plugin
+   * @param[in] type Type of the plugin
+   * @param[in] name Name of the plugin
+   * @param[in] msg custom message
+   */
+  PluginException(const std::string category, const std::string &type,
+                  const std::string &name, const std::string &msg)
+      : runtime_error(ErrorMsg(category, type, name, msg)) {
+    msg_ = ErrorMsg(category, type, name, msg);
+  }
+
+ private:
+  /**
+   * @brief Generates exception message for plugin exception
+   * @param[in] type Type of plugin
+   * @param[in] name Name of plugin
+   * @param[in] msg Custom error message
+   */
+  static const std::string ErrorMsg(const std::string &category,
+                                    const std::string &type,
+                                    const std::string &name,
+                                    const std::string &msg) {
+    std::stringstream output;
+    output << "Flatland plugin: ";
+    output << "cat=" << category << ", ";
+    output << "type=" << type << ", ";
+    output << "name=" << name << ", ";
+    output << msg;
+    return output.str();
+  }
+};
 
 class YAMLException : public YAML::Exception {
  public:
@@ -70,8 +109,9 @@ class YAMLException : public YAML::Exception {
   }
 
   /**
-   * @brief constructor using the YAML Exception
-   * @param[in] a instance of YAML::Exception
+   * @brief constructor using the YAML Exception, since YAMLException derives
+   * from YAML::Exception, it checks if it is a YAMLException
+   * @param[in] a instance or derivative of YAML::Exception
    */
   YAMLException(const YAML::Exception &e)
       : YAML::Exception(YAML::Mark::null_mark(), "") {
@@ -91,7 +131,9 @@ class YAMLException : public YAML::Exception {
    * @param[in] msg Exception message
    */
   YAMLException(const std::string &msg)
-      : YAML::Exception(YAML::Mark::null_mark(), ""), msg_(msg) {}
+      : YAML::Exception(YAML::Mark::null_mark(), "") {
+    msg_ = "Flatland YAML: " + msg;
+  }
 
   /**
    * @brief Overriding to provide the correct what() message
@@ -110,6 +152,7 @@ class YAMLException : public YAML::Exception {
                                     const YAML::Mark &yaml_cpp_mark) {
     std::stringstream output;
 
+    output << "Flatland YAML: ";
     output << msg;
     if (yaml_cpp_mark.pos == -1 && yaml_cpp_mark.line == -1 &&
         yaml_cpp_mark.column == -1) {
@@ -124,7 +167,6 @@ class YAMLException : public YAML::Exception {
     return output.str();
   }
 };
-
 };  // namespace flatland_server
 
 #endif  // FLATLAND_SERVER_WORLD_H
