@@ -64,6 +64,10 @@ Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
   physics_body_->SetUserData(this);
 }
 
-Body::~Body() { physics_body_->GetWorld()->DestroyBody(physics_body_); }
+Body::~Body() {
+  if (physics_body_) {
+    physics_body_->GetWorld()->DestroyBody(physics_body_);
+  }
+}
 
 };  // namespace flatland_server
