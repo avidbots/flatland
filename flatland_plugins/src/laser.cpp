@@ -95,11 +95,11 @@ void Laser::ParseParameters(const YAML::Node &config) {
   }
 
   if (n["angle"] && n["angle"].IsMap() && n["angle"]["min"] &&
-      n["angle"]["max"] && n["angle"]["increments"]) {
+      n["angle"]["max"] && n["angle"]["increment"]) {
     const YAML::Node &angle = n["angle"];
-    min_angle_ = n["min"].as<double>();
-    max_angle_ = n["max"].as<double>();
-    increment_ = n["increment"].as<double>();
+    min_angle_ = angle["min"].as<double>();
+    max_angle_ = angle["max"].as<double>();
+    increment_ = angle["increment"].as<double>();
   } else {
     throw YAMLException(
         "Missing/invalid \"angle\" param, must be a map with keys \"min\", "
@@ -109,8 +109,17 @@ void Laser::ParseParameters(const YAML::Node &config) {
   std::vector<std::string> layers;
   if (n["layers"] && n["layers"].IsSequence()) {
     for (int i = 0; i < n["layers"].size(); i++) {
-      layers.push_back(n["layers"].as<std::string>());
+      layers.push_back(n["layers"][i].as<std::string>());
     }
+  } else if (n["layers"]) {
+    throw YAMLException("Invalid layers, must be a sequence");
+  } else {
+    layers = {"all"};
+  }
+
+  if (layers.size() == 1 && layers[0] == "all") {
+    layers.clear();
+    model_->cfr_->ListAllLayers(layers);
   }
 
   body_ = model_->GetBody(body_name);
@@ -130,7 +139,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   ROS_INFO_NAMED(
       "LaserPlugin",
       "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) range(%f) "
-      "angle_min(%f) angle_max(%f) angle_increment(%f) layers(%u %s)",
+      "angle_min(%f) angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
       name_.c_str(), topic_.c_str(), body_name.c_str(), body_, origin_[0],
       origin_[2], origin_[2], range_, min_angle_, max_angle_, increment_,
       layers_bits_, boost::algorithm::join(layers, ",").c_str());
