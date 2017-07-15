@@ -59,13 +59,63 @@ namespace flatland_plugins {
 void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
   scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
+  tf_body_to_laser =
+      b2Transform(b2Vec2(origin[0], origin[1]), b2Rot(origin[2]));
+
+  int num_points = std::lround((max_angle_ - min_angle_) / increment_) + 1;
+
+  for (int i = 0; i < num_points; i++) {
+    float angle = i * increment_;
+    float x = range_ * cos(angle);
+    float y = range_ * sin(angle);
+
+    laser_points.push_back(b2Vec2(x, y);)
+  }
+
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
 }
 
-void Laser::BeforePhysicsStep(double timestep) {}
+void Laser::BeforePhysicsStep(double timestep) {
+  const b2Transform &tf_world_to_body = body_->GetTransform();
+
+  for (const auto &point : laser_points) {
+    const b2Transform &tf_world_to_laser =
+        b2MulT(tf_world_to_body, tf_body_to_laser);
+    const b2Vec2 &laser_point_world = bMulT(tf_world_to_laser, p);
+    const b2Vec2 &laser_origin_world = bMulT(tf_world_to_laser, b2Vec2(0, 0));
+
+    model_->physics_world_->RayCast(this, laser_origin_world, laser_point_world);
+
+    if (!did_hit_) {
+      // SET NAN/INF?
+    } else {
+      float range = fraction_ * range_;
+      // add to list
+    }
+  }
+
+  // publish
+}
+
+float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
+                           const b2Vec2 &normal, float fraction) override {
+  if (fixture.filter.categoryBits != layer_bits) {
+    return -1.0f;
+  }
+
+  did_hit_ = true;
+  point_hit_ = point;
+  fraction_ = fraction;
+
+  return fraction;
+}
+
+void Laser::DebugVisualize() {
+  // output lines to debug visualize?
+}
 
 void Laser::ParseParameters(const YAML::Node &config) {
-  const YAML::Node &n = config;
+  const YAML::Node &n = config;)
   std::string body_name;
 
   if (n["topic"]) {
@@ -104,6 +154,13 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException(
         "Missing/invalid \"angle\" param, must be a map with keys \"min\", "
         "\"max\", and \"increment\"");
+  }
+
+  if (max_angle_ > min_angle_ && max_angle > 0 && max_angle < 2 * M_PI &&
+      min_angle > 0 && min_angle < 2 * M_PI) {
+    throw YAMLException(
+        "Invalid \"angle\" params, must have max > min, 0 < min < 2*PI, 0 < "
+        "max < 2*PI");
   }
 
   std::vector<std::string> layers;

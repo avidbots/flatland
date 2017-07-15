@@ -54,7 +54,7 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 
-class Laser : public flatland_server::ModelPlugin {
+class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
   ros::Publisher scan_publisher;
 
@@ -66,6 +66,17 @@ class Laser : public flatland_server::ModelPlugin {
   double max_angle_;
   double increment_;
   uint16_t layers_bits_;
+
+  b2Transform tf_body_to_laser;
+  std::vector<b2Vec2> laser_points;
+
+  bool did_hit_;
+  b2Vec2 point_hit_;
+  float fraction_;
+
+  void DebugVisualize();
+  float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
+                      const b2Vec2 &normal, float fraction) override;
 
   void OnInitialize(const YAML::Node &config) override;
   void BeforePhysicsStep(double timestep) override;
