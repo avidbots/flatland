@@ -106,6 +106,9 @@ void PluginManager::LoadModelPlugin(Model *model,
                               std::string(e.what()) + ")");
   }
   model_plugins.push_back(model_plugin);
+
+  ROS_INFO_NAMED("PluginManager", "Model Plugin %s of type %s loaded",
+                 name.c_str(), type.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {

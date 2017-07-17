@@ -59,12 +59,14 @@ class SimulationManager {
   bool run_simulator_ = true;  ///<  While true, keep running the sim loop
   World *world_;               ///< Simulation world
   float initial_rate_;         ///< initial sim loop rate
+  std::string world_yaml_file_;
 
   /**
-   * @brief constructor for the simulation manager
-   *
+   * @name  Simulation Manager constructor
+   * @param world_file   The path to the world.yaml file we wish to load
+   * @param initial_rate The physics step frequency in Hz
    */
-  SimulationManager(std::string world_file, float initial_rate);
+  SimulationManager(std::string world_yaml_file, float initial_rate);
 
   /**
    * This method contains the loop that runs the simulation

@@ -62,11 +62,20 @@ World::World() : gravity_(0, 0) {
 }
 
 World::~World() {
+  ROS_INFO_NAMED("World", "Destroying world...");
+
   for (int i = 0; i < layers_.size(); i++) {
+    layers_[i]->body_->physics_body_ = nullptr;
     delete layers_[i];
   }
 
+  for (int i = 0; i < models_.size(); i++) {
+    delete models_[i];
+  }
+
   delete physics_world_;
+
+  ROS_INFO_NAMED("World", "World destroyed");
 }
 
 void World::Update(double timestep) {
@@ -106,9 +115,11 @@ World *World::MakeWorld(const std::string &yaml_path) {
     w->LoadModels(yaml_path);
     w->LoadPlugins();
   } catch (const YAML::Exception &e) {
+    ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
     throw YAMLException(e);
   } catch (const PluginException &e) {
+    ROS_FATAL_NAMED("World", "Error loading plugins");
     delete w;
     throw e;
   }
@@ -143,7 +154,8 @@ void World::LoadLayers(const std::string &yaml_path) {
                              yaml["layers"][i]);
 
     layers_.push_back(layer);
-    ROS_INFO_NAMED("Layer", "Layer %s loaded", layer->name_.c_str());
+
+    ROS_INFO_NAMED("World", "Layer %s loaded", layer->name_.c_str());
   }
 }
 
@@ -204,6 +216,8 @@ void World::LoadModel(const std::string &model_yaml_path,
   Model *m = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
   m->TransformAll(pose);
   models_.push_back(m);
+
+  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
 }
 
 void World::LoadPlugins() {

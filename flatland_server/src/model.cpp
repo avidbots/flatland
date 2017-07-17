@@ -58,6 +58,10 @@ Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 Model::~Model() {
+  for (int i = 0; i < joints_.size(); i++) {
+    delete joints_[i];
+  }
+
   for (int i = 0; i < bodies_.size(); i++) {
     delete bodies_[i];
   }
