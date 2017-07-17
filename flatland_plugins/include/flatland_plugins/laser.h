@@ -46,6 +46,7 @@
 
 #include <flatland_server/model_plugin.h>
 #include <ros/ros.h>
+#include <sensor_msgs/LaserScan.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -65,10 +66,12 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   double min_angle_;
   double max_angle_;
   double increment_;
+  std::string frame_;
   uint16_t layers_bits_;
 
   b2Transform tf_body_to_laser;
   std::vector<b2Vec2> laser_points;
+  sensor_msgs::LaserScan laser_scan;
 
   bool did_hit_;
   b2Vec2 point_hit_;

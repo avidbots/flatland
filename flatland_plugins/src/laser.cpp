@@ -49,8 +49,8 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
-#include <sensor_msgs/LaserScan.h>
 #include <boost/algorithm/string/join.hpp>
+#include <cmath>
 
 using namespace flatland_server;
 
@@ -60,7 +60,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
   scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
   tf_body_to_laser =
-      b2Transform(b2Vec2(origin[0], origin[1]), b2Rot(origin[2]));
+      b2Transform(b2Vec2(origin_[0], origin_[1]), b2Rot(origin_[2]));
 
   int num_points = std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
@@ -69,37 +69,51 @@ void Laser::OnInitialize(const YAML::Node &config) {
     float x = range_ * cos(angle);
     float y = range_ * sin(angle);
 
-    laser_points.push_back(b2Vec2(x, y);)
+    laser_points.push_back(b2Vec2(x, y));
   }
+
+  laser_scan.angle_min = min_angle_;
+  laser_scan.angle_max = max_angle_;
+  laser_scan.angle_increment = increment_;
+  laser_scan.time_increment = 0;
+  laser_scan.scan_time = 0;
+  laser_scan.range_min = 0;
+  laser_scan.range_max = range_;
+  laser_scan.ranges.resize(num_points);
+  laser_scan.intensities.resize(0);
+  laser_scan.header.seq = 0;
+  laser_scan.header.frame_id = frame_;
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
 }
 
 void Laser::BeforePhysicsStep(double timestep) {
-  const b2Transform &tf_world_to_body = body_->GetTransform();
+  const b2Transform &tf_world_to_body = body_->physics_body_->GetTransform();
 
-  for (const auto &point : laser_points) {
+  for (int i = 0; i < laser_points.size(); i++) {
+    const b2Vec2 &point = laser_points[i];
     const b2Transform &tf_world_to_laser =
         b2MulT(tf_world_to_body, tf_body_to_laser);
-    const b2Vec2 &laser_point_world = bMulT(tf_world_to_laser, p);
-    const b2Vec2 &laser_origin_world = bMulT(tf_world_to_laser, b2Vec2(0, 0));
+    const b2Vec2 &laser_point_world = b2MulT(tf_world_to_laser, point);
+    const b2Vec2 &laser_origin_world = b2MulT(tf_world_to_laser, b2Vec2(0, 0));
 
-    model_->physics_world_->RayCast(this, laser_origin_world, laser_point_world);
+    model_->physics_world_->RayCast(this, laser_origin_world,
+                                    laser_point_world);
 
     if (!did_hit_) {
       // SET NAN/INF?
+      laser_scan.ranges[i] = NaN;
     } else {
-      float range = fraction_ * range_;
-      // add to list
+      laser_scan.ranges[i] = fraction_ * range_;
     }
   }
 
-  // publish
+  scan_publisher.publish(laser_scan);
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
-                           const b2Vec2 &normal, float fraction) override {
-  if (fixture.filter.categoryBits != layer_bits) {
+                           const b2Vec2 &normal, float fraction) {
+  if (fixture->GetFilter().categoryBits != layer_bits_) {
     return -1.0f;
   }
 
@@ -130,12 +144,20 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Missing \"body\" param");
   }
 
+  if (n["frame"]) {
+    frame_ = n["frame"].as<std::string>();
+  } else {
+    frame_ = "laser";
+  }
+
   if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
     origin_[0] = n["origin"][0].as<double>();
     origin_[1] = n["origin"][1].as<double>();
     origin_[2] = n["origin"][2].as<double>();
-  } else {
+  } else if (n["origin"]) {
     throw YAMLException("Missing/invalid \"origin\" param");
+  } else {
+    origin_ = {0, 0, 0};
   }
 
   if (n["range"]) {
