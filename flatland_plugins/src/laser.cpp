@@ -59,8 +59,11 @@ namespace flatland_plugins {
 void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
   scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
+  viz_markers_publisher = nh_.advertise<visualization_msgs::Marker>("scan_viz", 1, true);
   tf_body_to_laser =
       b2Transform(b2Vec2(origin_[0], origin_[1]), b2Rot(origin_[2]));
+
+  zero_point_ = b2Vec2(0, 0);
 
   int num_points = std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
@@ -88,32 +91,57 @@ void Laser::OnInitialize(const YAML::Node &config) {
 }
 
 void Laser::BeforePhysicsStep(double timestep) {
+  body_->physics_body_->SetAngularVelocity(0.1);
+  body_->DebugVisualize();
   const b2Transform &tf_world_to_body = body_->physics_body_->GetTransform();
+
+  markers_.points.clear();
 
   for (int i = 0; i < laser_points.size(); i++) {
     const b2Vec2 &point = laser_points[i];
     const b2Transform &tf_world_to_laser =
         b2MulT(tf_world_to_body, tf_body_to_laser);
     const b2Vec2 &laser_point_world = b2MulT(tf_world_to_laser, point);
-    const b2Vec2 &laser_origin_world = b2MulT(tf_world_to_laser, b2Vec2(0, 0));
+    const b2Vec2 &laser_origin_world = b2MulT(tf_world_to_laser, zero_point_);
 
     model_->physics_world_->RayCast(this, laser_origin_world,
                                     laser_point_world);
 
     if (!did_hit_) {
       // SET NAN/INF?
-      laser_scan.ranges[i] = NaN;
+      laser_scan.ranges[i] = NAN;
     } else {
       laser_scan.ranges[i] = fraction_ * range_;
     }
+
+    geometry_msgs::Point pt;
+    pt.x = point_hit_.x;
+    pt.y = point_hit_.y;
+    pt.z = 0;
+    markers_.points.push_back(pt);
   }
 
   scan_publisher.publish(laser_scan);
+
+
+  markers_.header.frame_id = "map";
+  markers_.ns = "laser_markers";
+  markers_.id = 100;
+  markers_.action = 0;
+  markers_.color.r = 1;
+  markers_.color.g = 1;
+  markers_.color.b = 1;
+  markers_.color.a = 1;  
+  markers_.scale.x = 0.1;
+  markers_.scale.y = markers_.scale.x;
+  markers_.scale.z = markers_.scale.x;
+  markers_.type = 7;
+  viz_markers_publisher.publish(markers_);
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                            const b2Vec2 &normal, float fraction) {
-  if (fixture->GetFilter().categoryBits != layer_bits_) {
+  if (fixture->GetFilterData().categoryBits != layers_bits_) {
     return -1.0f;
   }
 
@@ -126,10 +154,11 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
 
 void Laser::DebugVisualize() {
   // output lines to debug visualize?
+
 }
 
 void Laser::ParseParameters(const YAML::Node &config) {
-  const YAML::Node &n = config;)
+  const YAML::Node &n = config;
   std::string body_name;
 
   if (n["topic"]) {
@@ -178,8 +207,8 @@ void Laser::ParseParameters(const YAML::Node &config) {
         "\"max\", and \"increment\"");
   }
 
-  if (max_angle_ > min_angle_ && max_angle > 0 && max_angle < 2 * M_PI &&
-      min_angle > 0 && min_angle < 2 * M_PI) {
+  if (max_angle_ > min_angle_ && max_angle_ > 0 && max_angle_ < 2 * M_PI &&
+      min_angle_ > 0 && min_angle_ < 2 * M_PI) {
     throw YAMLException(
         "Invalid \"angle\" params, must have max > min, 0 < min < 2*PI, 0 < "
         "max < 2*PI");

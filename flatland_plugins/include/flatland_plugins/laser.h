@@ -47,6 +47,7 @@
 #include <flatland_server/model_plugin.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <visualization_msgs/Marker.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -58,6 +59,7 @@ namespace flatland_plugins {
 class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
   ros::Publisher scan_publisher;
+  ros::Publisher viz_markers_publisher;
 
   std::string topic_;
   Body *body_;
@@ -72,10 +74,13 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   b2Transform tf_body_to_laser;
   std::vector<b2Vec2> laser_points;
   sensor_msgs::LaserScan laser_scan;
+  b2Vec2 zero_point_;
 
   bool did_hit_;
   b2Vec2 point_hit_;
   float fraction_;
+
+  visualization_msgs::Marker markers_;
 
   void DebugVisualize();
   float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
