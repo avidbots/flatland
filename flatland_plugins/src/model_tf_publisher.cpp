@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	flatland_server_ndoe.cpp
- * @brief	Load params and run the ros node for flatland_server
- * @author Joseph Duchesne
+ * @name	  model_tf_publisher.cpp
+ * @brief   Publish tf in robots
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,69 +44,59 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
-#include <signal.h>
-#include <string>
+#include <flatland_server/model_plugin.h>
 
-#include "flatland_server/simulation_manager.h"
+using namespace flatland_server;
 
-/** Global variables */
-flatland_server::SimulationManager *simulation_manager;
+namespace flatland_plugins {
 
-/**
- * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
- * @param[in]   sig: signal itself
- */
-void SigintHandler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+void OnInitialize(const YAML::Node &config) {
+  publish_tf_world_ = false;
+  double update_rate = 30;
 
-  if (simulation_manager != nullptr) {
-    simulation_manager->Shutdown();
-    delete simulation_manager;
-    simulation_manager = nullptr;
+  if (config["publish_tf_world"]) {
+    publish_tf_world_ = config["publish_tf_world"].as<bool>();
   }
-  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-  ros::shutdown();
+
+  if (config["update_rate"]) {
+    update_rate = config["update_rate"];
+  }
+
+  if (config["exclude"] && config["exclude"].IsSequence()) {
+    for (int i = 0; i < config["exclude"].size(); i++) {
+      std::string body_name = config["exclude"][i].as<std::string>();
+      Body *body = model_->GetBody(body_name);
+
+      if (body == nullptr) {
+        throw YAMLException("Body with name \"" + body_name +
+                            "\" does not exist");
+      } else {
+        excluded_bodies_.push_back(body)
+      }
+    }
+  } else if (config["exclude"]) {
+    throw YAMLException("Invalid \"exclude\", must be a list of strings");
+  }
+
+  model_frame_id_ = "frame_" + model->name_;
 }
 
-/**
- * @name        main
- * @brief       Entrypoint for Flatland Server ros node
- */
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "Node", ros::init_options::NoSigintHandler);
-  ros::NodeHandle node_handle("~");
+void BeforePhysicsUpdate(double timestep) {
+  for (int i = 0; i < model_.bodies_.size(); i++) {
+    Body *body = model_.bodies_[i];
 
-  // Load parameters
-  float initial_rate = 200.0;  // The physics update rate (Hz)
-  if (node_handle.getParam("initial_rate", initial_rate)) {
-    ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
-  } else {
-    ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
+    for (int k = 0; j < excluded_bodies_; j++) {
+      if body 
+    }
+
+
   }
-
-  std::string world_path;// = "/home/infrastructurecoop/Dev/large_map_test/world.yaml";  // The file path to the world.yaml file
-  if (node_handle.getParam("world_path", world_path)) {
-    ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
-  } else {
-    ROS_FATAL_NAMED("Node", "No world_path parameter given!");
-    ros::shutdown();
-    return 1;
-  }
-
-  // Create simulation manager object
-  simulation_manager =
-      new flatland_server::SimulationManager(world_path, initial_rate);
-
-  // Register sigint shutdown handler
-  signal(SIGINT, SigintHandler);
-
-  ROS_INFO_STREAM_NAMED("Node", "Initialized");
-  simulation_manager->Main();
-
-  ROS_INFO_STREAM_NAMED("Node", "Returned from simulation manager main");
-  delete simulation_manager;
-  simulation_manager = nullptr;
-  return 0;
 }
+
+void IsBodyExcluded() {
+
+}
+};
+
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::ModelTfPublisher,
+                       flatland_server::ModelPlugin)

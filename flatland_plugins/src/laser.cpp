@@ -68,10 +68,11 @@ void Laser::OnInitialize(const YAML::Node &config) {
   int num_points = std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
   for (int i = 0; i < num_points; i++) {
-    float angle = i * increment_;
+    float angle = min_angle_ + i * increment_;
+
     float x = range_ * cos(angle);
     float y = range_ * sin(angle);
-
+    printf("%f: %f, %f\n", angle, x, y);
     laser_points.push_back(b2Vec2(x, y));
   }
 
@@ -88,11 +89,12 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan.header.frame_id = frame_;
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
+  body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
 void Laser::BeforePhysicsStep(double timestep) {
-  body_->physics_body_->SetAngularVelocity(0.1);
-  body_->DebugVisualize();
+  body_->physics_body_->SetAngularVelocity(2);
+  model_->DebugVisualize();
   const b2Transform &tf_world_to_body = body_->physics_body_->GetTransform();
 
   markers_.points.clear();
