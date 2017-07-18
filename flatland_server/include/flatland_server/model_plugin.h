@@ -50,6 +50,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <flatland_server/time_keeper.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
@@ -87,15 +88,15 @@ class ModelPlugin {
 
   /**
    * @brief This method is called before the Box2D physics step
-   * @param[in] timestep how much the physics time will increment
+   * @param[in] time_keeper provide time related information
    */
-  virtual void BeforePhysicsStep(double timestep) {}
+  virtual void BeforePhysicsStep(const TimeKeeper &time_keeper_) {}
 
   /**
    * @brief This method is called after the Box2D physics step
-   * @param[in] timestep how much the physics time have incremented
+   * @param[in] time_keeper provide time related information
    */
-  virtual void AfterPhysicsStep(double timestep) {}
+  virtual void AfterPhysicsStep(const TimeKeeper &time_keeper_) {}
 
   /**
    * @brief This method is called when the model starts to collide with the map

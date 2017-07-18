@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	flatland_server_ndoe.cpp
- * @brief	Load params and run the ros node for flatland_server
- * @author Joseph Duchesne
+ * @name	 time_keeper.h
+ * @brief	 Used for simulation time keeping
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,69 +44,28 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FLATLAND_SERVER_TIME_KEEPER_H
+#define FLATLAND_SERVER_TIME_KEEPER_H
+
 #include <ros/ros.h>
-#include <signal.h>
-#include <string>
+#include <ros/time.h>
 
-#include "flatland_server/simulation_manager.h"
+namespace flatland_server {
 
-/** Global variables */
-flatland_server::SimulationManager *simulation_manager;
+class TimeKeeper {
+ public:
+  ros::Publisher clock_pub_;
+  ros::NodeHandle nh_;
+  ros::Time time_;
+  double period_;
+  const std::string clock_topic_;
 
-/**
- * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
- * @param[in]   sig: signal itself
- */
-void SigintHandler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
-
-  if (simulation_manager != nullptr) {
-    simulation_manager->Shutdown();
-    delete simulation_manager;
-    simulation_manager = nullptr;
-  }
-  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-  ros::shutdown();
-}
-
-/**
- * @name        main
- * @brief       Entrypoint for Flatland Server ros node
- */
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "Node", ros::init_options::NoSigintHandler);
-  ros::NodeHandle node_handle("~");
-
-  // Load parameters
-  float initial_rate = 200.0;  // The physics update rate (Hz)
-  // if (node_handle.getParam("initial_rate", initial_rate)) {
-  //   ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
-  // } else {
-  //   ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
-  // }
-
-  std::string world_path = "/home/infrastructurecoop/Dev/large_map_test/world.yaml";  // The file path to the world.yaml file
-  // if (node_handle.getParam("world_path", world_path)) {
-  //   ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
-  // } else {
-  //   ROS_FATAL_NAMED("Node", "No world_path parameter given!");
-  //   ros::shutdown();
-  //   return 1;
-  // }
-
-  // Create simulation manager object
-  simulation_manager =
-      new flatland_server::SimulationManager(world_path, initial_rate);
-
-  // Register sigint shutdown handler
-  signal(SIGINT, SigintHandler);
-
-  ROS_INFO_STREAM_NAMED("Node", "Initialized");
-  simulation_manager->Main();
-
-  ROS_INFO_STREAM_NAMED("Node", "Returned from simulation manager main");
-  delete simulation_manager;
-  simulation_manager = nullptr;
-  return 0;
-}
+  TimeKeeper();
+  void StepTime();
+  void UpdateRosClock();
+  const ros::Time& GetSimTime();
+  double GetRate();
+  double GetPeriod();
+};
+};      // namespace flatland_server
+#endif  // FLATLAND_SERVER_TIME_KEEPER_H

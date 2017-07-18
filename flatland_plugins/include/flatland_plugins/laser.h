@@ -49,6 +49,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/Marker.h>
 #include <tf2_ros/static_transform_broadcaster.h>
+#include <flatland_server/time_keeper.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -90,7 +91,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
                       const b2Vec2 &normal, float fraction) override;
 
   void OnInitialize(const YAML::Node &config) override;
-  void BeforePhysicsStep(double timestep) override;
+  void BeforePhysicsStep(const TimeKeeper &time_keeper) override;
   void ParseParameters(const YAML::Node &config);
 };
 };

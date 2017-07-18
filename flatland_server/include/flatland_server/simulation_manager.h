@@ -51,15 +51,17 @@
 #include <string>
 #include "flatland_server/debug_visualization.h"
 #include "flatland_server/world.h"
+#include "flatland_server/time_keeper.h"
 
 namespace flatland_server {
 
 class SimulationManager {
  public:
-  bool run_simulator_ = true;  ///<  While true, keep running the sim loop
-  World *world_;               ///< Simulation world
-  float initial_rate_;         ///< initial sim loop rate
-  std::string world_yaml_file_;
+  bool run_simulator_ = true;    ///<  While true, keep running the sim loop
+  World *world_;                 ///< Simulation world
+  float initial_rate_;           ///< initial sim loop rate
+  std::string world_yaml_file_;  ///< path to the world file
+  TimeKeeper time_keeper_;       ///< for managing time
 
   /**
    * @name  Simulation Manager constructor

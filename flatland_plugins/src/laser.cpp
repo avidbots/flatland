@@ -110,11 +110,12 @@ void Laser::OnInitialize(const YAML::Node &config) {
   tf_broadcaster.sendTransform(static_tf);
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
-  body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
+  // body_->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
 }
 
-void Laser::BeforePhysicsStep(double timestep) {
-  body_->physics_body_->SetAngularVelocity(2);
+void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
+  // body_->physics_body_->SetAngularVelocity(2);
+  body_->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
   // model_->DebugVisualize();
   const b2Transform &tf_world_to_body = body_->physics_body_->GetTransform();
 

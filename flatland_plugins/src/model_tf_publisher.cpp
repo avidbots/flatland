@@ -113,7 +113,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
                  boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
-void ModelTfPublisher::BeforePhysicsStep(double timestep) {
+void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
   const b2Transform &r = reference_body_->physics_body_->GetTransform();
   Eigen::Matrix3f ref_tf_m;
   Eigen::Matrix3f rel_tf;

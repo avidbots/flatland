@@ -59,15 +59,15 @@ PluginManager::PluginManager() {
 
 PluginManager::~PluginManager() { delete class_loader_; }
 
-void PluginManager::BeforePhysicsStep(double timestep) {
+void PluginManager::BeforePhysicsStep(const TimeKeeper &time_keeper_) {
   for (const auto &model_plugin : model_plugins) {
-    model_plugin->BeforePhysicsStep(timestep);
+    model_plugin->BeforePhysicsStep(time_keeper_);
   }
 }
 
-void PluginManager::AfterPhysicsStep(double timestep) {
+void PluginManager::AfterPhysicsStep(const TimeKeeper &time_keeper_) {
   for (const auto &model_plugin : model_plugins) {
-    model_plugin->AfterPhysicsStep(timestep);
+    model_plugin->AfterPhysicsStep(time_keeper_);
   }
 }
 
