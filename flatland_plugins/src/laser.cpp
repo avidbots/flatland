@@ -79,7 +79,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
     laser_points.push_back(b2Vec2(x, y));
   }
 
-  geometry_msgs::TransformStamped static_tf;
+
 
   laser_scan.angle_min = min_angle_;
   laser_scan.angle_max = max_angle_;
@@ -107,16 +107,14 @@ void Laser::OnInitialize(const YAML::Node &config) {
   static_tf.transform.rotation.z = q.z();
   static_tf.transform.rotation.w = q.w();
 
-  tf_broadcaster.sendTransform(static_tf);
-
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
-  // body_->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
+  // body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
 void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
   // body_->physics_body_->SetAngularVelocity(2);
-  body_->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
-  // model_->DebugVisualize();
+  // body_->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
+  model_->DebugVisualize();
   const b2Transform &tf_world_to_body = body_->physics_body_->GetTransform();
 
   markers_.points.clear();
@@ -137,10 +135,13 @@ void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
 
     if (!did_hit_) {
       // SET NAN/INF?
-      point_hit_ = b2Vec2(0,0);
-      laser_scan.ranges[i] = NAN;
+      // laser_scan.ranges[i] = NAN;
+      laser_scan.ranges[i] = 2;
     } else {
       laser_scan.ranges[i] = fraction_ * range_;
+      // double a = laser_origin_world.x - point_hit_.x;
+      // double b = laser_origin_world.y - point_hit_.y;
+      // laser_scan.ranges[i] = sqrt(a*a + b*b);
     }
 
     geometry_msgs::Point pt;
@@ -149,6 +150,9 @@ void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     pt.z = 0;
     markers_.points.push_back(pt);
   }
+
+  static_tf.header.stamp = ros::Time::now();
+  tf_broadcaster.sendTransform(static_tf);
 
   laser_scan.header.stamp = ros::Time::now();
   scan_publisher.publish(laser_scan);

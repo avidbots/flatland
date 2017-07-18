@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 time_keeper.cpp
- * @brief	 Used for simulation time keeping
- * @author Chunshang Li
+ * @name	  update_timer.h
+ * @brief   For managing plugin update rates
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,31 +44,23 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/time_keeper.h>
-#include <rosgraph_msgs/Clock.h>
+#ifndef FLATLAND_PLUGINS_UPDATE_TIMER_H
+#define FLATLAND_PLUGINS_UPDATE_TIMER_H
 
-namespace flatland_server {
+#include <ros/time.h>
 
-TimeKeeper::TimeKeeper()
-    : clock_topic_("/clock"), time_(ros::Time(0, 0)), period_(0) {
-  clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
-}
 
-void TimeKeeper::StepTime() {
-  time_ += ros::Duration(period_);
+namespace flatland_plugins {
 
-  UpdateRosClock();
-}
+class UpdateTimer {
+ public:
+  ros::Duration period_;
+  ros::Time last_update_time_;
+  
+  UpdateTimer();
+  void SetRate(double rate);
+  bool CheckUpdate(const ros::Time &now);
+};
+};
 
-void TimeKeeper::UpdateRosClock() {
-  rosgraph_msgs::Clock clock;
-  clock.clock = time_;
-  clock_pub_.publish(clock);
-}
-
-const ros::Time& TimeKeeper::GetSimTime() { return time_; }
-
-double TimeKeeper::GetRate() { return 1 / period_; }
-
-double TimeKeeper::GetPeriod() { return period_; }
-};  // namespace flatland_server
+#endif

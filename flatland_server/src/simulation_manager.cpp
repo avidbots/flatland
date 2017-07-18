@@ -86,7 +86,6 @@ void SimulationManager::Main() {
 
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
-    world_->DebugVisualize();
     DebugVisualization::Get().Publish();  // Publish debug visualization output
 
     rate.sleep();

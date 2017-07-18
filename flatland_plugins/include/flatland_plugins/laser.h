@@ -48,7 +48,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/Marker.h>
-#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.h>
 #include <flatland_server/time_keeper.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
@@ -81,8 +81,8 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   bool did_hit_;
   b2Vec2 point_hit_;
   float fraction_;
-
-  tf2_ros::StaticTransformBroadcaster tf_broadcaster;
+  geometry_msgs::TransformStamped static_tf;
+  tf2_ros::TransformBroadcaster tf_broadcaster;
 
   visualization_msgs::Marker markers_;
 
