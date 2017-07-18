@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   flatland_server
 )
 
+find_package(Eigen3 REQUIRED)
+
 ## System dependencies are found with CMake's conventions
 find_package(PkgConfig REQUIRED)
 
@@ -47,7 +49,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
   CATKIN_DEPENDS pluginlib roscpp flatland_server
-  DEPENDS YAML_CPP
+  DEPENDS YAML_CPP Eigen3
 )
 
 ###########
@@ -64,6 +66,7 @@ include_directories(
 add_library(flatland_plugins_lib
   src/laser.cpp
   src/dummy_model_plugin.cpp
+  src/model_tf_publisher.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

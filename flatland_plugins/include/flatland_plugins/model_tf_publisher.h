@@ -46,6 +46,7 @@
 
 #include <flatland_server/model_plugin.h>
 #include <ros/ros.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 #ifndef FLATLAND_PLUGINS_MODEL_TF_H
 #define FLATLAND_PLUGINS_MODEL_TF_H
@@ -56,12 +57,15 @@ namespace flatland_plugins {
 
 class ModelTfPublisher : public ModelPlugin {
  public:
+  std::string world_frame_id_;
   bool publish_tf_world_;
-  std::string model_frame_id_;
   std::vector<Body*> excluded_bodies_;
+  Body *reference_body_;
+
+  tf2_ros::TransformBroadcaster tf_broadcaster;
 
   void OnInitialize(const YAML::Node &config) override;
-  void AfterPhysicsUpdate(double timestep) override;
+  void BeforePhysicsStep(double timestep) override;
 };
 };
 

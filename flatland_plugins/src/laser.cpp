@@ -48,7 +48,9 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <boost/algorithm/string/join.hpp>
 #include <cmath>
 
@@ -59,7 +61,8 @@ namespace flatland_plugins {
 void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
   scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
-  viz_markers_publisher = nh_.advertise<visualization_msgs::Marker>("scan_viz", 1, true);
+  viz_markers_publisher =
+      nh_.advertise<visualization_msgs::Marker>("scan_viz", 1, true);
   tf_body_to_laser =
       b2Transform(b2Vec2(origin_[0], origin_[1]), b2Rot(origin_[2]));
 
@@ -72,9 +75,11 @@ void Laser::OnInitialize(const YAML::Node &config) {
 
     float x = range_ * cos(angle);
     float y = range_ * sin(angle);
-    printf("%f: %f, %f\n", angle, x, y);
+    // printf("%f: %f, %f\n", angle, x, y);
     laser_points.push_back(b2Vec2(x, y));
   }
+
+  geometry_msgs::TransformStamped static_tf;
 
   laser_scan.angle_min = min_angle_;
   laser_scan.angle_max = max_angle_;
@@ -88,13 +93,29 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan.header.seq = 0;
   laser_scan.header.frame_id = frame_;
 
+  static_tf.header.stamp = ros::Time::now();
+  static_tf.header.frame_id = body_->name_;
+  static_tf.child_frame_id = frame_;
+  static_tf.transform.translation.x = origin_[0];
+  static_tf.transform.translation.y = origin_[1];
+  static_tf.transform.translation.z = 0;
+
+  tf2::Quaternion q;
+  q.setRPY(0, 0, origin_[2]);
+  static_tf.transform.rotation.x = q.x();
+  static_tf.transform.rotation.y = q.y();
+  static_tf.transform.rotation.z = q.z();
+  static_tf.transform.rotation.w = q.w();
+
+  tf_broadcaster.sendTransform(static_tf);
+
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
   body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
 void Laser::BeforePhysicsStep(double timestep) {
   body_->physics_body_->SetAngularVelocity(2);
-  model_->DebugVisualize();
+  // model_->DebugVisualize();
   const b2Transform &tf_world_to_body = body_->physics_body_->GetTransform();
 
   markers_.points.clear();
@@ -106,11 +127,16 @@ void Laser::BeforePhysicsStep(double timestep) {
     const b2Vec2 &laser_point_world = b2MulT(tf_world_to_laser, point);
     const b2Vec2 &laser_origin_world = b2MulT(tf_world_to_laser, zero_point_);
 
+    did_hit_ = false;
+    point_hit_ = b2Vec2(0, 0);
+    fraction_ = 0;
+
     model_->physics_world_->RayCast(this, laser_origin_world,
                                     laser_point_world);
 
     if (!did_hit_) {
       // SET NAN/INF?
+      point_hit_ = b2Vec2(0,0);
       laser_scan.ranges[i] = NAN;
     } else {
       laser_scan.ranges[i] = fraction_ * range_;
@@ -123,8 +149,8 @@ void Laser::BeforePhysicsStep(double timestep) {
     markers_.points.push_back(pt);
   }
 
+  laser_scan.header.stamp = ros::Time::now();
   scan_publisher.publish(laser_scan);
-
 
   markers_.header.frame_id = "map";
   markers_.ns = "laser_markers";
@@ -133,7 +159,7 @@ void Laser::BeforePhysicsStep(double timestep) {
   markers_.color.r = 1;
   markers_.color.g = 1;
   markers_.color.b = 1;
-  markers_.color.a = 1;  
+  markers_.color.a = 1;
   markers_.scale.x = 0.1;
   markers_.scale.y = markers_.scale.x;
   markers_.scale.z = markers_.scale.x;
@@ -156,7 +182,6 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
 
 void Laser::DebugVisualize() {
   // output lines to debug visualize?
-
 }
 
 void Laser::ParseParameters(const YAML::Node &config) {
@@ -178,7 +203,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   if (n["frame"]) {
     frame_ = n["frame"].as<std::string>();
   } else {
-    frame_ = "laser";
+    frame_ = name_;
   }
 
   if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
