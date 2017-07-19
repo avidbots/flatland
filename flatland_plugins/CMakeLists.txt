@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   flatland_server
+  cmake_modules
 )
 
 find_package(Eigen3 REQUIRED)
@@ -49,7 +50,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
   CATKIN_DEPENDS pluginlib roscpp flatland_server
-  DEPENDS YAML_CPP Eigen3
 )
 
 ###########
@@ -60,6 +60,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
 )
 
 # Declare a C++ library
@@ -73,6 +74,7 @@ add_library(flatland_plugins_lib
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_plugins_lib
   ${catkin_LIBRARIES}
+  ${Eigen3_LIBRARIES}
   yaml-cpp
 )
 
