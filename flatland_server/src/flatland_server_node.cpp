@@ -79,14 +79,14 @@ int main(int argc, char **argv) {
   ros::NodeHandle node_handle("~");
 
   // Load parameters
-  float initial_rate = 60.0;  // The physics update rate (Hz)
+  float initial_rate = 200.0;  // The physics update rate (Hz)
   // if (node_handle.getParam("initial_rate", initial_rate)) {
   //   ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
   // } else {
   //   ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
   // }
 
-  std::string world_path = "/home/lichunshang/Dev/large_map_test/world.yaml";  // The file path to the world.yaml file
+  std::string world_path = "/home/infrastructurecoop/Dev/large_map_test/world.yaml";  // The file path to the world.yaml file
   // if (node_handle.getParam("world_path", world_path)) {
   //   ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
   // } else {

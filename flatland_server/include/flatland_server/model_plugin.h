@@ -67,7 +67,7 @@ class ModelPlugin {
   std::string name_;    ///< name of the plugin
   ros::NodeHandle nh_;  ///< ROS node handle
   Model *model_;        ///< model this plugin is tied to
-
+    int num_laser_points_;
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
    * require the class to have a default constructor

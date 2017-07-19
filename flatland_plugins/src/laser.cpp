@@ -70,17 +70,22 @@ void Laser::OnInitialize(const YAML::Node &config) {
   double s = sin(origin_[2]);
   double x = origin_[0], y = origin_[1];
   m_body_to_laser_ << c, -s, x, /**/ s, c, y, /**/ 0, 0, 1;
-  std::cout << m_body_to_laser_ << std::endl;
+  std::cout << "m_body_to_laser_: " << std::endl
+            << m_body_to_laser_ << std::endl;
 
   zero_point_ = b2Vec2(0, 0);
 
-  int num_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
+  num_laser_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
-  m_laser_points_ = Eigen::MatrixXf(3, num_points_);
-  m_world_laser_points_ = Eigen::MatrixXf(3, num_points_);
+  printf("A. %d\n", num_laser_points_);
+
+  m_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
+  m_world_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
   v_zero_point_ << 0, 0, 1;
 
-  for (int i = 0; i < num_points_; i++) {
+  printf("B. %d\n", num_laser_points_);
+
+  for (int i = 0; i < num_laser_points_; i++) {
     float angle = min_angle_ + i * increment_;
 
     float x = range_ * cos(angle);
@@ -91,6 +96,12 @@ void Laser::OnInitialize(const YAML::Node &config) {
     m_laser_points_(2, i) = 1;
   }
 
+  printf("C. %d\n", num_laser_points_);
+
+  // std::cout << "m_laser_points_: " << std::endl << m_laser_points_ <<
+  // std::endl;
+  std::cout << "v_zero_point_: " << std::endl << v_zero_point_ << std::endl;
+
   laser_scan_.angle_min = min_angle_;
   laser_scan_.angle_max = max_angle_;
   laser_scan_.angle_increment = increment_;
@@ -98,10 +109,12 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.scan_time = 0;
   laser_scan_.range_min = 0;
   laser_scan_.range_max = range_;
-  laser_scan_.ranges.resize(num_points_);
+  laser_scan_.ranges.resize(num_laser_points_);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
   laser_scan_.header.frame_id = frame_;
+
+  printf("D. %d\n", num_laser_points_);
 
   // Broadcast transform between the body and laser
   geometry_msgs::TransformStamped static_tf;
@@ -119,6 +132,8 @@ void Laser::OnInitialize(const YAML::Node &config) {
   static_tf.transform.rotation.w = q.w();
   tf_broadcaster.sendTransform(static_tf);
 
+  printf("E. %d\n", num_laser_points_);
+
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
   body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
@@ -127,29 +142,46 @@ void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
   body_->physics_body_->SetAngularVelocity(2);
   model_->DebugVisualize();
 
+  // printf("1. %d\n", num_laser_points_);
+
   const b2Transform &t = body_->physics_body_->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
+  // printf("2. %d\n", num_laser_points_);
+
   m_world_laser_points_ = m_world_to_laser_ * m_laser_points_;
   v_world_laser_origin_ = m_world_to_laser_ * v_zero_point_;
+
+
+// printf("3. %d\n", num_laser_points_);
+//   std::cout << "m_world_to_body_: " << std::endl
+//             << m_world_to_body_ << std::endl;
+//   std::cout << "m_world_to_laser_: " << std::endl
+//             << m_world_to_laser_ << std::endl;
+//   std::cout << "v_world_laser_origin_: " << std::endl
+//             << v_world_laser_origin_ << std::endl;
 
   b2Vec2 laser_point;
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   markers_.points.clear();
 
-  for (int i = 0; i < num_points_; ++i) {
+  // printf("4. %d\n", num_laser_points_);
+
+  for (int i = 0; i < num_laser_points_; ++i) {
+    // printf("%d of %d, %d %d\n", i, num_laser_points_, m_world_laser_points_.rows(), m_world_laser_points_.cols());
     laser_point.x = m_world_laser_points_(0, i);
     laser_point.y = m_world_laser_points_(1, i);
 
     did_hit_ = false;
     point_hit_ = b2Vec2(0, 0);  // DEBUG
 
-    model_->physics_world_->RayCast(this, laser_point, laser_origin_point);
+    model_->physics_world_->RayCast(this, laser_origin_point, laser_point);
 
     if (!did_hit_) {
-      laser_scan_.ranges[i] = NAN;
+      laser_scan_.ranges[i] = 9.99;
+      // laser_scan_.ranges[i] = 2.99;
     } else {
       laser_scan_.ranges[i] = fraction_ * range_;
     }
@@ -181,7 +213,7 @@ void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                            const b2Vec2 &normal, float fraction) {
-  if (fixture->GetFilterData().categoryBits != layers_bits_) {
+  if (!(fixture->GetFilterData().categoryBits & layers_bits_)) {
     return -1.0f;
   }
 

@@ -74,7 +74,6 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   std::string frame_;
   uint16_t layers_bits_;
 
-  int num_points_;
   Eigen::Matrix3f m_body_to_laser_;
   Eigen::Matrix3f m_world_to_body_;
   Eigen::Matrix3f m_world_to_laser_;
