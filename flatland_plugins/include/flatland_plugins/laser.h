@@ -48,7 +48,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <visualization_msgs/Marker.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 #include <flatland_server/time_keeper.h>
 #include <Eigen/Dense>
 
@@ -74,17 +74,21 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   std::string frame_;
   uint16_t layers_bits_;
 
-  // b2Transform tf_body_to_laser;
-  Eigen::Matrix3f m_body_to_laser;
-  std::vector<b2Vec2> laser_points;
-  sensor_msgs::LaserScan laser_scan;
+  int num_points_;
+  Eigen::Matrix3f m_body_to_laser_;
+  Eigen::Matrix3f m_world_to_body_;
+  Eigen::Matrix3f m_world_to_laser_;
+  Eigen::MatrixXf m_laser_points_;
+  Eigen::MatrixXf m_world_laser_points_;
+  Eigen::Vector3f v_zero_point_;
+  Eigen::Vector3f v_world_laser_origin_;
+  sensor_msgs::LaserScan laser_scan_;
   b2Vec2 zero_point_;
 
   bool did_hit_;
   b2Vec2 point_hit_;
   float fraction_;
-  geometry_msgs::TransformStamped static_tf;
-  tf2_ros::TransformBroadcaster tf_broadcaster;
+  tf2_ros::StaticTransformBroadcaster tf_broadcaster;
 
   visualization_msgs::Marker markers_;
 

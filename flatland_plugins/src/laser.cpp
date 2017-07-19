@@ -69,47 +69,55 @@ void Laser::OnInitialize(const YAML::Node &config) {
   double c = cos(origin_[2]);
   double s = sin(origin_[2]);
   double x = origin_[0], y = origin_[1];
-  m_body_to_laser << c, -s, x, /**/ s, c, y, /**/ 0, 0, 1;
-  std::cout << m_body_to_laser << std::endl;
+  m_body_to_laser_ << c, -s, x, /**/ s, c, y, /**/ 0, 0, 1;
+  std::cout << m_body_to_laser_ << std::endl;
 
   zero_point_ = b2Vec2(0, 0);
 
-  int num_points = std::lround((max_angle_ - min_angle_) / increment_) + 1;
+  int num_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
-  for (int i = 0; i < num_points; i++) {
+  m_laser_points_ = Eigen::MatrixXf(3, num_points_);
+  m_world_laser_points_ = Eigen::MatrixXf(3, num_points_);
+  v_zero_point_ << 0, 0, 1;
+
+  for (int i = 0; i < num_points_; i++) {
     float angle = min_angle_ + i * increment_;
 
     float x = range_ * cos(angle);
     float y = range_ * sin(angle);
-    // printf("%f: %f, %f\n", angle, x, y);
-    laser_points.push_back(b2Vec2(x, y));
+
+    m_laser_points_(0, i) = x;
+    m_laser_points_(1, i) = y;
+    m_laser_points_(2, i) = 1;
   }
 
-  laser_scan.angle_min = min_angle_;
-  laser_scan.angle_max = max_angle_;
-  laser_scan.angle_increment = increment_;
-  laser_scan.time_increment = 0;
-  laser_scan.scan_time = 0;
-  laser_scan.range_min = 0;
-  laser_scan.range_max = range_;
-  laser_scan.ranges.resize(num_points);
-  laser_scan.intensities.resize(0);
-  laser_scan.header.seq = 0;
-  laser_scan.header.frame_id = frame_;
+  laser_scan_.angle_min = min_angle_;
+  laser_scan_.angle_max = max_angle_;
+  laser_scan_.angle_increment = increment_;
+  laser_scan_.time_increment = 0;
+  laser_scan_.scan_time = 0;
+  laser_scan_.range_min = 0;
+  laser_scan_.range_max = range_;
+  laser_scan_.ranges.resize(num_points_);
+  laser_scan_.intensities.resize(0);
+  laser_scan_.header.seq = 0;
+  laser_scan_.header.frame_id = frame_;
 
+  // Broadcast transform between the body and laser
+  geometry_msgs::TransformStamped static_tf;
+  tf2::Quaternion q;
+  q.setRPY(0, 0, origin_[2]);
   static_tf.header.stamp = ros::Time::now();
   static_tf.header.frame_id = body_->name_;
   static_tf.child_frame_id = frame_;
   static_tf.transform.translation.x = origin_[0];
   static_tf.transform.translation.y = origin_[1];
   static_tf.transform.translation.z = 0;
-
-  tf2::Quaternion q;
-  q.setRPY(0, 0, origin_[2]);
   static_tf.transform.rotation.x = q.x();
   static_tf.transform.rotation.y = q.y();
   static_tf.transform.rotation.z = q.z();
   static_tf.transform.rotation.w = q.w();
+  tf_broadcaster.sendTransform(static_tf);
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
   body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
@@ -117,54 +125,33 @@ void Laser::OnInitialize(const YAML::Node &config) {
 
 void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
   body_->physics_body_->SetAngularVelocity(2);
-  // body_->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
   model_->DebugVisualize();
-  Eigen::Matrix3f m_world_to_body;
-  const b2Transform &b = body_->physics_body_->GetTransform();
-  m_world_to_body << b.q.c, -b.q.s, b.p.x, b.q.s, b.q.c, b.p.y, 0, 0, 1;
 
-  Eigen::Matrix3f m_world_to_laser = m_world_to_body * m_body_to_laser;
+  const b2Transform &t = body_->physics_body_->GetTransform();
+  m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
+  m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
-  //   const b2Transform &tf_world_to_laser =
-  //     b2MulT(tf_world_to_body, tf_body_to_laser);
+  m_world_laser_points_ = m_world_to_laser_ * m_laser_points_;
+  v_world_laser_origin_ = m_world_to_laser_ * v_zero_point_;
 
-  // ref_tf_m << r.q.c, -r.q.s, r.p.x, /**/ r.q.s, r.q.c, r.p.y, /**/ 0, 0, 1;
+  b2Vec2 laser_point;
+  b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   markers_.points.clear();
 
-  for (int i = 0; i < laser_points.size(); i++) {
-    // const b2Vec2 &point = laser_points[i];
-
-    Eigen::Vector3f point, zero_point; 
-    point << laser_points[i].x, laser_points[i].y, 1;
-    zero_point << 0, 0, 1;
-
-    Eigen::Vector3f laser_point_world = m_world_to_laser * point;
-    Eigen::Vector3f laser_origin_world = m_world_to_laser * zero_point;
-
-    
-    // const b2Vec2 &laser_point_world = b2MulT(tf_world_to_laser, point);
-    // const b2Vec2 &laser_origin_world = b2MulT(tf_world_to_laser, zero_point_);
+  for (int i = 0; i < num_points_; ++i) {
+    laser_point.x = m_world_laser_points_(0, i);
+    laser_point.y = m_world_laser_points_(1, i);
 
     did_hit_ = false;
-    point_hit_ = b2Vec2(0, 0);
-    fraction_ = 0;
+    point_hit_ = b2Vec2(0, 0);  // DEBUG
 
-    // model_->physics_world_->RayCast(this, laser_origin_world,
-    //                                 laser_point_world);
-
-    model_->physics_world_->RayCast(this, b2Vec2(laser_origin_world[0], laser_origin_world[1]),
-                                    b2Vec2(laser_point_world[0], laser_point_world[1]));
+    model_->physics_world_->RayCast(this, laser_point, laser_origin_point);
 
     if (!did_hit_) {
-      // SET NAN/INF?
-      laser_scan.ranges[i] = NAN;
-      // laser_scan.ranges[i] = 2;
+      laser_scan_.ranges[i] = NAN;
     } else {
-      laser_scan.ranges[i] = fraction_ * range_;
-      // double a = laser_origin_world.x - point_hit_.x;
-      // double b = laser_origin_world.y - point_hit_.y;
-      // laser_scan.ranges[i] = sqrt(a*a + b*b);
+      laser_scan_.ranges[i] = fraction_ * range_;
     }
 
     geometry_msgs::Point pt;
@@ -174,11 +161,8 @@ void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     markers_.points.push_back(pt);
   }
 
-  static_tf.header.stamp = ros::Time::now();
-  tf_broadcaster.sendTransform(static_tf);
-
-  laser_scan.header.stamp = ros::Time::now();
-  scan_publisher.publish(laser_scan);
+  laser_scan_.header.stamp = ros::Time::now();
+  scan_publisher.publish(laser_scan_);
 
   markers_.header.frame_id = "map";
   markers_.ns = "laser_markers";
