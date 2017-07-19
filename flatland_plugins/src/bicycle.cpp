@@ -124,7 +124,9 @@ void Bicycle::addMeB(double offset) {
 void Bicycle::OnInitialize(const YAML::Node& config) {
   ROS_INFO_NAMED("BicyclePlugin", "Bicycle Initialized");
   robotAngle = 0.0;
+  robotAlpha = 0.0;
   robotPosition = b2Vec2(0, 0);
+  count = 0;
 
   // get the robot pointer
   robot = model_->GetBody("base")->physics_body_;
@@ -214,6 +216,31 @@ void Bicycle::BeforePhysicsStep(double timestep) {
 
   robot = model_->GetBody("base")->physics_body_;
 
+  // This bit of code drives the robot in (constant) circles forward and back
+  /*
+  count++;
+  if (count < 35) {
+    omega = 1.0;
+    velocity = 0.0;
+  } else {
+    if (count > 356) {
+      omega = 0.0;
+      velocity = -0.5;
+
+    } else {
+      omega = 0.0;
+      velocity = 0.5;
+    }
+  }
+  if (count > 700) {
+    count = 30;
+  }
+  ROS_INFO_STREAM("  velocity:" << velocity << "  omega:" << omega
+                                << "  angle:" << robot->GetAngle() * 180 / b2_pi
+                                << "  count:" << count);
+  */
+
+  // robotIsInMotion = true;
   applyVelocity();
 
   flatland_server::DebugVisualization::Get().Reset("diffbody");
@@ -255,45 +282,45 @@ void Bicycle::applyVelocity() {
     //
     // Dynamic model
     //
-    if (!robotIsInMotion) {
-      //
-      // future: decelerate/stop robot
-      //
-      //
-      // robot->SetLinearVelocity(b2Vec2(0.0,0.0));
-      // robot->SetAngularVelocity(0.0);
-    } else {
-      double angle2 = robot->GetAngle();
-      thisPos = robot->GetPosition();
-      lastStep = thisPos - lastPos;
+    // if (!robotIsInMotion) {
+    //
+    // future: decelerate/stop robot
+    //
+    //
+    // robot->SetLinearVelocity(b2Vec2(0.0,0.0));
+    // robot->SetAngularVelocity(0.0);
+    //} else {
+    double angle2 = robot->GetAngle();
+    thisPos = robot->GetPosition();
+    lastStep = thisPos - lastPos;
 
-      distance = sqrt(lastStep.x * lastStep.x + lastStep.y * lastStep.y);
-      b2Vec2 linearVelocity;
+    distance = sqrt(lastStep.x * lastStep.x + lastStep.y * lastStep.y);
+    b2Vec2 linearVelocity;
 
-      double ff = 250.0;
-      linearVelocity.x = -velocity * sin(angle2 - robotAlpha) * ff * time_step;
-      linearVelocity.y = velocity * cos(angle2 - robotAlpha) * ff * time_step;
+    double ff = 250.0;
+    linearVelocity.x = -velocity * sin(angle2 - robotAlpha) * ff * time_step;
+    linearVelocity.y = velocity * cos(angle2 - robotAlpha) * ff * time_step;
 
-      if (velocity != 0.0) {
-        robot->SetLinearVelocity(linearVelocity);
+    if (velocity != 0.0) {
+      robot->SetLinearVelocity(linearVelocity);
 
-        delta = calculateDelta(distance);
-        if (velocity > 0) {
-          robot->SetTransform(thisPos, angle2 - delta);
-
-        } else {
-          robot->SetTransform(thisPos, angle2 + delta);
-        }
-        robotAngle -= delta;
-
-        // set the next robot position
-        robotPosition = thisPos;
+      delta = calculateDelta(distance);
+      if (velocity > 0) {
+        robot->SetTransform(thisPos, angle2 - delta);
 
       } else {
-        robot->SetLinearVelocity(b2Vec2(0, 0));
+        robot->SetTransform(thisPos, angle2 + delta);
       }
-      lastPos = thisPos;
+      robotAngle -= delta;
+
+      // set the next robot position
+      robotPosition = thisPos;
+
+    } else {
+      robot->SetLinearVelocity(b2Vec2(0, 0));
     }
+    lastPos = thisPos;
+    //}
     robotIsInMotion = false;
   } else {
     //
