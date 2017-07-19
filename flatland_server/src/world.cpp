@@ -80,7 +80,7 @@ World::~World() {
 
 void World::Update(TimeKeeper &time_keeper) {
   plugin_manager_.BeforePhysicsStep(time_keeper);
-  physics_world_->Step(time_keeper.GetPeriod(), 10, 10);
+  physics_world_->Step(time_keeper.GetStepSize(), 10, 10);
   time_keeper.StepTime();
   plugin_manager_.AfterPhysicsStep(time_keeper);
 }

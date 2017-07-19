@@ -70,7 +70,8 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   double min_angle_;
   double max_angle_;
   double increment_;
-  std::string frame_;
+  double update_rate_;
+  std::string frame_id_;
   uint16_t layers_bits_;
 
   Eigen::Matrix3f m_body_to_laser_;
@@ -86,6 +87,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
 
   ros::Publisher scan_publisher;
   tf2_ros::StaticTransformBroadcaster tf_broadcaster;
+  UpdateTimer update_timer_;
 
   float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                       const b2Vec2 &normal, float fraction) override;

@@ -48,6 +48,7 @@
 #define FLATLAND_PLUGINS_UPDATE_TIMER_H
 
 #include <ros/time.h>
+#include <flatland_server/time_keeper.h>
 
 
 namespace flatland_plugins {
@@ -59,7 +60,8 @@ class UpdateTimer {
   
   UpdateTimer();
   void SetRate(double rate);
-  bool CheckUpdate(const ros::Time &now);
+  bool CheckUpdate(const flatland_server::TimeKeeper &time_keeper);
+  double GetAverageRate();
 };
 };
 

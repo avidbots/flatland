@@ -53,9 +53,30 @@ UpdateTimer::UpdateTimer()
 
 void UpdateTimer::SetRate(double rate) { period_ = ros::Duration(1.0 / rate); }
 
-bool UpdateTimer::CheckUpdate(const ros::Time &now) {
+bool UpdateTimer::CheckUpdate(const flatland_server::TimeKeeper &time_keeper) {
+  if (fabs(period_.toSec()) < 1e-5) {
+    return true;
+  }
+
+  // Naive way of keeping the update rate, will produce update rate always
+  // slightly below the desired rate
+  /*
   if (now - last_update_time_ > period_) {
     last_update_time_ = now;
+    return true;
+  }
+  return false;
+  */
+
+  // Method obtained from Hector Gazebo Plugins, works well when the step size
+  // is stable and close to max step size.
+  // hector_gazebo/hector_gazebo_plugins/include/hector_gazebo_plugins/update_timer.h
+  double step = time_keeper.GetMaxStepSize();
+  double fraction =
+      fmod(time_keeper.GetSimTime().toSec() + (step / 2.0), period_.toSec());
+
+  if ((fraction >= 0.0) && (fraction < step)) {
+    last_update_time_ = time_keeper.GetSimTime();
     return true;
   }
 

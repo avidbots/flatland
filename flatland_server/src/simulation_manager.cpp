@@ -74,11 +74,11 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "World loaded");
   world_->DebugVisualize();
 
-  time_keeper_.period_ = 1.0 / initial_rate_;
+  time_keeper_.SetMaxStepSize(1.0 / initial_rate_);
 
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
-  ros::WallRate rate(time_keeper_.GetRate());
+  ros::WallRate rate(1.0 / time_keeper_.GetStepSize());
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time

@@ -57,15 +57,16 @@ class TimeKeeper {
   ros::Publisher clock_pub_;
   ros::NodeHandle nh_;
   ros::Time time_;
-  double period_;
+  double max_step_size_;
   const std::string clock_topic_;
 
   TimeKeeper();
   void StepTime();
-  void UpdateRosClock();
-  const ros::Time& GetSimTime();
-  double GetRate();
-  double GetPeriod();
+  void UpdateRosClock() const;
+  void SetMaxStepSize(double step_size);
+  const ros::Time& GetSimTime() const;
+  double GetStepSize() const;
+  double GetMaxStepSize() const;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_TIME_KEEPER_H

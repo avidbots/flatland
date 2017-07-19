@@ -60,6 +60,8 @@ namespace flatland_plugins {
 
 void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
+
+  update_timer_.SetRate(update_rate_);
   scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
 
   double c = cos(origin_[2]);
@@ -94,7 +96,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.ranges.resize(num_laser_points_);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id = frame_;
+  laser_scan_.header.frame_id = frame_id_;
 
   // Broadcast transform between the body and laser
   geometry_msgs::TransformStamped static_tf;
@@ -102,7 +104,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   q.setRPY(0, 0, origin_[2]);
   static_tf.header.stamp = ros::Time::now();
   static_tf.header.frame_id = body_->name_;
-  static_tf.child_frame_id = frame_;
+  static_tf.child_frame_id = frame_id_;
   static_tf.transform.translation.x = origin_[0];
   static_tf.transform.translation.y = origin_[1];
   static_tf.transform.translation.z = 0;
@@ -117,9 +119,13 @@ void Laser::OnInitialize(const YAML::Node &config) {
 }
 
 void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
+
+  if (!update_timer_.CheckUpdate(time_keeper)){
+    return;
+  }
+
   body_->physics_body_->SetAngularVelocity(2);
   model_->DebugVisualize();
-
 
   const b2Transform &t = body_->physics_body_->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
@@ -179,9 +185,15 @@ void Laser::ParseParameters(const YAML::Node &config) {
   }
 
   if (n["frame"]) {
-    frame_ = n["frame"].as<std::string>();
+    frame_id_ = n["frame"].as<std::string>();
   } else {
-    frame_ = name_;
+    frame_id_ = name_;
+  }
+
+  if (n["update_rate"]) {
+    update_rate_ = n["update_rate"].as<double>();
+  } else {
+    update_rate_ = 30;
   }
 
   if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
@@ -249,13 +261,14 @@ void Laser::ParseParameters(const YAML::Node &config) {
                         boost::algorithm::join(failed_layers, ",") + "}");
   }
 
-  ROS_INFO_NAMED(
-      "LaserPlugin",
-      "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) range(%f) "
-      "angle_min(%f) angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
-      name_.c_str(), topic_.c_str(), body_name.c_str(), body_, origin_[0],
-      origin_[1], origin_[2], range_, min_angle_, max_angle_, increment_,
-      layers_bits_, boost::algorithm::join(layers, ",").c_str());
+  ROS_INFO_NAMED("LaserPlugin",
+                 "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) "
+                 "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
+                 "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
+                 name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
+                 origin_[0], origin_[1], origin_[2], frame_id_.c_str(),
+                 update_rate_, range_, min_angle_, max_angle_, increment_,
+                 layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }
 };
 

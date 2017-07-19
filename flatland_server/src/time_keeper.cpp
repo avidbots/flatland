@@ -50,25 +50,30 @@
 namespace flatland_server {
 
 TimeKeeper::TimeKeeper()
-    : clock_topic_("/clock"), time_(ros::Time(0, 0)), period_(0) {
+    : clock_topic_("/clock"), time_(ros::Time(0, 0)), max_step_size_(0) {
   clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
 }
 
 void TimeKeeper::StepTime() {
-  time_ += ros::Duration(period_);
+  time_ += ros::Duration(max_step_size_);
 
   UpdateRosClock();
 }
 
-void TimeKeeper::UpdateRosClock() {
+void TimeKeeper::UpdateRosClock() const {
   rosgraph_msgs::Clock clock;
   clock.clock = time_;
   clock_pub_.publish(clock);
 }
 
-const ros::Time& TimeKeeper::GetSimTime() { return time_; }
+void TimeKeeper::SetMaxStepSize(double step_size) {
+  max_step_size_ = step_size;
+}
 
-double TimeKeeper::GetRate() { return 1 / period_; }
+const ros::Time& TimeKeeper::GetSimTime() const { return time_; }
 
-double TimeKeeper::GetPeriod() { return period_; }
+double TimeKeeper::GetStepSize() const { return max_step_size_; }
+
+double TimeKeeper::GetMaxStepSize() const { return max_step_size_; }
+
 };  // namespace flatland_server
