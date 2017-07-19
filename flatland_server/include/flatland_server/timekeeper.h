@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 time_keeper.h
+ * @name	 timekeeper.h
  * @brief	 Used for simulation time keeping
  * @author Chunshang Li
  *
@@ -52,7 +52,7 @@
 
 namespace flatland_server {
 
-class TimeKeeper {
+class Timekeeper {
  public:
   ros::Publisher clock_pub_;
   ros::NodeHandle nh_;
@@ -60,7 +60,7 @@ class TimeKeeper {
   double max_step_size_;
   const std::string clock_topic_;
 
-  TimeKeeper();
+  Timekeeper();
   void StepTime();
   void UpdateRosClock() const;
   void SetMaxStepSize(double step_size);

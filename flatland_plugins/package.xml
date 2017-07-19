@@ -18,6 +18,7 @@
   <depend>roscpp</depend>
   <depend>yaml-cpp</depend>
   <depend>cmake_modules</depend>
+  <depend>tf</depend>
 
   <export>
     <flatland_server plugin="${prefix}/flatland_plugins.xml" />

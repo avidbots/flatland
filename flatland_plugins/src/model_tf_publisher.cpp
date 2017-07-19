@@ -49,7 +49,6 @@
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
-// #include <tf2/LinearMath/Quaternion.h>
 #include <Eigen/Dense>
 #include <boost/algorithm/string/join.hpp>
 
@@ -116,8 +115,8 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
                  boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
-void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
-  if (!update_timer_.CheckUpdate(time_keeper)) {
+void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
+  if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
   }
 
@@ -163,7 +162,7 @@ void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     tf_stamped.transform.translation.x = rel_tf(0, 2);
     tf_stamped.transform.translation.y = rel_tf(1, 2);
     tf_stamped.transform.translation.z = 0;
-    tf2::Quaternion q;
+    tf::Quaternion q;
     q.setRPY(0, 0, yaw);
     tf_stamped.transform.rotation.x = q.x();
     tf_stamped.transform.rotation.y = q.y();
@@ -182,7 +181,7 @@ void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     tf_stamped.transform.translation.x = p.x;
     tf_stamped.transform.translation.y = p.y;
     tf_stamped.transform.translation.z = 0;
-    tf2::Quaternion q;
+    tf::Quaternion q;
     q.setRPY(0, 0, yaw);
     tf_stamped.transform.rotation.x = q.x();
     tf_stamped.transform.rotation.y = q.y();

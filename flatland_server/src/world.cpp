@@ -78,11 +78,11 @@ World::~World() {
   ROS_INFO_NAMED("World", "World destroyed");
 }
 
-void World::Update(TimeKeeper &time_keeper) {
-  plugin_manager_.BeforePhysicsStep(time_keeper);
-  physics_world_->Step(time_keeper.GetStepSize(), 10, 10);
-  time_keeper.StepTime();
-  plugin_manager_.AfterPhysicsStep(time_keeper);
+void World::Update(Timekeeper &timekeeper) {
+  plugin_manager_.BeforePhysicsStep(timekeeper);
+  physics_world_->Step(timekeeper.GetStepSize(), 10, 10);
+  timekeeper.StepTime();
+  plugin_manager_.AfterPhysicsStep(timekeeper);
 }
 
 void World::BeginContact(b2Contact *contact) {

@@ -52,7 +52,7 @@
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
-#include <flatland_server/time_keeper.h>
+#include <flatland_server/timekeeper.h>
 
 namespace flatland_server {
 
@@ -74,15 +74,15 @@ class PluginManager {
 
   /**
    * @brief This method is called before the Box2D physics step
-   * @param[in] time_keeper provide time related information
+   * @param[in] timekeeper provide time related information
    */
-  void BeforePhysicsStep(const TimeKeeper &time_keeper);
+  void BeforePhysicsStep(const Timekeeper &timekeeper);
 
   /**
    * @brief This method is called after the Box2D physics step
-   * @param[in] time_keeper provide time related information
+   * @param[in] timekeeper provide time related information
    */
-  void AfterPhysicsStep(const TimeKeeper &time_keeper);
+  void AfterPhysicsStep(const Timekeeper &timekeeper);
 
   /**
    * @brief Load model plugins

@@ -46,7 +46,7 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
-#include <flatland_server/time_keeper.h>
+#include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_broadcaster.h>
@@ -85,7 +85,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   float fraction_;
 
   ros::Publisher scan_publisher;
-  tf2_ros::TransformBroadcaster tf_broadcaster;
+  tf::TransformBroadcaster tf_broadcaster;
   geometry_msgs::TransformStamped static_tf;
   UpdateTimer update_timer_;
 
@@ -93,7 +93,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
                       const b2Vec2 &normal, float fraction) override;
 
   void OnInitialize(const YAML::Node &config) override;
-  void BeforePhysicsStep(const TimeKeeper &time_keeper) override;
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
   void ParseParameters(const YAML::Node &config);
 };
 };

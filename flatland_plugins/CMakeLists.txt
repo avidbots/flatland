@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   flatland_server
   cmake_modules
+  tf
 )
 
 find_package(Eigen3 REQUIRED)

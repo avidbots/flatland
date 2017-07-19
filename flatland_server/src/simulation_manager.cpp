@@ -74,15 +74,18 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "World loaded");
   world_->DebugVisualize();
 
-  time_keeper_.SetMaxStepSize(1.0 / initial_rate_);
+  timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
+
+  double cycle_time_sum = 0;
+  double expected_cycle_time_sum = 0;
 
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
-  ros::WallRate rate(1.0 / time_keeper_.GetStepSize());
+  ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time
-    world_->Update(time_keeper_);
+    world_->Update(timekeeper_);
 
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
@@ -90,11 +93,15 @@ void SimulationManager::Main() {
 
     rate.sleep();
 
+    cycle_time_sum += rate.cycleTime().toSec();
+    expected_cycle_time_sum += rate.expectedCycleTime().toSec();
+
     ROS_INFO_THROTTLE_NAMED(
-        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
+        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%, %.1f%% average)",
         rate.cycleTime().toSec() * 1000,
         rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
+        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec(),
+        100.0 * cycle_time_sum / expected_cycle_time_sum);
   }
 
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");

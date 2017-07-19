@@ -50,7 +50,6 @@
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
-// #include <tf2/LinearMath/Quaternion.h>
 #include <boost/algorithm/string/join.hpp>
 #include <cmath>
 #include <limits>
@@ -100,7 +99,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.header.frame_id = frame_id_;
 
   // Broadcast transform between the body and laser
-  tf2::Quaternion q;
+  tf::Quaternion q;
   q.setRPY(0, 0, origin_[2]);
 
   static_tf.header.frame_id = body_->name_;
@@ -117,11 +116,11 @@ void Laser::OnInitialize(const YAML::Node &config) {
   body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
-void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
+void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
   body_->physics_body_->SetAngularVelocity(2);
   model_->DebugVisualize();
 
-  if (!update_timer_.CheckUpdate(time_keeper)) {
+  if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
   }
 

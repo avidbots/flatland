@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 time_keeper.cpp
+ * @name	 timekeeper.cpp
  * @brief	 Used for simulation time keeping
  * @author Chunshang Li
  *
@@ -44,36 +44,36 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/time_keeper.h>
+#include <flatland_server/timekeeper.h>
 #include <rosgraph_msgs/Clock.h>
 
 namespace flatland_server {
 
-TimeKeeper::TimeKeeper()
+Timekeeper::Timekeeper()
     : clock_topic_("/clock"), time_(ros::Time(0, 0)), max_step_size_(0) {
   clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
 }
 
-void TimeKeeper::StepTime() {
+void Timekeeper::StepTime() {
   time_ += ros::Duration(max_step_size_);
 
   UpdateRosClock();
 }
 
-void TimeKeeper::UpdateRosClock() const {
+void Timekeeper::UpdateRosClock() const {
   rosgraph_msgs::Clock clock;
   clock.clock = time_;
   clock_pub_.publish(clock);
 }
 
-void TimeKeeper::SetMaxStepSize(double step_size) {
+void Timekeeper::SetMaxStepSize(double step_size) {
   max_step_size_ = step_size;
 }
 
-const ros::Time& TimeKeeper::GetSimTime() const { return time_; }
+const ros::Time& Timekeeper::GetSimTime() const { return time_; }
 
-double TimeKeeper::GetStepSize() const { return max_step_size_; }
+double Timekeeper::GetStepSize() const { return max_step_size_; }
 
-double TimeKeeper::GetMaxStepSize() const { return max_step_size_; }
+double Timekeeper::GetMaxStepSize() const { return max_step_size_; }
 
 };  // namespace flatland_server

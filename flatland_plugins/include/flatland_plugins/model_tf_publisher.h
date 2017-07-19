@@ -47,11 +47,11 @@
 #include <flatland_server/model_plugin.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
-#include <flatland_server/time_keeper.h>
+#include <flatland_server/timekeeper.h>
 #include <flatland_plugins/update_timer.h>
 
-#ifndef FLATLAND_PLUGINS_MODEL_TF_H
-#define FLATLAND_PLUGINS_MODEL_TF_H
+#ifndef FLATLAND_PLUGINS_MODEL_TF_PUBLISHER_H
+#define FLATLAND_PLUGINS_MODEL_TF_PUBLISHER_H
 
 using namespace flatland_server;
 
@@ -65,11 +65,11 @@ class ModelTfPublisher : public ModelPlugin {
   Body *reference_body_;
   double update_rate_;
 
-  tf2_ros::TransformBroadcaster tf_broadcaster;
+  tf::TransformBroadcaster tf_broadcaster;
   UpdateTimer update_timer_;
 
   void OnInitialize(const YAML::Node &config) override;
-  void BeforePhysicsStep(const TimeKeeper &time_keeper) override;
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
 };
 };
 
