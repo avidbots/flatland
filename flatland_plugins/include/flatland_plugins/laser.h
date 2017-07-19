@@ -51,6 +51,7 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <flatland_server/time_keeper.h>
 #include <Eigen/Dense>
+#include <flatland_plugins/update_timer.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -61,8 +62,6 @@ namespace flatland_plugins {
 
 class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
-  ros::Publisher scan_publisher;
-  ros::Publisher viz_markers_publisher;
 
   std::string topic_;
   Body *body_;
@@ -82,16 +81,12 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   Eigen::Vector3f v_zero_point_;
   Eigen::Vector3f v_world_laser_origin_;
   sensor_msgs::LaserScan laser_scan_;
-  b2Vec2 zero_point_;
-
   bool did_hit_;
-  b2Vec2 point_hit_;
   float fraction_;
+
+  ros::Publisher scan_publisher;
   tf2_ros::StaticTransformBroadcaster tf_broadcaster;
 
-  visualization_msgs::Marker markers_;
-
-  void DebugVisualize();
   float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                       const b2Vec2 &normal, float fraction) override;
 
