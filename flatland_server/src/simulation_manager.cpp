@@ -49,32 +49,33 @@
 #include <flatland_server/model.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
+#include <exception>
 #include <string>
 #include "flatland_server/debug_visualization.h"
 
 namespace flatland_server {
 
-/**
- * @name  Simulation Manager constructor
- * @param world_file   The path to the world.yaml file we wish to load
- * @param initial_rate The physics step frequency in Hz
- */
-SimulationManager::SimulationManager(std::string world_file, float initial_rate)
-    : initial_rate_(initial_rate) {
-  ROS_INFO_NAMED("SimMan", "Initializing");
-  
-  world_ = World::MakeWorld(world_file);
-  ROS_INFO_NAMED("World", "World loaded");
-  world_->DebugVisualize();
-
+SimulationManager::SimulationManager(std::string world_yaml_file,
+                                     float initial_rate)
+    : initial_rate_(initial_rate), world_yaml_file_(world_yaml_file) {
   // Todo: Initialize SimTime class here once written
 }
 
 void SimulationManager::Main() {
-  ROS_INFO_NAMED("SimMan", "Main starting");
+  ROS_INFO_NAMED("SimMan", "Initializing...");
+
+  try {
+    world_ = World::MakeWorld(world_yaml_file_);
+  } catch (const std::runtime_error &e) {
+    ROS_FATAL_NAMED("SimMan", "%s", e.what());
+    return;
+  }
+
+  ROS_INFO_NAMED("SimMan", "World loaded");
+  world_->DebugVisualize();
 
   ros::Rate rate(initial_rate_);
-
+  ROS_INFO_NAMED("SimMan", "Simulation loop started");
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time
     world_->Update(rate.expectedCycleTime().toSec());
@@ -82,7 +83,7 @@ void SimulationManager::Main() {
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
-    DebugVisualization::get().Publish();  // Publish debug visualization output
+    DebugVisualization::Get().Publish();  // Publish debug visualization output
 
     rate.sleep();
 
@@ -95,7 +96,7 @@ void SimulationManager::Main() {
     */
   }
 
-  ROS_INFO_NAMED("SimMan", "Main exiting");
+  ROS_INFO_NAMED("SimMan", "Simulation loop ended");
 }
 
 void SimulationManager::Shutdown() {

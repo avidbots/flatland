@@ -215,8 +215,8 @@ void Bicycle::BeforePhysicsStep(double timestep) {
 
     applyVelocity();
 
-    flatland_server::DebugVisualization::get().Reset("diffbody");
-    flatland_server::DebugVisualization::get().Visualize("diffbody", robot, 1.0, 1.0, 1.0, 0.5);
+    flatland_server::DebugVisualization::Get().Reset("diffbody");
+    flatland_server::DebugVisualization::Get().Visualize("diffbody", robot, 1.0, 1.0, 1.0, 0.5);
  
     recreateFrontWheel();
 }

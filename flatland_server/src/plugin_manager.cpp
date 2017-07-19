@@ -48,10 +48,16 @@
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/plugin_manager.h>
-#include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
+
+PluginManager::PluginManager() {
+  class_loader_ = new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
+      "flatland_server", "flatland_server::ModelPlugin");
+}
+
+PluginManager::~PluginManager() { delete class_loader_; }
 
 void PluginManager::BeforePhysicsStep(double timestep) {
   for (const auto &model_plugin : model_plugins) {
@@ -61,13 +67,13 @@ void PluginManager::BeforePhysicsStep(double timestep) {
 
 void PluginManager::AfterPhysicsStep(double timestep) {
   for (const auto &model_plugin : model_plugins) {
-    model_plugin->BeforePhysicsStep(timestep);
+    model_plugin->AfterPhysicsStep(timestep);
   }
 }
 
 void PluginManager::LoadModelPlugin(Model *model,
-                                    const YAML::Node &plugins_node) {
-  const YAML::Node &n = plugins_node;
+                                    const YAML::Node &plugin_node) {
+  const YAML::Node &n = plugin_node;
 
   std::string name;
   std::string type;
@@ -85,19 +91,82 @@ void PluginManager::LoadModelPlugin(Model *model,
   }
 
   boost::shared_ptr<ModelPlugin> model_plugin;
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
-      "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    model_plugin = loader.createInstance("flatland_plugins::" + type);
+    model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
-    ROS_ERROR("Failed to load %s plugin of type %s (%s)", name.c_str(),
-              type.c_str(), e.what());
-    return;  // TODO (Chunshang): handle this exception properly
+    throw PluginException("ModelPlugin", type, name, e.what());
   }
 
-  model_plugin->Initialize(name, model, plugins_node);
+  try {
+    model_plugin->Initialize(type, name, model, plugin_node);
+  } catch (const std::exception &e) {
+    throw PluginException(
+        "ModelPlugin", type, name,
+        "Error during initialization (" + std::string(e.what()) + ")");
+  }
   model_plugins.push_back(model_plugin);
+
+  ROS_INFO_NAMED("PluginManager", "Model Plugin %s of type %s loaded",
+                 name.c_str(), type.c_str());
+}
+
+void PluginManager::BeginContact(b2Contact *contact) {
+  b2Fixture *f_A = contact->GetFixtureA();
+  b2Fixture *f_B = contact->GetFixtureB();
+  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
+  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
+  Entity *e_A = b_A->entity_;
+  Entity *e_B = b_B->entity_;
+
+  for (auto &model_plugin : model_plugins) {
+    Model *m = model_plugin->model_;
+
+    if (e_A == m && e_B->Type() == Entity::LAYER) {
+      model_plugin->BeginContactWithMap(dynamic_cast<Layer *>(e_B), f_B, f_A,
+                                        contact);
+    } else if (e_A == m && e_B->Type() == Entity::MODEL) {
+      model_plugin->BeginContactWithModel(dynamic_cast<Model *>(e_B), f_B, f_A,
+                                          contact);
+    } else if (e_B == m && e_A->Type() == Entity::LAYER) {
+      model_plugin->BeginContactWithMap(dynamic_cast<Layer *>(e_A), f_A, f_B,
+                                        contact);
+    } else if (e_B == m && e_A->Type() == Entity::MODEL) {
+      model_plugin->BeginContactWithModel(dynamic_cast<Model *>(e_A), f_A, f_B,
+                                          contact);
+    }
+
+    model_plugin->BeginContact(contact);
+  }
+}
+
+void PluginManager::EndContact(b2Contact *contact) {
+  b2Fixture *f_A = contact->GetFixtureA();
+  b2Fixture *f_B = contact->GetFixtureB();
+  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
+  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
+  Entity *e_A = b_A->entity_;
+  Entity *e_B = b_B->entity_;
+
+  for (auto &model_plugin : model_plugins) {
+    Model *m = model_plugin->model_;
+
+    if (e_A == m && e_B->Type() == Entity::LAYER) {
+      model_plugin->EndContactWithMap(dynamic_cast<Layer *>(e_B), f_B, f_A,
+                                      contact);
+    } else if (e_A == m && e_B->Type() == Entity::MODEL) {
+      model_plugin->EndContactWithModel(dynamic_cast<Model *>(e_B), f_B, f_A,
+                                        contact);
+    } else if (e_B == m && e_A->Type() == Entity::LAYER) {
+      model_plugin->EndContactWithMap(dynamic_cast<Layer *>(e_A), f_A, f_B,
+                                      contact);
+    } else if (e_B == m && e_A->Type() == Entity::MODEL) {
+      model_plugin->EndContactWithModel(dynamic_cast<Model *>(e_A), f_A, f_B,
+                                        contact);
+    }
+
+    model_plugin->EndContact(contact);
+  }
 }
 
 };  // namespace flatland_server
