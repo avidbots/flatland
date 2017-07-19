@@ -44,63 +44,59 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <Box2D/Box2D.h>
 #include <flatland_plugins/diff_drive.h>
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
-#include <flatland_server/debug_visualization.h>
-#include <Box2D/Box2D.h>
-#include "geometry_msgs/Twist.h"
 #include <ros/ros.h>
+#include "geometry_msgs/Twist.h"
 
 namespace flatland_plugins {
 
+void Diff_drive::OnInitialize(const YAML::Node& config) {
+  ROS_INFO_NAMED("Diff_drivePlugin", "Diff_drive Initialized");
+  robotAngle = 0.0;
+  robotPosition = b2Vec2(0, 0);
 
-void Diff_drive::OnInitialize(const YAML::Node &config) {
-    
-    ROS_INFO_NAMED("Diff_drivePlugin", "Diff_drive Initialized");
-    robotAngle = 0.0;
-    robotPosition = b2Vec2(0,0);
+  // get the robot pointer
+  robot = model_->GetBody("base")->physics_body_;
 
-    // get the robot pointer
-    robot = model_->GetBody("base")->physics_body_;
-    
-    // subscribe to the cmd_vel topic
-    sub = nh_.subscribe("/cmd_vel", 0,  &Diff_drive::twistCallback, this);
-
+  // subscribe to the cmd_vel topic
+  sub = nh_.subscribe("/cmd_vel", 0, &Diff_drive::twistCallback, this);
 }
-
 
 void Diff_drive::BeforePhysicsStep(double timestep) {
-    time_step = timestep*speedFactor;
+  time_step = timestep * speedFactor;
 
-    robot = model_->GetBody("base")->physics_body_;
+  robot = model_->GetBody("base")->physics_body_;
 
-    applyVelocity();
-    
-    flatland_server::DebugVisualization::Get().Reset("diffbody");
-    flatland_server::DebugVisualization::Get().Visualize("diffbody", robot, 1.0, 1.0, 1.0, 0.5);
+  applyVelocity();
 
+  flatland_server::DebugVisualization::Get().Reset("diffbody");
+  flatland_server::DebugVisualization::Get().Visualize("diffbody", robot, 1.0,
+                                                       1.0, 1.0, 0.5);
 }
 
-void Diff_drive::twistCallback(const geometry_msgs::Twist& msg){
-    velocity = msg.linear.x;
-    omega = msg.angular.z;
+void Diff_drive::twistCallback(const geometry_msgs::Twist& msg) {
+  velocity = msg.linear.x;
+  omega = msg.angular.z;
 }
 
-void Diff_drive::applyVelocity(){
+void Diff_drive::applyVelocity() {
+  // Integrate the twist
+  robotPosition.x += velocity * -sin(robotAngle) * time_step;
+  robotPosition.y += velocity * cos(robotAngle) * time_step;
+  robotAngle += omega * time_step;
 
-    // Integrate the twist
-    robotPosition.x += velocity * -sin(robotAngle) * time_step;
-    robotPosition.y += velocity * cos(robotAngle) * time_step;
-    robotAngle += omega * time_step; 
+  // set the robot transform
+  robot->SetTransform(robotPosition, robotAngle);
 
-    // set the robot transform
-    robot->SetTransform(robotPosition, robotAngle);
-    
-    //ROS_INFO_STREAM("Subscriber velocities:"<<" velocity="<<velocity<<"  omega="<< omega);
-    //ROS_INFO_STREAM(" robotAngle="<<robotAngle);
+  // ROS_INFO_STREAM("Subscriber velocities:"<<" velocity="<<velocity<<"
+  // omega="<< omega);
+  // ROS_INFO_STREAM(" robotAngle="<<robotAngle);
 }
-
 };
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::Diff_drive, flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::Diff_drive,
+                       flatland_server::ModelPlugin)

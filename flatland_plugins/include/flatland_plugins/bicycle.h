@@ -44,10 +44,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_plugin.h>
 #include <Box2D/Box2D.h>
+#include <flatland_server/model_plugin.h>
 #include "geometry_msgs/Twist.h"
-
 
 #ifndef FLATLAND_PLUGINS_BICYCLE_H
 #define FLATLAND_PLUGINS_BICYCLE_H
@@ -55,12 +54,10 @@
 namespace flatland_plugins {
 
 class Bicycle : public flatland_server::ModelPlugin {
-
-public:
-
+ public:
   ros::Subscriber sub;
   b2Body* robot;
-  //b2Body* squeegee;
+  // b2Body* squeegee;
   b2Vec2 robotPosition;
   b2Fixture* frontWheelFixture;
   double robotAngle;
@@ -71,25 +68,25 @@ public:
   bool robotIsInMotion;
   bool modelIsDynamic;
   double speedFactor = 1.0;
-  
-  void OnInitialize(const YAML::Node &config) override;
+
+  void OnInitialize(const YAML::Node& config) override;
 
   void BeforePhysicsStep(double timestep) override;
 
   void twistCallback(const geometry_msgs::Twist& msg);
   void applyVelocity();
 
-  //void IntegrateTwist(double vely, double angle);
+  // void IntegrateTwist(double vely, double angle);
 
   void createFrontWheel();
   void destroyFrontWheel();
   void recreateFrontWheel();
   double calculateDelta(double distance);
 
-  //void create_squeegee(b2World* world, b2Vec2& position, double angle, bool modelDynamic);
-  //void addMeA(double val);
-  //void addMeB(double val);
-
+  // void create_squeegee(b2World* world, b2Vec2& position, double angle, bool
+  // modelDynamic);
+  // void addMeA(double val);
+  // void addMeB(double val);
 };
 };
 
