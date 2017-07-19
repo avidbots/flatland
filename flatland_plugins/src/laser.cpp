@@ -53,6 +53,7 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <boost/algorithm/string/join.hpp>
 #include <cmath>
+#include <Eigen/Dense>
 
 using namespace flatland_server;
 
@@ -281,7 +282,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
       "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) range(%f) "
       "angle_min(%f) angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
       name_.c_str(), topic_.c_str(), body_name.c_str(), body_, origin_[0],
-      origin_[2], origin_[2], range_, min_angle_, max_angle_, increment_,
+      origin_[1], origin_[2], range_, min_angle_, max_angle_, increment_,
       layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }
 };
