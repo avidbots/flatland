@@ -47,6 +47,7 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <regex>
@@ -63,6 +64,7 @@ class TestModelPlugin : public ModelPlugin {
   Model *param_model;
   b2Fixture *param_fixture_A;
   b2Fixture *param_fixture_B;
+  Timekeeper time_keeper;
 
   std::map<std::string, bool> function_called;
 
@@ -228,6 +230,7 @@ class PluginManagerTest : public ::testing::Test {
 TEST_F(PluginManagerTest, collision_test) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/collision_test/world.yaml");
+  time_keeper.SetMaxStepSize(1.0);
   World *w = World::MakeWorld(world_yaml.string());
   Layer *l = w->layers_[0];
   Model *m0 = w->models_[0];
@@ -241,7 +244,7 @@ TEST_F(PluginManagerTest, collision_test) {
   pm->model_plugins.push_back(shared_p);
   TestModelPlugin *p = shared_p.get();
 
-  w->Update(1);
+  w->Update(time_keeper);
 
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", true},
                                  {"BeforePhysicsStep", true},
@@ -259,8 +262,8 @@ TEST_F(PluginManagerTest, collision_test) {
 
   b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0));
   // takes two steps for Box2D to genreate collision events, not sure why
-  w->Update(1);
-  w->Update(1);
+  w->Update(time_keeper);
+  w->Update(time_keeper);
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
                                  {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},
@@ -277,8 +280,8 @@ TEST_F(PluginManagerTest, collision_test) {
 
   b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
   b1->physics_body_->SetLinearVelocity(b2Vec2(0, -0.5));
-  w->Update(1);
-  w->Update(1);
+  w->Update(time_keeper);
+  w->Update(time_keeper);
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
                                  {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},
@@ -295,8 +298,8 @@ TEST_F(PluginManagerTest, collision_test) {
 
   b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
   b1->physics_body_->SetLinearVelocity(b2Vec2(0, -1));
-  w->Update(1);
-  w->Update(1);
+  w->Update(time_keeper);
+  w->Update(time_keeper);
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
                                  {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},

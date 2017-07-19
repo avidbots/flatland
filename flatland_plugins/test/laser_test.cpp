@@ -45,14 +45,24 @@
  */
 
 #include <flatland_plugins/laser.h>
-#include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
-#include <yaml-cpp/yaml.h>
+#include <sensor_msgs/LaserScan.h>
 
-TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
+class LaserPluginTest : public ::testing::Test {
+ protected:
+  boost::filesystem::path this_file_dir;
+  boost::filesystem::path world_yaml;
+  Timekeeper time_keeper;
+
+  LaserPluginTest() {
+    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+  }
+};
+
+TEST_F(LaserPluginTest, load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
@@ -62,6 +72,38 @@ TEST(FlatlandPluginsLaserTest, pluginlib_load_test) {
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Laser plugin. " << e.what();
   }
+}
+
+TEST_F(LaserPluginTest, range_test) {
+  world_yaml = this_file_dir / fs::path("laser_tests/range_test/world.yaml");
+  time_keeper.SetMaxStepSize(1.0);
+  World* w = World::MakeWorld(world_yaml.string());
+
+  sensor_msgs scan_front, scan_center, scan_back;
+
+  auto scan_front_callback = [scan_front](const sensor_msgs::LaserScan& msg) {
+    scan_front = msg;
+  };
+
+  auto scan_center_callback = [scan_center](const sensor_msgs::LaserScan& msg) {
+    scan_center = msg;
+  };
+
+  auto scan_back_callback = [scan_back](const sensor_msgs::LaserScan& msg) {
+    scan_back = msg;
+  };
+
+  ros::NodeHandle nh;
+  ros::Subscriber sub_1 = nh.subscribe("/scan_front", 1, scan_front_callback);
+  ros::Subscriber sub_2 = nh.subscribe("/scan_center", 1, scan_center_callback);
+  ros::Subscriber sub_3 = nh.subscribe("/scan_back", 1, scan_back_callback);
+
+  w->Update(time_keeper);
+  ros::SpinOnce();
+
+  
+
+
 }
 
 // Run all the tests that were declared with TEST()
