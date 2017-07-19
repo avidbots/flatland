@@ -68,6 +68,7 @@ class Bicycle : public flatland_server::ModelPlugin {
   bool robotIsInMotion;
   bool modelIsDynamic;
   double speedFactor = 1.0;
+  int count;
 
   void OnInitialize(const YAML::Node& config) override;
 
