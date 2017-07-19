@@ -45,6 +45,7 @@
  */
 
 #include <flatland_plugins/bicycle.h>
+#include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
@@ -60,7 +61,16 @@ TEST(FlatlandPluginsBicycleTest, pluginlib_load_test) {
     boost::shared_ptr<flatland_server::ModelPlugin> bicycle =
         loader.createInstance("flatland_plugins::Bicycle");
 
-    bicycle->Initialize("BicycleTest", nullptr, YAML::Node());
+    flatland_server::CollisionFilterRegistry cfr;
+    b2Vec2 gravity_(0, 0);
+    b2World physics_world_(gravity_);
+
+    flatland_server::Model* model = flatland_server::Model::MakeModel(
+        &physics_world_, &cfr, "test",
+        ros::package::getPath("flatland_server") +
+            "/test/conestogo_office_test/cleaner.model.yaml");
+
+    bicycle->Initialize("Bicycle", "BicycleTest", model, YAML::Node());
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Bicycle plugin. " << e.what();
   }
