@@ -50,8 +50,8 @@
 #include <Box2D/Box2D.h>
 #include <string>
 #include "flatland_server/debug_visualization.h"
-#include "flatland_server/world.h"
 #include "flatland_server/timekeeper.h"
+#include "flatland_server/world.h"
 
 namespace flatland_server {
 
@@ -61,7 +61,7 @@ class SimulationManager {
   World *world_;                 ///< Simulation world
   float initial_rate_;           ///< initial sim loop rate
   std::string world_yaml_file_;  ///< path to the world file
-  Timekeeper timekeeper_;       ///< for managing time
+  Timekeeper timekeeper_;        ///< for managing time
 
   /**
    * @name  Simulation Manager constructor

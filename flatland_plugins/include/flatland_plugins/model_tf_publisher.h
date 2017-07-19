@@ -44,11 +44,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
-#include <flatland_server/timekeeper.h>
-#include <flatland_plugins/update_timer.h>
 
 #ifndef FLATLAND_PLUGINS_MODEL_TF_PUBLISHER_H
 #define FLATLAND_PLUGINS_MODEL_TF_PUBLISHER_H
@@ -61,7 +61,7 @@ class ModelTfPublisher : public ModelPlugin {
  public:
   std::string world_frame_id_;
   bool publish_tf_world_;
-  std::vector<Body*> excluded_bodies_;
+  std::vector<Body *> excluded_bodies_;
   Body *reference_body_;
   double update_rate_;
 

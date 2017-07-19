@@ -50,9 +50,9 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
-#include <flatland_server/timekeeper.h>
 
 namespace flatland_server {
 

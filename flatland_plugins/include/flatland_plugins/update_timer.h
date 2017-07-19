@@ -47,9 +47,8 @@
 #ifndef FLATLAND_PLUGINS_UPDATE_TIMER_H
 #define FLATLAND_PLUGINS_UPDATE_TIMER_H
 
-#include <ros/time.h>
 #include <flatland_server/timekeeper.h>
-
+#include <ros/time.h>
 
 namespace flatland_plugins {
 
@@ -57,7 +56,7 @@ class UpdateTimer {
  public:
   ros::Duration period_;
   ros::Time last_update_time_;
-  
+
   UpdateTimer();
   void SetRate(double rate);
   bool CheckUpdate(const flatland_server::Timekeeper &timekeeper);
