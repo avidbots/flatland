@@ -50,6 +50,7 @@
 #include <visualization_msgs/Marker.h>
 #include <tf2_ros/transform_broadcaster.h>
 #include <flatland_server/time_keeper.h>
+#include <Eigen/Dense>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -73,7 +74,8 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   std::string frame_;
   uint16_t layers_bits_;
 
-  b2Transform tf_body_to_laser;
+  // b2Transform tf_body_to_laser;
+  Eigen::Matrix3f m_body_to_laser;
   std::vector<b2Vec2> laser_points;
   sensor_msgs::LaserScan laser_scan;
   b2Vec2 zero_point_;
