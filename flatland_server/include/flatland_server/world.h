@@ -69,6 +69,7 @@ class World {
   std::vector<Layer *> layers_;  ///< list of layers
   std::vector<Model *> models_;  ///< list of models
   CollisionFilterRegistry cfr_;  ///< collision registry for layers and models
+  PluginManager plugin_manager_;
 
   /**
    * @brief Constructor for the world class. All data required for

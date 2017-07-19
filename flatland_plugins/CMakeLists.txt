@@ -63,6 +63,8 @@ include_directories(
 # Declare a C++ library
 add_library(flatland_plugins_lib
   src/laser.cpp
+  src/bicycle.cpp
+  src/diff_drive.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -122,5 +124,10 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
+
+  add_rostest_gtest(bicycle_test test/bicycle_test.test
+                    test/bicycle_test.cpp)
+  target_link_libraries(bicycle_test flatland_plugins_lib flatland_lib)
+  #target_link_libraries(bicycle_test laser_test flatland_plugins_lib flatland_lib)
 
 endif()

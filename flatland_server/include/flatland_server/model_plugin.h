@@ -87,13 +87,13 @@ class ModelPlugin {
    * @brief This method is called before the Box2D physics step
    * @param[in] timestep how much the physics time will increment
    */
-  virtual void WorldUpdateBegin(double timestep) {}
+  virtual void BeforePhysicsStep(double timestep) {}
 
   /**
    * @brief This method is called after the Box2D physics step
    * @param[in] timestep how much the physics time have incremented
    */
-  virtual void WorldUpdateEnd(double timestep) {}
+  virtual void AfterPhysicsStep(double timestep) {}
 
   /**
    * @brief This method is called when the model collided with the map (layer)

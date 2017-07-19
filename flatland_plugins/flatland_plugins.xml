@@ -2,4 +2,10 @@
   <class type="flatland_plugins::Laser" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland laser plugin</description>
   </class>
+  <class type="flatland_plugins::Bicycle" base_class_type="flatland_server::ModelPlugin">
+    <description>Flatland bicycle plugin</description>
+  </class>
+  <class type="flatland_plugins::Diff_drive" base_class_type="flatland_server::ModelPlugin">
+    <description>Flatland differential drive plugin</description>
+  </class>
 </library>

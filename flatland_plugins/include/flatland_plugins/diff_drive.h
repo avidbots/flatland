@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	simulation_manager.cpp
- * @brief	Simulation manager runs the physics+event loop
- * @author Joseph Duchesne
+ * @name	Bicycle.h
+ * @brief   Bicycle plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,63 +44,37 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/simulation_manager.h"
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <flatland_server/world.h>
-#include <ros/ros.h>
-#include <string>
-#include "flatland_server/debug_visualization.h"
+#include <flatland_server/model_plugin.h>
+#include <Box2D/Box2D.h>
+#include "geometry_msgs/Twist.h"
 
-namespace flatland_server {
 
-/**
- * @name  Simulation Manager constructor
- * @param world_file   The path to the world.yaml file we wish to load
- * @param initial_rate The physics step frequency in Hz
- */
-SimulationManager::SimulationManager(std::string world_file, float initial_rate)
-    : initial_rate_(initial_rate) {
-  ROS_INFO_NAMED("SimMan", "Initializing");
-  
-  world_ = World::MakeWorld(world_file);
-  ROS_INFO_NAMED("World", "World loaded");
-  world_->DebugVisualize();
+#ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
+#define FLATLAND_PLUGINS_DIFFDRIVE_H
 
-  // Todo: Initialize SimTime class here once written
-}
+namespace flatland_plugins {
 
-void SimulationManager::Main() {
-  ROS_INFO_NAMED("SimMan", "Main starting");
+class Diff_drive : public flatland_server::ModelPlugin {
 
-  ros::Rate rate(initial_rate_);
+public:
 
-  while (ros::ok() && run_simulator_) {
-    // Step physics by ros cycle time
-    world_->Update(rate.expectedCycleTime().toSec());
+  ros::Subscriber sub;
+  b2Body* robot;
+  b2Vec2 robotPosition;
+  double robotAngle;
+  double time_step;
+  double velocity;
+  double omega;
+  double speedFactor = 1.0;
 
-    ros::spinOnce();  // Normal ROS event loop
-    // Todo: Update bodies
+  void OnInitialize(const YAML::Node &config) override;
 
-    DebugVisualization::get().Publish();  // Publish debug visualization output
+  void BeforePhysicsStep(double timestep) override;
 
-    rate.sleep();
+  void twistCallback(const geometry_msgs::Twist& msg);
+  void applyVelocity();
 
-    /*
-    ROS_INFO_THROTTLE_NAMED(
-        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
-        rate.cycleTime().toSec() * 1000,
-        rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
-    */
-  }
+};
+};
 
-  ROS_INFO_NAMED("SimMan", "Main exiting");
-}
-
-void SimulationManager::Shutdown() {
-  ROS_INFO_NAMED("SimMan", "Shutdown called");
-  delete world_;
-}
-
-};  // namespace flatland_server
+#endif
