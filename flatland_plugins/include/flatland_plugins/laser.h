@@ -44,14 +44,14 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/time_keeper.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
+#include <tf/transform_broadcaster.h>
 #include <visualization_msgs/Marker.h>
-#include <tf2_ros/static_transform_broadcaster.h>
-#include <flatland_server/time_keeper.h>
 #include <Eigen/Dense>
-#include <flatland_plugins/update_timer.h>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -62,7 +62,6 @@ namespace flatland_plugins {
 
 class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
-
   std::string topic_;
   Body *body_;
   std::array<double, 3> origin_;
@@ -86,8 +85,10 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   float fraction_;
 
   ros::Publisher scan_publisher;
-  tf2_ros::StaticTransformBroadcaster tf_broadcaster;
+  tf2_ros::TransformBroadcaster tf_broadcaster;
+  geometry_msgs::TransformStamped static_tf;
   UpdateTimer update_timer_;
+  UpdateTimer tf_update_timer_;
 
   float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                       const b2Vec2 &normal, float fraction) override;

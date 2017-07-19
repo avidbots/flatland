@@ -49,7 +49,7 @@
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
-#include <tf2/LinearMath/Quaternion.h>
+// #include <tf2/LinearMath/Quaternion.h>
 #include <Eigen/Dense>
 #include <boost/algorithm/string/join.hpp>
 
@@ -59,7 +59,6 @@ namespace flatland_plugins {
 
 void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   publish_tf_world_ = false;
-  double update_rate = 30;
   world_frame_id_ = "map";
 
   if (config["reference"]) {
@@ -84,7 +83,9 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   }
 
   if (config["update_rate"]) {
-    update_rate = config["update_rate"].as<double>();
+    update_rate_ = config["update_rate"].as<double>();
+  } else {
+    update_rate_ = std::numeric_limits<double>::infinity();
   }
 
   std::vector<std::string> excluded_body_names;
@@ -105,22 +106,28 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
     throw YAMLException("Invalid \"exclude\", must be a list of strings");
   }
 
+  update_timer_.SetRate(update_rate_);
+
   ROS_INFO_NAMED("ModelTfPublisher",
                  "Initialized with params: reference(%s %p) "
-                 "publish_tf_world(%d) update_rate(%f), exclude(%s)",
+                 "publish_tf_world(%d) update_rate(%f), exclude({%s})",
                  reference_body_->name_.c_str(), reference_body_,
-                 publish_tf_world_, update_rate,
+                 publish_tf_world_, update_rate_,
                  boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
 void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
-  const b2Transform &r = reference_body_->physics_body_->GetTransform();
+  if (!update_timer_.CheckUpdate(time_keeper)) {
+    return;
+  }
+
   Eigen::Matrix3f ref_tf_m;
   Eigen::Matrix3f rel_tf;
-  ref_tf_m << r.q.c, -r.q.s, r.p.x, /**/ r.q.s, r.q.c, r.p.y, /**/ 0, 0, 1;
-  // std::cout << ref_tf_m << std::endl;
+
+  const b2Transform &r = reference_body_->physics_body_->GetTransform();
+  ref_tf_m << r.q.c, -r.q.s, r.p.x, r.q.s, r.q.c, r.p.y, 0, 0, 1;
   geometry_msgs::TransformStamped tf_stamped;
-    tf_stamped.header.stamp = ros::Time::now();
+  tf_stamped.header.stamp = ros::Time::now();
 
   for (int i = 0; i < model_->bodies_.size(); i++) {
     Body *body = model_->bodies_[i];
@@ -140,14 +147,8 @@ void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     const b2Transform &b = body->physics_body_->GetTransform();
     Eigen::Matrix3f body_tf_m;
     body_tf_m << b.q.c, -b.q.s, b.p.x, b.q.s, b.q.c, b.p.y, 0, 0, 1;
-    // std::cout << body_tf_m << std::endl;
 
     rel_tf = ref_tf_m.inverse() * body_tf_m;
-
-    // std::cout << rel_tf << std::endl;
-
-    // printf("%.15f???\n", rel_tf(0, 0));
-
 
     double cosine = rel_tf(0, 0);
     double yaw;
@@ -169,9 +170,6 @@ void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     tf_stamped.transform.rotation.z = q.z();
     tf_stamped.transform.rotation.w = q.w();
 
-    // printf("%f, %f, %f\n", rel_tf(0, 2), rel_tf(1, 2), yaw);
-    // printf("yaw?\n");
-
     tf_broadcaster.sendTransform(tf_stamped);
   }
 
@@ -179,7 +177,6 @@ void ModelTfPublisher::BeforePhysicsStep(const TimeKeeper &time_keeper) {
     const b2Vec2 &p = reference_body_->physics_body_->GetPosition();
     double yaw = reference_body_->physics_body_->GetAngle();
 
-    // tf_stamped.header.stamp = ros::Time::now();
     tf_stamped.header.frame_id = world_frame_id_;
     tf_stamped.child_frame_id = reference_body_->name_;
     tf_stamped.transform.translation.x = p.x;

@@ -50,9 +50,10 @@
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
-#include <tf2/LinearMath/Quaternion.h>
+// #include <tf2/LinearMath/Quaternion.h>
 #include <boost/algorithm/string/join.hpp>
 #include <cmath>
+#include <limits>
 
 using namespace flatland_server;
 
@@ -99,10 +100,9 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.header.frame_id = frame_id_;
 
   // Broadcast transform between the body and laser
-  geometry_msgs::TransformStamped static_tf;
   tf2::Quaternion q;
   q.setRPY(0, 0, origin_[2]);
-  static_tf.header.stamp = ros::Time::now();
+
   static_tf.header.frame_id = body_->name_;
   static_tf.child_frame_id = frame_id_;
   static_tf.transform.translation.x = origin_[0];
@@ -112,20 +112,18 @@ void Laser::OnInitialize(const YAML::Node &config) {
   static_tf.transform.rotation.y = q.y();
   static_tf.transform.rotation.z = q.z();
   static_tf.transform.rotation.w = q.w();
-  tf_broadcaster.sendTransform(static_tf);
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
   body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
 void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
-
-  if (!update_timer_.CheckUpdate(time_keeper)){
-    return;
-  }
-
   body_->physics_body_->SetAngularVelocity(2);
   model_->DebugVisualize();
+
+  if (!update_timer_.CheckUpdate(time_keeper)) {
+    return;
+  }
 
   const b2Transform &t = body_->physics_body_->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
@@ -154,6 +152,9 @@ void Laser::BeforePhysicsStep(const TimeKeeper &time_keeper) {
 
   laser_scan_.header.stamp = ros::Time::now();
   scan_publisher.publish(laser_scan_);
+
+  static_tf.header.stamp = ros::Time::now();
+  tf_broadcaster.sendTransform(static_tf);
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
@@ -193,7 +194,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   if (n["update_rate"]) {
     update_rate_ = n["update_rate"].as<double>();
   } else {
-    update_rate_ = 30;
+    update_rate_ = std::numeric_limits<double>::infinity();
   }
 
   if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
