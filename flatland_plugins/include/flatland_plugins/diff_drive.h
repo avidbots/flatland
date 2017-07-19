@@ -44,10 +44,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_plugin.h>
 #include <Box2D/Box2D.h>
+#include <flatland_server/model_plugin.h>
 #include "geometry_msgs/Twist.h"
-
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
 #define FLATLAND_PLUGINS_DIFFDRIVE_H
@@ -55,9 +54,7 @@
 namespace flatland_plugins {
 
 class Diff_drive : public flatland_server::ModelPlugin {
-
-public:
-
+ public:
   ros::Subscriber sub;
   b2Body* robot;
   b2Vec2 robotPosition;
@@ -67,13 +64,12 @@ public:
   double omega;
   double speedFactor = 1.0;
 
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node& config) override;
 
   void BeforePhysicsStep(double timestep) override;
 
   void twistCallback(const geometry_msgs::Twist& msg);
   void applyVelocity();
-
 };
 };
 
