@@ -6,4 +6,11 @@ layers:  # Support for arbitrary number of layers
   - name: "3d"  # layer 1 named "3d"
     map: "map3d.yaml"
     color: [1.0, 0.0, 0.0, 0.5]  # red 50% transparent
-models: []  # For later use
+models:  
+  - name: cleaner1 
+    pose: [0, 0, 0]
+    model: "cleaner.model.yaml"
+  # - name: turtlebot1 
+  #   pose: [0, 0, 0]
+  #   model: "turtlebot.model.yaml"
+    

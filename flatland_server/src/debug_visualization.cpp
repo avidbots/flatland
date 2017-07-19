@@ -180,8 +180,8 @@ void DebugVisualization::Publish() {
     }
     topic.second.publisher.publish(topic.second.markers);
     topic.second.needs_publishing = false;
-    ROS_INFO_THROTTLE_NAMED(1.0, "DebugVis", "Publishing %s",
-                            topic.first.c_str());
+    //ROS_INFO_THROTTLE_NAMED(1.0, "DebugVis", "Publishing %s",
+    //                        topic.first.c_str());
   }
 }
 

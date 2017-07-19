@@ -66,7 +66,11 @@ World::~World() {
   delete physics_world_;
 }
 
-void World::Update(double timestep) { physics_world_->Step(timestep, 10, 10); }
+void World::Update(double timestep) {
+  plugin_manager_.BeforePhysicsStep(timestep);
+  physics_world_->Step(timestep, 200, 100);
+  plugin_manager_.AfterPhysicsStep(timestep);
+}
 
 World *World::MakeWorld(const std::string &yaml_path) {
   // parse the world YAML file

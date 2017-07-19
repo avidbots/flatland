@@ -1,0 +1,158 @@
+# Turtlebot
+
+
+bodies:  # List of named bodies
+  # - name: base
+  #   origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
+  #   type: dynamic  # dynamic | static | kinematic, default dynamic
+  #   color: [1, 1, 0, 0.25] # r g b a
+  #   footprints:
+  #     - type: circle
+  #       center: [0, 0]  # relative to body origin
+  #       radius: 0.75  # m
+  #       layers: ["all"] # any other layers, default is all
+  #       is_sensor: false # Box2d Sensor, false is default
+  #       self_collide: false # collides with other bodies, default is false]
+  #       density: 500
+
+  - name: base
+    origin: [-1, 0, 0] 
+    type: dynamic  
+    color: [1, 0, 0, 0.25] 
+    footprints:
+      - type: polygon
+        density: 100000.0
+        friction: 1000000.0
+        is_sensor: true
+
+
+
+        points: [
+          [-0.337,-1.03],
+          [-0.337, .07983],
+          [-.16111, .30],
+          [.16111, .30],
+          [0.337, .07983],
+          [0.337,-1.03]
+          ]
+
+      #   points: [
+        
+      #     [0, -1.03],
+      #     [-0.337, -1.03],
+      #     [-0.337, 0.10983],
+      #     [-0.31971, 0.15634],
+      #     [-0.27569, 0.21002],
+      #     [-0.18131, 0.2756],
+      #     [-0.11, 0.30058],
+      #     [0, 0.30058]
+
+        
+      #   ]
+
+      # - type: polygon
+      #   density: 1000000.0
+      #   is_sensor: true
+      #   points: [
+        
+      #    [0, -1.03],
+      #     [0, 0.30058],
+      #     [0.11, 0.30058],
+      #     [0.18131, 0.2756],
+      #     [0.27569, 0.21002],
+      #     [0.31971, 0.15634],
+      #     [0.337, 0.10983],
+      #     [0.337, -1.03]
+        
+      #   ]
+
+      #   points: [
+        
+      #   [-0, 0], 
+      #   [-0.337, 0], 
+      #   [-0.337, 1.13983], 
+      #   [-0.31971, 1.18634], 
+      #   [-0.27569, 1.24002], 
+      #   [-0.18131, 1.3056], 
+      #   [-0.11, 1.33058],
+      #   [-0,  1.33058]
+        
+      #   ]
+
+      # - type: polygon
+      #   is_sensor: true
+      #   points: [
+        
+      #   [0, 0], 
+      #   [0,  1.33058],
+      #   [0.11, 1.33058],
+      #   [0.18131, 1.3056], 
+      #   [0.27569, 1.24002], 
+      #   [0.31971, 1.18634], 
+      #   [0.337, 1.13983], 
+      #   [0.337, 0]
+        
+      #   ]
+
+      - type: polygon
+        is_sensor: true
+        density: 0.0
+        points: [[-.3155, -.7425], [-.2645, -.7425], [-.2645, -.9175], [-.3155, -.9175]]
+      - type: polygon
+        is_sensor: true
+        density: 0.0
+        points: [[.3155, -.7425], [.2645, -.7425], [.2645, -.9175], [.3155, -.9175]]
+
+  # - name: left_wheel
+  #   origin: [-1, 0, 0] 
+  #   type: dynamic  
+  #   color: [1, 0, 0, 0.25] 
+  #   footprints:
+  #     - type: polygon
+  #       is_sensor: true
+  #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+
+  # - name: right_wheel
+  #   origin: [1, 0, 0] 
+  #   type: dynamic  
+  #   color: [0, 1, 0, 0.25] 
+  #   footprints:
+  #     - type: polygon
+  #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+
+# joints:
+#   - name: left_wheel_weld
+#     type: weld
+#     angle: 1.57079633
+#     frequency: 10
+#     damping: 0.5
+#     collide_connected: false
+#     bodies:
+#       - name: base
+#         anchor: [0, 0]
+#       - name: left_wheel
+#         anchor: [-1, 0]
+
+#   - name: right_wheel_weld
+#     type: weld
+#     bodies:
+#       - name: base
+#         anchor: [0, 0]
+#       - name: right_wheel
+#         anchor: [1, 0]
+
+
+plugins:
+  - type: Bicycle # plugin class name
+    name: bicycle # for registering list of plugins
+    body: base
+    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
+
+  # - type: Laser
+  #   name: hokuyo_laser # every plugin has a unique name
+  #   topic: scan
+  #   body: base
+  #   origin: [0, 0, 0] # w.r.t body origin
+  #   range: 10 # m
+  #   angle: {min: -1.1, max: 1.1, increment: 0.01}
+  #   layer: "2d"

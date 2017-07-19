@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	simulation_manager.cpp
- * @brief	Simulation manager runs the physics+event loop
- * @author Joseph Duchesne
+ * @name	Diff_drive.cpp
+ * @brief   Diff_drive plugin
+ * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -44,63 +44,63 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/simulation_manager.h"
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <flatland_server/world.h>
+#include <flatland_plugins/diff_drive.h>
+#include <flatland_server/model_plugin.h>
+#include <pluginlib/class_list_macros.h>
+#include <flatland_server/debug_visualization.h>
+#include <Box2D/Box2D.h>
+#include "geometry_msgs/Twist.h"
 #include <ros/ros.h>
-#include <string>
-#include "flatland_server/debug_visualization.h"
 
-namespace flatland_server {
+namespace flatland_plugins {
 
-/**
- * @name  Simulation Manager constructor
- * @param world_file   The path to the world.yaml file we wish to load
- * @param initial_rate The physics step frequency in Hz
- */
-SimulationManager::SimulationManager(std::string world_file, float initial_rate)
-    : initial_rate_(initial_rate) {
-  ROS_INFO_NAMED("SimMan", "Initializing");
-  
-  world_ = World::MakeWorld(world_file);
-  ROS_INFO_NAMED("World", "World loaded");
-  world_->DebugVisualize();
 
-  // Todo: Initialize SimTime class here once written
+void Diff_drive::OnInitialize(const YAML::Node &config) {
+    
+    ROS_INFO_NAMED("Diff_drivePlugin", "Diff_drive Initialized");
+    robotAngle = 0.0;
+    robotPosition = b2Vec2(0,0);
+
+    // get the robot pointer
+    robot = model_->GetBody("base")->physics_body_;
+    
+    // subscribe to the cmd_vel topic
+    sub = nh_.subscribe("/cmd_vel", 0,  &Diff_drive::twistCallback, this);
+
 }
 
-void SimulationManager::Main() {
-  ROS_INFO_NAMED("SimMan", "Main starting");
 
-  ros::Rate rate(initial_rate_);
+void Diff_drive::BeforePhysicsStep(double timestep) {
+    time_step = timestep*speedFactor;
 
-  while (ros::ok() && run_simulator_) {
-    // Step physics by ros cycle time
-    world_->Update(rate.expectedCycleTime().toSec());
+    robot = model_->GetBody("base")->physics_body_;
 
-    ros::spinOnce();  // Normal ROS event loop
-    // Todo: Update bodies
+    applyVelocity();
+    
+    flatland_server::DebugVisualization::get().Reset("diffbody");
+    flatland_server::DebugVisualization::get().Visualize("diffbody", robot, 1.0, 1.0, 1.0, 0.5);
 
-    DebugVisualization::get().Publish();  // Publish debug visualization output
-
-    rate.sleep();
-
-    /*
-    ROS_INFO_THROTTLE_NAMED(
-        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
-        rate.cycleTime().toSec() * 1000,
-        rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
-    */
-  }
-
-  ROS_INFO_NAMED("SimMan", "Main exiting");
 }
 
-void SimulationManager::Shutdown() {
-  ROS_INFO_NAMED("SimMan", "Shutdown called");
-  delete world_;
+void Diff_drive::twistCallback(const geometry_msgs::Twist& msg){
+    velocity = msg.linear.x;
+    omega = msg.angular.z;
 }
 
-};  // namespace flatland_server
+void Diff_drive::applyVelocity(){
+
+    // Integrate the twist
+    robotPosition.x += velocity * -sin(robotAngle) * time_step;
+    robotPosition.y += velocity * cos(robotAngle) * time_step;
+    robotAngle += omega * time_step; 
+
+    // set the robot transform
+    robot->SetTransform(robotPosition, robotAngle);
+    
+    //ROS_INFO_STREAM("Subscriber velocities:"<<" velocity="<<velocity<<"  omega="<< omega);
+    //ROS_INFO_STREAM(" robotAngle="<<robotAngle);
+}
+
+};
+
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::Diff_drive, flatland_server::ModelPlugin)
