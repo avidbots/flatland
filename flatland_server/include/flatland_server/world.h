@@ -62,14 +62,14 @@ namespace flatland_server {
  * that can represent environments at multiple levels, and models which are
  * can be robots or obstacles.
  */
-class World {
+class World : public b2ContactListener {
  public:
-  b2World *physics_world_;       ///< Box2D physics world
-  b2Vec2 gravity_;               ///< Box2D world gravity, always (0, 0)
-  std::vector<Layer *> layers_;  ///< list of layers
-  std::vector<Model *> models_;  ///< list of models
-  CollisionFilterRegistry cfr_;  ///< collision registry for layers and models
-  PluginManager plugin_manager_;
+  b2World *physics_world_;        ///< Box2D physics world
+  b2Vec2 gravity_;                ///< Box2D world gravity, always (0, 0)
+  std::vector<Layer *> layers_;   ///< list of layers
+  std::vector<Model *> models_;   ///< list of models
+  CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
+  PluginManager plugin_manager_;  ///< for loading and updating plugins
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -89,6 +89,17 @@ class World {
   void Update(double timestep);
 
   /**
+   * @brief Box2D inherited begin contact
+   * @param[in] contact Box2D contact information
+   */
+  void BeginContact(b2Contact *contact) override;
+  /**
+   * @brief Box2D inherited end contact
+   * @param[in] contact Box2D contact information
+   */
+  void EndContact(b2Contact *contact) override;
+
+  /**
    * @brief load layers into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of layers
    */
@@ -101,13 +112,18 @@ class World {
   void LoadModels(const std::string &yaml_path);
 
   /**
-   * brief @load models into the world. Throws derivatives of YAML::Exception
+   * @brief load models into the world. Throws derivatives of YAML::Exception
    * @param[in] model_yaml_path Path to the model yaml file
    * @param[in] name Name of the model
    * @param[in] pose Initial pose of the model in x, y, yaw
    */
   void LoadModel(const std::string &model_yaml_path, const std::string &name,
                  const std::array<double, 3> pose);
+
+  /**
+   * @brief load all the plugins
+   */
+  void LoadPlugins();
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all
@@ -120,8 +136,10 @@ class World {
 
   /**
    * @brief Publish debug visualizations for everything
+   * @param[in] update_layers since layers are pretty much static, this
+   * parameter is used to skip updating layers
    */
-  void DebugVisualize();
+  void DebugVisualize(bool update_layers = true);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
