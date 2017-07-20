@@ -225,8 +225,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   }
 
   if (max_angle_ < min_angle_) {
-    throw YAMLException(
-        "Invalid \"angle\" params, must have max > min");
+    throw YAMLException("Invalid \"angle\" params, must have max > min");
   }
 
   std::vector<std::string> layers;

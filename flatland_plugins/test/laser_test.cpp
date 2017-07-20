@@ -220,8 +220,7 @@ TEST_F(LaserPluginTest, invalid_B) {
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
-    std::string regex_str =
-        ".*Invalid \"angle\" params, must have max > min.*";
+    std::string regex_str = ".*Invalid \"angle\" params, must have max > min.*";
     std::regex regex(regex_str);
     EXPECT_TRUE(std::regex_match(e.what(), match, regex))
         << "Exception Message '" + std::string(e.what()) + "'" +
