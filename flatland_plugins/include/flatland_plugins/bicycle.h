@@ -9,7 +9,7 @@
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	Bicycle.h
  * @brief   Bicycle plugin
- * @author  Chunshang Li
+ * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -57,35 +57,72 @@ class Bicycle : public flatland_server::ModelPlugin {
  public:
   ros::Subscriber sub;
   b2Body* robot;
-  // b2Body* squeegee;
-  b2Vec2 robotPosition;
-  b2Fixture* frontWheelFixture;
-  double robotAngle;
-  double robotAlpha;
+  b2Vec2 robot_position;
+  b2Fixture* front_wheel_fixture;
+  double robot_angle;
+  double robot_alpha;
   double time_step;
   double velocity;
   double omega;
-  bool robotIsInMotion;
-  bool modelIsDynamic;
+  bool model_is_dynamic;
   double speedFactor = 1.0;
-  int count;
 
+  /*
+  * @Usage
+  *
+  *     Include the following in the model's Yaml file
+  *
+  *     plugins:
+  *         - type: Bicycle # plugin class name
+  *         name: bicycle # for registering list of plugins
+  *         body: base
+  *         origin: [0, 0, 0] # w.r.t body origin, where the twist drive is
+  *         applied
+  *
+  *     The density of the chassis main fixture must be set to 100000.0
+  */
+
+  /*
+     * @name  Bicycle Plugin initializer
+     * @brief  Initialize the bicycle plugin
+     * @param world_file   The path to the world.yaml file
+     */
   void OnInitialize(const YAML::Node& config) override;
-
+  /**
+   * Override the BeforePhysicsStep method
+   * @param[in] config The plugin YAML node
+   */
   void BeforePhysicsStep(double timestep) override;
+  /**
+   * Callback to apply twist (velocity and omega)
+   * @param[in] timestep how much the physics time will increment
+   */
+  void TwistCallback(const geometry_msgs::Twist& msg);
+  /**
+   * Apply the twist using either the kinematic or dynamic model
+   * @param[in] twist ros message (msg.linear and msg.angular)
+   */
+  void ApplyVelocity();
+  /**
+   * Create the front wheel fixture and shape
+   */
+  void CreateFrontWheel();
+  /**
+   * Destroy the front wheel fixture and shape
+   */
+  void DestroyFrontWheel();
+  /**
+   * Destroy then create the front wheel fixture and shape
+   * used to simulate steering the front wheel
+   */
+  void RecreateFrontWheel();
+  /**
+   * Calculte the delta, ie the angle the vehicle must be rotated by, to roll
+   * about the ICC.
+   * @ param[in] distance forward robot moved for this physics step
+   */
+  double CalculateDelta(double distance);
 
-  void twistCallback(const geometry_msgs::Twist& msg);
-  void applyVelocity();
-
-  // void IntegrateTwist(double vely, double angle);
-
-  void createFrontWheel();
-  void destroyFrontWheel();
-  void recreateFrontWheel();
-  double calculateDelta(double distance);
-
-  // void create_squeegee(b2World* world, b2Vec2& position, double angle, bool
-  // modelDynamic);
   // void addMeA(double val);
   // void addMeB(double val);
 };
