@@ -60,7 +60,7 @@ class PluginManager {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
 
  public:
-  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins;
+  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
 
   /**
    * @brief Plugin manager constructor

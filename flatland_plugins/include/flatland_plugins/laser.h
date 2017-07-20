@@ -66,8 +66,8 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   Body *body_;
   std::array<double, 3> origin_;
   double range_;
-  double min_angle_;
   double max_angle_;
+  double min_angle_;
   double increment_;
   double update_rate_;
   std::string frame_id_;
