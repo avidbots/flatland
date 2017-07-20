@@ -57,19 +57,30 @@ class Diff_drive : public flatland_server::ModelPlugin {
  public:
   ros::Subscriber sub;
   b2Body* robot;
-  b2Vec2 robotPosition;
-  double robotAngle;
+  b2Vec2 robot_position;
+  double robot_angle;
   double time_step;
   double velocity;
   double omega;
   double speedFactor = 1.0;
 
+  /**
+   * Override the BeforePhysicsStep method
+   * @param[in] config The plugin YAML node
+   */
   void OnInitialize(const YAML::Node& config) override;
 
   void BeforePhysicsStep(double timestep) override;
-
-  void twistCallback(const geometry_msgs::Twist& msg);
-  void applyVelocity();
+  /**
+     * Callback to apply twist (velocity and omega)
+     * @param[in] timestep how much the physics time will increment
+     */
+  void TwistCallback(const geometry_msgs::Twist& msg);
+  /**
+   * Apply the twist using the kinematic model
+   * @param[in] twist ros message (msg.linear and msg.angular)
+   */
+  void ApplyVelocity();
 };
 };
 

@@ -52,20 +52,6 @@
 #include <ros/ros.h>
 #include "geometry_msgs/Twist.h"
 
-//
-// Usage:
-//
-//      Include the following in the model's Yaml file
-//
-//      plugins:
-//          - type: Bicycle # plugin class name
-//          name: bicycle # for registering list of plugins
-//          body: base
-//          origin: [0, 0, 0] # w.r.t body origin, where the twist drive is
-//          applied
-//
-//      The density of the chassis main fixture must be set to 100000.0
-//
 namespace flatland_plugins {
 
 // This code simply moves the origin of the chassis
@@ -123,34 +109,33 @@ void Bicycle::addMeB(double offset) {
 
 void Bicycle::OnInitialize(const YAML::Node& config) {
   ROS_INFO_NAMED("BicyclePlugin", "Bicycle Initialized");
-  robotAngle = 0.0;
-  robotAlpha = 0.0;
-  robotPosition = b2Vec2(0, 0);
-  count = 0;
+  robot_angle = 0.0;
+  robot_alpha = 0.0;
+  robot_position = b2Vec2(0, 0);
 
   // get the robot pointer
   robot = model_->GetBody("base")->physics_body_;
 
   // subscribe to the cmd_vel topic
-  sub = nh_.subscribe("/cmd_vel", 0, &Bicycle::twistCallback, this);
+  sub = nh_.subscribe("/cmd_vel", 0, &Bicycle::TwistCallback, this);
 
-  Bicycle::createFrontWheel();
+  Bicycle::CreateFrontWheel();
 
   // Bicycle::addMe2(-1.03);
 
-  robotIsInMotion = false;
-  modelIsDynamic = true;
+  //  robotIsInMotion = false;
+  model_is_dynamic = true;
 }
 
 //
 // rotates a b2Vec2 point about the origin by angle radians
 //
-b2Vec2 rotateVertex(b2Vec2 vertex, double angle) {
+b2Vec2 RotateVertex(b2Vec2 vertex, double angle) {
   return b2Vec2(vertex.x * cos(angle) + vertex.y * sin(angle),
                 vertex.x * -sin(angle) + vertex.y * cos(angle));
 }
 
-void Bicycle::createFrontWheel() {
+void Bicycle::CreateFrontWheel() {
   // create the shape
   b2PolygonShape polygon;
   const double height = .175;
@@ -160,51 +145,49 @@ void Bicycle::createFrontWheel() {
   // setup the vertices
   b2Vec2 vertices[4];
   vertices[0] =
-      rotateVertex(b2Vec2(-width / 2, -height / 2 + yOffset), robotAlpha);
+      RotateVertex(b2Vec2(-width / 2, -height / 2 + yOffset), robot_alpha);
   vertices[1] =
-      rotateVertex(b2Vec2(width / 2, -height / 2 + yOffset), robotAlpha);
+      RotateVertex(b2Vec2(width / 2, -height / 2 + yOffset), robot_alpha);
   vertices[2] =
-      rotateVertex(b2Vec2(width / 2, height / 2 + yOffset), robotAlpha);
+      RotateVertex(b2Vec2(width / 2, height / 2 + yOffset), robot_alpha);
   vertices[3] =
-      rotateVertex(b2Vec2(-width / 2, height / 2 + yOffset), robotAlpha);
+      RotateVertex(b2Vec2(-width / 2, height / 2 + yOffset), robot_alpha);
 
   polygon.Set(vertices, 4);
 
   // create the fixture definition
   b2FixtureDef fixtureDef;
 
-  // define no collision between robot and wheel
-  fixtureDef.filter.categoryBits = 0x0001;
-  fixtureDef.filter.maskBits = ~0x0001;
-
   // bind the shape to the fixture definition
   fixtureDef.shape = &polygon;
 
   // create the fixture (save pointer)
   b2Body* base_body = model_->GetBody("base")->physics_body_;
-  frontWheelFixture = base_body->CreateFixture(&fixtureDef);
+  front_wheel_fixture = base_body->CreateFixture(&fixtureDef);
 }
 
-void Bicycle::destroyFrontWheel() { robot->DestroyFixture(frontWheelFixture); }
-
-void Bicycle::recreateFrontWheel() {
-  destroyFrontWheel();
-  createFrontWheel();
+void Bicycle::DestroyFrontWheel() {
+  robot->DestroyFixture(front_wheel_fixture);
 }
 
-double Bicycle::calculateDelta(double distance) {
+void Bicycle::RecreateFrontWheel() {
+  DestroyFrontWheel();
+  CreateFrontWheel();
+}
+
+double Bicycle::CalculateDelta(double distance) {
   double r;      // turn diameter
   double R;      // distance along wheel axis to ICC
   double B;      // distance from turning wheel to midpoint between rear wheels
   double delta;  // angle to rotate wheel about ICC
 
-  if (fabs(robotAlpha) < 0.01 * b2_pi / 180.0) {
+  if (fabs(robot_alpha) < 0.01 * b2_pi / 180.0) {
     delta = 0.0;
   } else {
     // calculate the wheel rotation angle about ICC
     B = 0.83;
-    R = B / tan(robotAlpha);
-    r = R / cos(robotAlpha);
+    R = B / tan(robot_alpha);
+    r = R / cos(robot_alpha);
     delta = atan(distance / r);
   }
 
@@ -216,7 +199,8 @@ void Bicycle::BeforePhysicsStep(double timestep) {
 
   robot = model_->GetBody("base")->physics_body_;
 
-  // This bit of code drives the robot in (constant) circles forward and back
+  // For testing, this bit of code drives the robot in (constant) circles
+  // forward and back
   /*
   count++;
   if (count < 35) {
@@ -240,88 +224,82 @@ void Bicycle::BeforePhysicsStep(double timestep) {
                                 << "  count:" << count);
   */
 
-  // robotIsInMotion = true;
-  applyVelocity();
+  ApplyVelocity();
 
   flatland_server::DebugVisualization::Get().Reset("diffbody");
   flatland_server::DebugVisualization::Get().Visualize("diffbody", robot, 1.0,
                                                        1.0, 1.0, 0.5);
 
-  recreateFrontWheel();
+  RecreateFrontWheel();
 }
 
-void Bicycle::twistCallback(const geometry_msgs::Twist& msg) {
+void Bicycle::TwistCallback(const geometry_msgs::Twist& msg) {
   velocity = msg.linear.x;
   omega = msg.angular.z;
-  robotIsInMotion = true;
+  //  robotIsInMotion = true;
 }
 
-void Bicycle::applyVelocity() {
-  static b2Vec2 lastStep, lastPos, thisPos;
+void Bicycle::ApplyVelocity() {
+  static b2Vec2 last_step, last_pos, this_pos;
   double distance, delta, travelLimit = 85.0 * b2_pi / 180.0;
 
-  if (robotAlpha > travelLimit) {
+  if (robot_alpha > travelLimit) {
     if (omega < 0.0) {
-      robotAngle -= omega * time_step;
-      robotAlpha += omega * time_step;
+      robot_angle -= omega * time_step;
+      robot_alpha += omega * time_step;
     }
   }
 
-  if (robotAlpha < -travelLimit) {
+  if (robot_alpha < -travelLimit) {
     if (omega > 0.0) {
-      robotAngle -= omega * time_step;
-      robotAlpha += omega * time_step;
+      robot_angle -= omega * time_step;
+      robot_alpha += omega * time_step;
     }
   }
 
   // integrate the angual velocity
-  robotAngle += omega * time_step;
-  robotAlpha -= omega * time_step;
+  robot_angle += omega * time_step;
+  robot_alpha -= omega * time_step;
 
-  if (modelIsDynamic) {
+  if (model_is_dynamic) {
     //
     // Dynamic model
-    //
-    // if (!robotIsInMotion) {
     //
     // future: decelerate/stop robot
     //
     //
     // robot->SetLinearVelocity(b2Vec2(0.0,0.0));
     // robot->SetAngularVelocity(0.0);
-    //} else {
     double angle2 = robot->GetAngle();
-    thisPos = robot->GetPosition();
-    lastStep = thisPos - lastPos;
+    this_pos = robot->GetPosition();
+    last_step = this_pos - last_pos;
 
-    distance = sqrt(lastStep.x * lastStep.x + lastStep.y * lastStep.y);
+    distance = sqrt(last_step.x * last_step.x + last_step.y * last_step.y);
     b2Vec2 linearVelocity;
 
-    double ff = 250.0;
-    linearVelocity.x = -velocity * sin(angle2 - robotAlpha) * ff * time_step;
-    linearVelocity.y = velocity * cos(angle2 - robotAlpha) * ff * time_step;
+    double ff = 250.0;  // fudge factor to make dynamic like kinematic
+    linearVelocity.x = -velocity * sin(angle2 - robot_alpha) * ff * time_step;
+    linearVelocity.y = velocity * cos(angle2 - robot_alpha) * ff * time_step;
 
     if (velocity != 0.0) {
       robot->SetLinearVelocity(linearVelocity);
 
-      delta = calculateDelta(distance);
+      delta = CalculateDelta(distance);
       if (velocity > 0) {
-        robot->SetTransform(thisPos, angle2 - delta);
+        robot->SetTransform(this_pos, angle2 - delta);
 
       } else {
-        robot->SetTransform(thisPos, angle2 + delta);
+        robot->SetTransform(this_pos, angle2 + delta);
       }
-      robotAngle -= delta;
+      robot_angle -= delta;
 
       // set the next robot position
-      robotPosition = thisPos;
+      robot_position = this_pos;
 
     } else {
       robot->SetLinearVelocity(b2Vec2(0, 0));
     }
-    lastPos = thisPos;
-    //}
-    robotIsInMotion = false;
+    last_pos = this_pos;
   } else {
     //
     // Kinematic model
@@ -330,19 +308,19 @@ void Bicycle::applyVelocity() {
     distance = velocity * time_step;
 
     // set the next robot position
-    robotPosition.x -= velocity * sin(robotAngle) * time_step;
-    robotPosition.y += velocity * cos(robotAngle) * time_step;
+    robot_position.x -= velocity * sin(robot_angle) * time_step;
+    robot_position.y += velocity * cos(robot_angle) * time_step;
 
-    delta = calculateDelta(distance);
-    robotAngle -= delta;
-    robot->SetTransform(robotPosition, (robotAngle + robotAlpha));
+    delta = CalculateDelta(distance);
+    robot_angle -= delta;
+    robot->SetTransform(robot_position, (robot_angle + robot_alpha));
   }
 
   // ROS_INFO_STREAM("  x:" << robotPosition.x << "  y:" << robotPosition.y);
   // ROS_INFO_STREAM("Subscriber velocities:"<<" linear="<<msg.linear.x<<"
   // angular="<<msg.angular.z);
-  // ROS_INFO_STREAM(" robotAngle="<<robotAngle*180.0/b2_pi<<"  delta="<<
-  // delta*180.0/b2_pi<<"  robotAlpha:"<<robotAlpha*180.0/b2_pi);
+  // ROS_INFO_STREAM(" robot_angle="<<robot_angle*180.0/b2_pi<<"  delta="<<
+  // delta*180.0/b2_pi<<"  robot_alpha:"<<robot_alpha*180.0/b2_pi);
 }
 };
 
