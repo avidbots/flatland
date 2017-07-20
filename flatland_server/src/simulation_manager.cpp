@@ -87,13 +87,11 @@ void SimulationManager::Main() {
 
     rate.sleep();
 
-    /*
     ROS_INFO_THROTTLE_NAMED(
         1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
         rate.cycleTime().toSec() * 1000,
         rate.expectedCycleTime().toSec() * 1000.0,
         100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
-    */
   }
 
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
