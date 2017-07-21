@@ -134,9 +134,11 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   geometry_msgs::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
+  ros::WallRate rate(50);
   for (int i = 0; i < 10; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
+    rate.sleep();
   }
 
   // check for the transformations that should exist
@@ -205,9 +207,11 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   geometry_msgs::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
+  ros::WallRate rate(50);
   for (int i = 0; i < 10; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
+    rate.sleep();
   }
 
   tf_base_to_antenna =
