@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 plugin_manager.h
- * @brief	 Definition for plugin manager
+ * @name	 model_spawner.h
+ * @brief	 Definition for model spawner
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,63 +44,18 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_PLUGIN_MANAGER_H
-#define FLATLAND_PLUGIN_MANAGER_H
+#include <flatland_server/SpawnModel.h>
 
-#include <Box2D/Box2D.h>
-#include <flatland_server/model.h>
-#include <flatland_server/model_plugin.h>
-#include <flatland_server/timekeeper.h>
-#include <pluginlib/class_loader.h>
-#include <yaml-cpp/yaml.h>
+#ifndef FLATLAND_PLUGIN_MODEL_SPAWNER_H
+#define FLATLAND_PLUGIN_MODEL_SPAWNER_H
 
 namespace flatland_server {
 
-class PluginManager {
+class ModelSpawner {
  public:
-  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
-
-  /**
-   * @brief Plugin manager constructor
-   */
-  PluginManager();
-
-  /**
-   * @brief Plugin manager destructor
-   */
-  ~PluginManager();
-
-  /**
-   * @brief This method is called before the Box2D physics step
-   * @param[in] timekeeper provide time related information
-   */
-  void BeforePhysicsStep(const Timekeeper &timekeeper);
-
-  /**
-   * @brief This method is called after the Box2D physics step
-   * @param[in] timekeeper provide time related information
-   */
-  void AfterPhysicsStep(const Timekeeper &timekeeper);
-
-  /**
-   * @brief Load model plugins
-   * @param[in] model The model that this plugin is tied to
-   * @param[in] plugin_node The YAML node with the plugin parameter
-   */
-  void LoadModelPlugin(Model *model, const YAML::Node &plugin_node);
-
-  /**
-   * @brief Method called for a box2D begin contact
-   * @param[in] contact Box2D contact information
-   */
-  void BeginContact(b2Contact *contact);
-
-  /**
-   * @brief Method called for a box2D end contact
-   * @param[in] contact Box2D contact information
-   */
-  void EndContact(b2Contact *contact);
+  ModelSpawner();
+  void SpawnModel(const SpawnModel::Request &request,
+                  const SpawnModel::Response &response)
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_PLUGIN_MANAGER_H
+};
+#endif
