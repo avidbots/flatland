@@ -71,7 +71,7 @@ class UpdateTimer {
   /**
    * Call this method to check if an update is required to keep with the
    * set update rate
-   * @param[in] timekeeper The object that manages time for the simulation, 
+   * @param[in] timekeeper The object that manages time for the simulation,
    * update timers get the simulation as well as step size for calculation
    */
   bool CheckUpdate(const flatland_server::Timekeeper &timekeeper);
