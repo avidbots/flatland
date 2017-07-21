@@ -131,6 +131,10 @@ if(CATKIN_ENABLE_TESTING)
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
 
+  add_rostest_gtest(model_tf_publisher_test test/model_tf_publisher_test.test
+                    test/model_tf_publisher_test.cpp)
+  target_link_libraries(model_tf_publisher_test flatland_plugins_lib flatland_lib)
+
   add_rostest_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.test
                     test/dummy_model_plugin_test.cpp)
   target_link_libraries(dummy_model_plugin_test flatland_plugins_lib flatland_lib)

@@ -44,14 +44,16 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/laser.h>
+#include <flatland_plugins/model_tf_publisher.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
-#include <sensor_msgs/LaserScan.h>
+#include <tf/transform_datatypes.h>
+#include <tf2_ros/transform_listener.h>
 #include <regex>
 
 namespace fs = boost::filesystem;
@@ -80,66 +82,24 @@ class ModelTfPublisherTest : public ::testing::Test {
     return ret;
   }
 
-  void print_flt_vec(const std::vector<float>& v) {
-    printf("{");
-    for (const auto& e : v) {
-      printf("%f,", e);
-    }
-    printf("}");
-  }
+  bool TfEq(const geometry_msgs::TransformStamped& tf, float x, float y,
+            float a) {
+    tf::Quaternion q;
+    tf::quaternionMsgToTF(tf.transform.rotation, q);
+    tf::Matrix3x3 rot_matrix(q);
+    double roll, pitch, yaw;
+    rot_matrix.getRPY(roll, pitch, yaw);
 
-  bool FloatEq(const char* name, float actual, float expected) {
-    if (actual != expected) {
-      printf("%s Actual:%f != Expected %f", name, actual, expected);
-      return false;
-    }
-    return true;
-  }
-
-  bool ScanEq(const sensor_msgs::LaserScan& scan, std::string frame_id,
-              float angle_min, float angle_max, float angle_increment,
-              float time_increment, float scan_time, float range_min,
-              float range_max, std::vector<float> ranges,
-              std::vector<float> intensities) {
-    if (scan.header.frame_id != frame_id) {
-      printf("frame_id Actual:%s != Expected:%s\n",
-             scan.header.frame_id.c_str(), frame_id.c_str());
-      return false;
-    }
-
-    if (!FloatEq("angle_min", scan.angle_min, angle_min)) return false;
-    if (!FloatEq("angle_max", scan.angle_max, angle_max)) return false;
-    if (!FloatEq("angle_increment", scan.angle_increment, angle_increment))
-      return false;
-    if (!FloatEq("time_increment", scan.time_increment, time_increment))
-      return false;
-    if (!FloatEq("scan_time", scan.scan_time, scan_time)) return false;
-    if (!FloatEq("range_min", scan.range_min, range_min)) return false;
-    if (!FloatEq("range_max", scan.range_max, range_max)) return false;
-
-    if (ranges.size() != scan.ranges.size() ||
-        !std::equal(ranges.begin(), ranges.end(), scan.ranges.begin(),
-                    fltcmp)) {
-      printf("\"ranges\" does not match\n");
-      printf("Actual: ");
-      print_flt_vec(scan.ranges);
-      printf("\n");
-      printf("Expected: ");
-      print_flt_vec(ranges);
-      printf("\n");
-      return false;
-    }
-
-    if (intensities.size() != scan.intensities.size() ||
-        !std::equal(intensities.begin(), intensities.end(),
-                    scan.intensities.begin(), fltcmp)) {
-      printf("\"intensities\" does not math");
-      printf("Actual: ");
-      print_flt_vec(scan.intensities);
-      printf("\n");
-      printf("Expected: ");
-      print_flt_vec(intensities);
-      printf("\n");
+    if (!fltcmp(x, tf.transform.translation.x) ||
+        !fltcmp(y, tf.transform.translation.y) ||
+        !fltcmp(0, tf.transform.translation.z) || !fltcmp(roll, 0) ||
+        !fltcmp(pitch, 0) || !fltcmp(yaw, a)) {
+      printf("Transformation\n");
+      printf("Actual: x=%f y=%f z=%f, roll=%f pitch=%f yaw=%f\n",
+             tf.transform.translation.x, tf.transform.translation.y,
+             tf.transform.translation.z, roll, pitch, yaw);
+      printf("Expected: x=%f y=%f z=%f, roll=%f pitch=%f yaw=%f\n", x, y, 0.0,
+             0.0, 0.0, a);
       return false;
     }
 
@@ -147,15 +107,126 @@ class ModelTfPublisherTest : public ::testing::Test {
   }
 };
 
-TEST_F(LaserPluginTest, tf_publish_test) {
-  world_yaml = this_file_dir /
-               fs::path("model_tf_publisher_test.cpp/tf_publish_test/world.yaml");
+TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
+  world_yaml =
+      this_file_dir /
+      fs::path("model_tf_publisher_tests/tf_publish_test_A/world.yaml");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
   World* w = World::MakeWorld(world_yaml.string());
+  ModelTfPublisher* p1 = dynamic_cast<ModelTfPublisher*>(
+      w->plugin_manager_.model_plugins_[0].get());
 
-  
+  EXPECT_DOUBLE_EQ(5000.0, p1->update_rate_);
+  EXPECT_STREQ("antenna", p1->reference_body_->name_.c_str());
+
+  tf2_ros::Buffer tf_buffer;
+  tf2_ros::TransformListener tf_listener(tf_buffer);
+  geometry_msgs::TransformStamped tf_world_to_base;
+  geometry_msgs::TransformStamped tf_world_to_antenna;
+  geometry_msgs::TransformStamped tf_base_to_left_wheel;
+  geometry_msgs::TransformStamped tf_base_to_right_wheel;
+  geometry_msgs::TransformStamped tf_base_to_front_bumper;
+  geometry_msgs::TransformStamped tf_base_to_rear_bumper;
+
+  // let it spin for 10 times to make sure the message gets through
+  for (int i = 0; i < 10; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  tf_world_to_base = tf_buffer.lookupTransform("world", "base", ros::Time(0));
+  tf_world_to_antenna =
+      tf_buffer.lookupTransform("world", "antenna", ros::Time(0));
+  tf_base_to_left_wheel =
+      tf_buffer.lookupTransform("base", "left_wheel", ros::Time(0));
+  tf_base_to_right_wheel =
+      tf_buffer.lookupTransform("base", "right_wheel", ros::Time(0));
+
+  try {
+    tf_base_to_front_bumper =
+        tf_buffer.lookupTransform("base", "front_bumper", ros::Time(0));
+    ADD_FAILURE() << "Expected an exception, but none were raised";
+  } catch (const tf2::TransformException& e) {
+    EXPECT_STREQ(
+        "\"front_bumper\" passed to lookupTransform argument source_frame does "
+        "not exist. ",
+        e.what());
+  }
+
+  try {
+    tf_base_to_rear_bumper =
+        tf_buffer.lookupTransform("base", "rear_bumper", ros::Time(0));
+    ADD_FAILURE() << "Expected an exception, but none were raised";
+  } catch (const tf2::TransformException& e) {
+    EXPECT_STREQ(
+        "\"rear_bumper\" passed to lookupTransform argument source_frame does "
+        "not exist. ",
+        e.what());
+  }
+
+  EXPECT_TRUE(TfEq(tf_world_to_base, 8, 6, -0.575958653));
+  EXPECT_TRUE(TfEq(tf_world_to_antenna, 8, 6, -0.575958653));
+  EXPECT_TRUE(TfEq(tf_base_to_left_wheel, -0.25, 1, 0));
+  EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
+}
+
+TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
+  world_yaml =
+      this_file_dir /
+      fs::path("model_tf_publisher_tests/tf_publish_test_B/world.yaml");
+
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(1.0);
+  World* w = World::MakeWorld(world_yaml.string());
+  ModelTfPublisher* p1 = dynamic_cast<ModelTfPublisher*>(
+      w->plugin_manager_.model_plugins_[0].get());
+
+  EXPECT_DOUBLE_EQ(std::numeric_limits<double>::infinity(), p1->update_rate_);
+  EXPECT_STREQ("base", p1->reference_body_->name_.c_str());
+
+  tf2_ros::Buffer tf_buffer;
+  tf2_ros::TransformListener tf_listener(tf_buffer);
+  geometry_msgs::TransformStamped tf_map_to_base;
+  geometry_msgs::TransformStamped tf_base_to_antenna;
+  geometry_msgs::TransformStamped tf_base_to_left_wheel;
+  geometry_msgs::TransformStamped tf_base_to_right_wheel;
+  geometry_msgs::TransformStamped tf_base_to_front_bumper;
+  geometry_msgs::TransformStamped tf_base_to_rear_bumper;
+
+  // let it spin for 10 times to make sure the message gets through
+  for (int i = 0; i < 10; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  tf_base_to_antenna =
+      tf_buffer.lookupTransform("base", "antenna", ros::Time(0));
+  tf_base_to_left_wheel =
+      tf_buffer.lookupTransform("base", "left_wheel", ros::Time(0));
+  tf_base_to_right_wheel =
+      tf_buffer.lookupTransform("base", "right_wheel", ros::Time(0));
+  tf_base_to_front_bumper =
+      tf_buffer.lookupTransform("base", "front_bumper", ros::Time(0));
+  tf_base_to_rear_bumper =
+      tf_buffer.lookupTransform("base", "rear_bumper", ros::Time(0));
+
+  try {
+    tf_map_to_base = tf_buffer.lookupTransform("map", "base", ros::Time(0));
+    ADD_FAILURE() << "Expected an exception, but none were raised";
+  } catch (const tf2::TransformException& e) {
+    EXPECT_STREQ(
+        "\"map\" passed to lookupTransform argument target_frame does not "
+        "exist. ",
+        e.what());
+  }
+
+  EXPECT_TRUE(TfEq(tf_base_to_antenna, 0, 0, 0));
+  EXPECT_TRUE(TfEq(tf_base_to_left_wheel, -0.25, 1, 0));
+  EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
+  EXPECT_TRUE(TfEq(tf_base_to_front_bumper, 2, 0, 0));
+  EXPECT_TRUE(TfEq(tf_base_to_rear_bumper, -2, 0, 0));
 }
 
 // Run all the tests that were declared with TEST()

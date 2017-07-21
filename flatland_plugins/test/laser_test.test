@@ -1,5 +1,5 @@
 <!--
-Test launchfile for debug_visualization_test
+Test launchfile for laser_test
 
 This file is used so that rosmaster is running when the test is executed,
 in order to test publish/subscribe

@@ -59,6 +59,7 @@ namespace flatland_plugins {
 void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   publish_tf_world_ = false;
   world_frame_id_ = "map";
+  update_rate_ = std::numeric_limits<double>::infinity();
 
   if (config["reference"]) {
     std::string body_name = config["reference"].as<std::string>();
@@ -83,8 +84,6 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   if (config["update_rate"]) {
     update_rate_ = config["update_rate"].as<double>();
-  } else {
-    update_rate_ = std::numeric_limits<double>::infinity();
   }
 
   std::vector<std::string> excluded_body_names;
