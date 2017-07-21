@@ -229,6 +229,51 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   EXPECT_TRUE(TfEq(tf_base_to_rear_bumper, -2, 0, 0));
 }
 
+TEST_F(ModelTfPublisherTest, invalid_A) {
+  world_yaml =
+      this_file_dir / fs::path("model_tf_publisher_tests/invalid_A/world.yaml");
+
+  try {
+    World* w = World::MakeWorld(world_yaml.string());
+    delete w;
+    FAIL() << "Expected an exception, but none were raised";
+  } catch (const PluginException& e) {
+    std::cmatch match;
+    std::string regex_str = ".*Body with name \"random_body\" does not exist.*";
+    std::regex regex(regex_str);
+    EXPECT_TRUE(std::regex_match(e.what(), match, regex))
+        << "Exception Message '" + std::string(e.what()) + "'" +
+               " did not match against regex '" + regex_str + "'";
+  } catch (const std::exception& e) {
+    ADD_FAILURE() << "Was expecting a PluginException, another exception was "
+                     "caught instead: "
+                  << e.what();
+  }
+}
+
+TEST_F(ModelTfPublisherTest, invalid_B) {
+  world_yaml =
+      this_file_dir / fs::path("model_tf_publisher_tests/invalid_B/world.yaml");
+
+  try {
+    World* w = World::MakeWorld(world_yaml.string());
+    delete w;
+    FAIL() << "Expected an exception, but none were raised";
+  } catch (const PluginException& e) {
+    std::cmatch match;
+    std::string regex_str =
+        ".*Body with name \"random_body_1\" does not exist.*";
+    std::regex regex(regex_str);
+    EXPECT_TRUE(std::regex_match(e.what(), match, regex))
+        << "Exception Message '" + std::string(e.what()) + "'" +
+               " did not match against regex '" + regex_str + "'";
+  } catch (const std::exception& e) {
+    ADD_FAILURE() << "Was expecting a PluginException, another exception was "
+                     "caught instead: "
+                  << e.what();
+  }
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
   ros::init(argc, argv, "model_tf_plugin_test");
