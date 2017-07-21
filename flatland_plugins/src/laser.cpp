@@ -189,7 +189,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   frame_id_ = name_;
   update_rate_ = std::numeric_limits<double>::infinity();
   origin_ = {0, 0, 0};
-  layers = {"all"};
+  std::vector<std::string> layers = {"all"};
 
   if (n["topic"]) {
     topic_ = n["topic"].as<std::string>();
@@ -239,7 +239,6 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
   }
 
-  std::vector<std::string> layers;
   if (n["layers"] && n["layers"].IsSequence()) {
     layers.clear();
     for (int i = 0; i < n["layers"].size(); i++) {
