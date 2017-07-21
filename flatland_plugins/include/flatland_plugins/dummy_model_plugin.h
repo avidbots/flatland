@@ -45,12 +45,12 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_plugins/update_timer.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
-#include <yaml-cpp/yaml.h>
 #include <flatland_server/timekeeper.h>
-#include <flatland_plugins/update_timer.h>
+#include <yaml-cpp/yaml.h>
 
 #ifndef FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
 #define FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
