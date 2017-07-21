@@ -57,6 +57,7 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
+  // default values
   publish_tf_world_ = false;
   world_frame_id_ = "map";
   update_rate_ = std::numeric_limits<double>::infinity();
@@ -71,6 +72,8 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
     }
 
   } else {
+    // defaults to the first body, the reference body has no effect on the
+    // final result, but it changes how the TF would look
     reference_body_ = model_->bodies_[0];
   }
 
@@ -119,14 +122,17 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     return;
   }
 
-  Eigen::Matrix3f ref_tf_m;
-  Eigen::Matrix3f rel_tf;
+  Eigen::Matrix3f ref_tf_m;  ///< for storing TF from world to the ref. body
+  Eigen::Matrix3f rel_tf;    ///< for storing TF from ref. body to other bodies
 
+  // fill the world to ref. body TF with data from Box2D
   const b2Transform &r = reference_body_->physics_body_->GetTransform();
   ref_tf_m << r.q.c, -r.q.s, r.p.x, r.q.s, r.q.c, r.p.y, 0, 0, 1;
+
   geometry_msgs::TransformStamped tf_stamped;
   tf_stamped.header.stamp = ros::Time::now();
 
+  // loop through the bodies to calculate TF, and ignores excluded bodies
   for (int i = 0; i < model_->bodies_.size(); i++) {
     Body *body = model_->bodies_[i];
     bool is_excluded = false;
@@ -141,21 +147,34 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
       continue;
     }
 
-    // start publishing the transformations
+    // Get transformation of body w.r.t to the world
     const b2Transform &b = body->physics_body_->GetTransform();
     Eigen::Matrix3f body_tf_m;
     body_tf_m << b.q.c, -b.q.s, b.p.x, b.q.s, b.q.c, b.p.y, 0, 0, 1;
 
+    // this calculates the transformation from the reference body to the
+    // other body. It is needed because Box2D only provides position and
+    // angle of bodies w.r.t to the world
     rel_tf = ref_tf_m.inverse() * body_tf_m;
 
+    // obtain the yaw from the transformation matrice, we can use any one
+    // of the 4 trigonometric elements in matrix
     double cosine = rel_tf(0, 0);
     double yaw;
-    if (cosine > 1.0) {
+
+    // There is a chance the cosine is slightly larger than 1.0f due to
+    // floating point error, -1 <= cos(x) <= 1, assign acos(1) = 0 to yaw.
+    // We limit this floating point error to 1e-3, if the error is larger
+    // something else is probably wrong
+    if (cosine >= -1 && cosine <= 1) {
+      yaw = acos(cosine);
+    } else if (fabs(cosine) - 1 < 1e-3) {
       yaw = 0.0;
     } else {
-      yaw = acos(cosine);
+      ROS_ERROR_NAMED("ModelTfPublisher", "fabs(cos(x)) - 1 > 1e-3");
     }
 
+    // publish TF
     tf_stamped.header.frame_id = reference_body_->name_;
     tf_stamped.child_frame_id = body->name_;
     tf_stamped.transform.translation.x = rel_tf(0, 2);
@@ -171,6 +190,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     tf_broadcaster.sendTransform(tf_stamped);
   }
 
+  // publish world TF is necessary
   if (publish_tf_world_) {
     const b2Vec2 &p = reference_body_->physics_body_->GetPosition();
     double yaw = reference_body_->physics_body_->GetAngle();

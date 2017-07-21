@@ -59,6 +59,7 @@ class UpdateTimerTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
+  double set_rate;
   double expected_rate;
   double actual_rate;
   double wall_rate;
@@ -75,7 +76,7 @@ class UpdateTimerTest : public ::testing::Test {
 
     DummyModelPlugin* p = dynamic_cast<DummyModelPlugin*>(
         w->plugin_manager_.model_plugins_[0].get());
-    p->update_timer_.SetRate(expected_rate);
+    p->update_timer_.SetRate(set_rate);
 
     timekeeper.SetMaxStepSize(step_size);
     ros::WallRate rate(wall_rate);
@@ -93,9 +94,13 @@ class UpdateTimerTest : public ::testing::Test {
   }
 };
 
+/**
+ * Test update rate at real time factor > 1
+ */
 TEST_F(UpdateTimerTest, rate_test_A) {
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
-  expected_rate = 141.56;
+  set_rate = 141.56;
+  expected_rate = set_rate;
   sim_test_time = 2.0;
 
   // This makes the simulation run at 2.36936936937 real time speed
@@ -107,9 +112,13 @@ TEST_F(UpdateTimerTest, rate_test_A) {
   EXPECT_NEAR(actual_rate, expected_rate, 1);
 }
 
+/**
+ * Test update rate at real time factor < 1
+ */
 TEST_F(UpdateTimerTest, rate_test_B) {
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
-  expected_rate = 564.56;
+  set_rate = 564.56;
+  expected_rate = set_rate;
   sim_test_time = 1.0;
 
   // This makes the simulation run at 0.179902755 real time speed
@@ -121,9 +130,49 @@ TEST_F(UpdateTimerTest, rate_test_B) {
   EXPECT_NEAR(actual_rate, expected_rate, 1);
 }
 
+/**
+ * Test update rate at real time factor >> 1
+ */
 TEST_F(UpdateTimerTest, rate_test_C) {
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
-  expected_rate = 47.4;
+  set_rate = 47.4;
+  expected_rate = set_rate;
+  sim_test_time = 2;
+
+  // This makes the simulation run at 10x real time speed
+  wall_rate = 1000.0;
+  step_size = 1 / 100.0;
+
+  ExecuteRateTest();
+
+  EXPECT_NEAR(actual_rate, expected_rate, 1);
+}
+
+/**
+ * Test update rate at update rate = inf, which will update as fast as possible
+ */
+TEST_F(UpdateTimerTest, rate_test_D) {
+  world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
+  set_rate = std::numeric_limits<double>::infinity();
+  expected_rate = 100.0;
+  sim_test_time = 2;
+
+  // This makes the simulation run at 10x real time speed
+  wall_rate = 1000.0;
+  step_size = 1 / 100.0;
+
+  ExecuteRateTest();
+
+  EXPECT_NEAR(actual_rate, expected_rate, 1);
+}
+
+/**
+ * Test update rate at update rate = 0, which will never update
+ */
+TEST_F(UpdateTimerTest, rate_test_D) {
+  world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
+  set_rate = NAN;
+  expected_rate = 0;
   sim_test_time = 2;
 
   // This makes the simulation run at 10x real time speed

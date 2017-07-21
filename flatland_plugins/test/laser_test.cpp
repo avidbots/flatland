@@ -80,6 +80,7 @@ class LaserPluginTest : public ::testing::Test {
     return ret;
   }
 
+  // print content of the vector for debugging
   void print_flt_vec(const std::vector<float>& v) {
     printf("{");
     for (const auto& e : v) {
@@ -88,6 +89,7 @@ class LaserPluginTest : public ::testing::Test {
     printf("}");
   }
 
+  // check the float values equals and print message for debugging
   bool FloatEq(const char* name, float actual, float expected) {
     if (actual != expected) {
       printf("%s Actual:%f != Expected %f", name, actual, expected);
@@ -96,6 +98,7 @@ class LaserPluginTest : public ::testing::Test {
     return true;
   }
 
+  // check the received scan data is as expected
   bool ScanEq(const sensor_msgs::LaserScan& scan, std::string frame_id,
               float angle_min, float angle_max, float angle_increment,
               float time_increment, float scan_time, float range_min,
@@ -151,6 +154,9 @@ class LaserPluginTest : public ::testing::Test {
   void ScanBackCb(const sensor_msgs::LaserScan& msg) { scan_back = msg; };
 };
 
+/**
+ * Test the laser plugin for a given model and plugin configuration
+ */
 TEST_F(LaserPluginTest, range_test) {
   world_yaml = this_file_dir / fs::path("laser_tests/range_test/world.yaml");
 
@@ -172,6 +178,7 @@ TEST_F(LaserPluginTest, range_test) {
   w->Update(timekeeper);
   ros::spinOnce();
 
+  // check scan returns
   EXPECT_TRUE(ScanEq(scan_front, "laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
                      0.0, 0.0, 0.0, 5.0, {4.5, 4.4, 4.3}, {}));
   EXPECT_TRUE(fltcmp(p1->update_rate_, std::numeric_limits<float>::infinity()))
@@ -189,6 +196,10 @@ TEST_F(LaserPluginTest, range_test) {
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
 }
 
+/**
+ * Checks the laser plugin will throw correct exception for invalid
+ * configurations
+ */
 TEST_F(LaserPluginTest, invalid_A) {
   world_yaml = this_file_dir / fs::path("laser_tests/invalid_A/world.yaml");
 
@@ -210,6 +221,10 @@ TEST_F(LaserPluginTest, invalid_A) {
   }
 }
 
+/**
+ * Checks the laser plugin will throw correct exception for invalid
+ * configurations
+ */
 TEST_F(LaserPluginTest, invalid_B) {
   world_yaml = this_file_dir / fs::path("laser_tests/invalid_B/world.yaml");
 

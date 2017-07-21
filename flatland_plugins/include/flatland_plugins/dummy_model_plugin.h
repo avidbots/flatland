@@ -58,17 +58,29 @@
 using namespace flatland_server;
 
 namespace flatland_plugins {
-
+/**
+ * This is a dummy plugin of type model plugin, used completely for testing
+ * purposes
+ */
 class DummyModelPlugin : public flatland_server::ModelPlugin {
  public:
-  int dummy_param_int_;
-  std::string dummy_param_string_;
-  double dummy_param_float_;
-  UpdateTimer update_timer_;
-  int update_counter_;
+  int dummy_param_int_;             ///< Iteger variable for testing
+  std::string dummy_param_string_;  ///< String variable for testing
+  double dummy_param_float_;        ///< float variable for testing
+  UpdateTimer update_timer_;        ///< Update timer for testing
+  int update_counter_;  ///< Count the number of times update occured
 
+  /**
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
+   */
   void OnInitialize(const YAML::Node &config) override;
-  void BeforePhysicsStep(const Timekeeper &timekeeper_) override;
+
+  /**
+   * @brief Called when just before physics update
+   * @param[in] timekeeper Object keep simulation time
+   */
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
 };
 };
 

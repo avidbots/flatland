@@ -54,13 +54,27 @@ namespace flatland_plugins {
 
 class UpdateTimer {
  public:
-  ros::Duration period_;
-  ros::Time last_update_time_;
+  ros::Duration period_;        ///< period of update
+  ros::Time last_update_time_;  ///< last time the update occured
 
+  /**
+   * @brief Update timer constructor
+   */
   UpdateTimer();
+
+  /**
+   * @brief Set the update rate
+   * @param[in] rate Rate in Hz
+   */
   void SetRate(double rate);
+
+  /**
+   * Call this method to check if an update is required to keep with the
+   * set update rate
+   * @param[in] timekeeper The object that manages time for the simulation, 
+   * update timers get the simulation as well as step size for calculation
+   */
   bool CheckUpdate(const flatland_server::Timekeeper &timekeeper);
-  double GetAverageRate();
 };
 };
 

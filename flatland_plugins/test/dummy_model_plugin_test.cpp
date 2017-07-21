@@ -52,6 +52,10 @@
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
+/**
+ * Test the pluginlib is configured correctly so that the model can be
+ * discovered
+ */
 TEST(DummyModelPluginTest, pluginlib_load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");

@@ -81,6 +81,7 @@ class ModelTfPublisherTest : public ::testing::Test {
     return ret;
   }
 
+  // Test if transform equals to expected
   bool TfEq(const geometry_msgs::TransformStamped& tf, float x, float y,
             float a) {
     tf::Quaternion q;
@@ -106,6 +107,9 @@ class ModelTfPublisherTest : public ::testing::Test {
   }
 };
 
+/**
+ * Test the transformation for the model robot in a given plugin configuration
+ */
 TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   world_yaml =
       this_file_dir /
@@ -135,6 +139,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
     ros::spinOnce();
   }
 
+  // check for the transformations that should exist
   tf_world_to_base = tf_buffer.lookupTransform("world", "base", ros::Time(0));
   tf_world_to_antenna =
       tf_buffer.lookupTransform("world", "antenna", ros::Time(0));
@@ -143,6 +148,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   tf_base_to_right_wheel =
       tf_buffer.lookupTransform("base", "right_wheel", ros::Time(0));
 
+  // check for the transformations that should not exist
   try {
     tf_base_to_front_bumper =
         tf_buffer.lookupTransform("base", "front_bumper", ros::Time(0));
@@ -165,12 +171,16 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
         e.what());
   }
 
+  // check transformations are correct
   EXPECT_TRUE(TfEq(tf_world_to_base, 8, 6, -0.575958653));
   EXPECT_TRUE(TfEq(tf_world_to_antenna, 8, 6, -0.575958653));
   EXPECT_TRUE(TfEq(tf_base_to_left_wheel, -0.25, 1, 0));
   EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
 }
 
+/**
+ * Test the transformation for the model robot in another plugin configuration
+ */
 TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   world_yaml =
       this_file_dir /
@@ -228,6 +238,10 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   EXPECT_TRUE(TfEq(tf_base_to_rear_bumper, -2, 0, 0));
 }
 
+/**
+ * Test the transformation for the provided model yaml, which will fail due
+ * to a nonexistent reference body
+ */
 TEST_F(ModelTfPublisherTest, invalid_A) {
   world_yaml =
       this_file_dir / fs::path("model_tf_publisher_tests/invalid_A/world.yaml");
@@ -250,6 +264,10 @@ TEST_F(ModelTfPublisherTest, invalid_A) {
   }
 }
 
+/**
+ * Test the transformation for the provided model yaml, which will fail due
+ * to a nonexistent body specified in the exclude list
+ */
 TEST_F(ModelTfPublisherTest, invalid_B) {
   world_yaml =
       this_file_dir / fs::path("model_tf_publisher_tests/invalid_B/world.yaml");

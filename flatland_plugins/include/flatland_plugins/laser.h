@@ -60,40 +60,66 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 
+/**
+ * This class implements the model plugin class and provides laser data
+ * for the given configurations
+ */
 class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
-  std::string topic_;
-  Body *body_;
-  std::array<double, 3> origin_;
-  double range_;
-  double max_angle_;
-  double min_angle_;
-  double increment_;
-  double update_rate_;
-  std::string frame_id_;
-  uint16_t layers_bits_;
+  std::string topic_; ///< topic name to publish the laser scan
+  Body *body_; ///<  body the laser frame attaches to
+  std::array<double, 3> origin_; ///< laser frame w.r.t the body
+  double range_; ///< laser max range
+  double max_angle_; /// < laser max angle
+  double min_angle_; ///< laser min angle
+  double increment_; ///< laser angle increment
+  double update_rate_; ///< the rate laser scan will be published
+  std::string frame_id_; ///< laser frame id name
+  uint16_t layers_bits_; ///< for setting the layers where laser will function
 
-  Eigen::Matrix3f m_body_to_laser_;
-  Eigen::Matrix3f m_world_to_body_;
-  Eigen::Matrix3f m_world_to_laser_;
-  Eigen::MatrixXf m_laser_points_;
-  Eigen::MatrixXf m_world_laser_points_;
-  Eigen::Vector3f v_zero_point_;
-  Eigen::Vector3f v_world_laser_origin_;
-  sensor_msgs::LaserScan laser_scan_;
-  bool did_hit_;
-  float fraction_;
+  Eigen::Matrix3f m_body_to_laser_; ///< tf from body to laser
+  Eigen::Matrix3f m_world_to_body_; ///< tf  from world to body
+  Eigen::Matrix3f m_world_to_laser_;///< tf from world to laser
+  Eigen::MatrixXf m_laser_points_;///< laser points in the laser' frame
+  Eigen::MatrixXf m_world_laser_points_;/// laser point in the world frame
+  Eigen::Vector3f v_zero_point_;///< point representing (0,0)
+  Eigen::Vector3f v_world_laser_origin_;///< (0,0) in the laser frame
+  sensor_msgs::LaserScan laser_scan_;///< for publishing laser scan
+  bool did_hit_;///< Box2D ray trace checking if ray hits anything
+  float fraction_;///< Box2D ray trace fraction
 
-  ros::Publisher scan_publisher;
-  tf::TransformBroadcaster tf_broadcaster;
-  geometry_msgs::TransformStamped static_tf;
-  UpdateTimer update_timer_;
-
+  ros::Publisher scan_publisher;///< ros laser topic publisher
+  tf::TransformBroadcaster tf_broadcaster;///< broadcast laser frame
+  geometry_msgs::TransformStamped static_tf;///< tf from body to laser frame
+  UpdateTimer update_timer_; ///< for controlling update rate
+  
+  /**
+   * @brief Box2D raytrace call back method required for implementing the
+   * b2RayCastCallback abstract class
+   * @param[in] fixture Fixture the ray hits
+   * @param[in] point Point the ray hits the fixture
+   * @param[in] normal Vector indicating the normal at the point hit
+   * @param[in] fraction Fraction of ray length at hit point
+   */
   float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                       const b2Vec2 &normal, float fraction) override;
 
+  /**
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
+   */
   void OnInitialize(const YAML::Node &config) override;
+
+  /**
+   * @brief Called when just before physics update
+   * @param[in] timekeeper Object managing the simulation time
+   */
   void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+
+  /**
+   * @brief helper function to extract the paramters from the YAML Node
+   * @param[in] config Plugin YAML Node
+   */
   void ParseParameters(const YAML::Node &config);
 };
 };

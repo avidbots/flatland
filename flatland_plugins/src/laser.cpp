@@ -64,6 +64,8 @@ void Laser::OnInitialize(const YAML::Node &config) {
   update_timer_.SetRate(update_rate_);
   scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
 
+  // construct the body to laser transformation matrix once since it never
+  // changes
   double c = cos(origin_[2]);
   double s = sin(origin_[2]);
   double x = origin_[0], y = origin_[1];
@@ -71,10 +73,13 @@ void Laser::OnInitialize(const YAML::Node &config) {
 
   num_laser_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
+  // initialize size for the matrix storing the laser points
   m_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
   m_world_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
   v_zero_point_ << 0, 0, 1;
 
+  // pre-calculate the laser points w.r.t to the laser frame, since this never
+  // changes
   for (int i = 0; i < num_laser_points_; i++) {
     float angle = min_angle_ + i * increment_;
 
@@ -86,6 +91,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
     m_laser_points_(2, i) = 1;
   }
 
+  // initialize constants in the laser scan message
   laser_scan_.angle_min = min_angle_;
   laser_scan_.angle_max = max_angle_;
   laser_scan_.angle_increment = increment_;
@@ -113,27 +119,32 @@ void Laser::OnInitialize(const YAML::Node &config) {
   static_tf.transform.rotation.w = q.w();
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
-  body_->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
 void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  body_->physics_body_->SetAngularVelocity(2);
-  model_->DebugVisualize();
-
+  // keep the update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
   }
 
+  // get the transformation matrix from the world to the body, and get the
+  // world to laser frame transformation matrix by multiplying the world to body
+  // and body to laser
   const b2Transform &t = body_->physics_body_->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
+  // Get the laser points in the world frame by multiplying the laser points in
+  // the laser frame to the transformation matrix from world to laser frame
   m_world_laser_points_ = m_world_to_laser_ * m_laser_points_;
+  // Get the (0, 0) point in the laser frame
   v_world_laser_origin_ = m_world_to_laser_ * v_zero_point_;
 
+  // Conver to Box2D data types
   b2Vec2 laser_point;
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
+  // loop through the laser points and call the Box2D world raycast
   for (int i = 0; i < num_laser_points_; ++i) {
     laser_point.x = m_world_laser_points_(0, i);
     laser_point.y = m_world_laser_points_(1, i);
@@ -158,8 +169,9 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                            const b2Vec2 &normal, float fraction) {
+  // only register hit in the specified layers
   if (!(fixture->GetFilterData().categoryBits & layers_bits_)) {
-    return -1.0f;
+    return -1.0f;  // return -1 to ignore this hit
   }
 
   did_hit_ = true;
@@ -172,10 +184,15 @@ void Laser::ParseParameters(const YAML::Node &config) {
   const YAML::Node &n = config;
   std::string body_name;
 
+  // default values
+  topic_ = "/scan";
+  frame_id_ = name_;
+  update_rate_ = std::numeric_limits<double>::infinity();
+  origin_ = {0, 0, 0};
+  layers = {"all"};
+
   if (n["topic"]) {
     topic_ = n["topic"].as<std::string>();
-  } else {
-    topic_ = "/scan";
   }
 
   if (n["body"]) {
@@ -186,14 +203,10 @@ void Laser::ParseParameters(const YAML::Node &config) {
 
   if (n["frame"]) {
     frame_id_ = n["frame"].as<std::string>();
-  } else {
-    frame_id_ = name_;
   }
 
   if (n["update_rate"]) {
     update_rate_ = n["update_rate"].as<double>();
-  } else {
-    update_rate_ = std::numeric_limits<double>::infinity();
   }
 
   if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
@@ -202,8 +215,6 @@ void Laser::ParseParameters(const YAML::Node &config) {
     origin_[2] = n["origin"][2].as<double>();
   } else if (n["origin"]) {
     throw YAMLException("Missing/invalid \"origin\" param");
-  } else {
-    origin_ = {0, 0, 0};
   }
 
   if (n["range"]) {
@@ -230,13 +241,12 @@ void Laser::ParseParameters(const YAML::Node &config) {
 
   std::vector<std::string> layers;
   if (n["layers"] && n["layers"].IsSequence()) {
+    layers.clear();
     for (int i = 0; i < n["layers"].size(); i++) {
       layers.push_back(n["layers"][i].as<std::string>());
     }
   } else if (n["layers"]) {
     throw YAMLException("Invalid layers, must be a sequence");
-  } else {
-    layers = {"all"};
   }
 
   if (layers.size() == 1 && layers[0] == "all") {
