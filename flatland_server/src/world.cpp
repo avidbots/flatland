@@ -114,7 +114,6 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     w->LoadLayers(yaml_path);
     w->LoadModels(yaml_path);
-    w->LoadPlugins();
   } catch (const YAML::Exception &e) {
     ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
@@ -218,24 +217,17 @@ void World::LoadModel(const std::string &model_yaml_path,
   m->TransformAll(pose);
   models_.push_back(m);
 
-  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
-}
-
-void World::LoadPlugins() {
-  // Load the model plugins
-  for (const auto &m : models_) {
-    // load model plugins, it is okay to have no plugins
-    if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
-      throw YAMLException("Invalid \"plugins\" in " + m->name_ +
-                          " model, not a list");
-    } else if (m->plugins_node_) {
-      for (const auto &plugin_node : m->plugins_node_) {
-        plugin_manager_.LoadModelPlugin(m, plugin_node);
-      }
+  // load model plugins, it is okay to have no plugins
+  if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
+    throw YAMLException("Invalid \"plugins\" in " + m->name_ +
+                        " model, not a list");
+  } else if (m->plugins_node_) {
+    for (const auto &plugin_node : m->plugins_node_) {
+      plugin_manager_.LoadModelPlugin(m, plugin_node);
     }
   }
 
-  // TODO (Chunshang): World plugins down the line
+  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
 }
 
 void World::DebugVisualize(bool update_layers) {
@@ -249,5 +241,4 @@ void World::DebugVisualize(bool update_layers) {
     model->DebugVisualize();
   }
 }
-
 };  // namespace flatland_server

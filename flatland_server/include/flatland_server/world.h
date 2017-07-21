@@ -122,11 +122,6 @@ class World : public b2ContactListener {
                  const std::array<double, 3> pose);
 
   /**
-   * @brief load all the plugins
-   */
-  void LoadPlugins();
-
-  /**
    * @brief factory method to create a instance of the world class. Cleans all
    * the inputs before instantiation of the class. Throws derivatives of
    * YAML::Exception
