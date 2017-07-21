@@ -51,7 +51,6 @@
 #include <flatland_server/world.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
 #include <tf/transform_datatypes.h>
 #include <tf2_ros/transform_listener.h>
 #include <regex>
@@ -115,11 +114,11 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
   World* w = World::MakeWorld(world_yaml.string());
-  ModelTfPublisher* p1 = dynamic_cast<ModelTfPublisher*>(
+  ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
-  EXPECT_DOUBLE_EQ(5000.0, p1->update_rate_);
-  EXPECT_STREQ("antenna", p1->reference_body_->name_.c_str());
+  EXPECT_DOUBLE_EQ(5000.0, p->update_rate_);
+  EXPECT_STREQ("antenna", p->reference_body_->name_.c_str());
 
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
@@ -180,11 +179,11 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
   World* w = World::MakeWorld(world_yaml.string());
-  ModelTfPublisher* p1 = dynamic_cast<ModelTfPublisher*>(
+  ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
-  EXPECT_DOUBLE_EQ(std::numeric_limits<double>::infinity(), p1->update_rate_);
-  EXPECT_STREQ("base", p1->reference_body_->name_.c_str());
+  EXPECT_DOUBLE_EQ(std::numeric_limits<double>::infinity(), p->update_rate_);
+  EXPECT_STREQ("base", p->reference_body_->name_.c_str());
 
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);

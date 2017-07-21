@@ -50,7 +50,6 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
 #include <sensor_msgs/LaserScan.h>
 #include <regex>
 

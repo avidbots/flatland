@@ -135,6 +135,10 @@ if(CATKIN_ENABLE_TESTING)
                     test/model_tf_publisher_test.cpp)
   target_link_libraries(model_tf_publisher_test flatland_plugins_lib flatland_lib)
 
+  add_rostest_gtest(update_timer_test test/update_timer_test.test
+                    test/update_timer_test.cpp)
+  target_link_libraries(update_timer_test flatland_plugins_lib flatland_lib)
+
   add_rostest_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.test
                     test/dummy_model_plugin_test.cpp)
   target_link_libraries(dummy_model_plugin_test flatland_plugins_lib flatland_lib)
