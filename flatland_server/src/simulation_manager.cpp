@@ -98,7 +98,7 @@ void SimulationManager::Main() {
     if (show_viz_) {
       // don't update layers because they don't change
       world_->DebugVisualize(false);
-      DebugVisualization::Get().Publish(); // publish debug visualization
+      DebugVisualization::Get().Publish();  // publish debug visualization
     }
 
     rate.sleep();
