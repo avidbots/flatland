@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name   flatland_viz.h
- * @brief  Manages the librviz viewport for flatland
- * @author Joseph Duchesne
+ * @name	 model_spawner.h
+ * @brief	 Definition for model spawner
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,51 +44,21 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
-#define FLATLAND_VIZ_FLATLAND_VIZ_H
+#include <flatland_server/model_spawner.h>
 
-#include <ros/ros.h>
-#include <QWidget>
-#include <set>
-#include "flatland_msgs/DebugTopicList.h"
+#ifndef FLATLAND_PLUGIN_MODEL_SPAWNER_H
+#define FLATLAND_PLUGIN_MODEL_SPAWNER_H
 
-namespace rviz {
-class Display;
-class RenderPanel;
-class VisualizationManager;
-}
+namespace flatland_servers {
 
-class FlatlandWindow;
+class ModelSpawner {
 
-class FlatlandViz : public QWidget {
-  Q_OBJECT
+  World *world_;
+
  public:
-  /**
-   * @brief Construct FlatlandViz and subscribe to debug topic list
-   *
-   * @param parent The parent widget
-   */
-  FlatlandViz(FlatlandWindow* parent = 0);
-
-  /**
-   * @brief Recieve a new DebugTopicList msg and add any new displays required
-   *
-   * @param msg The DebugTopicList message
-   */
-  void RecieveDebugTopics(const flatland_msgs::DebugTopicList::ConstPtr& msg);
-
-  /**
-   * @brief Destruct
-   */
-  virtual ~FlatlandViz();
-
-  rviz::VisualizationManager* manager_;
-
- private:
-  rviz::RenderPanel* render_panel_;
-  rviz::Display* grid_;
-  std::set<std::string> debug_topics_;
-  ros::Subscriber debug_topic_subscriber_;
+  ModelSpawner(World *world_);
+  void SpawnModel(const SpawnModel::Request &request,
+                  const SpawnModel::Response &response);
 };
-
-#endif  // FLATLAND_VIZ_FLATLAND_VIZ_H
+};
+#endif

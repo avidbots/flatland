@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   geometry_msgs
   visualization_msgs
-  message_generation
+  flatland_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,30 +46,13 @@ if("${COVERAGE}" STREQUAL "ON")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
 endif()
 
-################
-## Build MSGS ##
-################
-add_message_files(FILES
-  DebugTopicList.msg
-)
-
-add_service_files(FILES
-  SpawnModel.srv
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
-
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
   INCLUDE_DIRS include thirdparty
   LIBRARIES flatland_lib
-  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs message_runtime
+  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs
   DEPENDS OpenCV YAML_CPP
 )
 
