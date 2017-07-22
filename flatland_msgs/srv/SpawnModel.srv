@@ -1,5 +1,5 @@
 string yaml_path
-std_msgs/ColorRGBA color
+string name
 geometry_msgs/Pose2D pose
 ---
 bool success

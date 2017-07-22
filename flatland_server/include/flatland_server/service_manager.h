@@ -44,22 +44,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/spawn_model.h>
+#include <flatland_msgs/SpawnModel.h>
 #include <flatland_server/world.h>
+#include <ros/ros.h>
 
-#ifndef FLATLAND_PLUGIN_MODEL_SPAWNER_H
-#define FLATLAND_PLUGIN_MODEL_SPAWNER_H
+#ifndef FLATLAND_PLUGIN_SERVICE_MANAGER_H
+#define FLATLAND_PLUGIN_SERVICE_MANAGER_H
 
-namespace flatland_servers {
+namespace flatland_server {
 
-class ModelSpawner {
+class World;
 
-  World *world_;
-
+class ServiceManager {
  public:
-  ModelSpawner(World *world_);
-  void SpawnModel(const SpawnModel::Request &request,
-                  const SpawnModel::Response &response);
+  World *world_;
+  ros::ServiceServer service_server_;
+
+  ServiceManager(World *world);
+  bool SpawnModel(flatland_msgs::SpawnModel::Request &request,
+                  flatland_msgs::SpawnModel::Response &response);
 };
 };
 #endif

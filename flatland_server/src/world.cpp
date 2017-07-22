@@ -56,7 +56,7 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) {
+World::World() : gravity_(0, 0), service_manager_(ServiceManager(this)) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -100,7 +100,7 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     yaml = YAML::LoadFile(yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + yaml_path, e);
+    throw YAMLException("Error loading \"" + yaml_path + "\"", e);
   }
 
   if (yaml["properties"] && yaml["properties"].IsMap()) {
@@ -134,7 +134,7 @@ void World::LoadLayers(const std::string &yaml_path) {
   try {
     yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e);
+    throw YAMLException("Error loading \"" + path.string() + "\"", e);
   }
 
   if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
@@ -166,7 +166,7 @@ void World::LoadModels(const std::string &yaml_path) {
   try {
     yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e);
+    throw YAMLException("Error loading \"" + path.string() + "\"", e);
   }
 
   // models is optional
