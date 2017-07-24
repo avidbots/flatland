@@ -64,15 +64,28 @@ World::World() : gravity_(0, 0), service_manager_(ServiceManager(this)) {
 World::~World() {
   ROS_INFO_NAMED("World", "Destroying world...");
 
+  // The order of things matters in the destructor. The contact listener is
+  // removed first to avoid the triggering the contact functions in plugin
+  // manager which might cause it to work with deleted layers/models.
+  physics_world_->SetContactListener(nullptr);  
+
+  // the physics body of layers are set to null because there are tons of
+  // fixtures in a layer and it is too slow for the destroyBody method to remove
+  // them since the AABB tree gets restructured everytime a fixture is removed
+  // The memory will later be freed by deleting the world
   for (int i = 0; i < layers_.size(); i++) {
     layers_[i]->body_->physics_body_ = nullptr;
     delete layers_[i];
   }
 
+  // The bodies of models are not set to null like layers because there aren't
+  // nearly as many fixtures, and we might hide some memory problems by using
+  // the shortcut
   for (int i = 0; i < models_.size(); i++) {
     delete models_[i];
   }
 
+  // This frees the entire Box2D world with everything in it
   delete physics_world_;
 
   ROS_INFO_NAMED("World", "World destroyed");
