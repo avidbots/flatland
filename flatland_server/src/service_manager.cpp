@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name   flatland_viz.h
- * @brief  Manages the librviz viewport for flatland
- * @author Joseph Duchesne
+ * @name	 model_spawner.h
+ * @brief	 Definition for model spawner
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,51 +44,44 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
-#define FLATLAND_VIZ_FLATLAND_VIZ_H
+#include <flatland_server/service_manager.h>
+#include <exception>
 
-#include <ros/ros.h>
-#include <QWidget>
-#include <set>
-#include "flatland_msgs/DebugTopicList.h"
+namespace flatland_server {
 
-namespace rviz {
-class Display;
-class RenderPanel;
-class VisualizationManager;
+ServiceManager::ServiceManager(World *world) : world_(world) {
+  ros::NodeHandle nh;
+
+  spawn_model_service_ =
+      nh.advertiseService("spawn_model", &ServiceManager::SpawnModel, this);
+
+  if (spawn_model_service_) {
+    ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
+  } else {
+    ROS_ERROR_NAMED("Service Manager", "Error starting model spawning service");
+  }
 }
 
-class FlatlandWindow;
+bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
+                                flatland_msgs::SpawnModel::Response &response) {
+  ROS_INFO_NAMED(
+      "ModelSpawner",
+      "Model spawn requested path(\"%s\"), name(\'%s\"), pose(%f,%f,%f)",
+      request.yaml_path.c_str(), request.name.c_str(), request.pose.x,
+      request.pose.y, request.pose.theta);
 
-class FlatlandViz : public QWidget {
-  Q_OBJECT
- public:
-  /**
-   * @brief Construct FlatlandViz and subscribe to debug topic list
-   *
-   * @param parent The parent widget
-   */
-  FlatlandViz(FlatlandWindow* parent = 0);
+  std::array<double, 3> pose = {request.pose.x, request.pose.y,
+                                request.pose.theta};
 
-  /**
-   * @brief Recieve a new DebugTopicList msg and add any new displays required
-   *
-   * @param msg The DebugTopicList message
-   */
-  void RecieveDebugTopics(const flatland_msgs::DebugTopicList::ConstPtr& msg);
+  try {
+    world_->LoadModel(request.yaml_path, request.name, pose);
+    response.success = true;
+    response.message = "";
+  } catch (const std::exception &e) {
+    response.success = false;
+    response.message = std::string(e.what());
+  }
 
-  /**
-   * @brief Destruct
-   */
-  virtual ~FlatlandViz();
-
-  rviz::VisualizationManager* manager_;
-
- private:
-  rviz::RenderPanel* render_panel_;
-  rviz::Display* grid_;
-  std::set<std::string> debug_topics_;
-  ros::Subscriber debug_topic_subscriber_;
+  return true;
+}
 };
-
-#endif  // FLATLAND_VIZ_FLATLAND_VIZ_H

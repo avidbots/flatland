@@ -57,7 +57,7 @@ namespace flatland_server {
 
 DebugVisualization::DebugVisualization() : node_("~debug") {
   topic_list_publisher_ =
-      node_.advertise<flatland_server::DebugTopicList>("topics", 0, true);
+      node_.advertise<flatland_msgs::DebugTopicList>("topics", 0, true);
 }
 
 /**
@@ -225,7 +225,7 @@ void DebugVisualization::Reset(std::string name) {
  * @brief Publish an updated version of the debug topic list
  */
 void DebugVisualization::RefreshDebugTopicList() {
-  DebugTopicList topic_list;
+  flatland_msgs::DebugTopicList topic_list;
   for (auto const& topic_pair : topics_)
     topic_list.topics.push_back(topic_pair.first);
   topic_list_publisher_.publish(topic_list);

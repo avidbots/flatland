@@ -108,7 +108,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
 }
 
 void FlatlandViz::RecieveDebugTopics(
-    const flatland_server::DebugTopicList::ConstPtr& msg) {
+    const flatland_msgs::DebugTopicList::ConstPtr& msg) {
   for (const auto& name : msg->topics) {
     if (debug_topics_.count(name) == 0) {
       // Insert the name into the topics set to mark that it's loaded

@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name   flatland_viz.h
- * @brief  Manages the librviz viewport for flatland
- * @author Joseph Duchesne
+ * @name	 model_spawner.h
+ * @brief	 Definition for model spawner
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,51 +44,39 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
-#define FLATLAND_VIZ_FLATLAND_VIZ_H
-
+#include <flatland_msgs/SpawnModel.h>
+#include <flatland_server/world.h>
 #include <ros/ros.h>
-#include <QWidget>
-#include <set>
-#include "flatland_msgs/DebugTopicList.h"
 
-namespace rviz {
-class Display;
-class RenderPanel;
-class VisualizationManager;
-}
+#ifndef FLATLAND_PLUGIN_SERVICE_MANAGER_H
+#define FLATLAND_PLUGIN_SERVICE_MANAGER_H
 
-class FlatlandWindow;
+namespace flatland_server {
 
-class FlatlandViz : public QWidget {
-  Q_OBJECT
+class World;
+
+/**
+ * This class contains a collection of ROS services that the user may use
+ * to work with the simulation
+ */
+class ServiceManager {
  public:
-  /**
-   * @brief Construct FlatlandViz and subscribe to debug topic list
-   *
-   * @param parent The parent widget
-   */
-  FlatlandViz(FlatlandWindow* parent = 0);
+  World *world_;  ///< an handle to the simulation world
+  ros::ServiceServer spawn_model_service_;  ///< service for spawning models
 
   /**
-   * @brief Recieve a new DebugTopicList msg and add any new displays required
-   *
-   * @param msg The DebugTopicList message
+   * @brief Service manager constructor
+   * @param[in] world A handle to the simulation world
    */
-  void RecieveDebugTopics(const flatland_msgs::DebugTopicList::ConstPtr& msg);
+  ServiceManager(World *world);
 
   /**
-   * @brief Destruct
+   * @brief Callback for the spawn model service
+   * @param[in] request Contains the request data for the service
+   * @param[in/out] response Contains the response for the service
    */
-  virtual ~FlatlandViz();
-
-  rviz::VisualizationManager* manager_;
-
- private:
-  rviz::RenderPanel* render_panel_;
-  rviz::Display* grid_;
-  std::set<std::string> debug_topics_;
-  ros::Subscriber debug_topic_subscriber_;
+  bool SpawnModel(flatland_msgs::SpawnModel::Request &request,
+                  flatland_msgs::SpawnModel::Response &response);
 };
-
-#endif  // FLATLAND_VIZ_FLATLAND_VIZ_H
+};
+#endif

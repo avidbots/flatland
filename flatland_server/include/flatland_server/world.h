@@ -52,6 +52,7 @@
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
+#include <flatland_server/service_manager.h>
 #include <flatland_server/timekeeper.h>
 #include <string>
 #include <vector>
@@ -71,6 +72,7 @@ class World : public b2ContactListener {
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
   PluginManager plugin_manager_;  ///< for loading and updating plugins
+  ServiceManager service_manager_;  ///< For spawning models in world
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -120,11 +122,6 @@ class World : public b2ContactListener {
    */
   void LoadModel(const std::string &model_yaml_path, const std::string &name,
                  const std::array<double, 3> pose);
-
-  /**
-   * @brief load all the plugins
-   */
-  void LoadPlugins();
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all

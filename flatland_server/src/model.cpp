@@ -77,7 +77,7 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
   try {
     model_node = YAML::LoadFile(model_yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + model_yaml_path, e);
+    throw YAMLException("Error loading \"" + model_yaml_path + "\"", e);
   }
 
   Model *m = new Model(physics_world, cfr, name);

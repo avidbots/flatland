@@ -57,10 +57,9 @@
 namespace flatland_server {
 
 class PluginManager {
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
-
  public:
   std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
 
   /**
    * @brief Plugin manager constructor

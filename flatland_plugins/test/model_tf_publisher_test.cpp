@@ -178,6 +178,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   EXPECT_TRUE(TfEq(tf_world_to_antenna, 8, 6, -0.575958653));
   EXPECT_TRUE(TfEq(tf_base_to_left_wheel, -0.25, 1, 0));
   EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
+
+  delete w;
 }
 
 /**
@@ -240,6 +242,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
   EXPECT_TRUE(TfEq(tf_base_to_front_bumper, 2, 0, 0));
   EXPECT_TRUE(TfEq(tf_base_to_rear_bumper, -2, 0, 0));
+
+  delete w;
 }
 
 /**

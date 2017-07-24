@@ -123,7 +123,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
   try {
     yaml = YAML::LoadFile(map_yaml_path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + map_yaml_path.string(), e);
+    throw YAMLException("Error loading \"" + map_yaml_path.string() + "\"", e);
   }
 
   if (yaml["resolution"]) {

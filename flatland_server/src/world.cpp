@@ -56,7 +56,7 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) {
+World::World() : gravity_(0, 0), service_manager_(ServiceManager(this)) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -64,15 +64,28 @@ World::World() : gravity_(0, 0) {
 World::~World() {
   ROS_INFO_NAMED("World", "Destroying world...");
 
+  // The order of things matters in the destructor. The contact listener is
+  // removed first to avoid the triggering the contact functions in plugin
+  // manager which might cause it to work with deleted layers/models.
+  physics_world_->SetContactListener(nullptr);
+
+  // the physics body of layers are set to null because there are tons of
+  // fixtures in a layer and it is too slow for the destroyBody method to remove
+  // them since the AABB tree gets restructured everytime a fixture is removed
+  // The memory will later be freed by deleting the world
   for (int i = 0; i < layers_.size(); i++) {
     layers_[i]->body_->physics_body_ = nullptr;
     delete layers_[i];
   }
 
+  // The bodies of models are not set to null like layers because there aren't
+  // nearly as many fixtures, and we might hide some memory problems by using
+  // the shortcut
   for (int i = 0; i < models_.size(); i++) {
     delete models_[i];
   }
 
+  // This frees the entire Box2D world with everything in it
   delete physics_world_;
 
   ROS_INFO_NAMED("World", "World destroyed");
@@ -100,7 +113,7 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     yaml = YAML::LoadFile(yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + yaml_path, e);
+    throw YAMLException("Error loading \"" + yaml_path + "\"", e);
   }
 
   if (yaml["properties"] && yaml["properties"].IsMap()) {
@@ -114,7 +127,6 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     w->LoadLayers(yaml_path);
     w->LoadModels(yaml_path);
-    w->LoadPlugins();
   } catch (const YAML::Exception &e) {
     ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
@@ -135,7 +147,7 @@ void World::LoadLayers(const std::string &yaml_path) {
   try {
     yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e);
+    throw YAMLException("Error loading \"" + path.string() + "\"", e);
   }
 
   if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
@@ -167,7 +179,7 @@ void World::LoadModels(const std::string &yaml_path) {
   try {
     yaml = YAML::LoadFile(path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + path.string(), e);
+    throw YAMLException("Error loading \"" + path.string() + "\"", e);
   }
 
   // models is optional
@@ -218,24 +230,17 @@ void World::LoadModel(const std::string &model_yaml_path,
   m->TransformAll(pose);
   models_.push_back(m);
 
-  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
-}
-
-void World::LoadPlugins() {
-  // Load the model plugins
-  for (const auto &m : models_) {
-    // load model plugins, it is okay to have no plugins
-    if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
-      throw YAMLException("Invalid \"plugins\" in " + m->name_ +
-                          " model, not a list");
-    } else if (m->plugins_node_) {
-      for (const auto &plugin_node : m->plugins_node_) {
-        plugin_manager_.LoadModelPlugin(m, plugin_node);
-      }
+  // load model plugins, it is okay to have no plugins
+  if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
+    throw YAMLException("Invalid \"plugins\" in " + m->name_ +
+                        " model, not a list");
+  } else if (m->plugins_node_) {
+    for (const auto &plugin_node : m->plugins_node_) {
+      plugin_manager_.LoadModelPlugin(m, plugin_node);
     }
   }
 
-  // TODO (Chunshang): World plugins down the line
+  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
 }
 
 void World::DebugVisualize(bool update_layers) {
@@ -249,5 +254,4 @@ void World::DebugVisualize(bool update_layers) {
     model->DebugVisualize();
   }
 }
-
 };  // namespace flatland_server

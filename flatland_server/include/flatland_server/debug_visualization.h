@@ -53,7 +53,7 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "flatland_server/DebugTopicList.h"
+#include "flatland_msgs/DebugTopicList.h"
 
 namespace flatland_server {
 struct DebugTopic {

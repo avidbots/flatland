@@ -194,6 +194,8 @@ TEST_F(LaserPluginTest, range_test) {
                      0.0, 4, {NAN, 3.2, 3.5, NAN, NAN}, {}));
   EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
+
+  delete w;
 }
 
 /**
