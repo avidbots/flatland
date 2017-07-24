@@ -47,6 +47,7 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <regex>
@@ -69,8 +70,6 @@ class TestModelPlugin : public ModelPlugin {
   TestModelPlugin() { ClearTestingVariables(); }
 
   void ClearTestingVariables() {
-    param_timestep_before = -1;
-    param_timestep_after = -1;
     param_layer = nullptr;
     param_model = nullptr;
     param_fixture_A = nullptr;
@@ -91,14 +90,12 @@ class TestModelPlugin : public ModelPlugin {
     function_called["OnInitialize"] = true;
   }
 
-  void BeforePhysicsStep(double timestep) override {
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override {
     function_called["BeforePhysicsStep"] = true;
-    param_timestep_before = timestep;
   }
 
-  void AfterPhysicsStep(double timestep) override {
+  void AfterPhysicsStep(const Timekeeper &timekeeper) override {
     function_called["AfterPhysicsStep"] = true;
-    param_timestep_after = timestep;
   }
 
   void BeginContactWithMap(Layer *layer, b2Fixture *layer_fixture,
@@ -149,6 +146,7 @@ class PluginManagerTest : public ::testing::Test {
  protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
+  Timekeeper timekeeper;
 
   PluginManagerTest() {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
@@ -191,22 +189,8 @@ class PluginManagerTest : public ::testing::Test {
     return true;
   }
 
-  // Check parameters passed into the functions, the checking of specific
-  // fixtures are done on a needs basis
-  bool FunctionParamEq(TestModelPlugin *p, double timestep_before,
-                       double timestep_after, Layer *layer, Model *model) {
-    if (!fltcmp(timestep_before, p->param_timestep_before)) {
-      printf("timestep_before Actual:%f != Expected:%f\n",
-             p->param_timestep_before, timestep_before);
-      return false;
-    }
-
-    if (!fltcmp(timestep_after, p->param_timestep_after)) {
-      printf("timestep_after Actual:%f != Expected:%f\n",
-             p->param_timestep_after, timestep_after);
-      return false;
-    }
-
+  // Checks the expected entities are collided
+  bool FunctionParamEq(TestModelPlugin *p, Layer *layer, Model *model) {
     if (layer != p->param_layer) {
       printf("layer Actual:%p(%s) != Expected:%p(%s)\n", p->param_layer,
              p->param_layer ? p->param_layer->name_.c_str() : "null", layer,
@@ -228,6 +212,7 @@ class PluginManagerTest : public ::testing::Test {
 TEST_F(PluginManagerTest, collision_test) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/collision_test/world.yaml");
+  timekeeper.SetMaxStepSize(1.0);
   World *w = World::MakeWorld(world_yaml.string());
   Layer *l = w->layers_[0];
   Model *m0 = w->models_[0];
@@ -238,10 +223,10 @@ TEST_F(PluginManagerTest, collision_test) {
   boost::shared_ptr<TestModelPlugin> shared_p(new TestModelPlugin());
   shared_p->Initialize("TestModelPlugin", "test_model_plugin", m0,
                        YAML::Node());
-  pm->model_plugins.push_back(shared_p);
+  pm->model_plugins_.push_back(shared_p);
   TestModelPlugin *p = shared_p.get();
 
-  w->Update(1);
+  w->Update(timekeeper);
 
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", true},
                                  {"BeforePhysicsStep", true},
@@ -252,15 +237,15 @@ TEST_F(PluginManagerTest, collision_test) {
                                  {"EndContactWithModel", false},
                                  {"BeginContact", true},
                                  {"EndContact", false}}));
-  EXPECT_TRUE(FunctionParamEq(p, 1, 1, l, nullptr));
+  EXPECT_TRUE(FunctionParamEq(p, l, nullptr));
   EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
   EXPECT_EQ(p->param_fixture_A->GetType(), b2Shape::e_edge);
   p->ClearTestingVariables();
 
   b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0));
   // takes two steps for Box2D to genreate collision events, not sure why
-  w->Update(1);
-  w->Update(1);
+  w->Update(timekeeper);
+  w->Update(timekeeper);
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
                                  {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},
@@ -270,15 +255,15 @@ TEST_F(PluginManagerTest, collision_test) {
                                  {"EndContactWithModel", false},
                                  {"BeginContact", false},
                                  {"EndContact", true}}));
-  EXPECT_TRUE(FunctionParamEq(p, 1, 1, l, nullptr));
+  EXPECT_TRUE(FunctionParamEq(p, l, nullptr));
   EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
   EXPECT_EQ(p->param_fixture_A->GetType(), b2Shape::e_edge);
   p->ClearTestingVariables();
 
   b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
   b1->physics_body_->SetLinearVelocity(b2Vec2(0, -0.5));
-  w->Update(1);
-  w->Update(1);
+  w->Update(timekeeper);
+  w->Update(timekeeper);
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
                                  {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},
@@ -288,15 +273,15 @@ TEST_F(PluginManagerTest, collision_test) {
                                  {"EndContactWithModel", false},
                                  {"BeginContact", true},
                                  {"EndContact", false}}));
-  EXPECT_TRUE(FunctionParamEq(p, 1, 1, nullptr, m1));
+  EXPECT_TRUE(FunctionParamEq(p, nullptr, m1));
   EXPECT_EQ(p->param_fixture_A, b1->physics_body_->GetFixtureList());
   EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
   p->ClearTestingVariables();
 
   b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
   b1->physics_body_->SetLinearVelocity(b2Vec2(0, -1));
-  w->Update(1);
-  w->Update(1);
+  w->Update(timekeeper);
+  w->Update(timekeeper);
   EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
                                  {"BeforePhysicsStep", true},
                                  {"AfterPhysicsStep", true},
@@ -306,7 +291,7 @@ TEST_F(PluginManagerTest, collision_test) {
                                  {"EndContactWithModel", true},
                                  {"BeginContact", false},
                                  {"EndContact", true}}));
-  EXPECT_TRUE(FunctionParamEq(p, 1, 1, nullptr, m1));
+  EXPECT_TRUE(FunctionParamEq(p, nullptr, m1));
   EXPECT_EQ(p->param_fixture_A, b1->physics_body_->GetFixtureList());
   EXPECT_EQ(p->param_fixture_B, b0->physics_body_->GetFixtureList());
   p->ClearTestingVariables();
@@ -322,7 +307,7 @@ TEST_F(PluginManagerTest, load_dummy_test) {
 
   World *w = World::MakeWorld(world_yaml.string());
 
-  ModelPlugin *p = w->plugin_manager_.model_plugins[0].get();
+  ModelPlugin *p = w->plugin_manager_.model_plugins_[0].get();
 
   EXPECT_STREQ(p->type_.c_str(), "DummyModelPlugin");
   EXPECT_STREQ(p->name_.c_str(), "dummy_test_plugin");
@@ -336,7 +321,7 @@ TEST_F(PluginManagerTest, plugin_throws_exception) {
   try {
     World *w = World::MakeWorld(world_yaml.string());
     delete w;
-    ADD_FAILURE() << "Test passed without raising an exception";
+    FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException &e) {
     // do a regex match against error message
     std::string regex_str =
@@ -347,9 +332,10 @@ TEST_F(PluginManagerTest, plugin_throws_exception) {
     EXPECT_TRUE(std::regex_match(e.what(), match, regex))
         << "Exception Message '" + std::string(e.what()) + "'" +
                " did not match against regex '" + regex_str + "'";
-  } catch (...) {
+  } catch (const std::exception &e) {
     ADD_FAILURE() << "Was expecting a PluginException, another exception was "
-                     "caught instead";
+                     "caught instead: "
+                  << e.what();
   }
 }
 
@@ -360,7 +346,7 @@ TEST_F(PluginManagerTest, nonexistent_plugin) {
   try {
     World *w = World::MakeWorld(world_yaml.string());
     delete w;
-    ADD_FAILURE() << "Test passed without raising an exception";
+    FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException &e) {
     std::cmatch match;
     std::string regex_str =
@@ -370,9 +356,10 @@ TEST_F(PluginManagerTest, nonexistent_plugin) {
     EXPECT_TRUE(std::regex_match(e.what(), match, regex))
         << "Exception Message '" + std::string(e.what()) + "'" +
                " did not match against regex '" + regex_str + "'";
-  } catch (...) {
+  } catch (const std::exception &e) {
     ADD_FAILURE() << "Was expecting a PluginException, another exception was "
-                     "caught instead";
+                     "caught instead: "
+                  << e.what();
   }
 }
 
@@ -383,12 +370,13 @@ TEST_F(PluginManagerTest, invalid_plugin_yaml) {
   try {
     World *w = World::MakeWorld(world_yaml.string());
     delete w;
-    ADD_FAILURE() << "Test passed without raising an exception";
+    FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(e.what(), "Flatland YAML: Missing plugin name");
-  } catch (...) {
+  } catch (const std::exception &e) {
     ADD_FAILURE() << "Was expecting a YAMLException, another exception was "
-                     "caught instead";
+                     "caught instead: "
+                  << e.what();
   }
 }
 

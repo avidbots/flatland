@@ -175,9 +175,10 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 void Layer::LoadMap() {
-  int layer_id = cfr_->LookUpLayerId(name_);
+  uint16_t category_bits = cfr_->GetCategoryBits({name_});
 
-  auto add_edge = [this, layer_id](double x1, double y1, double x2, double y2) {
+  auto add_edge = [this, category_bits](double x1, double y1, double x2,
+                                        double y2) {
     b2EdgeShape edge;
     double rows = bitmap_.rows;
     double res = resolution_;
@@ -187,7 +188,7 @@ void Layer::LoadMap() {
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
-    fixture_def.filter.categoryBits = 1 << layer_id;
+    fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     body_->physics_body_->CreateFixture(&fixture_def);
   };

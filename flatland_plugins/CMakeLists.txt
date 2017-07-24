@@ -12,7 +12,11 @@ find_package(catkin REQUIRED COMPONENTS
   pluginlib
   roscpp
   flatland_server
+  cmake_modules
+  tf
 )
+
+find_package(Eigen3 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 find_package(PkgConfig REQUIRED)
@@ -47,7 +51,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
   CATKIN_DEPENDS pluginlib roscpp flatland_server
-  DEPENDS YAML_CPP
 )
 
 ###########
@@ -58,17 +61,21 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
 )
 
 # Declare a C++ library
 add_library(flatland_plugins_lib
   src/laser.cpp
   src/dummy_model_plugin.cpp
+  src/model_tf_publisher.cpp
+  src/update_timer.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_plugins_lib
   ${catkin_LIBRARIES}
+  ${Eigen3_LIBRARIES}
   yaml-cpp
 )
 
@@ -123,6 +130,14 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
+
+  add_rostest_gtest(model_tf_publisher_test test/model_tf_publisher_test.test
+                    test/model_tf_publisher_test.cpp)
+  target_link_libraries(model_tf_publisher_test flatland_plugins_lib flatland_lib)
+
+  add_rostest_gtest(update_timer_test test/update_timer_test.test
+                    test/update_timer_test.cpp)
+  target_link_libraries(update_timer_test flatland_plugins_lib flatland_lib)
 
   add_rostest_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.test
                     test/dummy_model_plugin_test.cpp)

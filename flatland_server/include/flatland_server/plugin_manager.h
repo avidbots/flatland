@@ -50,6 +50,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
@@ -59,7 +60,7 @@ class PluginManager {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
 
  public:
-  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins;
+  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
 
   /**
    * @brief Plugin manager constructor
@@ -73,15 +74,15 @@ class PluginManager {
 
   /**
    * @brief This method is called before the Box2D physics step
-   * @param[in] timestep how much the physics time will increment
+   * @param[in] timekeeper provide time related information
    */
-  void BeforePhysicsStep(double timestep);
+  void BeforePhysicsStep(const Timekeeper &timekeeper);
 
   /**
    * @brief This method is called after the Box2D physics step
-   * @param[in] timestep how much the physics time have incremented
+   * @param[in] timekeeper provide time related information
    */
-  void AfterPhysicsStep(double timestep);
+  void AfterPhysicsStep(const Timekeeper &timekeeper);
 
   /**
    * @brief Load model plugins
