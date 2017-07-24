@@ -194,8 +194,8 @@ double Bicycle::CalculateDelta(double distance) {
   return delta;
 }
 
-void Bicycle::BeforePhysicsStep(double timestep) {
-  time_step = timestep * speedFactor;
+void Bicycle::BeforePhysicsStep(const flatland_server::Timekeeper& timekeeper) {
+  time_step = timekeeper.GetStepSize() * speedFactor;
 
   robot = model_->GetBody("base")->physics_body_;
 

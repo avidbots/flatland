@@ -46,6 +46,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include "geometry_msgs/Twist.h"
 
 #ifndef FLATLAND_PLUGINS_BICYCLE_H
@@ -92,7 +93,8 @@ class Bicycle : public flatland_server::ModelPlugin {
    * Override the BeforePhysicsStep method
    * @param[in] config The plugin YAML node
    */
-  void BeforePhysicsStep(double timestep) override;
+  void BeforePhysicsStep(
+      const flatland_server::Timekeeper& timekeeper) override;
   /**
    * Callback to apply twist (velocity and omega)
    * @param[in] timestep how much the physics time will increment

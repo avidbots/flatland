@@ -66,8 +66,9 @@ void Diff_drive::OnInitialize(const YAML::Node& config) {
   sub = nh_.subscribe("/cmd_vel", 0, &Diff_drive::TwistCallback, this);
 }
 
-void Diff_drive::BeforePhysicsStep(double timestep) {
-  time_step = timestep * speedFactor;
+void Diff_drive::BeforePhysicsStep(
+    const flatland_server::Timekeeper& timekeeper) {
+  time_step = timekeeper.GetStepSize() * speedFactor;
 
   robot = model_->GetBody("base")->physics_body_;
 
