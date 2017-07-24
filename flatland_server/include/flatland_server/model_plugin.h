@@ -50,6 +50,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
@@ -66,7 +67,7 @@ class ModelPlugin {
   std::string name_;    ///< name of the plugin
   ros::NodeHandle nh_;  ///< ROS node handle
   Model *model_;        ///< model this plugin is tied to
-
+  int num_laser_points_;
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
    * require the class to have a default constructor
@@ -87,15 +88,15 @@ class ModelPlugin {
 
   /**
    * @brief This method is called before the Box2D physics step
-   * @param[in] timestep how much the physics time will increment
+   * @param[in] timekeeper provide time related information
    */
-  virtual void BeforePhysicsStep(double timestep) {}
+  virtual void BeforePhysicsStep(const Timekeeper &timekeeper_) {}
 
   /**
    * @brief This method is called after the Box2D physics step
-   * @param[in] timestep how much the physics time have incremented
+   * @param[in] timekeeper provide time related information
    */
-  virtual void AfterPhysicsStep(double timestep) {}
+  virtual void AfterPhysicsStep(const Timekeeper &timekeeper_) {}
 
   /**
    * @brief This method is called when the model starts to collide with the map

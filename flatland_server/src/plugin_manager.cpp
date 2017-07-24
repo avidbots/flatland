@@ -59,15 +59,15 @@ PluginManager::PluginManager() {
 
 PluginManager::~PluginManager() { delete class_loader_; }
 
-void PluginManager::BeforePhysicsStep(double timestep) {
-  for (const auto &model_plugin : model_plugins) {
-    model_plugin->BeforePhysicsStep(timestep);
+void PluginManager::BeforePhysicsStep(const Timekeeper &timekeeper_) {
+  for (const auto &model_plugin : model_plugins_) {
+    model_plugin->BeforePhysicsStep(timekeeper_);
   }
 }
 
-void PluginManager::AfterPhysicsStep(double timestep) {
-  for (const auto &model_plugin : model_plugins) {
-    model_plugin->AfterPhysicsStep(timestep);
+void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
+  for (const auto &model_plugin : model_plugins_) {
+    model_plugin->AfterPhysicsStep(timekeeper_);
   }
 }
 
@@ -101,11 +101,11 @@ void PluginManager::LoadModelPlugin(Model *model,
   try {
     model_plugin->Initialize(type, name, model, plugin_node);
   } catch (const std::exception &e) {
-    throw PluginException(
-        "ModelPlugin", type, name,
-        "Error during initialization (" + std::string(e.what()) + ")");
+    throw PluginException("ModelPlugin", type, name,
+                          "Init Error model=" + model->name_ + " (" +
+                              std::string(e.what()) + ")");
   }
-  model_plugins.push_back(model_plugin);
+  model_plugins_.push_back(model_plugin);
 
   ROS_INFO_NAMED("PluginManager", "Model Plugin %s of type %s loaded",
                  name.c_str(), type.c_str());
@@ -119,7 +119,7 @@ void PluginManager::BeginContact(b2Contact *contact) {
   Entity *e_A = b_A->entity_;
   Entity *e_B = b_B->entity_;
 
-  for (auto &model_plugin : model_plugins) {
+  for (auto &model_plugin : model_plugins_) {
     Model *m = model_plugin->model_;
 
     if (e_A == m && e_B->Type() == Entity::LAYER) {
@@ -148,7 +148,7 @@ void PluginManager::EndContact(b2Contact *contact) {
   Entity *e_A = b_A->entity_;
   Entity *e_B = b_B->entity_;
 
-  for (auto &model_plugin : model_plugins) {
+  for (auto &model_plugin : model_plugins_) {
     Model *m = model_plugin->model_;
 
     if (e_A == m && e_B->Type() == Entity::LAYER) {
