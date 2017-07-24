@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  laser_test.cpp
- * @brief test laser plugin
+ * @name  model_tf_publisher_test.cpp
+ * @brief test model TF publisher plugin
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)

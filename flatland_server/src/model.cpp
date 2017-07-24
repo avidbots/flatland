@@ -52,8 +52,8 @@
 namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::string &name)
-    : Entity(physics_world), name_(name), cfr_(cfr) {
+             const std::string &ns, const std::string &name)
+    : Entity(physics_world), namespace_(ns), name_(name), cfr_(cfr) {
   no_collide_group_index_ = cfr->RegisterNoCollide();
 }
 
@@ -70,9 +70,10 @@ Model::~Model() {
   // joint, the creation of a joint must always have bodies attached to it
 }
 
-Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const std::string &name,
-                        const std::string &model_yaml_path) {
+Model *Model::MakeModel(
+    b2World *physics_world, CollisionFilterRegistry *cfr,
+    const std::string &model_yaml_path, const std::string &ns,
+    const std::string &name) {
   YAML::Node model_node;
   try {
     model_node = YAML::LoadFile(model_yaml_path);
@@ -80,7 +81,7 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
     throw YAMLException("Error loading \"" + model_yaml_path + "\"", e);
   }
 
-  Model *m = new Model(physics_world, cfr, name);
+  Model *m = new Model(physics_world, cfr, ns, name);
 
   m->plugins_node_ = model_node["plugins"];
 

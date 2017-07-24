@@ -175,8 +175,13 @@ TEST_F(LaserPluginTest, range_test) {
   Laser* p2 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[1].get());
   Laser* p3 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[2].get());
 
-  w->Update(timekeeper);
-  ros::spinOnce();
+  // let it spin for 10 times to make sure the message gets through
+  ros::WallRate rate(50);
+  for (int i = 0; i < 10; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+    rate.sleep();
+  }
 
   // check scan returns
   EXPECT_TRUE(ScanEq(scan_front, "laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,

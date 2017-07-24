@@ -188,7 +188,7 @@ void World::LoadModels(const std::string &yaml_path) {
   } else if (yaml["models"]) {
     for (int i = 0; i < yaml["models"].size(); i++) {
       const YAML::Node &node = yaml["models"][i];
-      std::string name;
+      std::string name, ns;
       std::array<double, 3> pose;
       boost::filesystem::path model_path;
 
@@ -197,6 +197,12 @@ void World::LoadModels(const std::string &yaml_path) {
       } else {
         throw YAMLException("Missing model name in model index=" +
                             std::to_string(i));
+      }
+
+      if (node["namespace"]) {
+        ns = node["namespace"].as<std::string>();
+      } else {
+        ns = "";
       }
 
       if (node["pose"] && node["pose"].IsSequence() &&
@@ -218,15 +224,15 @@ void World::LoadModels(const std::string &yaml_path) {
         model_path = path.parent_path() / model_path;
       }
 
-      LoadModel(model_path.string(), name, pose);
+      LoadModel(model_path.string(), ns, name, pose);
     }
   }
 }
 
-void World::LoadModel(const std::string &model_yaml_path,
+void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
                       const std::string &name,
                       const std::array<double, 3> pose) {
-  Model *m = Model::MakeModel(physics_world_, &cfr_, name, model_yaml_path);
+  Model *m = Model::MakeModel(physics_world_, &cfr_, model_yaml_path, ns, name);
   m->TransformAll(pose);
   models_.push_back(m);
 

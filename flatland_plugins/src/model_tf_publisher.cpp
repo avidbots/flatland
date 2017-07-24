@@ -81,6 +81,10 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
     world_frame_id_ = config["world_frame_id"].as<std::string>();
   }
 
+  if (config["use_namespace"]) {
+    tf_prefix_ = model_->namespace_;
+  }
+
   if (config["publish_tf_world"]) {
     publish_tf_world_ = config["publish_tf_world"].as<bool>();
   }
@@ -175,7 +179,8 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     }
 
     // publish TF
-    tf_stamped.header.frame_id = reference_body_->name_;
+    tf_stamped.header.frame_id =
+        tf::resolve(tf_prefix_, reference_body_->name_);
     tf_stamped.child_frame_id = body->name_;
     tf_stamped.transform.translation.x = rel_tf(0, 2);
     tf_stamped.transform.translation.y = rel_tf(1, 2);
@@ -190,7 +195,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     tf_broadcaster.sendTransform(tf_stamped);
   }
 
-  // publish world TF is necessary
+  // publish world TF if necessary
   if (publish_tf_world_) {
     const b2Vec2 &p = reference_body_->physics_body_->GetPosition();
     double yaw = reference_body_->physics_body_->GetAngle();
