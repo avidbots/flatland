@@ -94,7 +94,6 @@ World::~World() {
 void World::Update(Timekeeper &timekeeper) {
   plugin_manager_.BeforePhysicsStep(timekeeper);
   physics_world_->Step(timekeeper.GetStepSize(), 10, 10);
-  // physics_world->Dump();
   timekeeper.StepTime();
   plugin_manager_.AfterPhysicsStep(timekeeper);
 }

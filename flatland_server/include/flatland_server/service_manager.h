@@ -61,7 +61,6 @@ class ServiceManager {
   ros::ServiceServer spawn_model_service_;
 
   ServiceManager(World *world);
-  // ~ServiceManager();  
   bool SpawnModel(flatland_msgs::SpawnModel::Request &request,
                   flatland_msgs::SpawnModel::Response &response);
 };

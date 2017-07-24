@@ -81,19 +81,16 @@ class UpdateTimerTest : public ::testing::Test {
     timekeeper.SetMaxStepSize(step_size);
     ros::WallRate rate(wall_rate);
 
+    // run for two seconds
+    while (timekeeper.GetSimTime() < ros::Time(sim_test_time)) {
       w->Update(timekeeper);
-    
+      ros::spinOnce();
+      rate.sleep();
+    }
 
-    // // run for two seconds
-    // while (timekeeper.GetSimTime() < ros::Time(sim_test_time)) {
-    //   w->Update(timekeeper);
-    //   ros::spinOnce();
-    //   rate.sleep();
-    // }
-
-    // actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
+    actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
     delete w;
-    
+
     printf("Actual Rate: %f, Expected Rate: %f\n", actual_rate, expected_rate);
   }
 };

@@ -66,9 +66,6 @@ Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
 
 Body::~Body() {
   if (physics_body_) {
-    printf("hello1\n");
-    physics_body_->Dump();
-    printf("hello2\n");
     physics_body_->GetWorld()->DestroyBody(physics_body_);
   }
 }

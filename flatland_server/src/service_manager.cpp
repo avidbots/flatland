@@ -62,11 +62,6 @@ ServiceManager::ServiceManager(World *world) : world_(world) {
   }
 }
 
-// ServiceManager::~ServiceManager() {
-//   ROS_ERROR("***************Unadvertise******************");
-//   spawn_model_service_.shutdown();
-// }
-
 bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
                                 flatland_msgs::SpawnModel::Response &response) {
   ROS_INFO_NAMED(
