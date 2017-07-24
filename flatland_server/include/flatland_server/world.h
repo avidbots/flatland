@@ -52,6 +52,7 @@
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
+#include <flatland_server/timekeeper.h>
 #include <string>
 #include <vector>
 
@@ -84,9 +85,9 @@ class World : public b2ContactListener {
 
   /**
    * @brief trigger world update include all physics and plugins
-   * @param[in] timestep The amount of simulation time to elapse in seconds
+   * @param[in] timekeeper The time keeping object
    */
-  void Update(double timestep);
+  void Update(Timekeeper &timekeeper);
 
   /**
    * @brief Box2D inherited begin contact

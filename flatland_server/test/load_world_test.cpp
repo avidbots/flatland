@@ -73,7 +73,7 @@ class LoadWorldTest : public ::testing::Test {
     try {
       World *w = World::MakeWorld(world_yaml.string());
       delete w;
-      ADD_FAILURE() << "Expected YAMLException, it passed instead";
+      ADD_FAILURE() << "Expected an exception, but none were raised";
     } catch (const YAML::Exception &e) {
       // do a regex match against error messages
       std::cmatch match;
@@ -81,9 +81,10 @@ class LoadWorldTest : public ::testing::Test {
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
           << "Exception Message '" + std::string(e.what()) + "'" +
                  " did not match against regex '" + regex_str + "'";
-    } catch (...) {
+    } catch (const std::exception &e) {
       ADD_FAILURE()
-          << "Expected YAMLException, another exception was caught instead";
+          << "Expected YAMLException, another exception was caught instead: "
+          << e.what();
     }
   }
 
@@ -816,7 +817,7 @@ TEST_F(LoadWorldTest, model_invalid_E) {
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
   test_yaml_fail(
       "Flatland YAML: Invalid footprint \"layer\" in left_wheel body, "
-      "random_layer does not exist");
+      "\\{random_layer\\} layer\\(s\\) does not exist");
 }
 
 // Run all the tests that were declared with TEST()

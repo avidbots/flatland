@@ -13,12 +13,12 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>cmake_modules</build_depend>
-
   <depend>flatland_server</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
   <depend>yaml-cpp</depend>
+  <depend>cmake_modules</depend>
+  <depend>tf</depend>
 
   <export>
     <flatland_server plugin="${prefix}/flatland_plugins.xml" />

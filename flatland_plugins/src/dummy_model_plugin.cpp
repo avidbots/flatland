@@ -58,6 +58,7 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
   dummy_param_string_ = config["dummy_param_string"].as<std::string>();
   dummy_param_int_ = config["dummy_param_int"].as<int>();
 
+  // Dummy plugin has the these values enforced for testing
   if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
     throw YAMLException(
         "dummy_param_float must be 0.1253456, instead it was \"" +
@@ -74,6 +75,17 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
         "dummy_param_float must be dummy_test_123456, instead it was \"" +
         dummy_param_string_ + "\"");
   }
+
+  update_timer_.SetRate(0);
+  update_counter_ = 0;
+}
+
+void DummyModelPlugin::BeforePhysicsStep(const Timekeeper &timekeeper) {
+  // keeps this function updating at a specific rate
+  if (!update_timer_.CheckUpdate(timekeeper)) {
+    return;
+  }
+  update_counter_++;
 }
 };
 
