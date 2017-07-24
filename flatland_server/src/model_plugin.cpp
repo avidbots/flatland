@@ -53,6 +53,7 @@ void ModelPlugin::Initialize(const std::string &type, const std::string &name,
   type_ = type;
   name_ = name;
   model_ = model;
+  nh_ = ros::NodeHandle(model_->namespace_);
   OnInitialize(config);
 }
 

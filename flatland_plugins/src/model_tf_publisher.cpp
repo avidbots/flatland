@@ -61,6 +61,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   publish_tf_world_ = false;
   world_frame_id_ = "map";
   update_rate_ = std::numeric_limits<double>::infinity();
+  tf_prefix_ = model_->namespace_;
 
   if (config["reference"]) {
     std::string body_name = config["reference"].as<std::string>();
@@ -79,10 +80,6 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   if (config["world_frame_id"]) {
     world_frame_id_ = config["world_frame_id"].as<std::string>();
-  }
-
-  if (config["use_namespace"]) {
-    tf_prefix_ = model_->namespace_;
   }
 
   if (config["publish_tf_world"]) {
@@ -181,7 +178,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     // publish TF
     tf_stamped.header.frame_id =
         tf::resolve(tf_prefix_, reference_body_->name_);
-    tf_stamped.child_frame_id = body->name_;
+    tf_stamped.child_frame_id = tf::resolve(tf_prefix_, body->name_);
     tf_stamped.transform.translation.x = rel_tf(0, 2);
     tf_stamped.transform.translation.y = rel_tf(1, 2);
     tf_stamped.transform.translation.z = 0;
@@ -201,7 +198,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     double yaw = reference_body_->physics_body_->GetAngle();
 
     tf_stamped.header.frame_id = world_frame_id_;
-    tf_stamped.child_frame_id = reference_body_->name_;
+    tf_stamped.child_frame_id = tf::resolve(tf_prefix_, reference_body_->name_);
     tf_stamped.transform.translation.x = p.x;
     tf_stamped.transform.translation.y = p.y;
     tf_stamped.transform.translation.z = 0;

@@ -134,7 +134,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   geometry_msgs::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
-  ros::WallRate rate(50);
+  ros::WallRate rate(500);
   for (int i = 0; i < 10; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
@@ -142,34 +142,32 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   }
 
   // check for the transformations that should exist
-  tf_world_to_base = tf_buffer.lookupTransform("world", "base", ros::Time(0));
+  tf_world_to_base = tf_buffer.lookupTransform("world", "my_robot/base", ros::Time(0));
   tf_world_to_antenna =
-      tf_buffer.lookupTransform("world", "antenna", ros::Time(0));
+      tf_buffer.lookupTransform("world", "my_robot/antenna", ros::Time(0));
   tf_base_to_left_wheel =
-      tf_buffer.lookupTransform("base", "left_wheel", ros::Time(0));
+      tf_buffer.lookupTransform("my_robot/base", "my_robot/left_wheel", ros::Time(0));
   tf_base_to_right_wheel =
-      tf_buffer.lookupTransform("base", "right_wheel", ros::Time(0));
+      tf_buffer.lookupTransform("my_robot/base", "my_robot/right_wheel", ros::Time(0));
 
   // check for the transformations that should not exist
   try {
     tf_base_to_front_bumper =
-        tf_buffer.lookupTransform("base", "front_bumper", ros::Time(0));
+        tf_buffer.lookupTransform("my_robot/base", "my_robot/front_bumper", ros::Time(0));
     ADD_FAILURE() << "Expected an exception, but none were raised";
   } catch (const tf2::TransformException& e) {
     EXPECT_STREQ(
-        "\"front_bumper\" passed to lookupTransform argument source_frame does "
-        "not exist. ",
+        "\"my_robot/front_bumper\" passed to lookupTransform argument source_frame does not exist. ",
         e.what());
   }
 
   try {
     tf_base_to_rear_bumper =
-        tf_buffer.lookupTransform("base", "rear_bumper", ros::Time(0));
+        tf_buffer.lookupTransform("my_robot/base", "my_robot/rear_bumper", ros::Time(0));
     ADD_FAILURE() << "Expected an exception, but none were raised";
   } catch (const tf2::TransformException& e) {
     EXPECT_STREQ(
-        "\"rear_bumper\" passed to lookupTransform argument source_frame does "
-        "not exist. ",
+        "\"my_robot/rear_bumper\" passed to lookupTransform argument source_frame does not exist. ",
         e.what());
   }
 
