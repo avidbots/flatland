@@ -133,10 +133,9 @@ class Model : public Entity {
    * @param[in] name Name of the model
    * @return A new model
    */
-  static Model *MakeModel(
-      b2World *physics_world, CollisionFilterRegistry *cfr,
-      const std::string &model_yaml_path, const std::string &ns,
-      const std::string &name);
+  static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
+                          const std::string &model_yaml_path,
+                          const std::string &ns, const std::string &name);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

@@ -121,7 +121,7 @@ class World : public b2ContactListener {
    * @param[in] name Name of the model
    * @param[in] pose Initial pose of the model in x, y, yaw
    */
-  void LoadModel(const std::string &model_yaml_path, const std::string &ns, 
+  void LoadModel(const std::string &model_yaml_path, const std::string &ns,
                  const std::string &name, const std::array<double, 3> pose);
 
   /**

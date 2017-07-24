@@ -70,10 +70,9 @@ Model::~Model() {
   // joint, the creation of a joint must always have bodies attached to it
 }
 
-Model *Model::MakeModel(
-    b2World *physics_world, CollisionFilterRegistry *cfr,
-    const std::string &model_yaml_path, const std::string &ns,
-    const std::string &name) {
+Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
+                        const std::string &model_yaml_path,
+                        const std::string &ns, const std::string &name) {
   YAML::Node model_node;
   try {
     model_node = YAML::LoadFile(model_yaml_path);
