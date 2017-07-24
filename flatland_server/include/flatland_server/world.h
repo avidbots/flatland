@@ -102,6 +102,9 @@ class World : public b2ContactListener {
    */
   void EndContact(b2Contact *contact) override;
 
+  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
+  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse)
+
   /**
    * @brief load layers into the world. Throws derivatives of YAML::Exception
    * @param[in] yaml_path Path to the world yaml file containing list of layers
