@@ -6,9 +6,11 @@ bodies:  # List of named bodies
     type: dynamic
     color: [1, 1, 0, 1]
     footprints:
-      - type: polygon
+      - type: circle
+        radius: 1
+        center: [0, 0]
         density: 1
-        points: [[1.5, 0], [0.9, 0.7], [-0.9, 0.7], [-0.9, -0.7], [0.9, -0.7]]
+        # points: [[1.5, 0], [0.9, 0.7], [-0.9, 0.7], [-0.9, -0.7], [0.9, -0.7]]
 
 plugins:
   - type: DummyModelPlugin

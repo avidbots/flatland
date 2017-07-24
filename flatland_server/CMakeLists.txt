@@ -154,14 +154,13 @@ install(DIRECTORY launch
 if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gtest(null_test test/null.cpp)
-
-  catkin_add_gtest(load_world_test
+  
+  add_rostest_gtest(load_world_test
+    test/load_world_test.test
     test/load_world_test.cpp)
   target_link_libraries(load_world_test
-    ${catkin_LIBRARIES}
-    ${GTEST_LIBRARIES}
-    flatland_lib
-  )
+    flatland_lib)
+
 
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test

@@ -52,11 +52,20 @@ namespace flatland_server {
 ServiceManager::ServiceManager(World *world) : world_(world) {
   ros::NodeHandle nh;
 
-  service_server_ =
+  spawn_model_service_ =
       nh.advertiseService("spawn_model", &ServiceManager::SpawnModel, this);
 
-  ROS_INFO_NAMED("ModelSpawner", "Model spawning service ready to go");
+  if (spawn_model_service_) {
+    ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
+  } else {
+    ROS_ERROR_NAMED("Service Manager", "Error starting model spawning service");
+  }
 }
+
+// ServiceManager::~ServiceManager() {
+//   ROS_ERROR("***************Unadvertise******************");
+//   spawn_model_service_.shutdown();
+// }
 
 bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
                                 flatland_msgs::SpawnModel::Response &response) {

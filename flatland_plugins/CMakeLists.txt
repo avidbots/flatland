@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   flatland_server
   cmake_modules
   tf
+  flatland_msgs
 )
 
 find_package(Eigen3 REQUIRED)

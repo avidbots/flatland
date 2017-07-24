@@ -822,6 +822,7 @@ TEST_F(LoadWorldTest, model_invalid_E) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "load_world_test");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -299,6 +299,8 @@ TEST_F(PluginManagerTest, collision_test) {
   // w->DebugVisualize();
   // DebugVisualization::Get().Publish();
   // ros::spin();
+
+  delete w;
 }
 
 TEST_F(PluginManagerTest, load_dummy_test) {
