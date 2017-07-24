@@ -67,7 +67,7 @@ World::~World() {
   // The order of things matters in the destructor. The contact listener is
   // removed first to avoid the triggering the contact functions in plugin
   // manager which might cause it to work with deleted layers/models.
-  physics_world_->SetContactListener(nullptr);  
+  physics_world_->SetContactListener(nullptr);
 
   // the physics body of layers are set to null because there are tons of
   // fixtures in a layer and it is too slow for the destroyBody method to remove
