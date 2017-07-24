@@ -55,12 +55,26 @@ namespace flatland_server {
 
 class World;
 
+/**
+ * This class contains a collection of ROS services that the user may use
+ * to work with the simulation
+ */
 class ServiceManager {
  public:
-  World *world_;
-  ros::ServiceServer spawn_model_service_;
+  World *world_;  ///< an handle to the simulation world
+  ros::ServiceServer spawn_model_service_;  ///< service for spawning models
 
+  /**
+   * @brief Service manager constructor
+   * @param[in] world A handle to the simulation world
+   */
   ServiceManager(World *world);
+
+  /**
+   * @brief Callback for the spawn model service
+   * @param[in] request Contains the request data for the service
+   * @param[in/out] response Contains the response for the service
+   */
   bool SpawnModel(flatland_msgs::SpawnModel::Request &request,
                   flatland_msgs::SpawnModel::Response &response);
 };

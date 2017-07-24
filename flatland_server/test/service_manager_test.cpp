@@ -75,8 +75,6 @@ class ServiceManagerTest : public ::testing::Test {
     timekeeper.SetMaxStepSize(1.0);
   }
 
-  void TearDown() {}
-
   void StartSimulationThread() {
     simulation_thread = std::thread(&ServiceManagerTest::SimulationThread,
                                     dynamic_cast<ServiceManagerTest*>(this));
@@ -96,13 +94,11 @@ class ServiceManagerTest : public ::testing::Test {
       rate.sleep();
     }
   }
-
-  bool fltcmp(double n1, double n2) {
-    bool ret = fabs(n1 - n2) < 1e-7;
-    return ret;
-  }
 };
 
+/**
+ * Testing service for loading a model which should succeed
+ */
 TEST_F(ServiceManagerTest, valid_model) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
@@ -118,6 +114,7 @@ TEST_F(ServiceManagerTest, valid_model) {
   srv.request.pose.y = 2;
   srv.request.pose.theta = 3;
 
+  // Threading is required since client.call blocks executing until return
   StartSimulationThread();
   client_return = client.call(srv);
   EXPECT_EQ(client_return, true);
@@ -137,6 +134,9 @@ TEST_F(ServiceManagerTest, valid_model) {
   delete w;
 }
 
+/**
+ * Testing service for loading a model which should fail
+ */
 TEST_F(ServiceManagerTest, invalid_model) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
