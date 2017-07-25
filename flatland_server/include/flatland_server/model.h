@@ -65,7 +65,6 @@ class Joint;
  */
 class Model : public Entity {
  public:
-  std::string name_;                 ///< name of the model
   std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
   std::vector<Joint *> joints_;      ///< list of joints in the model

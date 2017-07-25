@@ -171,18 +171,17 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(collision_filter_registry_test
     flatland_lib)
 
-  add_rostest_gtest(plugin_manager_test
-    test/plugin_manager_test.test
-    test/plugin_manager_test.cpp)
-  target_link_libraries(plugin_manager_test
-    flatland_lib)
+  # add_rostest_gtest(plugin_manager_test
+  #   test/plugin_manager_test.test
+  #   test/plugin_manager_test.cpp)
+  # target_link_libraries(plugin_manager_test
+  #   flatland_lib)
 
   add_rostest_gtest(service_manager_test
     test/service_manager_test.test
     test/service_manager_test.cpp)
   target_link_libraries(service_manager_test
     flatland_lib)
-
 
 
   add_rostest_gtest(debug_visualization_test

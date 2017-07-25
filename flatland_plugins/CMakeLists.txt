@@ -71,6 +71,7 @@ add_library(flatland_plugins_lib
   src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp
   src/update_timer.cpp
+  src/bumper.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

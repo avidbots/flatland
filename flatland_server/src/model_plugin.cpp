@@ -57,4 +57,33 @@ void ModelPlugin::Initialize(const std::string &type, const std::string &name,
   OnInitialize(config);
 }
 
+bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
+                                b2Fixture *&fixture_A, b2Fixture *&fixture_B) {
+  b2Fixture *f_A = contact->GetFixtureA();
+  b2Fixture *f_B = contact->GetFixtureB();
+  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
+  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
+  Entity *e_A = b_A->entity_;
+  Entity *e_B = b_B->entity_;
+
+  if (e_A == model_) {
+    entity = e_B;
+    fixture_A = f_A;
+    fixture_B = f_B;
+  } else if (e_B == model_) {
+    entity = e_A;
+    fixture_A = f_B;
+    fixture_B = f_A;
+  } else {
+    return false;
+  }
+  return true;
+}
+
+bool ModelPlugin::FilterContact(b2Contact *contact) {
+  b2Fixture *f1, *f2;
+  Entity *e;
+  return FilterContact(contact, e, f1, f2);
+} 
+
 };  // namespace flatland_server

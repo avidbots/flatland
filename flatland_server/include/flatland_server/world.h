@@ -96,18 +96,32 @@ class World : public b2ContactListener {
    * @param[in] contact Box2D contact information
    */
   void BeginContact(b2Contact *contact) override;
+
   /**
    * @brief Box2D inherited end contact
    * @param[in] contact Box2D contact information
    */
   void EndContact(b2Contact *contact) override;
 
+  /**
+   * @brief Box2D inherited presolve
+   * @param[in] contact Box2D contact information
+   * @param[in] oldManifold The manifold from the previous timestep
+   */
   void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
-  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse)
 
   /**
-   * @brief load layers into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of layers
+   * @brief Box2D inherited pre solve
+   * @param[in] contact Box2D contact information
+   * @param[in] impulse The calculated impulse from the collision resolute
+   */
+  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
+
+  /**
+   * @brief load layers into the world. Throws derivatives of
+   * YAML::Exception
+   * @param[in] yaml_path Path to the world yaml file containing list of
+   * layers
    */
   void LoadLayers(const std::string &yaml_path);
 
@@ -124,7 +138,7 @@ class World : public b2ContactListener {
    * @param[in] name Name of the model
    * @param[in] pose Initial pose of the model in x, y, yaw
    */
-  void LoadModel(const std::string &model_yaml_path, const std::string &ns, 
+  void LoadModel(const std::string &model_yaml_path, const std::string &ns,
                  const std::string &name, const std::array<double, 3> pose);
 
   /**

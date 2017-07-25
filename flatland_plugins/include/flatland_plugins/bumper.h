@@ -46,9 +46,7 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
-#include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
-#include <tf/transform_broadcaster.h>
 
 #ifndef FLATLAND_PLUGINS_BUMPER_H
 #define FLATLAND_PLUGINS_BUMPER_H
@@ -58,20 +56,28 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 /**
- * This class implements the model plugin and provides the functionality of
- * publishing ROS TF transformations for the bodies inside a model
+ * This class defines a bumper plugin that is used to sense collision for models
  */
-class ModelTfPublisher : public ModelPlugin {
+class Bumper : public ModelPlugin {
  public:
-  std::string world_frame_id_;  ///< name of the world frame id
-  bool publish_tf_world_;  ///< if to publish the world position of the bodies
-  std::vector<Body *> excluded_bodies_;  ///< list of bodies to ignore
-  Body *reference_body_;   ///< body used as a reference to other bodies
-  double update_rate_;     ///< publish rate
-  std::string tf_prefix_;  ///< tf_prefix for transforms
+  struct ContactState {
+    int num_count;
+    double sum_normal_impulses[2];
+    double sum_tangential_impulses[2];
+    b2Vec2 points[2];
+    b2Vec2 normal;
+    Entity *entity;
 
-  tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
-  UpdateTimer update_timer_;                ///< for managing update rate
+    ContactState();
+    void Reset();
+  };
+
+  std::string world_frame_id_;  ///< name of the world frame id
+  std::vector<Body *> bodies_;  ///< list of bodies to publish collision
+  double update_rate_;          ///< publish rate
+
+  UpdateTimer update_timer_;  ///< for managing update rate
+  std::map<b2Contact *, ContactState> contacts_state_;
 
   /**
  * @brief Initialization for the plugin
@@ -79,11 +85,19 @@ class ModelTfPublisher : public ModelPlugin {
  */
   void OnInitialize(const YAML::Node &config) override;
 
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+
   /**
    * @brief Called when just before physics update
    * @param[in] timekeeper Object managing the simulation time
    */
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+  void AfterPhysicsStep(const Timekeeper &timekeeper) override;
+
+  void BeginContact(b2Contact *contact) override;
+
+  void EndContact(b2Contact *contact) override;
+
+  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
 };
 };
 
