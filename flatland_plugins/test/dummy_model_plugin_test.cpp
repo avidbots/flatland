@@ -69,7 +69,10 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
     n["dummy_param_string"] = "dummy_test_123456";
     n["dummy_param_int"] = 123456;
 
-    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", nullptr, n);
+    flatland_server::CollisionFilterRegistry cfr;
+    flatland_server::Model model(nullptr, &cfr, "", "");
+
+    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", &model, n);
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }

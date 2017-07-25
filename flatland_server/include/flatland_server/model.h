@@ -66,6 +66,7 @@ class Joint;
 class Model : public Entity {
  public:
   std::string name_;                 ///< name of the model
+  std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
   std::vector<Joint *> joints_;      ///< list of joints in the model
   YAML::Node plugins_node_;          ///< for storing plugins when paring YAML
@@ -80,7 +81,7 @@ class Model : public Entity {
    * @param[in] name Name of the model
    */
   Model(b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::string &name);
+        const std::string &ns, const std::string &name);
 
   /**
    * @brief Destructor for the layer class
@@ -127,13 +128,14 @@ class Model : public Entity {
    * @brief Create a model, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
-   * @param[in] name Name of the model
    * @param[in] model_yaml_path path to the model yaml file
+   * @param[in] ns Namespace of the robot
+   * @param[in] name Name of the model
    * @return A new model
    */
   static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                          const std::string &name,
-                          const std::string &model_yaml_path);
+                          const std::string &model_yaml_path,
+                          const std::string &ns, const std::string &name);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

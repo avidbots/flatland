@@ -102,14 +102,14 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.ranges.resize(num_laser_points_);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id = frame_id_;
+  laser_scan_.header.frame_id = tf::resolve(model_->namespace_, frame_id_);
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   q.setRPY(0, 0, origin_[2]);
 
-  static_tf.header.frame_id = body_->name_;
-  static_tf.child_frame_id = frame_id_;
+  static_tf.header.frame_id = tf::resolve(model_->namespace_, body_->name_);
+  static_tf.child_frame_id = tf::resolve(model_->namespace_, frame_id_);
   static_tf.transform.translation.x = origin_[0];
   static_tf.transform.translation.y = origin_[1];
   static_tf.transform.translation.z = 0;
@@ -185,7 +185,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   std::string body_name;
 
   // default values
-  topic_ = "/scan";
+  topic_ = "scan";
   frame_id_ = name_;
   update_rate_ = std::numeric_limits<double>::infinity();
   origin_ = {0, 0, 0};

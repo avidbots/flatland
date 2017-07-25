@@ -109,6 +109,7 @@ TEST_F(ServiceManagerTest, valid_model) {
   w = World::MakeWorld(world_yaml.string());
 
   srv.request.name = "service_manager_test_robot";
+  srv.request.ns = "robot123";
   srv.request.yaml_path = robot_yaml.string();
   srv.request.pose.x = 1;
   srv.request.pose.y = 2;
@@ -126,6 +127,7 @@ TEST_F(ServiceManagerTest, valid_model) {
 
   ASSERT_EQ(5, w->models_.size());
   EXPECT_STREQ("service_manager_test_robot", w->models_[4]->name_.c_str());
+  EXPECT_STREQ("robot123", w->models_[4]->namespace_.c_str());
   EXPECT_FLOAT_EQ(1, w->models_[4]->bodies_[0]->physics_body_->GetPosition().x);
   EXPECT_FLOAT_EQ(2, w->models_[4]->bodies_[0]->physics_body_->GetPosition().y);
   EXPECT_FLOAT_EQ(3, w->models_[4]->bodies_[0]->physics_body_->GetAngle());

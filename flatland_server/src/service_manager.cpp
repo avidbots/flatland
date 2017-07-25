@@ -64,17 +64,18 @@ ServiceManager::ServiceManager(World *world) : world_(world) {
 
 bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
                                 flatland_msgs::SpawnModel::Response &response) {
-  ROS_INFO_NAMED(
-      "ModelSpawner",
-      "Model spawn requested path(\"%s\"), name(\'%s\"), pose(%f,%f,%f)",
-      request.yaml_path.c_str(), request.name.c_str(), request.pose.x,
-      request.pose.y, request.pose.theta);
+  ROS_INFO_NAMED("ModelSpawner",
+                 "Model spawn requested path(\"%s\"), namespace(\"%s\"), "
+                 "name(\'%s\"), pose(%f,%f,%f)",
+                 request.yaml_path.c_str(), request.ns.c_str(),
+                 request.name.c_str(), request.pose.x, request.pose.y,
+                 request.pose.theta);
 
   std::array<double, 3> pose = {request.pose.x, request.pose.y,
                                 request.pose.theta};
 
   try {
-    world_->LoadModel(request.yaml_path, request.name, pose);
+    world_->LoadModel(request.yaml_path, request.ns, request.name, pose);
     response.success = true;
     response.message = "";
   } catch (const std::exception &e) {

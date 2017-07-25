@@ -604,6 +604,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // Check model 0
   Model *m0 = w->models_[0];
   EXPECT_STREQ(m0->name_.c_str(), "turtlebot1");
+  EXPECT_STREQ(m0->namespace_.c_str(), "");
   EXPECT_EQ(m0->no_collide_group_index_, -1);
   ASSERT_EQ(m0->bodies_.size(), 5);
   ASSERT_EQ(m0->joints_.size(), 4);
@@ -673,6 +674,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // Check model 1 is same yaml file as model 1, simply do a simple sanity check
   Model *m1 = w->models_[1];
   EXPECT_STREQ(m1->name_.c_str(), "turtlebot2");
+  EXPECT_STREQ(m1->namespace_.c_str(), "robot2");
   EXPECT_EQ(m1->no_collide_group_index_, -2);
   ASSERT_EQ(m1->bodies_.size(), 5);
   ASSERT_EQ(m1->joints_.size(), 4);

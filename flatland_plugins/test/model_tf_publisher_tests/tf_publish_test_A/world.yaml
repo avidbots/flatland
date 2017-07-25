@@ -7,3 +7,4 @@ models:
   - name: robot1
     pose: [8, 6, -0.575958653]
     model: robot.model.yaml
+    namespace: "my_robot"
