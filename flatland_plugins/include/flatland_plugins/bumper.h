@@ -56,7 +56,8 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 /**
- * This class defines a bumper plugin that is used to sense collision for models
+ * This class defines a bumper plugin that is used to publish the collisions
+ * states of bodies in the model
  */
 class Bumper : public ModelPlugin {
  public:
@@ -66,18 +67,26 @@ class Bumper : public ModelPlugin {
     double sum_tangential_impulses[2];
     b2Vec2 points[2];
     b2Vec2 normal;
-    Entity *entity;
+    int normal_sign;
+
+    Body *body_A;
+    Body *body_B;
+    Entity *entity_B;
 
     ContactState();
     void Reset();
   };
 
-  std::string world_frame_id_;  ///< name of the world frame id
-  std::vector<Body *> bodies_;  ///< list of bodies to publish collision
-  double update_rate_;          ///< publish rate
+  std::string topic_name_;
+  std::string world_frame_id_;           ///< name of the world frame id
+  std::vector<Body *> excluded_bodies_;  ///< bodies to ignore
+  /// whether to publish all collisions, or strictly adhere to update rate
+  bool publish_all_collisions_;
+  double update_rate_;  ///< rate to publish message at
 
   UpdateTimer update_timer_;  ///< for managing update rate
-  std::map<b2Contact *, ContactState> contacts_state_;
+  std::map<b2Contact *, ContactState> contact_states_;
+  ros::Publisher collisions_publisher_;
 
   /**
  * @brief Initialization for the plugin

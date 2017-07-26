@@ -85,15 +85,17 @@ class ModelPlugin {
    * extracts all the useful information
    * @param[in] contact Box2D contact
    * @param[out] entity The entity that collided with this model
-   * @param[out] fixture_A The fixture from this model involved in the collision
-   * @param[out] fixture_B The fixture from the other entity involved in the
+   * @param[out] this_fixture The fixture from this model involved in the
+   * collision
+   * @param[out] other_fixture The fixture from the other entity involved in the
    * collision
    * @return True or false depending on if this model is involved. If false
-   * is returned, none of the entity, fixture_A, fixture_B pointers will be
+   * is returned, none of the entity, this_fixture, other_fixture pointers will
+   * be
    * populated
    */
-  bool FilterContact(b2Contact *contact, Entity *&entity, b2Fixture *&fixture_A,
-                     b2Fixture *&fixture_B);
+  bool FilterContact(b2Contact *contact, Entity *&entity,
+                     b2Fixture *&this_fixture, b2Fixture *&other_fixture);
 
   /**
    * @brief Helper function check if this model is part of the contact

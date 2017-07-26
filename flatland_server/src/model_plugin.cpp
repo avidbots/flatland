@@ -58,7 +58,7 @@ void ModelPlugin::Initialize(const std::string &type, const std::string &name,
 }
 
 bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
-                                b2Fixture *&fixture_A, b2Fixture *&fixture_B) {
+                                b2Fixture *&this_fixture, b2Fixture *&other_fixture) {
   b2Fixture *f_A = contact->GetFixtureA();
   b2Fixture *f_B = contact->GetFixtureB();
   Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
@@ -68,12 +68,12 @@ bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
 
   if (e_A == model_) {
     entity = e_B;
-    fixture_A = f_A;
-    fixture_B = f_B;
+    this_fixture = f_A;
+    other_fixture = f_B;
   } else if (e_B == model_) {
     entity = e_A;
-    fixture_A = f_B;
-    fixture_B = f_A;
+    this_fixture = f_B;
+    other_fixture = f_A;
   } else {
     return false;
   }

@@ -107,8 +107,9 @@ void PluginManager::LoadModelPlugin(Model *model,
   }
   model_plugins_.push_back(model_plugin);
 
-  ROS_INFO_NAMED("PluginManager", "Model Plugin %s of type %s loaded",
-                 name.c_str(), type.c_str());
+  ROS_INFO_NAMED("PluginManager",
+                 "Model Plugin %s of type %s loaded for model %s", name.c_str(),
+                 type.c_str(), model->name_.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {

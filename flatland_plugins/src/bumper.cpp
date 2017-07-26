@@ -44,12 +44,13 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/ContactState.h>
-#include <flatland_msgs/ContactsState.h>
+#include <flatland_msgs/Collision.h>
+#include <flatland_msgs/Collisions.h>
 #include <flatland_plugins/bumper.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/timekeeper.h>
 #include <pluginlib/class_list_macros.h>
+#include <boost/algorithm/string/join.hpp>
 
 using namespace flatland_server;
 
@@ -67,85 +68,162 @@ void Bumper::ContactState::Reset() {
 
 void Bumper::OnInitialize(const YAML::Node &config) {
   world_frame_id_ = "map";
+  topic_name_ = "collisions";
+  publish_all_collisions_ = true;
   update_rate_ = std::numeric_limits<double>::infinity();
+
+  if (config["topic"]) {
+    topic_name_ = config["topic"].as<std::string>();
+  }
 
   if (config["world_frame_id"]) {
     world_frame_id_ = config["world_frame_id"].as<std::string>();
-  }
-
-  if (config["bodies"] && config["bodies"].IsSequence()) {
-    for (int i = 0; i < config["bodies"].size(); i++) {
-      std::string body_name = config["bodies"][i].as<std::string>();
-
-      Body *body = model_->GetBody(body_name);
-
-      if (body == nullptr) {
-        throw YAMLException("Cannot find body with name " + body_name);
-      } else {
-        bodies_.push_back(body);
-      }
-    }
-  } else {
-    throw YAMLException(
-        "Missing/invalid \"bodies\" param, must be a list of body names");
   }
 
   if (config["update_rate"]) {
     update_rate_ = config["update_rate"].as<double>();
   }
 
-  model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(1000, 0));
-  ROS_INFO_NAMED("Bumper Plugin", "Initialized");
+  if (config["publish_all_collisions"]) {
+    publish_all_collisions_ = config["publish_all_collisions"].as<bool>();
+  }
+
+  std::vector<std::string> excluded_body_names;
+  if (config["exclude"] && config["exclude"].IsSequence()) {
+    for (int i = 0; i < config["exclude"].size(); i++) {
+      std::string body_name = config["exclude"][i].as<std::string>();
+      excluded_body_names.push_back(body_name);
+      Body *body = model_->GetBody(body_name);
+
+      if (body == nullptr) {
+        throw YAMLException("Body with name \"" + body_name +
+                            "\" does not exist");
+      } else {
+        excluded_bodies_.push_back(body);
+      }
+    }
+  } else if (config["exclude"]) {
+    throw YAMLException("Invalid \"exclude\", must be a list of strings");
+  }
+
+  update_timer_.SetRate(update_rate_);
+  collisions_publisher_ =
+      nh_.advertise<flatland_msgs::Collisions>(topic_name_, 1);
+
+  ROS_INFO_NAMED("Bumper",
+                 "Initialized with params: topic(%s) world_frame_id(%s) "
+                 "publish_all_collisions(%d) update_rate(%f) exclude({%s})",
+                 topic_name_.c_str(), world_frame_id_.c_str(),
+                 publish_all_collisions_, update_rate_,
+                 boost::algorithm::join(excluded_body_names, ",").c_str());
+
+  model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(10, 0));
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
   model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
-  printf("************** Step ***************\n");
+
+  std::map<b2Contact *, ContactState>::iterator it;
+
+  // Clear the forces at the begining of every physics step since new collision
+  // resolutions are being calculated by Box2D each time step
+  for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
+    it->second.Reset();
+  }
 }
 
 void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
-  std::map<b2Contact *, ContactState>::iterator it;
-
-  for (it = contacts_state_.begin(); it != contacts_state_.end(); it++) {
-    b2Contact *c = it->first;
-    ContactState *s = &it->second;
-    flatland_msgs::ContactState contact_state_msg;
-    contact_state_msg.entity = s->entity->name_;
-
-    b2Manifold *m = c->GetManifold();
-
-    for (int i = 0; i < m->pointCount; i++) {
-      double ave_normal_impulse = s->sum_normal_impulses[i] / s->num_count;
-      double ave_tangential_impulse =
-          s->sum_tangential_impulses[i] / s->num_count;
-      double ave_normal_force = ave_normal_impulse / timekeeper.GetStepSize();
-      double ave_tangential_force =
-          ave_tangential_impulse / timekeeper.GetStepSize();
-      
+  // The expected behaviour is to always publish non-empty collisions unless
+  // publish_all_collisions set to false. The publishing of empty collision
+  // manages the publishing rate of empty collisions when
+  // publish_all_collisions is true, or it manages the publishing rate all
+  // empty and non-empty collisions when publish_all_collisions_ is false
+  if (!publish_all_collisions_ || contact_states_.size() <= 0) {
+    if (!update_timer_.CheckUpdate(timekeeper)) {
+      return;
     }
   }
+
+  std::map<b2Contact *, ContactState>::iterator it;
+
+  flatland_msgs::Collisions collisions;
+  collisions.header.frame_id = world_frame_id_;
+  collisions.header.stamp = ros::Time::now();
+
+  for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
+    b2Contact *c = it->first;
+    ContactState *s = &it->second;
+    flatland_msgs::Collision collision;
+    collision.entity_A = model_->name_;
+    collision.entity_B = s->entity_B->name_;
+
+    collision.body_A = s->body_A->name_;
+    collision.body_B = s->body_B->name_;
+
+    // If there was no post solve called, which means that the collision
+    // probably involves a Box2D sensor, therefore there are no contact points,
+    if (s->num_count > 0) {
+      b2Manifold *m = c->GetManifold();
+
+      for (int i = 0; i < m->pointCount; i++) {
+        double ave_normal_impulse = s->sum_normal_impulses[i] / s->num_count;
+        double ave_tangential_impulse =
+            s->sum_tangential_impulses[i] / s->num_count;
+        double ave_normal_force = ave_normal_impulse / timekeeper.GetStepSize();
+        double ave_tangential_force =
+            ave_tangential_impulse / timekeeper.GetStepSize();
+
+        double force_abs = sqrt(ave_normal_force * ave_normal_force +
+                                ave_tangential_force * ave_tangential_force);
+
+        collision.force_magnitudes.push_back(force_abs);
+        flatland_msgs::Vector2 point;
+        flatland_msgs::Vector2 normal;
+        point.x = s->points[i].x;
+        point.y = s->points[i].y;
+        normal.x = s->normal.x;
+        normal.y = s->normal.y;
+        collision.contact_positions.push_back(point);
+        collision.contact_normals.push_back(normal);
+      }
+    }
+
+    collisions.collisions.push_back(collision);
+  }
+
+  collisions_publisher_.publish(collisions);
 }
 
 void Bumper::BeginContact(b2Contact *contact) {
-  Entity *entity;
-  b2Fixture *fixture_A, *fixture_B;
-  if (!FilterContact(contact, entity, fixture_A, fixture_B)) return;
+  Entity *other_entity;
+  b2Fixture *this_fixture, *other_fixture;
+  if (!FilterContact(contact, other_entity, this_fixture, other_fixture))
+    return;
 
-  if (!contacts_state_.count(contact)) {
-    contacts_state_[contact] = ContactState();
-    contacts_state_[contact].entity = entity;
+  if (!contact_states_.count(contact)) {
+    contact_states_[contact] = ContactState();
+    ContactState *c = &contact_states_[contact];
+    c->entity_B = other_entity;
+    c->body_B = static_cast<Body *>(other_fixture->GetBody()->GetUserData());
+    c->body_A = static_cast<Body *>(this_fixture->GetBody()->GetUserData());
+
+    // by convention, Box2D normal goes from fixture A to fixture B, the
+    // sign is used to correct cases when our model isn't fixture A
+    if (contact->GetFixtureA() == this_fixture) {
+      c->normal_sign = 1;
+    } else {
+      c->normal_sign = -1;
+    }
   }
-
-  printf("BeginContact %p\n", contact);
 }
 
 void Bumper::EndContact(b2Contact *contact) {
   if (!FilterContact(contact)) return;
 
-  if (contacts_state_.count(contact)) {
-    contacts_state_.erase(contact);
+  if (contact_states_.count(contact)) {
+    contact_states_.erase(contact);
   } else {
-    ROS_ERROR_NAMED("Bumper Plugin", "Unkown Box2D contact");
+    ROS_ERROR_NAMED("Bumper Plugin", "End contact: unknown Box2D contact");
   }
 }
 
@@ -153,10 +231,10 @@ void Bumper::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   if (!FilterContact(contact)) return;
 
   ContactState *state;
-  if (contacts_state_.count(contact)) {
-    state = &contacts_state_[contact];
+  if (contact_states_.count(contact)) {
+    state = &contact_states_[contact];
   } else {
-    ROS_ERROR_NAMED("Bumper Plugin", "Unkown Box2D contact");
+    ROS_ERROR_NAMED("Bumper Plugin", "Post solve: unkown Box2D contact");
   }
 
   b2WorldManifold m;
@@ -172,10 +250,7 @@ void Bumper::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   state->points[1] = m.points[1];
 
   state->normal = m.normal;
-
-  printf("PostSolve %p   [%f, %f], ((%f, %f), (%f, %f)), (%f, %f)\n", contact,
-         impulse->normalImpulses[0], impulse->normalImpulses[1], m.points[0].x,
-         m.points[0].y, m.points[1].x, m.points[1].y, m.normal.x, m.normal.y);
+  state->normal *= state->normal_sign;
 }
 };
 

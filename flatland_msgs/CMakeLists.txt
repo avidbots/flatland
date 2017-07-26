@@ -21,8 +21,8 @@ find_package(PkgConfig REQUIRED)
 ################
 add_message_files(FILES
   DebugTopicList.msg
-  ContactState.msg
-  ContactsState.msg
+  Collision.msg
+  Collisions.msg
   Vector2.msg
 )
 
