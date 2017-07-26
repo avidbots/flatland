@@ -62,19 +62,19 @@ namespace flatland_plugins {
 class Bumper : public ModelPlugin {
  public:
   struct ContactState {
-    int num_count;
-    double sum_normal_impulses[2];
-    double sum_tangential_impulses[2];
-    b2Vec2 points[2];
-    b2Vec2 normal;
-    int normal_sign;
+    int num_count;  ///< stores number of times post solve is called
+    double sum_normal_impulses[2];      ///< sum of impulses for averaging later
+    double sum_tangential_impulses[2];  ///< sum of impulses for averaging later
+    b2Vec2 points[2];  ///< Box2D collision points, max of 2 from Box2D
+    b2Vec2 normal;  ///< normal of collision points, all points have same normal
+    int normal_sign;  ///< for flipping direction of normal when necessary
 
-    Body *body_A;
-    Body *body_B;
-    Entity *entity_B;
+    Body *body_A;      ///< the body of the model involved in the collision
+    Body *body_B;      ///< the other body involved in the collision
+    Entity *entity_B;  /// the entity the other body belongs to
 
-    ContactState();
-    void Reset();
+    ContactState(); ///< initializes counters and sums
+    void Reset();  ///< Reset counter and sums
   };
 
   std::string topic_name_;
@@ -85,27 +85,46 @@ class Bumper : public ModelPlugin {
   double update_rate_;  ///< rate to publish message at
 
   UpdateTimer update_timer_;  ///< for managing update rate
+
+  /// For keeping track of contacts
   std::map<b2Contact *, ContactState> contact_states_;
-  ros::Publisher collisions_publisher_;
+  ros::Publisher collisions_publisher_;  ///< For publishing the collisions
 
   /**
- * @brief Initialization for the plugin
- * @param[in] config Plugin YAML Node
- */
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
+   */
   void OnInitialize(const YAML::Node &config) override;
-
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
 
   /**
    * @brief Called when just before physics update
    * @param[in] timekeeper Object managing the simulation time
    */
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+
+  /**
+   * @brief Called when just after physics update
+   * @param[in] timekeeper Object managing the simulation time
+   */
   void AfterPhysicsStep(const Timekeeper &timekeeper) override;
 
+  /**
+   * @brief A method that is called for all Box2D begin contacts
+   * @param[in] contact Box2D contact
+   */
   void BeginContact(b2Contact *contact) override;
 
+  /**
+   * @brief A method that is called for all Box2D end contacts
+   * @param[in] contact Box2D contact
+   */
   void EndContact(b2Contact *contact) override;
 
+  /*
+   * @brief A method that is called for Box2D presolve
+   * @param[in] contact Box2D contact
+   * @param[in] oldManifold Manifold from the previous iteration
+   */
   void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
 };
 };

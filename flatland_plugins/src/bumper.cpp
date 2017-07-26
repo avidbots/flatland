@@ -67,6 +67,7 @@ void Bumper::ContactState::Reset() {
 }
 
 void Bumper::OnInitialize(const YAML::Node &config) {
+  // defaults
   world_frame_id_ = "map";
   topic_name_ = "collisions";
   publish_all_collisions_ = true;
@@ -117,16 +118,16 @@ void Bumper::OnInitialize(const YAML::Node &config) {
                  publish_all_collisions_, update_rate_,
                  boost::algorithm::join(excluded_body_names, ",").c_str());
 
-  model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(10, 0));
+  // model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(10, 0));
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
+  // model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
 
   std::map<b2Contact *, ContactState>::iterator it;
 
-  // Clear the forces at the begining of every physics step since new collision
-  // resolutions are being calculated by Box2D each time step
+  // Clear the forces at the begining of every physics step since brand
+  // new collision resolutions are being calculated by Box2D each time step
   for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
     it->second.Reset();
   }
@@ -150,6 +151,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
   collisions.header.frame_id = world_frame_id_;
   collisions.header.stamp = ros::Time::now();
 
+  // loop through all collisions in our record and publish
   for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
     b2Contact *c = it->first;
     ContactState *s = &it->second;
@@ -165,7 +167,10 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
     if (s->num_count > 0) {
       b2Manifold *m = c->GetManifold();
 
+      // go through each collision point
       for (int i = 0; i < m->pointCount; i++) {
+        // calculate average impulse during each time step, the impulse are
+        // converted to the applied force by dividing the step size
         double ave_normal_impulse = s->sum_normal_impulses[i] / s->num_count;
         double ave_tangential_impulse =
             s->sum_tangential_impulses[i] / s->num_count;
@@ -173,6 +178,10 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
         double ave_tangential_force =
             ave_tangential_impulse / timekeeper.GetStepSize();
 
+        // Calculate the absolute magnitude of forces, forces are not provided
+        // in vector form because the forces are obtained from averaging
+        // Box2D impulses which are very inaccurate making them completely
+        // useless for anything other than ball parking the impact strength
         double force_abs = sqrt(ave_normal_force * ave_normal_force +
                                 ave_tangential_force * ave_tangential_force);
 
@@ -197,9 +206,11 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
 void Bumper::BeginContact(b2Contact *contact) {
   Entity *other_entity;
   b2Fixture *this_fixture, *other_fixture;
-  if (!FilterContact(contact, other_entity, this_fixture, other_fixture))
+  if (!FilterContact(contact, other_entity, this_fixture, other_fixture)) {
     return;
+  }
 
+  // If this is a new contact, add it to the records of alive contacts
   if (!contact_states_.count(contact)) {
     contact_states_[contact] = ContactState();
     ContactState *c = &contact_states_[contact];
@@ -220,10 +231,13 @@ void Bumper::BeginContact(b2Contact *contact) {
 void Bumper::EndContact(b2Contact *contact) {
   if (!FilterContact(contact)) return;
 
+  // The contact ended, remove it from the list of contacts
   if (contact_states_.count(contact)) {
     contact_states_.erase(contact);
   } else {
+    // should never happen
     ROS_ERROR_NAMED("Bumper Plugin", "End contact: unknown Box2D contact");
+    return;
   }
 }
 
@@ -234,13 +248,29 @@ void Bumper::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   if (contact_states_.count(contact)) {
     state = &contact_states_[contact];
   } else {
+    // should never happen
     ROS_ERROR_NAMED("Bumper Plugin", "Post solve: unkown Box2D contact");
+    return;
   }
+
+  // post solve can be called multiple times per time step due to Box2D's
+  // continuous collision detectopm where Box2D "substeps" in the solver. Each
+  // substep returns the impulse applied to the body at that substep. We cannot
+  // obtain the step size of these sub steps, so we just assumed that the
+  // substeps occurred over evenly subdivided intervals (which is probably
+  // false), and average all the received impulses later on. The points of
+  // collision and normals also change slightly at each substep, we simply
+  // always use ones from the most recent post solve. These results should
+  // only be used to provide a ball park feel of impact strength
 
   b2WorldManifold m;
   contact->GetWorldManifold(&m);
 
   state->num_count++;
+
+  // We take data from both contact points even though there might only be
+  // one point of contact. We sum everything here, and only take the valid
+  // ones later
   state->sum_normal_impulses[0] += impulse->normalImpulses[0];
   state->sum_normal_impulses[1] += impulse->normalImpulses[1];
   state->sum_tangential_impulses[0] += impulse->tangentImpulses[0];
