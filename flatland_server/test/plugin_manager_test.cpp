@@ -263,7 +263,7 @@ TEST_F(PluginManagerTest, collision_test) {
 
   // now teleport the body for model 0 to (0, 0) which is right on top of a
   // layer edge, set zero velocity and step, this will cause the body
-  // to begin contact with the layer, but you can't be sure if end contact 
+  // to begin contact with the layer, but you can't be sure if end contact
   // will be called
   b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
   b0->physics_body_->SetTransform(b2Vec2(0, 0), 0);
