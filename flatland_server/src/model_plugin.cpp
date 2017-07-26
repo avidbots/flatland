@@ -58,7 +58,8 @@ void ModelPlugin::Initialize(const std::string &type, const std::string &name,
 }
 
 bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
-                                b2Fixture *&this_fixture, b2Fixture *&other_fixture) {
+                                b2Fixture *&this_fixture,
+                                b2Fixture *&other_fixture) {
   b2Fixture *f_A = contact->GetFixtureA();
   b2Fixture *f_B = contact->GetFixtureB();
   Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
@@ -84,6 +85,6 @@ bool ModelPlugin::FilterContact(b2Contact *contact) {
   b2Fixture *f1, *f2;
   Entity *e;
   return FilterContact(contact, e, f1, f2);
-} 
+}
 
 };  // namespace flatland_server

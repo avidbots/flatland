@@ -62,7 +62,7 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
 
   try {
     boost::shared_ptr<flatland_server::ModelPlugin> plugin =
-      loader.createInstance("flatland_plugins::DummyModelPlugin");
+        loader.createInstance("flatland_plugins::DummyModelPlugin");
 
     YAML::Node n = YAML::Node();
     n["dummy_param_float"] = 0.123456;

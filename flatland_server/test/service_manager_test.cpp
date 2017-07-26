@@ -109,7 +109,7 @@ TEST_F(ServiceManagerTest, valid_model) {
   w = World::MakeWorld(world_yaml.string());
 
   srv.request.name = "service_manager_test_robot";
-  srv.request.ns = "robot123";  
+  srv.request.ns = "robot123";
   srv.request.yaml_path = robot_yaml.string();
   srv.request.pose.x = 1;
   srv.request.pose.y = 2;
