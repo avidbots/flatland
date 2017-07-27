@@ -122,7 +122,7 @@ void Bumper::OnInitialize(const YAML::Node &config) {
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  // model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
+  model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
 
   std::map<b2Contact *, ContactState>::iterator it;
 
@@ -185,7 +185,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
         double force_abs = sqrt(ave_normal_force * ave_normal_force +
                                 ave_tangential_force * ave_tangential_force);
 
-        collision.force_magnitudes.push_back(force_abs);
+        collision.magnitude_forces.push_back(force_abs);
         flatland_msgs::Vector2 point;
         flatland_msgs::Vector2 normal;
         point.x = s->points[i].x;
@@ -212,18 +212,34 @@ void Bumper::BeginContact(b2Contact *contact) {
 
   // If this is a new contact, add it to the records of alive contacts
   if (!contact_states_.count(contact)) {
-    contact_states_[contact] = ContactState();
-    ContactState *c = &contact_states_[contact];
-    c->entity_B = other_entity;
-    c->body_B = static_cast<Body *>(other_fixture->GetBody()->GetUserData());
-    c->body_A = static_cast<Body *>(this_fixture->GetBody()->GetUserData());
+    Body *collision_body =
+        static_cast<Body *>(this_fixture->GetBody()->GetUserData());
 
-    // by convention, Box2D normal goes from fixture A to fixture B, the
-    // sign is used to correct cases when our model isn't fixture A
-    if (contact->GetFixtureA() == this_fixture) {
-      c->normal_sign = 1;
-    } else {
-      c->normal_sign = -1;
+    bool ignore = false;
+
+    // check that the body is not in the ignore list
+    for (int j = 0; j < excluded_bodies_.size(); j++) {
+      if (excluded_bodies_[j] == collision_body) {
+        ignore = true;
+        break;
+      }
+    }
+
+    // add the body to the record of active contacts
+    if (!ignore) {
+      contact_states_[contact] = ContactState();
+      ContactState *c = &contact_states_[contact];
+      c->entity_B = other_entity;
+      c->body_B = static_cast<Body *>(other_fixture->GetBody()->GetUserData());
+      c->body_A = collision_body;
+
+      // by convention, Box2D normal goes from fixture A to fixture B, the
+      // sign is used to correct cases when our model isn't fixture A
+      if (contact->GetFixtureA() == this_fixture) {
+        c->normal_sign = 1;
+      } else {
+        c->normal_sign = -1;
+      }
     }
   }
 }
@@ -235,8 +251,7 @@ void Bumper::EndContact(b2Contact *contact) {
   if (contact_states_.count(contact)) {
     contact_states_.erase(contact);
   } else {
-    // should never happen
-    ROS_ERROR_NAMED("Bumper Plugin", "End contact: unknown Box2D contact");
+    // contact is ignored
     return;
   }
 }
@@ -248,8 +263,7 @@ void Bumper::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   if (contact_states_.count(contact)) {
     state = &contact_states_[contact];
   } else {
-    // should never happen
-    ROS_ERROR_NAMED("Bumper Plugin", "Post solve: unkown Box2D contact");
+    // contact is ignored
     return;
   }
 
