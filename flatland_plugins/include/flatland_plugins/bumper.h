@@ -73,8 +73,8 @@ class Bumper : public ModelPlugin {
     Body *body_B;      ///< the other body involved in the collision
     Entity *entity_B;  /// the entity the other body belongs to
 
-    ContactState(); ///< initializes counters and sums
-    void Reset();  ///< Reset counter and sums
+    ContactState();  ///< initializes counters and sums
+    void Reset();    ///< Reset counter and sums
   };
 
   std::string topic_name_;

@@ -218,7 +218,7 @@ TEST_F(BumperPluginTest, collision_test) {
   // step 15 time which makes the body move 1.5 meters, will make base_link_1
   // collide, but not base_link_2, not that base_link_1's fixture is a sensor
   for (int i = 0; i < 150; i++) {
-    // Box2D needs velocity to be set every time step to ensure things are 
+    // Box2D needs velocity to be set every time step to ensure things are
     // moving at the desired velocity
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
     w->Update(timekeeper);
@@ -288,8 +288,7 @@ TEST_F(BumperPluginTest, collision_test) {
  * Test with a invalid body specified in the exclude list
  */
 TEST_F(BumperPluginTest, invalid_A) {
-  world_yaml = this_file_dir /
-               fs::path("bumper_tests/invalid_A/world.yaml");
+  world_yaml = this_file_dir / fs::path("bumper_tests/invalid_A/world.yaml");
 
   try {
     World* w = World::MakeWorld(world_yaml.string());
@@ -297,8 +296,7 @@ TEST_F(BumperPluginTest, invalid_A) {
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
-    std::string regex_str =
-        ".*Body with name \"random_body\" does not exist.*";
+    std::string regex_str = ".*Body with name \"random_body\" does not exist.*";
     std::regex regex(regex_str);
     EXPECT_TRUE(std::regex_match(e.what(), match, regex))
         << "Exception Message '" + std::string(e.what()) + "'" +
