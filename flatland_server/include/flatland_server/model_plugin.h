@@ -48,7 +48,6 @@
 #define FLATLAND_SERVER_MODEL_PLUGIN_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/timekeeper.h>
 #include <ros/ros.h>

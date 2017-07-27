@@ -118,11 +118,15 @@ void Bumper::OnInitialize(const YAML::Node &config) {
                  publish_all_collisions_, update_rate_,
                  boost::algorithm::join(excluded_body_names, ",").c_str());
 
-  // model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(10, 0));
+  // model_->GetBody("left_wheel")->physics_body_->SetLinearVelocity(b2Vec2(1,
+  // 0));
+  // model_->GetBody("right_wheel")->physics_body_->SetLinearVelocity(b2Vec2(1,
+  // 0));
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
+  // model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
+  // model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
 
   std::map<b2Contact *, ContactState>::iterator it;
 
@@ -234,7 +238,8 @@ void Bumper::BeginContact(b2Contact *contact) {
       c->body_A = collision_body;
 
       // by convention, Box2D normal goes from fixture A to fixture B, the
-      // sign is used to correct cases when our model isn't fixture A
+      // sign is used to correct cases when our model isn't fixture A, so that
+      // normal always points from this fixture to other_fixture
       if (contact->GetFixtureA() == this_fixture) {
         c->normal_sign = 1;
       } else {
