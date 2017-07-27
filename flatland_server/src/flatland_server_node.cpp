@@ -86,10 +86,7 @@ int main(int argc, char **argv) {
     ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
   }
 
-  std::string world_path =
-      "/home/infrastructurecoop/Dev/flatland_ws/src/flatland/flatland_plugins/"
-      "test/bumper_tests/collision_test/world.yaml";  // The file path to the
-                                                      // world.yaml file
+  std::string world_path;  // The file path to the world.yaml file
   if (node_handle.getParam("world_path", world_path)) {
     ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
   } else {

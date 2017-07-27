@@ -117,17 +117,9 @@ void Bumper::OnInitialize(const YAML::Node &config) {
                  topic_name_.c_str(), world_frame_id_.c_str(),
                  publish_all_collisions_, update_rate_,
                  boost::algorithm::join(excluded_body_names, ",").c_str());
-
-  // model_->GetBody("left_wheel")->physics_body_->SetLinearVelocity(b2Vec2(1,
-  // 0));
-  // model_->GetBody("right_wheel")->physics_body_->SetLinearVelocity(b2Vec2(1,
-  // 0));
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  // model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
-  // model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(1, 0));
-
   std::map<b2Contact *, ContactState>::iterator it;
 
   // Clear the forces at the begining of every physics step since brand
