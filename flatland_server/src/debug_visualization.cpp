@@ -253,7 +253,7 @@ void DebugVisualization::Reset(std::string name) {
   }
 }
 
-void DebugVisualization::AddTopicIfNotExist(const std::string &name) {
+void DebugVisualization::AddTopicIfNotExist(const std::string& name) {
   // If the topic doesn't exist yet, create it
   if (topics_.count(name) == 0) {
     topics_[name] = {

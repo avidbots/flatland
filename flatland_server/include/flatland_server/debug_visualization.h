@@ -122,7 +122,7 @@ class DebugVisualization {
    */
   void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
                      float r, float g, float b, float a);
-  
+
   /**
    * @brief Append a joint as a marker on the marker array
    * @param[in] markers The output marker array
@@ -139,7 +139,7 @@ class DebugVisualization {
    * @brief Ensure that a topic name is being broadcasted
    * @param[in] name Name of the topic
    */
-  void AddTopicIfNotExist(const std::string &name);
+  void AddTopicIfNotExist(const std::string& name);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H
