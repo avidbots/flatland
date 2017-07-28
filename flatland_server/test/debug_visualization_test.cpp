@@ -52,7 +52,7 @@
 #include <cmath>
 
 // Test the bodyToMarkers method on a polygon shape
-TEST(TestSuite, testBodyToMarkersPolygon) {
+TEST(DebugVizTest, testBodyToMarkersPolygon) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -115,7 +115,7 @@ TEST(TestSuite, testBodyToMarkersPolygon) {
 }
 
 // Test the bodyToMarkers method on a circle shape
-TEST(TestSuite, testBodyToMarkersCircle) {
+TEST(DebugVizTest, testBodyToMarkersCircle) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -146,7 +146,7 @@ TEST(TestSuite, testBodyToMarkersCircle) {
 }
 
 // Test the bodyToMarkers method on a edge shape
-TEST(TestSuite, testBodyToMarkersEdge) {
+TEST(DebugVizTest, testBodyToMarkersEdge) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -176,7 +176,7 @@ TEST(TestSuite, testBodyToMarkersEdge) {
 }
 
 // Test the bodyToMarkers method on an unsupported shape
-TEST(TestSuite, testBodyToMarkersUnsupported) {
+TEST(DebugVizTest, testBodyToMarkersUnsupported) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -202,7 +202,7 @@ TEST(TestSuite, testBodyToMarkersUnsupported) {
 }
 
 // test bodyToMarkers with a body with multiple fixtures
-TEST(TestSuite, testBodyToMarkersMultifixture) {
+TEST(DebugVizTest, testBodyToMarkersMultifixture) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -245,7 +245,7 @@ TEST(TestSuite, testBodyToMarkersMultifixture) {
 }
 
 // test bodyToMarkers with multiple bodies
-TEST(TestSuite, testBodyToMarkersMultibody) {
+TEST(DebugVizTest, testBodyToMarkersMultibody) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -325,7 +325,7 @@ struct MarkerArraySubscriptionHelper {
 };
 
 // Test the bodyToMarkers method on an unsupported shape
-TEST(TestSuite, testPublishMarkers) {
+TEST(DebugVizTest, testPublishMarkers) {
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 

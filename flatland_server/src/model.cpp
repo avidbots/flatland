@@ -152,13 +152,19 @@ void Model::TransformAll(const std::array<double, 3> &pose_delta) {
 }
 
 void Model::DebugVisualize() {
-  for (auto &body : bodies_) {
-    std::string name = "model_" + name_ + "_body_" + body->name_;
+  std::string name = "model/" + name_;
+  DebugVisualization::Get().Reset(name);
 
-    DebugVisualization::Get().Reset(name);
+  for (auto &body : bodies_) {
     DebugVisualization::Get().Visualize(name, body->physics_body_,
                                         body->color_[0], body->color_[1],
                                         body->color_[2], body->color_[3]);
+  }
+
+  for (auto &joint : joints_) {
+    DebugVisualization::Get().Visualize(name, joint->physics_joint_,
+                                        joint->color_[0], joint->color_[1],
+                                        joint->color_[2], joint->color_[3]);
   }
 }
 

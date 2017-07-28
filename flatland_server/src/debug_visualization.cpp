@@ -60,23 +60,71 @@ DebugVisualization::DebugVisualization() : node_("~debug") {
       node_.advertise<flatland_msgs::DebugTopicList>("topics", 0, true);
 }
 
-/**
- * @brief Return the singleton object
- */
 DebugVisualization& DebugVisualization::Get() {
   static DebugVisualization instance;
   return instance;
 }
 
-/**
- * @brief Append each shape on the fixture as a marker on the marker array
- * @param markers The output marker array
- * @param fixture The input fixture pointer
- * @param r red color 0.0->1.0
- * @param g green color 0.0->1.0
- * @param b blue color 0.0->1.0
- * @param a alpha color 0.0->1.0
- */
+void DebugVisualization::JointToMarkers(
+    visualization_msgs::MarkerArray& markers, b2Joint* joint, float r, float g,
+    float b, float a) {
+  if (joint->GetType() == e_distanceJoint ||
+      joint->GetType() == e_pulleyJoint || joint->GetType() == e_mouseJoint) {
+    ROS_ERROR_NAMED("DebugVis",
+                    "Unimplemented visualization joints. See b2World.cpp for "
+                    "implementation");
+    return;
+  }
+
+  visualization_msgs::Marker marker;
+  marker.header.frame_id = "map";
+  marker.header.stamp = ros::Time::now();
+  marker.color.r = r;
+  marker.color.g = g;
+  marker.color.b = b;
+  marker.color.a = a;
+  marker.type = marker.LINE_STRIP;
+  marker.scale.x = 0.01;
+  marker.points.resize(2);
+
+  geometry_msgs::Point p_a1, p_a2, p_b1, p_b2;
+  p_a1.x = joint->GetAnchorA().x;
+  p_a1.y = joint->GetAnchorA().y;
+  p_a2.x = joint->GetAnchorB().x;
+  p_a2.y = joint->GetAnchorB().y;
+  p_b1.x = joint->GetBodyA()->GetPosition().x;
+  p_b1.y = joint->GetBodyA()->GetPosition().y;
+  p_b2.x = joint->GetBodyB()->GetPosition().x;
+  p_b2.y = joint->GetBodyB()->GetPosition().y;
+
+  // Visualization shows lines from bodyA to anchorA, bodyB to anchorB, and
+  // anchorA to anchorB
+  marker.id = markers.markers.size();
+  marker.points[0] = p_b1;
+  marker.points[1] = p_a1;
+  markers.markers.push_back(marker);
+
+  marker.id = markers.markers.size();
+  marker.points[0] = p_b2;
+  marker.points[1] = p_a2;
+  markers.markers.push_back(marker);
+
+  marker.id = markers.markers.size();
+  marker.points[0] = p_a1;
+  marker.points[1] = p_a2;
+  markers.markers.push_back(marker);
+
+  marker.id = markers.markers.size();
+  marker.type = marker.CUBE_LIST;
+  marker.scale.x = marker.scale.y = marker.scale.z = 0.03;
+  marker.points.resize(4);
+  marker.points[0] = p_a1;
+  marker.points[1] = p_a2;
+  marker.points[2] = p_b1;
+  marker.points[3] = p_b2;
+  markers.markers.push_back(marker);
+}
+
 void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
                                        b2Body* body, float r, float g, float b,
                                        float a) {
@@ -171,9 +219,6 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
   }
 }
 
-/**
- * @brief Publish all marker array topics_ that need publishing
- */
 void DebugVisualization::Publish() {
   // Iterate over the topics_ map as pair(name, topic)
   for (auto& topic : topics_) {
@@ -187,33 +232,20 @@ void DebugVisualization::Publish() {
   }
 }
 
-/**
- * @brief Append the shapes from a fixture to a marker array
- * @param name    The name of the topic
- * @param fixture The fixture to output
- * @param r red color 0.0->1.0
- * @param g green color 0.0->1.0
- * @param b blue color 0.0->1.0
- * @param a alpha color 0.0->1.0
- */
 void DebugVisualization::Visualize(std::string name, b2Body* body, float r,
                                    float g, float b, float a) {
-  // If the topic doesn't exist, create it
-  if (topics_.count(name) == 0) {  // If the topic doesn't exist yet, create it
-    topics_[name] = {
-        node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
-        visualization_msgs::MarkerArray()};
-    RefreshDebugTopicList();
-  }
-
+  AddTopicIfNotExist(name);
   BodyToMarkers(topics_[name].markers, body, r, g, b, a);
   topics_[name].needs_publishing = true;
 }
 
-/**
- * @brief Remove all elements in a visualiation topic
- * @param name
- */
+void DebugVisualization::Visualize(std::string name, b2Joint* joint, float r,
+                                   float g, float b, float a) {
+  AddTopicIfNotExist(name);
+  JointToMarkers(topics_[name].markers, joint, r, g, b, a);
+  topics_[name].needs_publishing = true;
+}
+
 void DebugVisualization::Reset(std::string name) {
   if (topics_.count(name) > 0) {  // If the topic exists, clear it
     topics_[name].markers.markers.clear();
@@ -221,14 +253,18 @@ void DebugVisualization::Reset(std::string name) {
   }
 }
 
-/**
- * @brief Publish an updated version of the debug topic list
- */
-void DebugVisualization::RefreshDebugTopicList() {
-  flatland_msgs::DebugTopicList topic_list;
-  for (auto const& topic_pair : topics_)
-    topic_list.topics.push_back(topic_pair.first);
-  topic_list_publisher_.publish(topic_list);
+void DebugVisualization::AddTopicIfNotExist(const std::string &name) {
+  // If the topic doesn't exist yet, create it
+  if (topics_.count(name) == 0) {
+    topics_[name] = {
+        node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
+        visualization_msgs::MarkerArray()};
+
+    flatland_msgs::DebugTopicList topic_list;
+    for (auto const& topic_pair : topics_)
+      topic_list.topics.push_back(topic_pair.first);
+    topic_list_publisher_.publish(topic_list);
+  }
 }
 
 };  // namespace flatland_server

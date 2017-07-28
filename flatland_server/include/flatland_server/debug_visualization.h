@@ -48,12 +48,12 @@
 #define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_msgs/DebugTopicList.h>
 #include <ros/ros.h>
 #include <visualization_msgs/MarkerArray.h>
 #include <map>
 #include <string>
 #include <vector>
-#include "flatland_msgs/DebugTopicList.h"
 
 namespace flatland_server {
 struct DebugTopic {
@@ -71,14 +71,75 @@ class DebugVisualization {
   ros::NodeHandle node_;
   ros::Publisher topic_list_publisher_;
 
+  /**
+   * @brief Return the singleton object
+   */
   static DebugVisualization& Get();
+
+  /**
+   * @brief Publish all marker array topics_ that need publishing
+   */
   void Publish();
+
+  /**
+   * @brief Visualize body
+   * @param[in] name    The name of the topic
+   * @param[in] body The body to output
+   * @param[in] r red color 0.0->1.0
+   * @param[in] g green color 0.0->1.0
+   * @param[in] b blue color 0.0->1.0
+   * @param[in] a alpha color 0.0->1.0
+   */
   void Visualize(std::string name, b2Body* body, float r, float g, float b,
                  float a);
+
+  /**
+   * @brief Visualize body
+   * @param[in] name    The name of the topic
+   * @param[in] joint The join to output
+   * @param[in] r red color 0.0->1.0
+   * @param[in] g green color 0.0->1.0
+   * @param[in] b blue color 0.0->1.0
+   * @param[in] a alpha color 0.0->1.0
+   */
+  void Visualize(std::string name, b2Joint* joint, float r, float g, float b,
+                 float a);
+
+  /**
+   * @brief Remove all elements in a visualization topic
+   * @param name
+   */
   void Reset(std::string name);
+
+  /**
+   * @brief Append body as a marker on the marker array
+   * @param[in] markers The output marker array
+   * @param[in] body The input body pointer
+   * @param[in] r red color 0.0->1.0
+   * @param[in] g green color 0.0->1.0
+   * @param[in] b blue color 0.0->1.0
+   * @param[in] a alpha color 0.0->1.0
+   */
   void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
                      float r, float g, float b, float a);
-  void RefreshDebugTopicList();
+  
+  /**
+   * @brief Append a joint as a marker on the marker array
+   * @param[in] markers The output marker array
+   * @param[in] joint The input joint pointer
+   * @param[in] r red color 0.0->1.0
+   * @param[in] g green color 0.0->1.0
+   * @param[in] b blue color 0.0->1.0
+   * @param[in] a alpha color 0.0->1.0
+   */
+  void JointToMarkers(visualization_msgs::MarkerArray& markers, b2Joint* joint,
+                      float r, float g, float b, float a);
+
+  /**
+   * @brief Ensure that a topic name is being broadcasted
+   * @param[in] name Name of the topic
+   */
+  void AddTopicIfNotExist(const std::string &name);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

@@ -82,6 +82,11 @@ class Entity {
    * @return the type of entity
    */
   virtual EntityType Type() = 0;
+
+  /**
+   * @brief Visualize the entity
+   */
+  virtual void DebugVisualize(){}
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_ENTITY_H
