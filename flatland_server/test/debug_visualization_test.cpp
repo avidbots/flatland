@@ -297,7 +297,6 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
   b2BodyDef bodyDef;
   b2Body* b1 = world.CreateBody(&bodyDef);
   b2Body* b2 = world.CreateBody(&bodyDef);
-  b2Body* b3 = world.CreateBody(&bodyDef);
 
   b2WeldJointDef jd1, jd2;
   jd1.bodyA = b1;
