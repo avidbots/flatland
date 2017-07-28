@@ -289,6 +289,91 @@ TEST(DebugVizTest, testBodyToMarkersMultibody) {
   ASSERT_NEAR(markers.markers[0].points[3].y, 7.0, 1e-5);
 }
 
+// test bodyToMarkers with multiple joint
+TEST(DebugVizTest, testJointToMarkersMultiJoint) {
+  b2Vec2 gravity(0.0, 0.0);
+  b2World world(gravity);
+
+  b2BodyDef bodyDef;
+  b2Body* b1 = world.CreateBody(&bodyDef);
+  b2Body* b2 = world.CreateBody(&bodyDef);
+  b2Body* b3 = world.CreateBody(&bodyDef);
+
+  b2WeldJointDef jd1, jd2;
+  jd1.bodyA = b1;
+  jd1.bodyB = b2;
+  jd1.localAnchorA = b2Vec2(0, 0);
+  jd1.localAnchorB = b2Vec2(0, 0);
+  jd2.bodyA = b1;
+  jd2.bodyB = b2;
+  jd2.localAnchorA = b2Vec2(1, 2);
+  jd2.localAnchorB = b2Vec2(3, 4);
+
+  b2Joint* j1 = world.CreateJoint(&jd1);
+  b2Joint* j2 = world.CreateJoint(&jd2);
+
+  visualization_msgs::MarkerArray markers;
+  flatland_server::DebugVisualization::Get().JointToMarkers(markers, j1, 0.1,
+                                                            0.2, 0.3, 0.4);
+  flatland_server::DebugVisualization::Get().JointToMarkers(markers, j2, 0.5,
+                                                            0.6, 0.7, 0.8);
+  // check that marker was created
+  ASSERT_EQ(markers.markers.size(), 4);
+
+  // Check the 1st marker
+  ASSERT_EQ(markers.markers[0].type, markers.markers[0].LINE_LIST);
+  ASSERT_EQ(markers.markers[0].points.size(), 6);
+
+  for (int i = 0; i < 6; i++) {
+    ASSERT_FLOAT_EQ(markers.markers[0].points[i].x, 0.0) << "index: " << i;
+    ASSERT_FLOAT_EQ(markers.markers[0].points[i].y, 0.0) << "index: " << i;
+  }
+
+  ASSERT_FLOAT_EQ(markers.markers[0].color.r, 0.1);
+  ASSERT_FLOAT_EQ(markers.markers[0].color.g, 0.2);
+  ASSERT_FLOAT_EQ(markers.markers[0].color.b, 0.3);
+  ASSERT_FLOAT_EQ(markers.markers[0].color.a, 0.4);
+
+  // Check the 2nd marker
+  ASSERT_EQ(markers.markers[1].type, markers.markers[1].CUBE_LIST);
+  ASSERT_EQ(markers.markers[1].points.size(), 4);
+
+  for (int i = 0; i < 4; i++) {
+    ASSERT_FLOAT_EQ(markers.markers[1].points[i].x, 0.0) << "index: " << i;
+    ASSERT_FLOAT_EQ(markers.markers[1].points[i].y, 0.0) << "index: " << i;
+  }
+
+  // Check the 3rd marker
+  ASSERT_EQ(markers.markers[2].type, markers.markers[3].LINE_LIST);
+  ASSERT_EQ(markers.markers[2].points.size(), 6);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[0].x, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[0].y, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[1].x, 1.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[1].y, 2.0);
+
+  ASSERT_FLOAT_EQ(markers.markers[2].points[2].x, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[2].y, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[3].x, 3.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[3].y, 4.0);
+
+  ASSERT_FLOAT_EQ(markers.markers[2].points[4].x, 1.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[4].y, 2.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[5].x, 3.0);
+  ASSERT_FLOAT_EQ(markers.markers[2].points[5].y, 4.0);
+
+  // Check the 4th marker
+  ASSERT_EQ(markers.markers[3].type, markers.markers[3].CUBE_LIST);
+  ASSERT_EQ(markers.markers[3].points.size(), 4);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[0].x, 1.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[0].y, 2.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[1].x, 3.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[1].y, 4.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[2].x, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[2].y, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[3].x, 0.0);
+  ASSERT_FLOAT_EQ(markers.markers[3].points[3].y, 0.0);
+}
+
 // A helper class to accept MarkerArray message callbacks
 struct MarkerArraySubscriptionHelper {
   visualization_msgs::MarkerArray markers_;
@@ -331,6 +416,7 @@ TEST(DebugVizTest, testPublishMarkers) {
 
   b2BodyDef bodyDef;
   b2Body* body = world.CreateBody(&bodyDef);
+  b2Body* body2 = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef;
   b2CircleShape circle;
@@ -338,6 +424,13 @@ TEST(DebugVizTest, testPublishMarkers) {
   circle.m_radius = 0.2f;
   fixtureDef.shape = &circle;
   body->CreateFixture(&fixtureDef);
+
+  b2WeldJointDef joint_def;
+  joint_def.bodyA = body;
+  joint_def.bodyB = body2;
+  joint_def.localAnchorA = b2Vec2(0, 0);
+  joint_def.localAnchorB = b2Vec2(0, 0);
+  b2Joint* joint = world.CreateJoint(&joint_def);
 
   // Set up helper class subscribing to rostopic
   ros::NodeHandle nh;
@@ -380,11 +473,13 @@ TEST(DebugVizTest, testPublishMarkers) {
                                                        0.0, 0.0, 1.0);
   flatland_server::DebugVisualization::Get().Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
+                                                       0.0, 0.0, 1.0);
   flatland_server::DebugVisualization::Get().Publish();
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
-  EXPECT_EQ(3, helper.markers_.markers.size());  // 3 markers in latest msg
+  EXPECT_EQ(5, helper.markers_.markers.size());  // 5 markers in latest msg
 
   // Reset marker list
   flatland_server::DebugVisualization::Get().Reset("example");

@@ -83,9 +83,8 @@ void DebugVisualization::JointToMarkers(
   marker.color.g = g;
   marker.color.b = b;
   marker.color.a = a;
-  marker.type = marker.LINE_STRIP;
+  marker.type = marker.LINE_LIST;
   marker.scale.x = 0.01;
-  marker.points.resize(2);
 
   geometry_msgs::Point p_a1, p_a2, p_b1, p_b2;
   p_a1.x = joint->GetAnchorA().x;
@@ -100,28 +99,23 @@ void DebugVisualization::JointToMarkers(
   // Visualization shows lines from bodyA to anchorA, bodyB to anchorB, and
   // anchorA to anchorB
   marker.id = markers.markers.size();
-  marker.points[0] = p_b1;
-  marker.points[1] = p_a1;
-  markers.markers.push_back(marker);
+  marker.points.push_back(p_b1);
+  marker.points.push_back(p_a1);
+  marker.points.push_back(p_b2);
+  marker.points.push_back(p_a2);
+  marker.points.push_back(p_a1);
+  marker.points.push_back(p_a2);
 
-  marker.id = markers.markers.size();
-  marker.points[0] = p_b2;
-  marker.points[1] = p_a2;
-  markers.markers.push_back(marker);
-
-  marker.id = markers.markers.size();
-  marker.points[0] = p_a1;
-  marker.points[1] = p_a2;
   markers.markers.push_back(marker);
 
   marker.id = markers.markers.size();
   marker.type = marker.CUBE_LIST;
   marker.scale.x = marker.scale.y = marker.scale.z = 0.03;
-  marker.points.resize(4);
-  marker.points[0] = p_a1;
-  marker.points[1] = p_a2;
-  marker.points[2] = p_b1;
-  marker.points[3] = p_b2;
+  marker.points.clear();
+  marker.points.push_back(p_a1);
+  marker.points.push_back(p_a2);
+  marker.points.push_back(p_b1);
+  marker.points.push_back(p_b2);
   markers.markers.push_back(marker);
 }
 
