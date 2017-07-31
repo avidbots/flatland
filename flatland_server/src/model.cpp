@@ -53,7 +53,7 @@ namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &ns, const std::string &name)
-    : Entity(physics_world), namespace_(ns), name_(name), cfr_(cfr) {
+    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {
   no_collide_group_index_ = cfr->RegisterNoCollide();
 }
 

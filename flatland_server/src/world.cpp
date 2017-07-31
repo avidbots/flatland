@@ -106,6 +106,14 @@ void World::EndContact(b2Contact *contact) {
   plugin_manager_.EndContact(contact);
 }
 
+void World::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
+  plugin_manager_.PreSolve(contact, oldManifold);
+}
+
+void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
+  plugin_manager_.PostSolve(contact, impulse);
+}
+
 World *World::MakeWorld(const std::string &yaml_path) {
   // parse the world YAML file
   YAML::Node yaml;

@@ -107,65 +107,34 @@ void PluginManager::LoadModelPlugin(Model *model,
   }
   model_plugins_.push_back(model_plugin);
 
-  ROS_INFO_NAMED("PluginManager", "Model Plugin %s of type %s loaded",
-                 name.c_str(), type.c_str());
+  ROS_INFO_NAMED("PluginManager",
+                 "Model Plugin %s of type %s loaded for model %s", name.c_str(),
+                 type.c_str(), model->name_.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {
-  b2Fixture *f_A = contact->GetFixtureA();
-  b2Fixture *f_B = contact->GetFixtureB();
-  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
-  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
-  Entity *e_A = b_A->entity_;
-  Entity *e_B = b_B->entity_;
-
   for (auto &model_plugin : model_plugins_) {
-    Model *m = model_plugin->model_;
-
-    if (e_A == m && e_B->Type() == Entity::LAYER) {
-      model_plugin->BeginContactWithMap(dynamic_cast<Layer *>(e_B), f_B, f_A,
-                                        contact);
-    } else if (e_A == m && e_B->Type() == Entity::MODEL) {
-      model_plugin->BeginContactWithModel(dynamic_cast<Model *>(e_B), f_B, f_A,
-                                          contact);
-    } else if (e_B == m && e_A->Type() == Entity::LAYER) {
-      model_plugin->BeginContactWithMap(dynamic_cast<Layer *>(e_A), f_A, f_B,
-                                        contact);
-    } else if (e_B == m && e_A->Type() == Entity::MODEL) {
-      model_plugin->BeginContactWithModel(dynamic_cast<Model *>(e_A), f_A, f_B,
-                                          contact);
-    }
-
     model_plugin->BeginContact(contact);
   }
 }
 
 void PluginManager::EndContact(b2Contact *contact) {
-  b2Fixture *f_A = contact->GetFixtureA();
-  b2Fixture *f_B = contact->GetFixtureB();
-  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
-  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
-  Entity *e_A = b_A->entity_;
-  Entity *e_B = b_B->entity_;
-
   for (auto &model_plugin : model_plugins_) {
-    Model *m = model_plugin->model_;
-
-    if (e_A == m && e_B->Type() == Entity::LAYER) {
-      model_plugin->EndContactWithMap(dynamic_cast<Layer *>(e_B), f_B, f_A,
-                                      contact);
-    } else if (e_A == m && e_B->Type() == Entity::MODEL) {
-      model_plugin->EndContactWithModel(dynamic_cast<Model *>(e_B), f_B, f_A,
-                                        contact);
-    } else if (e_B == m && e_A->Type() == Entity::LAYER) {
-      model_plugin->EndContactWithMap(dynamic_cast<Layer *>(e_A), f_A, f_B,
-                                      contact);
-    } else if (e_B == m && e_A->Type() == Entity::MODEL) {
-      model_plugin->EndContactWithModel(dynamic_cast<Model *>(e_A), f_A, f_B,
-                                        contact);
-    }
-
     model_plugin->EndContact(contact);
+  }
+}
+
+void PluginManager::PreSolve(b2Contact *contact,
+                             const b2Manifold *oldManifold) {
+  for (auto &model_plugin : model_plugins_) {
+    model_plugin->PreSolve(contact, oldManifold);
+  }
+}
+
+void PluginManager::PostSolve(b2Contact *contact,
+                              const b2ContactImpulse *impulse) {
+  for (auto &model_plugin : model_plugins_) {
+    model_plugin->PostSolve(contact, impulse);
   }
 }
 

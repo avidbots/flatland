@@ -64,7 +64,6 @@ namespace flatland_server {
  */
 class Layer : public Entity {
  public:
-  std::string name_;              ///< name of the layer
   CollisionFilterRegistry *cfr_;  ///< collision filter registry
   cv::Mat bitmap_;                ///< OpenCV bitmap storing the image
   double resolution_;             ///< map resolution m/pixel

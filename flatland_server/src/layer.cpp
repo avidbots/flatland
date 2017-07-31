@@ -61,9 +61,8 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
              double occupied_thresh, double free_thresh)
-    : Entity(physics_world),
+    : Entity(physics_world, name),
       cfr_(cfr),
-      name_(name),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {

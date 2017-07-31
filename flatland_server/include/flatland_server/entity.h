@@ -62,12 +62,14 @@ class Entity {
   enum EntityType { LAYER, MODEL };
 
   b2World *physics_world_;  ///< Box2D physics world
+  std::string name_;        ///< name of the entity
 
   /**
    * @brief Constructor for the entity
    * @param[in] physics_world Box2D physics_world
+   * @param[in] name name of the entity
    */
-  Entity(b2World *physics_world);
+  Entity(b2World *physics_world, const std::string &name);
   virtual ~Entity() = default;
 
   /// This class should be non-copyable. This will cause the destructor to be

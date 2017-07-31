@@ -96,6 +96,7 @@ class World : public b2ContactListener {
    * @param[in] contact Box2D contact information
    */
   void BeginContact(b2Contact *contact) override;
+
   /**
    * @brief Box2D inherited end contact
    * @param[in] contact Box2D contact information
@@ -103,8 +104,24 @@ class World : public b2ContactListener {
   void EndContact(b2Contact *contact) override;
 
   /**
-   * @brief load layers into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of layers
+   * @brief Box2D inherited presolve
+   * @param[in] contact Box2D contact information
+   * @param[in] oldManifold The manifold from the previous timestep
+   */
+  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
+
+  /**
+   * @brief Box2D inherited pre solve
+   * @param[in] contact Box2D contact information
+   * @param[in] impulse The calculated impulse from the collision resolute
+   */
+  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
+
+  /**
+   * @brief load layers into the world. Throws derivatives of
+   * YAML::Exception
+   * @param[in] yaml_path Path to the world yaml file containing list of
+   * layers
    */
   void LoadLayers(const std::string &yaml_path);
 

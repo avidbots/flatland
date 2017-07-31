@@ -21,6 +21,9 @@ find_package(PkgConfig REQUIRED)
 ################
 add_message_files(FILES
   DebugTopicList.msg
+  Collision.msg
+  Collisions.msg
+  Vector2.msg
 )
 
 add_service_files(FILES

@@ -184,7 +184,6 @@ if(CATKIN_ENABLE_TESTING)
     flatland_lib)
 
 
-
   add_rostest_gtest(debug_visualization_test
     test/debug_visualization.test
     test/debug_visualization_test.cpp)

@@ -71,6 +71,7 @@ add_library(flatland_plugins_lib
   src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp
   src/update_timer.cpp
+  src/bumper.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -131,6 +132,10 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
+
+  add_rostest_gtest(bumper_test test/bumper_test.test
+                    test/bumper_test.cpp)
+  target_link_libraries(bumper_test flatland_plugins_lib flatland_lib)
 
   add_rostest_gtest(model_tf_publisher_test test/model_tf_publisher_test.test
                     test/model_tf_publisher_test.cpp)
