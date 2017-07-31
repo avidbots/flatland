@@ -107,8 +107,11 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
     color[1] = layer_node["color"][1].as<double>();
     color[2] = layer_node["color"][2].as<double>();
     color[3] = layer_node["color"][3].as<double>();
+  } else if (layer_node["color"]) {
+    throw YAMLException("Invalid \"color\" in " + name +
+                        " layer, must be a sequence of exactly 4 items");
   } else {
-    throw YAMLException("Missing/invalid \"color\" in " + name + " layer");
+    color = {1, 1, 1, 1};
   }
 
   // use absolute path if start with '/', use relative otherwise
@@ -269,7 +272,7 @@ void Layer::LoadMap() {
 }
 
 void Layer::DebugVisualize() {
-  std::string viz_name = "layer_" + name_;
+  std::string viz_name = "layer/" + name_;
 
   DebugVisualization::Get().Reset(viz_name);
   DebugVisualization::Get().Visualize(viz_name, body_->physics_body_,

@@ -65,12 +65,10 @@ class ServiceManagerTest : public ::testing::Test {
   flatland_msgs::SpawnModel srv;
   std::thread simulation_thread;
   bool stop_thread;
-  bool client_return;
   World* w;
 
   void SetUp() {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
-    client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
     stop_thread = false;
     timekeeper.SetMaxStepSize(1.0);
   }
@@ -99,7 +97,7 @@ class ServiceManagerTest : public ::testing::Test {
 /**
  * Testing service for loading a model which should succeed
  */
-TEST_F(ServiceManagerTest, valid_model) {
+TEST_F(ServiceManagerTest, spawn_valid_model) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
 
@@ -115,15 +113,17 @@ TEST_F(ServiceManagerTest, valid_model) {
   srv.request.pose.y = 2;
   srv.request.pose.theta = 3;
 
+  client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
+
   // Threading is required since client.call blocks executing until return
   StartSimulationThread();
-  client_return = client.call(srv);
-  EXPECT_EQ(client_return, true);
+
+  ASSERT_TRUE(client.call(srv));
 
   StopSimulationThread();
 
-  EXPECT_EQ(true, srv.response.success);
-  EXPECT_STREQ("", srv.response.message.c_str());
+  ASSERT_TRUE(srv.response.success);
+  ASSERT_STREQ("", srv.response.message.c_str());
 
   ASSERT_EQ(5, w->models_.size());
   EXPECT_STREQ("service_manager_test_robot", w->models_[4]->name_.c_str());
@@ -139,7 +139,7 @@ TEST_F(ServiceManagerTest, valid_model) {
 /**
  * Testing service for loading a model which should fail
  */
-TEST_F(ServiceManagerTest, invalid_model) {
+TEST_F(ServiceManagerTest, spawn_invalid_model) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
 
@@ -153,13 +153,14 @@ TEST_F(ServiceManagerTest, invalid_model) {
   srv.request.pose.y = 2;
   srv.request.pose.theta = 3;
 
+  client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
+
   StartSimulationThread();
-  client_return = client.call(srv);
-  EXPECT_EQ(client_return, true);
+  ASSERT_TRUE(client.call(srv));
 
   StopSimulationThread();
 
-  EXPECT_EQ(false, srv.response.success);
+  ASSERT_FALSE(srv.response.success);
 
   std::cmatch match;
   std::string regex_str =

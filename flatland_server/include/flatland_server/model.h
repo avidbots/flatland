@@ -115,7 +115,7 @@ class Model : public Entity {
   /**
    * @brief Publish debug visualizations for model
    */
-  void DebugVisualize();
+  void DebugVisualize() override;
 
   /**
    * @brief transform all bodies in the model

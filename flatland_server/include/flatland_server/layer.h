@@ -110,7 +110,7 @@ class Layer : public Entity {
   /**
    * @brief Visualize layer for debugging purposes
    */
-  void DebugVisualize();
+  void DebugVisualize() override;
 
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon
