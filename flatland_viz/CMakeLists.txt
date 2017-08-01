@@ -82,6 +82,8 @@ add_executable(flatland_viz
   include/flatland_viz/flatland_viz.h
   src/flatland_window.cpp
   include/flatland_viz/flatland_window.h
+  src/model_dialog.cpp
+  include/flatland_viz/model_dialog.h
 )
 add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 

@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name   flatland_window.cpp
+ * @name   model_dialog.h
  * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
  * @author Mike Brousseau
@@ -45,26 +45,56 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
-#include <QLabel>
-#include <QMainWindow>
+#ifndef MODEL_DIALOG_H
+#define MODEL_DIALOG_H
+
+#include <QPushButton>
 #include <QWidget>
-#include "flatland_viz/flatland_viz.h"
-#include "flatland_viz/model_dialog.h"
 
-class FlatlandWindow : public QMainWindow {
+class QCheckBox;
+class QLabel;
+class QErrorMessage;
+
+class DialogOptionsWidget;
+
+class ModelDialog : public QWidget {
   Q_OBJECT
- public:
-  FlatlandWindow(QWidget* parent = 0);
-  QLabel* fps_label_;
-  ModelDialog* model_dialog_;
 
- public Q_SLOTS:
-  void UpdateFps();
-  void CreateModelDialog();
+ public:
+  static QColor saved_color_;
+
+  ModelDialog(QWidget* parent = 0);
+
+ private Q_SLOTS:
+  /**
+   * @name        SetColor
+   * @brief       Callback to pop up a ColorDialog
+   */
+  void SetColor();
+  /**
+   * @name        CancelButtonClicked
+   * @brief       Callback to dismiss the model dialog (cancel was clicked)
+   */
+  void CancelButtonClicked();
+  /**
+   * @name        OkButtonClicked
+   * @brief       Callback to create the model (ok was clicked)
+   */
+  void OkButtonClicked();
+  /**
+   * @name        SelectFile
+   * @brief       Callback to create model
+   */
+  QString SelectFile();
+  /**
+   * @name        SetButtonColor
+   * @brief       Changes a button's color
+   */
+  void SetButtonColor(const QColor* c, QPushButton* b);
 
  private:
-  FlatlandViz* viz_;
-  int frame_count_;
-  ros::WallTime last_fps_calc_time_;
+  QPushButton* color_button;
+  QString path_to_model_file;
 };
+
+#endif
