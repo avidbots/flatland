@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   flatland_server
   cmake_modules
   tf
+  flatland_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -72,6 +73,7 @@ add_library(flatland_plugins_lib
   src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp
   src/update_timer.cpp
+  src/bumper.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -136,6 +138,10 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(bicycle_test test/bicycle_test.test
                     test/bicycle_test.cpp)
   target_link_libraries(bicycle_test flatland_plugins_lib flatland_lib)
+  add_rostest_gtest(bumper_test test/bumper_test.test
+                    test/bumper_test.cpp)
+  target_link_libraries(bumper_test flatland_plugins_lib flatland_lib)
+
   add_rostest_gtest(model_tf_publisher_test test/model_tf_publisher_test.test
                     test/model_tf_publisher_test.cpp)
   target_link_libraries(model_tf_publisher_test flatland_plugins_lib flatland_lib)

@@ -49,6 +49,7 @@
 
 namespace flatland_server {
 
-Entity::Entity(b2World *physics_world) : physics_world_(physics_world) {}
+Entity::Entity(b2World *physics_world, const std::string &name)
+    : physics_world_(physics_world), name_(name) {}
 
 };  // namespace flatland_server

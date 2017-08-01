@@ -52,8 +52,8 @@
 namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::string &name)
-    : Entity(physics_world), name_(name), cfr_(cfr) {
+             const std::string &ns, const std::string &name)
+    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {
   no_collide_group_index_ = cfr->RegisterNoCollide();
 }
 
@@ -71,16 +71,16 @@ Model::~Model() {
 }
 
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const std::string &name,
-                        const std::string &model_yaml_path) {
+                        const std::string &model_yaml_path,
+                        const std::string &ns, const std::string &name) {
   YAML::Node model_node;
   try {
     model_node = YAML::LoadFile(model_yaml_path);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + model_yaml_path, e);
+    throw YAMLException("Error loading \"" + model_yaml_path + "\"", e);
   }
 
-  Model *m = new Model(physics_world, cfr, name);
+  Model *m = new Model(physics_world, cfr, ns, name);
 
   m->plugins_node_ = model_node["plugins"];
 
@@ -152,13 +152,19 @@ void Model::TransformAll(const std::array<double, 3> &pose_delta) {
 }
 
 void Model::DebugVisualize() {
-  for (auto &body : bodies_) {
-    std::string name = "model_" + name_ + "_body_" + body->name_;
+  std::string name = "model/" + name_;
+  DebugVisualization::Get().Reset(name);
 
-    DebugVisualization::Get().Reset(name);
+  for (auto &body : bodies_) {
     DebugVisualization::Get().Visualize(name, body->physics_body_,
                                         body->color_[0], body->color_[1],
                                         body->color_[2], body->color_[3]);
+  }
+
+  for (auto &joint : joints_) {
+    DebugVisualization::Get().Visualize(name, joint->physics_joint_,
+                                        joint->color_[0], joint->color_[1],
+                                        joint->color_[2], joint->color_[3]);
   }
 }
 

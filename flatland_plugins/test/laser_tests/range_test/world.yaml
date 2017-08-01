@@ -10,3 +10,4 @@ models:
   - name: robot1
     pose: [5, 5, 0]
     model: robot.model.yaml
+    namespace: "r"

@@ -50,7 +50,7 @@
 #include <ros/ros.h>
 #include <QWidget>
 #include <set>
-#include "flatland_server/DebugTopicList.h"
+#include "flatland_msgs/DebugTopicList.h"
 
 namespace rviz {
 class Display;
@@ -75,7 +75,7 @@ class FlatlandViz : public QWidget {
    *
    * @param msg The DebugTopicList message
    */
-  void RecieveDebugTopics(const flatland_server::DebugTopicList::ConstPtr& msg);
+  void RecieveDebugTopics(const flatland_msgs::DebugTopicList::ConstPtr& msg);
 
   /**
    * @brief Destruct
