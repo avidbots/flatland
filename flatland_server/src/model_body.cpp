@@ -52,8 +52,8 @@ namespace flatland_server {
 
 ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
                      Model *model, const std::string &name,
-                     const std::array<double, 4> &color,
-                     const std::array<double, 3> &origin, b2BodyType body_type,
+                     const Color &color,
+                     const Pose &origin, b2BodyType body_type,
                      double linear_damping, double angular_damping)
     : Body(physics_world, model, name, color, origin, body_type, linear_damping,
            angular_damping),
@@ -63,8 +63,8 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
                                const YAML::Node &body_node) {
   std::string name;
-  std::array<double, 4> color;
-  std::array<double, 3> origin;
+  Color color;
+  Pose origin;
   double linear_damping = 0, angular_damping = 0;
   b2BodyType type;
 
@@ -74,27 +74,27 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
     throw YAMLException("Missing a body name");
   }
 
-  if (body_node["origin"] && body_node["origin"].IsSequence() &&
-      body_node["origin"].size() == 3) {
-    origin[0] = body_node["origin"][0].as<double>();
-    origin[1] = body_node["origin"][1].as<double>();
-    origin[2] = body_node["origin"][2].as<double>();
-  } else {
-    throw YAMLException("Missing/invalid \"origin\" in " + name + " body");
-  }
+  // if (body_node["origin"] && body_node["origin"].IsSequence() &&
+  //     body_node["origin"].size() == 3) {
+  //   origin[0] = body_node["origin"][0].as<double>();
+  //   origin[1] = body_node["origin"][1].as<double>();
+  //   origin[2] = body_node["origin"][2].as<double>();
+  // } else {
+  //   throw YAMLException("Missing/invalid \"origin\" in " + name + " body");
+  // }
 
-  if (body_node["color"] && body_node["color"].IsSequence() &&
-      body_node["color"].size() == 4) {
-    color[0] = body_node["color"][0].as<double>();
-    color[1] = body_node["color"][1].as<double>();
-    color[2] = body_node["color"][2].as<double>();
-    color[3] = body_node["color"][3].as<double>();
-  } else if (body_node["color"]) {
-    throw YAMLException("Invalid \"color\" in " + name +
-                        " body, must be a sequence");
-  } else {
-    color = {1, 1, 1, 0.5};
-  }
+  // if (body_node["color"] && body_node["color"].IsSequence() &&
+  //     body_node["color"].size() == 4) {
+  //   color[0] = body_node["color"][0].as<double>();
+  //   color[1] = body_node["color"][1].as<double>();
+  //   color[2] = body_node["color"][2].as<double>();
+  //   color[3] = body_node["color"][3].as<double>();
+  // } else if (body_node["color"]) {
+  //   throw YAMLException("Invalid \"color\" in " + name +
+  //                       " body, must be a sequence");
+  // } else {
+  //   color = {1, 1, 1, 0.5};
+  // }
 
   if (body_node["type"]) {
     std::string type_str = body_node["type"].as<std::string>();

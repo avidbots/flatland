@@ -49,6 +49,7 @@
 
 #include <flatland_server/model.h>
 #include <yaml-cpp/yaml.h>
+#include <flatland_server/types.h>
 
 namespace flatland_server {
 
@@ -64,7 +65,7 @@ class Joint {
   std::string name_;             ///< Name of the joint
   b2Joint *physics_joint_;       ///< Box2D physics joint
   b2World *physics_world_;       ///< Box2D physics world
-  std::array<double, 4> color_;  ///< Color for visualization
+  Color color_;  ///< Color for visualization
 
   /**
    * @brief Constructor for the joint
@@ -75,7 +76,7 @@ class Joint {
    * @param[in] joint_def Box2D joint definition
    */
   Joint(b2World *physics_world, Model *model, const std::string &name,
-        const std::array<double, 4> &color, const b2JointDef &joint_def);
+        const Color &color, const b2JointDef &joint_def);
   ~Joint();
 
   /// Disallow copying of joints, problematic for constructors and destructors
@@ -134,7 +135,7 @@ class Joint {
    */
   static void ParseJointCommon(Model *model, const YAML::Node &joint_node,
                                const std::string &joint_name,
-                               std::array<double, 4> &color, b2Body *&body_A,
+                               Color &color, b2Body *&body_A,
                                b2Vec2 &anchor_A, b2Body *&body_B,
                                b2Vec2 &anchor_B, bool &collide_connected);
 };

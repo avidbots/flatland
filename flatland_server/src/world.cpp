@@ -47,7 +47,9 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
+#include <flatland_server/types.h>
 #include <flatland_server/world.h>
+#include <flatland_server/yaml_reader.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
@@ -148,31 +150,29 @@ World *World::MakeWorld(const std::string &yaml_path) {
 }
 
 void World::LoadLayers(const std::string &yaml_path) {
-  boost::filesystem::path path(yaml_path);
-
-  YAML::Node yaml;
-
-  try {
-    yaml = YAML::LoadFile(path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading \"" + path.string() + "\"", e);
-  }
-
-  if (!yaml["layers"] || !yaml["layers"].IsSequence()) {
-    throw YAMLException("Missing/invalid world param \"layers\"");
-  }
+  YamlReader layers_yaml =
+      YamlReader(yaml_path).SubNode("layers", YamlReader::LIST);
 
   // loop through each layer and parse the data
-  for (int i = 0; i < yaml["layers"].size(); i++) {
-    Layer *layer;
-
+  for (int i = 0; i < layers_yaml.NodeSize(); i++) {
     if (cfr_.IsLayersFull()) {
       throw YAMLException("Max number of layers reached, max is " +
                           std::to_string(cfr_.MAX_LAYERS));
     }
 
-    layer = Layer::MakeLayer(physics_world_, &cfr_, path.parent_path(),
-                             yaml["layers"][i]);
+    YamlReader layer_yaml = layers_yaml.SubNode(i, YamlReader::MAP, "layers");
+
+    std::string in = "layer index=" + std::to_string(i);
+    std::string name = layer_yaml.GetString("name", in);
+    boost::filesystem::path map_path(layer_yaml.GetString("map", in));
+    Color color = layer_yaml.GetColorOpt("color", Color(1, 1, 1, 1));
+
+    if (map_path.string().front() != '/') {
+      map_path = boost::filesystem::path(yaml_path).parent_path() / map_path;
+    }
+
+    Layer *layer =
+        Layer::MakeLayer(physics_world_, &cfr_, map_path.string(), name, color);
 
     layers_.push_back(layer);
 
@@ -181,55 +181,22 @@ void World::LoadLayers(const std::string &yaml_path) {
 }
 
 void World::LoadModels(const std::string &yaml_path) {
-  boost::filesystem::path path(yaml_path);
-  YAML::Node yaml;
+  YamlReader models_yaml =
+      YamlReader(yaml_path).SubNodeOpt("models", YamlReader::LIST);
 
-  try {
-    yaml = YAML::LoadFile(path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading \"" + path.string() + "\"", e);
-  }
+  if (!models_yaml.IsNodeNull()) {
+    for (int i = 0; i < models_yaml.NodeSize(); i++) {
+      YamlReader model_yaml = models_yaml.SubNode(i, YamlReader::MAP, "models");
 
-  // models is optional
-  if (yaml["models"] && !yaml["models"].IsSequence()) {
-    throw YAMLException("Invalid world param \"layers\", must be a sequence");
-  } else if (yaml["models"]) {
-    for (int i = 0; i < yaml["models"].size(); i++) {
-      const YAML::Node &node = yaml["models"][i];
-      std::string name, ns;
-      std::array<double, 3> pose;
-      boost::filesystem::path model_path;
-
-      if (node["name"]) {
-        name = node["name"].as<std::string>();
-      } else {
-        throw YAMLException("Missing model name in model index=" +
-                            std::to_string(i));
-      }
-
-      if (node["namespace"]) {
-        ns = node["namespace"].as<std::string>();
-      } else {
-        ns = "";
-      }
-
-      if (node["pose"] && node["pose"].IsSequence() &&
-          node["pose"].size() == 3) {
-        pose[0] = node["pose"][0].as<double>();
-        pose[1] = node["pose"][1].as<double>();
-        pose[2] = node["pose"][2].as<double>();
-      } else {
-        throw YAMLException("Missing/invalid \"pose\" in " + name + " model");
-      }
-
-      if (node["model"]) {
-        model_path = boost::filesystem::path(node["model"].as<std::string>());
-      } else {
-        throw YAMLException("Missing \"model\" in " + name + " model");
-      }
+      std::string in = "model index=" + std::to_string(i);
+      std::string name = model_yaml.GetString("name", in);
+      std::string ns = model_yaml.GetStringOpt("namespace", "", in);
+      Pose pose = model_yaml.GetPoseOpt("pose", Pose(0, 0, 0), in);
+      boost::filesystem::path model_path(model_yaml.GetString("model", in));
 
       if (model_path.string().front() != '/') {
-        model_path = path.parent_path() / model_path;
+        model_path =
+            boost::filesystem::path(yaml_path).parent_path() / model_path;
       }
 
       LoadModel(model_path.string(), ns, name, pose);
@@ -238,20 +205,13 @@ void World::LoadModels(const std::string &yaml_path) {
 }
 
 void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
-                      const std::string &name,
-                      const std::array<double, 3> pose) {
+                      const std::string &name, const Pose &pose) {
   Model *m = Model::MakeModel(physics_world_, &cfr_, model_yaml_path, ns, name);
   m->TransformAll(pose);
   models_.push_back(m);
 
-  // load model plugins, it is okay to have no plugins
-  if (m->plugins_node_ && !m->plugins_node_.IsSequence()) {
-    throw YAMLException("Invalid \"plugins\" in " + m->name_ +
-                        " model, not a list");
-  } else if (m->plugins_node_) {
-    for (const auto &plugin_node : m->plugins_node_) {
-      plugin_manager_.LoadModelPlugin(m, plugin_node);
-    }
+  for (const auto &plugin_node : m->plugins_node_) {
+    plugin_manager_.LoadModelPlugin(m, plugin_node);
   }
 
   ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());

@@ -49,18 +49,19 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/layer.h>
+#include <flatland_server/yaml_reader.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
 
 namespace flatland_server {
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::string &name, const cv::Mat &bitmap,
-             const std::array<double, 4> &color,
-             const std::array<double, 3> &origin, double resolution,
-             double occupied_thresh, double free_thresh)
+             const std::string &name, const cv::Mat &bitmap, const Color &color,
+             const Pose &origin, double resolution, double occupied_thresh,
+             double free_thresh)
     : Entity(physics_world, name),
       cfr_(cfr),
       resolution_(resolution),
@@ -78,102 +79,31 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 Layer::~Layer() { delete body_; }
 
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const boost::filesystem::path &world_yaml_dir,
-                        const YAML::Node &layer_node) {
-  std::string name;
+                        const std::string &map_path, const std::string &name,
+                        const Color &color) {
+  YamlReader yr = YamlReader(map_path);
+
+  std::string in = name + " layer";  // to display in case of error
+  double resolution = yr.GetDouble("resolution", in);
+  double occupied_thresh = yr.GetDouble("occupied_thresh", in);
+  double free_thresh = yr.GetDouble("free_thresh", in);
+  Pose pose = yr.GetPose("origin", in);
+
+  boost::filesystem::path image_path(yr.GetString("image", in));
+  if (image_path.string().front() != '/') {
+    image_path = boost::filesystem::path(map_path).parent_path() / image_path;
+  }
+
+  cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+  if (map.empty()) {
+    throw YAMLException("Failed to load " + image_path.string());
+  }
+
   cv::Mat bitmap;
-  std::array<double, 4> color;
-  std::array<double, 3> origin;
-  double resolution, occupied_thresh, free_thresh;
+  map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
 
-  boost::filesystem::path map_yaml_path;
-
-  if (layer_node["name"]) {
-    name = layer_node["name"].as<std::string>();
-  } else {
-    throw YAMLException("Invalid layer name");
-  }
-
-  if (layer_node["map"]) {
-    map_yaml_path =
-        boost::filesystem::path(layer_node["map"].as<std::string>());
-  } else {
-    throw YAMLException("Missing \"map\" in " + name + " layer");
-  }
-
-  if (layer_node["color"] && layer_node["color"].IsSequence() &&
-      layer_node["color"].size() == 4) {
-    color[0] = layer_node["color"][0].as<double>();
-    color[1] = layer_node["color"][1].as<double>();
-    color[2] = layer_node["color"][2].as<double>();
-    color[3] = layer_node["color"][3].as<double>();
-  } else if (layer_node["color"]) {
-    throw YAMLException("Invalid \"color\" in " + name +
-                        " layer, must be a sequence of exactly 4 items");
-  } else {
-    color = {1, 1, 1, 1};
-  }
-
-  // use absolute path if start with '/', use relative otherwise
-  if (map_yaml_path.string().front() != '/') {
-    map_yaml_path = world_yaml_dir / map_yaml_path;
-  }
-
-  // start parsing the map yaml file
-  YAML::Node yaml;
-
-  try {
-    yaml = YAML::LoadFile(map_yaml_path.string());
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading \"" + map_yaml_path.string() + "\"", e);
-  }
-
-  if (yaml["resolution"]) {
-    resolution = yaml["resolution"].as<double>();
-  } else {
-    throw YAMLException("Missing \"resolution\" in " + name + " layer");
-  }
-
-  if (yaml["origin"] && yaml["origin"].IsSequence() &&
-      yaml["origin"].size() == 3) {
-    origin[0] = yaml["origin"][0].as<double>();
-    origin[1] = yaml["origin"][1].as<double>();
-    origin[2] = yaml["origin"][2].as<double>();
-  } else {
-    throw YAMLException("Missing/invalid \"origin\" in " + name + " layer");
-  }
-
-  if (yaml["occupied_thresh"]) {
-    occupied_thresh = yaml["occupied_thresh"].as<double>();
-  } else {
-    throw YAMLException("Missing \"occupied_thresh\" in " + name + " layer");
-  }
-
-  if (yaml["free_thresh"]) {
-    free_thresh = yaml["free_thresh"].as<double>();
-  } else {
-    throw YAMLException("Missing \"free_thresh\" in " + name + " layer");
-  }
-
-  if (yaml["image"]) {
-    boost::filesystem::path image_path(yaml["image"].as<std::string>());
-
-    if (image_path.string().front() != '/') {
-      image_path = map_yaml_path.parent_path() / image_path;
-    }
-
-    cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
-    if (map.empty()) {
-      throw YAMLException("Failed to load " + image_path.string());
-    }
-
-    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
-  } else {
-    throw YAMLException("Missing \"image\" in " + name + " layer");
-  }
-
-  return new Layer(physics_world, cfr, name, bitmap, color, origin, resolution,
-                   occupied_thresh, free_thresh);
+  return new Layer(physics_world, cfr, name, bitmap, {1, 1, 1, 1}, {0, 0, 0},
+                   resolution, occupied_thresh, free_thresh);
 }
 
 void Layer::LoadMap() {
@@ -276,8 +206,8 @@ void Layer::DebugVisualize() {
 
   DebugVisualization::Get().Reset(viz_name);
   DebugVisualization::Get().Visualize(viz_name, body_->physics_body_,
-                                      body_->color_[0], body_->color_[1],
-                                      body_->color_[2], body_->color_[3]);
+                                      body_->color_.r, body_->color_.g,
+                                      body_->color_.b, body_->color_.a);
 }
 
 };  // namespace flatland_server

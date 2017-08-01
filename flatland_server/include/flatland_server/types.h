@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 model_spawner.h
- * @brief	 Definition for model spawner
+ * @name	 types.h
+ * @brief	 Defines common types in flatland
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,45 +44,42 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/service_manager.h>
-#include <exception>
-#include <flatland_server/types.h>
+#include <Box2D/Box2D.h>
+#include <geometry_msgs/Pose2D.h>
+
+#ifndef FLATLAND_SERVER_TYPES_H
+#define FLATLAND_SERVER_TYPES_H
 
 namespace flatland_server {
 
-ServiceManager::ServiceManager(World *world) : world_(world) {
-  ros::NodeHandle nh;
+struct Vec2 : public b2Vec2 {};
 
-  spawn_model_service_ =
-      nh.advertiseService("spawn_model", &ServiceManager::SpawnModel, this);
+struct Pose {
+  double x;
+  double y;
+  double theta;  ///< theta
 
-  if (spawn_model_service_) {
-    ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
-  } else {
-    ROS_ERROR_NAMED("Service Manager", "Error starting model spawning service");
-  }
-}
-
-bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
-                                flatland_msgs::SpawnModel::Response &response) {
-  ROS_INFO_NAMED("ModelSpawner",
-                 "Model spawn requested path(\"%s\"), namespace(\"%s\"), "
-                 "name(\'%s\"), pose(%f,%f,%f)",
-                 request.yaml_path.c_str(), request.ns.c_str(),
-                 request.name.c_str(), request.pose.x, request.pose.y,
-                 request.pose.theta);
-
-  Pose pose(request.pose.x, request.pose.y, request.pose.theta);
-
-  try {
-    world_->LoadModel(request.yaml_path, request.ns, request.name, pose);
-    response.success = true;
-    response.message = "";
-  } catch (const std::exception &e) {
-    response.success = false;
-    response.message = std::string(e.what());
+  Pose(double x, double y, double theta) {
+    this->x = x;
+    this->y = y;
+    this->theta = theta;
   }
 
-  return true;
-}
+  Pose() : x(0), y(0), theta(0) {}
 };
+
+struct Color {
+  double r, g, b, a;
+
+  Color() : r(0), g(0), b(0), a(0) {}
+
+  Color(double r, double g, double b, double a) {
+    this->r = r;
+    this->g = g;
+    this->b = b;
+    this->a = a;
+  }
+};
+};
+
+#endif

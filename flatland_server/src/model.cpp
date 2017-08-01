@@ -129,7 +129,7 @@ ModelBody *Model::GetBody(const std::string &name) {
   return nullptr;
 }
 
-void Model::TransformAll(const std::array<double, 3> &pose_delta) {
+void Model::TransformAll(const Pose &pose_delta) {
   //     --                --   --                --
   //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |
   //     | sin(a)  cos(a) y | x | sin(b)  cos(b) v |
@@ -142,12 +142,12 @@ void Model::TransformAll(const std::array<double, 3> &pose_delta) {
   //       --                                          --
 
   RotateTranslate tf =
-      Geometry::CreateTransform(pose_delta[0], pose_delta[1], pose_delta[2]);
+      Geometry::CreateTransform(pose_delta.x, pose_delta.y, pose_delta.theta);
 
   for (int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
-        bodies_[i]->physics_body_->GetAngle() + pose_delta[2]);
+        bodies_[i]->physics_body_->GetAngle() + pose_delta.theta);
   }
 }
 
@@ -157,14 +157,14 @@ void Model::DebugVisualize() {
 
   for (auto &body : bodies_) {
     DebugVisualization::Get().Visualize(name, body->physics_body_,
-                                        body->color_[0], body->color_[1],
-                                        body->color_[2], body->color_[3]);
+                                        body->color_.r, body->color_.g,
+                                        body->color_.b, body->color_.a);
   }
 
   for (auto &joint : joints_) {
     DebugVisualization::Get().Visualize(name, joint->physics_joint_,
-                                        joint->color_[0], joint->color_[1],
-                                        joint->color_[2], joint->color_[3]);
+                                        joint->color_.r, joint->color_.g,
+                                        joint->color_.b, joint->color_.a);
   }
 }
 

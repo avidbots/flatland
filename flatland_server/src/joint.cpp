@@ -50,7 +50,7 @@
 namespace flatland_server {
 
 Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
-             const std::array<double, 4> &color, const b2JointDef &joint_def)
+             const Color &color, const b2JointDef &joint_def)
     : physics_world_(physics_world), model_(model), name_(name), color_(color) {
   physics_joint_ = physics_world->CreateJoint(&joint_def);
   physics_joint_->SetUserData(this);
@@ -100,7 +100,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
   bool collide_connected;
   b2Body *body_A, *body_B;
   b2Vec2 anchor_A, anchor_B;
-  std::array<double, 4> color;
+  Color color;
 
   if (n["limits"] && (!n["limits"].IsSequence() || n["limits"].size() != 2)) {
     throw YAMLException("Invalid \"limits\" in " + name +
@@ -144,7 +144,7 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   b2Body *body_A, *body_B;
   b2Vec2 anchor_A, anchor_B;
   bool collide_connected;
-  std::array<double, 4> color;
+  Color color;
 
   if (n["angle"]) {
     angle = n["angle"].as<double>();
@@ -175,7 +175,7 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
 
 void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
                              const std::string &joint_name,
-                             std::array<double, 4> &color, b2Body *&body_A,
+                             Color &color, b2Body *&body_A,
                              b2Vec2 &anchor_A, b2Body *&body_B,
                              b2Vec2 &anchor_B, bool &collide_connected) {
   const YAML::Node &n = joint_node;
@@ -183,63 +183,63 @@ void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
   ModelBody *bodies[2];
   collide_connected = false;
 
-  if (n["color"] && n["color"].IsSequence() && n["color"].size() == 4) {
-    color[0] = n["color"][0].as<double>();
-    color[1] = n["color"][1].as<double>();
-    color[2] = n["color"][2].as<double>();
-    color[3] = n["color"][3].as<double>();
-  } else if (n["color"]) {
-    throw YAMLException("Invalid \"color\" in " + joint_name +
-                        " body, must be a sequence");
-  } else {
-    color = {1, 1, 1, 0.5};
-  }
+  // if (n["color"] && n["color"].IsSequence() && n["color"].size() == 4) {
+  //   color[0] = n["color"][0].as<double>();
+  //   color[1] = n["color"][1].as<double>();
+  //   color[2] = n["color"][2].as<double>();
+  //   color[3] = n["color"][3].as<double>();
+  // } else if (n["color"]) {
+  //   throw YAMLException("Invalid \"color\" in " + joint_name +
+  //                       " body, must be a sequence");
+  // } else {
+  //   color = {1, 1, 1, 0.5};
+  // }
 
-  if (n["collide_connected"]) {
-    collide_connected = n["collide_connected"].as<bool>();
-  }
+  // if (n["collide_connected"]) {
+  //   collide_connected = n["collide_connected"].as<bool>();
+  // }
 
-  if (n["bodies"] && n["bodies"].IsSequence() && n["bodies"].size() == 2) {
-    for (int i = 0; i < 2; i++) {
-      YAML::Node body = n["bodies"][i];
-      if (body["name"]) {
-        std::string name = body["name"].as<std::string>();
+  // if (n["bodies"] && n["bodies"].IsSequence() && n["bodies"].size() == 2) {
+  //   for (int i = 0; i < 2; i++) {
+  //     YAML::Node body = n["bodies"][i];
+  //     if (body["name"]) {
+  //       std::string name = body["name"].as<std::string>();
 
-        bodies[i] = model->GetBody(name);
+  //       bodies[i] = model->GetBody(name);
 
-        if (bodies[i] == nullptr) {
-          throw YAMLException("Cannot find body with name " + name +
-                              " from joint " + joint_name);
-        }
-      } else {
-        throw YAMLException("Missing body \"name\" in " + joint_name +
-                            " joint "
-                            "body index=" +
-                            std::to_string(i));
-      }
+  //       if (bodies[i] == nullptr) {
+  //         throw YAMLException("Cannot find body with name " + name +
+  //                             " from joint " + joint_name);
+  //       }
+  //     } else {
+  //       throw YAMLException("Missing body \"name\" in " + joint_name +
+  //                           " joint "
+  //                           "body index=" +
+  //                           std::to_string(i));
+  //     }
 
-      if (body["anchor"] && body["anchor"].IsSequence() &&
-          body["anchor"].size() == 2) {
-        double x = body["anchor"][0].as<double>();
-        double y = body["anchor"][1].as<double>();
+  //     if (body["anchor"] && body["anchor"].IsSequence() &&
+  //         body["anchor"].size() == 2) {
+  //       double x = body["anchor"][0].as<double>();
+  //       double y = body["anchor"][1].as<double>();
 
-        anchors[i].Set(x, y);
-      } else {
-        throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
-                            " joint body index=" + std::to_string(i) +
-                            ", must be a sequence of exactly two numbers");
-      }
-    }
+  //       anchors[i].Set(x, y);
+  //     } else {
+  //       throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
+  //                           " joint body index=" + std::to_string(i) +
+  //                           ", must be a sequence of exactly two numbers");
+  //     }
+  //   }
 
-    anchor_A = anchors[0];
-    anchor_B = anchors[1];
-    body_A = bodies[0]->physics_body_;
-    body_B = bodies[1]->physics_body_;
+  //   anchor_A = anchors[0];
+  //   anchor_B = anchors[1];
+  //   body_A = bodies[0]->physics_body_;
+  //   body_B = bodies[1]->physics_body_;
 
-  } else {
-    throw YAMLException("Missing/invalid \"bodies\" in " + joint_name +
-                        " joint, must be a sequence of exactly two items");
-  }
+  // } else {
+  //   throw YAMLException("Missing/invalid \"bodies\" in " + joint_name +
+  //                       " joint, must be a sequence of exactly two items");
+  // }
 }
 
 };  // namespace flatland_server

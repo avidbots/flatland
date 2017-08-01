@@ -121,7 +121,7 @@ class Model : public Entity {
    * @brief transform all bodies in the model
    * @param[in] pose_delta dx, dy, dyaw
    */
-  void TransformAll(const std::array<double, 3> &pose_delta);
+  void TransformAll(const Pose &pose_delta);
 
   /**
    * @brief Create a model, throws exceptions upon failure

@@ -57,9 +57,9 @@ std::string in_fmt(const std::string &msg) {
   if (msg.size() == 0) {
     return "";
   }
-
-  boost::algorithm::to_lower(msg);
-  return " (in " + msg + ")";
+  std::string msg_cpy = msg;
+  boost::algorithm::to_lower(msg_cpy);
+  return " (in " + msg_cpy + ")";
 }
 
 std::string quote(const std::string &msg) { return "\"" + msg + "\""; }
@@ -68,7 +68,7 @@ YamlReader::YamlReader(const YAML::Node &node) : node_(node) {}
 
 YamlReader::YamlReader(const std::string &path) {
   try {
-    node_ = YAML::LoadFile(quote(path));
+    node_ = YAML::LoadFile(path);
   } catch (const YAML::BadFile &e) {
     throw YAMLException("File does not exist, path=" + quote(path), e);
 
@@ -80,27 +80,63 @@ YamlReader::YamlReader(const std::string &path) {
   }
 }
 
-YamlReader YamlReader::Node(const std::string &key, NodeTypeCheck type_check,
-                            std::string in = "") {
+YAML::Node YamlReader::Node() { return node_; }
+
+bool YamlReader::IsNodeNull() { return node_.IsNull(); }
+
+int YamlReader::NodeSize() { return node_.size(); }
+
+YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check,
+                               std::string in) {
+  if (!node_[index]) {
+    throw YAMLException("Entry index=" + std::to_string(index) +
+                        "  does not exist" + in_fmt(in));
+  }
+
+  if (type_check == NodeTypeCheck::MAP && !node_[index].IsMap()) {
+    throw YAMLException("Entry index=" + std::to_string(index) +
+                        "  must be a map" + in_fmt(in));
+
+  } else if (type_check == NodeTypeCheck::LIST && !node_[index].IsSequence()) {
+    throw YAMLException("Entry index=" + std::to_string(index) +
+                        "  must be a list" + in_fmt(in));
+  }
+
+  return YamlReader(node_[index]);
+}
+
+YamlReader YamlReader::SubNode(const std::string &key, NodeTypeCheck type_check,
+                               std::string in) {
   if (!node_[key]) {
-    throw YAMLException("Missing entry " + quote(key) + " " + err_from_msg);
+    throw YAMLException("Entry key=" + quote(key) + " does not exist" +
+                        in_fmt(in));
   }
 
   if (type_check == NodeTypeCheck::MAP && !node_[key].IsMap()) {
-    throw YAMLException("Entry " + quote(key) + " must be a map" + in_fmt(in);
+    throw YAMLException("Entry key=" + quote(key) + " must be a map" +
+                        in_fmt(in));
 
   } else if (type_check == NodeTypeCheck::LIST && !node_[key].IsSequence()) {
-    throw YAMLException("Entry " + quote(key) + " must be a list" + in_fmt(in);
+    throw YAMLException("Entry key=" + quote(key) + " must be a list" +
+                        in_fmt(in));
   }
 
   return YamlReader(node_[key]);
 }
 
-template <class T>
+YamlReader YamlReader::SubNodeOpt(const std::string &key,
+                                  NodeTypeCheck type_check, std::string in) {
+  if (!node_[key]) {
+    return YamlReader(YAML::Node());
+  }
+  return SubNode(key, type_check, in);
+}
+
+template <typename T>
 T YamlReader::Get(const std::string &key, const std::string &type_name,
                   std::string in) {
   if (!node_[key]) {
-    throw YAMLException("Missing entry " + quote(key) + prep(in));
+    throw YAMLException("Missing entry " + quote(key) + in_fmt(in));
   }
 
   T ret;
@@ -108,40 +144,150 @@ T YamlReader::Get(const std::string &key, const std::string &type_name,
   try {
     ret = node_[key].as<T>();
   } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry " + quote(key) + " to " +
+    throw YAMLException("Error converting entry key=" + quote(key) + " to " +
                         type_name + " " + in_fmt(in));
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error reading entry " + quote(key) + in_fmt(in));
+    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
   }
 
   return ret;
 }
 
-template <class T>
-T YamlReader::GetOpt(const std::string &key, const T &assume_val,
+template <typename T>
+T YamlReader::GetOpt(const std::string &key, const T &default_val,
                      const std::string &type_name, std::string in) {
   if (!node_[key]) {
-    return assume_val;
+    return default_val;
   }
 
-  T ret;
-
-  try {
-    ret = node_[key].as<T>();
-  } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry " + quote(key) + " to " +
-                        type_name + " " + in_fmt(in));
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error reading entry " + quote(key) + in_fmt(in));
-  }
-
-  return ret;
+  return Get<T>(key, type_name, in);
 }
 
-// return asfasfasdfas
+// template <typename T>
+// T Index(const YAML::Node &node, int index, const ::string &type_name,
+//         std::string in);
 
-// double GetDouble(const std::string &key, const std::string &in = "") {
-//   return Get
+// template <typename T>
+// std::vector<T> GetList(const std::string &key, const std::string &type_name,
+//                        int exact_size, int min_size, int max_size,
+//                        std::string in) {
+//   if (!node_[key]) {
+//     throw YAMLException("Missing entry " + quote(key) + in_fmt(in));
+//   }
+
+//   YamlReader yr = SubNode(key, LIST, in);
+//   YAML::Node n = yr.Node();
+
+//   std::vector<T> list;
+
+//   if (exact_size > 0 && n.size() != exact_size) {
+//     throw YAMLException("Entry " + quote(key) + " must have size of exactly "
+//     +
+//                         std::to_string(exact_size) + in_fmt(in));
+//   }
+
+//   if (min_size > 0 && n.size() < min_size) {
+//     throw YAMLException("Entry " + quote(key) + " must have size <" +
+//                         std::to_string(min_size) + in_fmt(in));
+//   }
+
+//   if (max_size > 0 && n.size() > max_size) {
+//     throw YAMLException("Entry " + quote(key) + " must have size >" +
+//                         std::to_string(min_size) + in_fmt(in));
+//   }
+
+//   for (int i = 0; i < n.size(); i++) {
+//     T val = n[i].as<T>();
+
+//     list.push_back()
+//   }
 // }
-// std::string GetString();
+
+// template <typename T>
+// std::vector<T> GetListOpt(const std::string &key,
+//                           const std::vector<T> default_val, int exact_size,
+//                           int min_size, int max_size,
+//                           const std::string &type_name, std::string in) {}
+
+double YamlReader::GetDouble(const std::string &key, std::string in) {
+  return Get<double>(key, "string", in);
+}
+
+double YamlReader::GetDoubleOpt(const std::string &key, double default_val,
+                                std::string in) {
+  return GetOpt<double>(key, default_val, "string", in);
+}
+
+std::string YamlReader::GetString(const std::string &key, std::string in) {
+  return Get<std::string>(key, "string", in);
+}
+
+std::string YamlReader::GetStringOpt(const std::string &key,
+                                     const std::string &default_val,
+                                     std::string in) {
+  return GetOpt<std::string>(key, default_val, "string", in);
+}
+
+Color YamlReader::GetColorOpt(const std::string &key, const Color &default_val,
+                              std::string in) {
+  if (!node_[key]) {
+    return default_val;
+  }
+
+  if (!node_[key].IsSequence() || node_[key].size() != 4) {
+    throw YAMLException("Color entry " + quote(key) +
+                        " must be a list of exactly 4 numbers" + in_fmt(in));
+  }
+
+  Color c;
+
+  try {
+    c.r = node_[key][0].as<double>();
+    c.g = node_[key][1].as<double>();
+    c.b = node_[key][2].as<double>();
+    c.a = node_[key][2].as<double>();
+  } catch (const YAML::RepresentationException &e) {
+    throw YAMLException("Error converting entry key=" + quote(key) +
+                        " to floats " + in_fmt(in));
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
+  }
+
+  return c;
+}
+
+Pose YamlReader::GetPose(const std::string &key, std::string in) {
+  if (!node_[key]) {
+    throw YAMLException("Missing entry " + quote(key) + in_fmt(in));
+  }
+
+  if (!node_[key].IsSequence() || node_[key].size() != 3) {
+    throw YAMLException("Pose entry " + quote(key) +
+                        " must be a list of exactly 3 numbers" + in_fmt(in));
+  }
+
+  Pose p;
+
+  try {
+    p.x = node_[key][0].as<double>();
+    p.y = node_[key][1].as<double>();
+    p.theta = node_[key][2].as<double>();
+  } catch (const YAML::RepresentationException &e) {
+    throw YAMLException("Error converting entry key=" + quote(key) +
+                        " to floats " + in_fmt(in));
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
+  }
+
+  return p;
+}
+
+Pose YamlReader::GetPoseOpt(const std::string &key, const Pose &default_val,
+                            std::string in) {
+  if (!node_[key]) {
+    return default_val;
+  }
+
+  return GetPose(key, in);
+}
 };

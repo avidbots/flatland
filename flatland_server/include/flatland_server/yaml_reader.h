@@ -47,6 +47,7 @@
 #ifndef FLATLAND_SERVER_YAML_READER_H
 #define FLATLAND_SERVER_YAML_READER_H
 
+#include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -66,20 +67,58 @@ class YamlReader {
   YamlReader(const YAML::Node &node);
   YamlReader(const std::string &path);
 
-  YAML::Node YamlNode();
-  YamlReader Node(const std::string &key, NodeTypeCheck type_check,
+  YAML::Node Node();
+
+  bool IsNodeNull();
+  int NodeSize();
+
+  YamlReader SubNode(int index, NodeTypeCheck type_check, std::string in = "");
+  YamlReader SubNode(const std::string &key, NodeTypeCheck type_check,
+                     std::string in = "");
+  YamlReader SubNodeOpt(const std::string &key, NodeTypeCheck type_check,
+                        std::string in = "");
+
+  template <typename T>
+  T Get(const std::string &key, const std::string &type_name, std::string in);
+
+  template <typename T>
+  T GetOpt(const std::string &key, const T &default_val,
+           const std::string &type_name, std::string in);
+
+  //   template <typename T>
+  //   std::vector<T> GetList(const std::string &key, const std::string
+  //   &type_name,
+  //                          int exact_size, int min_size, int max_size,
+  //                          std::string in);
+
+  //   template <typename T>
+  //   T Index(const YAML::Node &node, int index, const ::string &type_name,
+  //           std::string in);
+
+  //   template <typename T>
+  //   std::vector<T> GetListOpt(const std::string &key,
+  //                             const std::vector<T> default_val, int
+  //                             exact_size,
+  //                             int min_size, int max_size,
+  //                             const std::string &type_name, std::string in);
+
+  double GetDouble(const std::string &key, std::string in = "");
+
+  double GetDoubleOpt(const std::string &key, double default_val,
+                      std::string in = "");
+
+  std::string GetString(const std::string &key, std::string in = "");
+
+  std::string GetStringOpt(const std::string &key,
+                           const std::string &default_val, std::string in = "");
+
+  Color GetColorOpt(const std::string &key, const Color &default_val,
+                    std::string in = "");
+
+  Pose GetPose(const std::string &key, std::string in = "");
+  Pose GetPoseOpt(const std::string &key, const Pose &default_val,
                   std::string in = "");
-
-  template <class T>
-  T Get(const std::string &key, const std::string &type_name,
-        std::string in = "");
-
-  template <class T>
-  T GetOpt(const std::string &key, const T &assume_val,
-           const std::string &type_name, std::string in = "");
-
-  double GetDouble();
-  std::string GetString();
 };
 };
+
 #endif

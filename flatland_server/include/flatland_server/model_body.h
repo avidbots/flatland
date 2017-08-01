@@ -79,8 +79,8 @@ class ModelBody : public Body {
    * @param[in] angular_damping Box2D body angular damping
    */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
-            const std::string &name, const std::array<double, 4> &color,
-            const std::array<double, 3> &origin, b2BodyType body_type,
+            const std::string &name, const Color &color,
+            const Pose &origin, b2BodyType body_type,
             double linear_damping, double angular_damping);
 
   /**
