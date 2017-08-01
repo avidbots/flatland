@@ -61,6 +61,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   publish_tf_world_ = false;
   world_frame_id_ = "map";
   update_rate_ = std::numeric_limits<double>::infinity();
+  tf_prefix_ = model_->namespace_;
 
   if (config["reference"]) {
     std::string body_name = config["reference"].as<std::string>();
@@ -109,12 +110,13 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   update_timer_.SetRate(update_rate_);
 
-  ROS_INFO_NAMED("ModelTfPublisher",
-                 "Initialized with params: reference(%s %p) "
-                 "publish_tf_world(%d) update_rate(%f), exclude({%s})",
-                 reference_body_->name_.c_str(), reference_body_,
-                 publish_tf_world_, update_rate_,
-                 boost::algorithm::join(excluded_body_names, ",").c_str());
+  ROS_INFO_NAMED(
+      "ModelTfPublisher",
+      "Initialized with params: reference(%s %p) "
+      "publish_tf_world(%d) world_frame_id(%s) update_rate(%f), exclude({%s})",
+      reference_body_->name_.c_str(), reference_body_, publish_tf_world_,
+      world_frame_id_.c_str(), update_rate_,
+      boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
 void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
@@ -175,8 +177,9 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     }
 
     // publish TF
-    tf_stamped.header.frame_id = reference_body_->name_;
-    tf_stamped.child_frame_id = body->name_;
+    tf_stamped.header.frame_id =
+        tf::resolve(tf_prefix_, reference_body_->name_);
+    tf_stamped.child_frame_id = tf::resolve(tf_prefix_, body->name_);
     tf_stamped.transform.translation.x = rel_tf(0, 2);
     tf_stamped.transform.translation.y = rel_tf(1, 2);
     tf_stamped.transform.translation.z = 0;
@@ -190,13 +193,13 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     tf_broadcaster.sendTransform(tf_stamped);
   }
 
-  // publish world TF is necessary
+  // publish world TF if necessary
   if (publish_tf_world_) {
     const b2Vec2 &p = reference_body_->physics_body_->GetPosition();
     double yaw = reference_body_->physics_body_->GetAngle();
 
     tf_stamped.header.frame_id = world_frame_id_;
-    tf_stamped.child_frame_id = reference_body_->name_;
+    tf_stamped.child_frame_id = tf::resolve(tf_prefix_, reference_body_->name_);
     tf_stamped.transform.translation.x = p.x;
     tf_stamped.transform.translation.y = p.y;
     tf_stamped.transform.translation.z = 0;

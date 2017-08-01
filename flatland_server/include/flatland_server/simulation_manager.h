@@ -60,15 +60,18 @@ class SimulationManager {
   bool run_simulator_ = true;    ///<  While true, keep running the sim loop
   World *world_;                 ///< Simulation world
   float initial_rate_;           ///< initial sim loop rate
+  bool show_viz_;                ///< flag to determine if to show visualization
   std::string world_yaml_file_;  ///< path to the world file
   Timekeeper timekeeper_;        ///< for managing time
 
   /**
    * @name  Simulation Manager constructor
-   * @param world_file   The path to the world.yaml file we wish to load
-   * @param initial_rate The physics step frequency in Hz
+   * @param[in] world_file   The path to the world.yaml file we wish to load
+   * @param[in] initial_rate The physics step frequency in Hz
+   * @param[in] show_viz if to show visualization
    */
-  SimulationManager(std::string world_yaml_file, float initial_rate);
+  SimulationManager(std::string world_yaml_file, float initial_rate,
+                    bool show_viz);
 
   /**
    * This method contains the loop that runs the simulation

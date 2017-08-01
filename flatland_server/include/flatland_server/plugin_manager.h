@@ -57,10 +57,9 @@
 namespace flatland_server {
 
 class PluginManager {
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
-
  public:
   std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
 
   /**
    * @brief Plugin manager constructor
@@ -102,6 +101,20 @@ class PluginManager {
    * @param[in] contact Box2D contact information
    */
   void EndContact(b2Contact *contact);
+
+  /**
+   * @brief Method called for Box2D presolve
+   * @param[in] contact Box2D contact information
+   * @param[in] oldManifold The manifold from the previous timestep
+   */
+  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
+
+  /**
+   * @brief Method called for Box2D Postsolve
+   * @param[in] contact Box2D contact information
+   * @param[in] impulse The calculated impulse from the collision resolute
+   */
+  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H

@@ -50,8 +50,8 @@
 namespace flatland_server {
 
 Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
-             const b2JointDef &joint_def)
-    : physics_world_(physics_world), model_(model), name_(name) {
+             const std::array<double, 4> &color, const b2JointDef &joint_def)
+    : physics_world_(physics_world), model_(model), name_(name), color_(color) {
   physics_joint_ = physics_world->CreateJoint(&joint_def);
   physics_joint_->SetUserData(this);
 }
@@ -100,6 +100,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
   bool collide_connected;
   b2Body *body_A, *body_B;
   b2Vec2 anchor_A, anchor_B;
+  std::array<double, 4> color;
 
   if (n["limits"] && (!n["limits"].IsSequence() || n["limits"].size() != 2)) {
     throw YAMLException("Invalid \"limits\" in " + name +
@@ -111,7 +112,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
     has_limits = true;
   }
 
-  ParseJointCommon(model, n, name, body_A, anchor_A, body_B, anchor_B,
+  ParseJointCommon(model, n, name, color, body_A, anchor_A, body_B, anchor_B,
                    collide_connected);
 
   b2RevoluteJointDef joint_def;
@@ -129,7 +130,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
     joint_def.enableLimit = false;
   }
 
-  return new Joint(physics_world, model, name, joint_def);
+  return new Joint(physics_world, model, name, color, joint_def);
 }
 
 Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
@@ -143,6 +144,7 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   b2Body *body_A, *body_B;
   b2Vec2 anchor_A, anchor_B;
   bool collide_connected;
+  std::array<double, 4> color;
 
   if (n["angle"]) {
     angle = n["angle"].as<double>();
@@ -156,7 +158,7 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
     damping = n["damping"].as<double>();
   }
 
-  ParseJointCommon(model, n, name, body_A, anchor_A, body_B, anchor_B,
+  ParseJointCommon(model, n, name, color, body_A, anchor_A, body_B, anchor_B,
                    collide_connected);
 
   b2WeldJointDef joint_def;
@@ -168,17 +170,30 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   joint_def.dampingRatio = damping;
   joint_def.referenceAngle = angle;
 
-  return new Joint(physics_world, model, name, joint_def);
+  return new Joint(physics_world, model, name, color, joint_def);
 }
 
 void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
-                             const std::string &joint_name, b2Body *&body_A,
+                             const std::string &joint_name,
+                             std::array<double, 4> &color, b2Body *&body_A,
                              b2Vec2 &anchor_A, b2Body *&body_B,
                              b2Vec2 &anchor_B, bool &collide_connected) {
   const YAML::Node &n = joint_node;
   b2Vec2 anchors[2];
   ModelBody *bodies[2];
   collide_connected = false;
+
+  if (n["color"] && n["color"].IsSequence() && n["color"].size() == 4) {
+    color[0] = n["color"][0].as<double>();
+    color[1] = n["color"][1].as<double>();
+    color[2] = n["color"][2].as<double>();
+    color[3] = n["color"][3].as<double>();
+  } else if (n["color"]) {
+    throw YAMLException("Invalid \"color\" in " + joint_name +
+                        " body, must be a sequence");
+  } else {
+    color = {1, 1, 1, 0.5};
+  }
 
   if (n["collide_connected"]) {
     collide_connected = n["collide_connected"].as<bool>();

@@ -357,7 +357,8 @@ class LoadWorldTest : public ::testing::Test {
     return true;
   }
 
-  bool JointEq(Joint *joint, const std::string name, Body *body_A,
+  bool JointEq(Joint *joint, const std::string name,
+               const std::array<double, 4> &color, Body *body_A,
                const std::array<double, 2> &anchor_A, Body *body_B,
                const std::array<double, 2> &anchor_B, bool collide_connected) {
     b2Joint *j = joint->physics_joint_;
@@ -365,6 +366,10 @@ class LoadWorldTest : public ::testing::Test {
     if (name != joint->name_) {
       printf("Name Actual:%s != Expected:%s\n", joint->name_.c_str(),
              name.c_str());
+      return false;
+    }
+
+    if (!ColorEq(joint->color_, color)) {
       return false;
     }
 
@@ -526,7 +531,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
   EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0},
-                     {1, 0, 0, 0.5}, 0, 0));
+                     {1, 1, 1, 1}, 0, 0));
   EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
   EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
@@ -604,6 +609,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // Check model 0
   Model *m0 = w->models_[0];
   EXPECT_STREQ(m0->name_.c_str(), "turtlebot1");
+  EXPECT_STREQ(m0->namespace_.c_str(), "");
   EXPECT_EQ(m0->no_collide_group_index_, -1);
   ASSERT_EQ(m0->bodies_.size(), 5);
   ASSERT_EQ(m0->joints_.size(), 4);
@@ -654,25 +660,26 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_TRUE(CircleEq(fs[0], 0.01, 0.02, 0.25));
 
   // Check loaded joint data
-  EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", m0->bodies_[0],
-                      {-1, 0}, m0->bodies_[1], {0, 0}, false));
+  EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", {0.1, 0.2, 0.3, 0.4},
+                      m0->bodies_[0], {-1, 0}, m0->bodies_[1], {0, 0}, false));
   EXPECT_TRUE(WeldEq(m0->joints_[0], 1.57079633, 10, 0.5));
 
-  EXPECT_TRUE(JointEq(m0->joints_[1], "right_wheel_weld", m0->bodies_[0],
-                      {1, 0}, m0->bodies_[2], {0, 0}, false));
+  EXPECT_TRUE(JointEq(m0->joints_[1], "right_wheel_weld", {1, 1, 1, 0.5},
+                      m0->bodies_[0], {1, 0}, m0->bodies_[2], {0, 0}, false));
   EXPECT_TRUE(WeldEq(m0->joints_[1], 0, 0, 0));
 
-  EXPECT_TRUE(JointEq(m0->joints_[2], "tail_revolute", m0->bodies_[0], {0, 0},
-                      m0->bodies_[3], {0, 0}, false));
+  EXPECT_TRUE(JointEq(m0->joints_[2], "tail_revolute", {1, 1, 1, 0.5},
+                      m0->bodies_[0], {0, 0}, m0->bodies_[3], {0, 0}, false));
   EXPECT_TRUE(RevoluteEq(m0->joints_[2], false, {}));
 
-  EXPECT_TRUE(JointEq(m0->joints_[3], "antenna_revolute", m0->bodies_[0],
-                      {0, 0}, m0->bodies_[4], {0, 0}, true));
+  EXPECT_TRUE(JointEq(m0->joints_[3], "antenna_revolute", {1, 1, 1, 0.5},
+                      m0->bodies_[0], {0, 0}, m0->bodies_[4], {0, 0}, true));
   EXPECT_TRUE(RevoluteEq(m0->joints_[3], true, {-0.002, 3.735}));
 
   // Check model 1 is same yaml file as model 1, simply do a simple sanity check
   Model *m1 = w->models_[1];
   EXPECT_STREQ(m1->name_.c_str(), "turtlebot2");
+  EXPECT_STREQ(m1->namespace_.c_str(), "robot2");
   EXPECT_EQ(m1->no_collide_group_index_, -2);
   ASSERT_EQ(m1->bodies_.size(), 5);
   ASSERT_EQ(m1->joints_.size(), 4);
@@ -690,7 +697,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
 
   // Check model 2 fixtures
   EXPECT_TRUE(BodyEq(m2->bodies_[0], "chair", b2_staticBody, {1.2, 3.5, 2.123},
-                     {1, 1, 1, 0.25}, 0, 0));
+                     {1, 1, 1, 0.5}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
   EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0b11, 0b11, 0, 0, 0));
@@ -742,7 +749,9 @@ TEST_F(LoadWorldTest, world_invalid_A) {
 TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid \"color\" in 2d layer");
+  test_yaml_fail(
+      "Flatland YAML: Invalid \"color\" in 2d layer, must be a sequence of "
+      "exactly 4 items");
 }
 
 /**
@@ -822,6 +831,7 @@ TEST_F(LoadWorldTest, model_invalid_E) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "load_world_test");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

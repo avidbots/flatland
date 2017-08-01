@@ -89,8 +89,11 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
     color[1] = body_node["color"][1].as<double>();
     color[2] = body_node["color"][2].as<double>();
     color[3] = body_node["color"][3].as<double>();
+  } else if (body_node["color"]) {
+    throw YAMLException("Invalid \"color\" in " + name +
+                        " body, must be a sequence");
   } else {
-    throw YAMLException("Missing/invalid \"color\" in " + name + " body");
+    color = {1, 1, 1, 0.5};
   }
 
   if (body_node["type"]) {

@@ -89,6 +89,7 @@ class UpdateTimerTest : public ::testing::Test {
     }
 
     actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
+    delete w;
 
     printf("Actual Rate: %f, Expected Rate: %f\n", actual_rate, expected_rate);
   }

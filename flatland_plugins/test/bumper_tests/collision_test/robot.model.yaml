@@ -1,0 +1,45 @@
+# Turtlebot
+
+
+bodies:  # List of named bodies
+  - name: base_link_1
+    origin: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 1, 0.5]
+    footprints:
+      - type: circle
+        density: 30
+        center: [0, 0]
+        radius: 1
+        is_sensor: true
+
+  - name: base_link_2
+    origin: [0, 0, 0]
+    type: dynamic
+    color: [1, 1, 1, 0.5]
+    footprints:
+      - type: circle
+        density: 1
+        center: [0, 0]
+        radius: 0.4
+
+joints:
+  - name: bodies_weld
+    type: weld
+    bodies:
+      - name: base_link_1
+        anchor: [0, 0]
+      - name: base_link_2
+        anchor: [0, 0]
+
+plugins:
+  - type: Bumper
+    name: Bumper_A
+
+  - type: Bumper
+    name: Bumper_B
+    world_frame_id: world
+    topic: collisions_B
+    publish_all_collisions: false
+    update_rate: 10
+    exclude: ["base_link_1"]

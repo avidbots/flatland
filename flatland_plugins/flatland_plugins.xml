@@ -14,4 +14,7 @@
   <class type="flatland_plugins::ModelTfPublisher" base_class_type="flatland_server::ModelPlugin">
     <description>Publish body transformations</description>
   </class>
+  <class type="flatland_plugins::Bumper" base_class_type="flatland_server::ModelPlugin">
+    <description>Contact sensor for a robot</description>
+  </class>
 </library>
