@@ -83,50 +83,62 @@ class Bicycle : public flatland_server::ModelPlugin {
   *     The density of the chassis main fixture must be set to 100000.0
   */
 
-  /*
-     * @name  Bicycle Plugin initializer
-     * @brief  Initialize the bicycle plugin
-     * @param world_file   The path to the world.yaml file
-     */
+  /**
+   * @name                OnInitialize
+   * @brief               initialize the bicycle plugin
+   * @param world_file    The path to the world.yaml file
+   */
   void OnInitialize(const YAML::Node& config) override;
   /**
-   * Override the BeforePhysicsStep method
-   * @param[in] config The plugin YAML node
-   */
+  * @name          RotateVertex
+  * @brief         rotates a b2Vec2 point about the origin by angle radians
+  * @param[in]     b2Vec2 vertex, point ie x and y
+  * @param[in]     double angle, angle to rotate point by
+  * @param[out]    b2Vec2 the new point with the rotation
+  */
+  b2Vec2 RotateVertex(b2Vec2 vertex, double angle);
+  /**
+  * @name          BeforePhysicsStep
+  * @brief         override the BeforePhysicsStep method
+  * @param[in]     config The plugin YAML node
+  */
   void BeforePhysicsStep(
       const flatland_server::Timekeeper& timekeeper) override;
   /**
-   * Callback to apply twist (velocity and omega)
-   * @param[in] timestep how much the physics time will increment
-   */
+  * @name          TwistCallback
+  * @brief         callback to apply twist (velocity and omega)
+  * @param[in]     timestep how much the physics time will increment
+  */
   void TwistCallback(const geometry_msgs::Twist& msg);
   /**
-   * Apply the twist using either the kinematic or dynamic model
-   * @param[in] twist ros message (msg.linear and msg.angular)
-   */
+  * @name          ApplyVelocity
+  * @brief         Apply the twist using either the kinematic or dynamic model
+  * @param[in]     twist ros message (msg.linear and msg.angular)
+  */
   void ApplyVelocity();
   /**
-   * Create the front wheel fixture and shape
-   */
+  * @name          CreateFrontWheel
+  * @brief         create the front wheel fixture and shape
+  */
   void CreateFrontWheel();
   /**
-   * Destroy the front wheel fixture and shape
-   */
+  * @name          DestroyFrontWheel
+  * @brief         destroy the front wheel fixture and shape
+  */
   void DestroyFrontWheel();
   /**
-   * Destroy then create the front wheel fixture and shape
-   * used to simulate steering the front wheel
-   */
+  * @name          RecreateFrontWheel
+  * @brief         destroy then create the front wheel fixture and shape
+  *                used to simulate steering the front wheel
+  */
   void RecreateFrontWheel();
   /**
-   * Calculte the delta, ie the angle the vehicle must be rotated by, to roll
-   * about the ICC.
-   * @ param[in] distance forward robot moved for this physics step
-   */
+  * @brief          calculte the delta, ie the angle the vehicle must be rotated
+  *                 by, to rotate about the ICC.
+  * @param[out]     delta:change in omega calculated from the distance forward
+  *                 robot moved for this physics step
+  */
   double CalculateDelta(double distance);
-
-  // void addMeA(double val);
-  // void addMeB(double val);
 };
 };
 
