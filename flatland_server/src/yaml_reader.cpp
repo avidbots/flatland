@@ -44,7 +44,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/exceptions.h>
 #include <flatland_server/yaml_reader.h>
 #include <boost/algorithm/string.hpp>
 
@@ -53,7 +52,7 @@ namespace flatland_server {
 /**
  * @brief Helper function to format the in message adding spaces and brackets
  */
-std::string in_fmt(const std::string &msg) {
+std::string YamlReader::in_fmt(const std::string &msg) {
   if (msg.size() == 0) {
     return "";
   }
@@ -62,7 +61,7 @@ std::string in_fmt(const std::string &msg) {
   return " (in " + msg_cpy + ")";
 }
 
-std::string quote(const std::string &msg) { return "\"" + msg + "\""; }
+std::string YamlReader::quote(const std::string &msg) { return "\"" + msg + "\""; }
 
 YamlReader::YamlReader(const YAML::Node &node) : node_(node) {}
 
@@ -132,100 +131,9 @@ YamlReader YamlReader::SubNodeOpt(const std::string &key,
   return SubNode(key, type_check, in);
 }
 
-template <typename T>
-T YamlReader::Get(const std::string &key, const std::string &type_name,
-                  std::string in) {
-  if (!node_[key]) {
-    throw YAMLException("Missing entry " + quote(key) + in_fmt(in));
-  }
-
-  T ret;
-
-  try {
-    ret = node_[key].as<T>();
-  } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry key=" + quote(key) + " to " +
-                        type_name + " " + in_fmt(in));
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
-  }
-
-  return ret;
-}
-
-template <typename T>
-T YamlReader::GetOpt(const std::string &key, const T &default_val,
-                     const std::string &type_name, std::string in) {
-  if (!node_[key]) {
-    return default_val;
-  }
-
-  return Get<T>(key, type_name, in);
-}
-
-// template <typename T>
-// T Index(const YAML::Node &node, int index, const ::string &type_name,
-//         std::string in);
-
-// template <typename T>
-// std::vector<T> GetList(const std::string &key, const std::string &type_name,
-//                        int exact_size, int min_size, int max_size,
-//                        std::string in) {
-//   if (!node_[key]) {
-//     throw YAMLException("Missing entry " + quote(key) + in_fmt(in));
-//   }
-
-//   YamlReader yr = SubNode(key, LIST, in);
-//   YAML::Node n = yr.Node();
-
-//   std::vector<T> list;
-
-//   if (exact_size > 0 && n.size() != exact_size) {
-//     throw YAMLException("Entry " + quote(key) + " must have size of exactly "
-//     +
-//                         std::to_string(exact_size) + in_fmt(in));
-//   }
-
-//   if (min_size > 0 && n.size() < min_size) {
-//     throw YAMLException("Entry " + quote(key) + " must have size <" +
-//                         std::to_string(min_size) + in_fmt(in));
-//   }
-
-//   if (max_size > 0 && n.size() > max_size) {
-//     throw YAMLException("Entry " + quote(key) + " must have size >" +
-//                         std::to_string(min_size) + in_fmt(in));
-//   }
-
-//   for (int i = 0; i < n.size(); i++) {
-//     T val = n[i].as<T>();
-
-//     list.push_back()
-//   }
-// }
-
-// template <typename T>
-// std::vector<T> GetListOpt(const std::string &key,
-//                           const std::vector<T> default_val, int exact_size,
-//                           int min_size, int max_size,
-//                           const std::string &type_name, std::string in) {}
-
-double YamlReader::GetDouble(const std::string &key, std::string in) {
-  return Get<double>(key, "string", in);
-}
-
-double YamlReader::GetDoubleOpt(const std::string &key, double default_val,
-                                std::string in) {
-  return GetOpt<double>(key, default_val, "string", in);
-}
-
-std::string YamlReader::GetString(const std::string &key, std::string in) {
-  return Get<std::string>(key, "string", in);
-}
-
-std::string YamlReader::GetStringOpt(const std::string &key,
-                                     const std::string &default_val,
-                                     std::string in) {
-  return GetOpt<std::string>(key, default_val, "string", in);
+Vec2 YamlReader::GetVec2(const std::string &key, std::string in) {
+  std::vector<double> v = GetList<double>(key, 2, 2, in);
+  return Vec2(v[0], v[1]);
 }
 
 Color YamlReader::GetColorOpt(const std::string &key, const Color &default_val,
@@ -258,7 +166,8 @@ Color YamlReader::GetColorOpt(const std::string &key, const Color &default_val,
 
 Pose YamlReader::GetPose(const std::string &key, std::string in) {
   if (!node_[key]) {
-    throw YAMLException("Missing entry " + quote(key) + in_fmt(in));
+    throw YAMLException("Entry key=" + quote(key) + " does not exist" +
+                        in_fmt(in));
   }
 
   if (!node_[key].IsSequence() || node_[key].size() != 3) {

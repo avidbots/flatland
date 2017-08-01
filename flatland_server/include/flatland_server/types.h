@@ -52,7 +52,21 @@
 
 namespace flatland_server {
 
-struct Vec2 : public b2Vec2 {};
+struct Vec2 {
+  double x;
+  double y;
+
+  Vec2(double x, double y) {
+    this->x = x;
+    this->y = y;
+  }
+
+  Vec2() : x(0), y(0) {}
+
+  b2Vec2 Box2D() {
+    return b2Vec2(x, y);
+  }
+};
 
 struct Pose {
   double x;

@@ -48,8 +48,8 @@
 #define FLATLAND_SERVER_JOINT_H
 
 #include <flatland_server/model.h>
-#include <yaml-cpp/yaml.h>
 #include <flatland_server/types.h>
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
@@ -61,11 +61,11 @@ class Model;
  */
 class Joint {
  public:
-  Model *model_;                 ///< Model the joint belongs to
-  std::string name_;             ///< Name of the joint
-  b2Joint *physics_joint_;       ///< Box2D physics joint
-  b2World *physics_world_;       ///< Box2D physics world
-  Color color_;  ///< Color for visualization
+  Model *model_;            ///< Model the joint belongs to
+  std::string name_;        ///< Name of the joint
+  b2Joint *physics_joint_;  ///< Box2D physics joint
+  b2World *physics_world_;  ///< Box2D physics world
+  Color color_;             ///< Color for visualization
 
   /**
    * @brief Constructor for the joint
@@ -100,11 +100,21 @@ class Joint {
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
    * @param[in] name Name of the joint
+   * @param[in] color Color to visualize the joint
+   * @param[in] body_A pointer to the first body
+   * @param[in] anchor_B anchor point on the first body
+   * @param[in] body_B pointer to the second body
+   * @param[in] anchor_B anchor point on the second body
+   * @param[in] collide_connected Should two bodies connected by this joint
+   * collide
    * @return A new revolute joint as defined by the input data
    */
   static Joint *MakeRevoluteJoint(b2World *physics_world, Model *model,
                                   const YAML::Node &joint_node,
-                                  const std::string &name);
+                                  const std::string &name, const Color &color,
+                                  b2Body *body_A, b2Vec2 anchor_A,
+                                  b2Body *body_B, b2Vec2 anchor_B,
+                                  bool collide_connected);
 
   /**
    * @brief Creates a weld joint for the given params, throws exceptions upon
@@ -113,31 +123,20 @@ class Joint {
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
    * @param[in] name Name of the joint
+   * @param[in] color Color to visualize the joint
+   * @param[in] body_A pointer to the first body
+   * @param[in] anchor_B anchor point on the first body
+   * @param[in] body_B pointer to the second body
+   * @param[in] anchor_B anchor point on the second body
+   * @param[in] collide_connected Should two bodies connected by this joint
+   * collide
    * @return A new weld joint as defined by the input data
    */
   static Joint *MakeWeldJoint(b2World *physics_world, Model *model,
                               const YAML::Node &joint_node,
-                              const std::string &name);
-
-  /**
-   * @brief Helper method to configure paramters common to joints, throws
-   * exceptions upon failure
-   * @param[in] model Model the joint belongs to
-   * @param[in] joint_node YAML node that contains joint information
-   * @param[in] name Name of the joint
-   * @param[in] color Color to visualize the joint
-   * @param[out] body_A pointer to the first body
-   * @param[out] anchor_B anchor point on the first body
-   * @param[out] body_B pointer to the second body
-   * @param[out] anchor_B anchor point on the second body
-   * @param[out] collide_connected Should two bodies connected by this joint
-   * collide
-   */
-  static void ParseJointCommon(Model *model, const YAML::Node &joint_node,
-                               const std::string &joint_name,
-                               Color &color, b2Body *&body_A,
-                               b2Vec2 &anchor_A, b2Body *&body_B,
-                               b2Vec2 &anchor_B, bool &collide_connected);
+                              const std::string &name, const Color &color,
+                              b2Body *body_A, b2Vec2 anchor_A, b2Body *body_B,
+                              b2Vec2 anchor_B, bool collide_connected);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

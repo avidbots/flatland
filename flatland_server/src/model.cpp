@@ -48,6 +48,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
+#include <flatland_server/yaml_reader.h>
 
 namespace flatland_server {
 
@@ -73,20 +74,16 @@ Model::~Model() {
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &model_yaml_path,
                         const std::string &ns, const std::string &name) {
-  YAML::Node model_node;
-  try {
-    model_node = YAML::LoadFile(model_yaml_path);
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading \"" + model_yaml_path + "\"", e);
-  }
+  YamlReader r(model_yaml_path);
 
   Model *m = new Model(physics_world, cfr, ns, name);
 
-  m->plugins_node_ = model_node["plugins"];
+  std::string in = "model " + name;
+  m->plugins_node_ = r.SubNode("plugins", YamlReader::LIST, in).Node();
 
   try {
-    m->LoadBodies(model_node["bodies"]);
-    m->LoadJoints(model_node["joints"]);
+    m->LoadBodies(r.SubNode("bodies", YamlReader::LIST, in).Node());
+    m->LoadBodies(r.SubNodeOpt("joints", YamlReader::LIST, in).Node());
   } catch (const YAML::Exception &e) {
     delete m;
     throw YAMLException(e);
@@ -96,7 +93,7 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 void Model::LoadBodies(const YAML::Node &bodies_node) {
-  if (!bodies_node || !bodies_node.IsSequence() || bodies_node.size() <= 0) {
+  if (bodies_node.size() <= 1) {
     throw YAMLException("Invalid \"bodies\" in " + name_ +
                         " model, "
                         "must a be list of bodies of at least size 1");
@@ -109,10 +106,7 @@ void Model::LoadBodies(const YAML::Node &bodies_node) {
 }
 
 void Model::LoadJoints(const YAML::Node &joints_node) {
-  if (joints_node && !joints_node.IsSequence()) {
-    // if joints exists and it is not a sequence, it is okay to have no joints
-    throw YAMLException("Invalid \"joints\" in " + name_ + " model");
-  } else if (joints_node) {
+  if (joints_node) {
     for (const auto &joint_node : joints_node) {
       Joint *j = Joint::MakeJoint(physics_world_, this, joint_node);
       joints_.push_back(j);

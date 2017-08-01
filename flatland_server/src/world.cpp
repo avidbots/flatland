@@ -163,8 +163,8 @@ void World::LoadLayers(const std::string &yaml_path) {
     YamlReader layer_yaml = layers_yaml.SubNode(i, YamlReader::MAP, "layers");
 
     std::string in = "layer index=" + std::to_string(i);
-    std::string name = layer_yaml.GetString("name", in);
-    boost::filesystem::path map_path(layer_yaml.GetString("map", in));
+    std::string name = layer_yaml.Get<std::string>("name", in);
+    boost::filesystem::path map_path(layer_yaml.Get<std::string>("map", in));
     Color color = layer_yaml.GetColorOpt("color", Color(1, 1, 1, 1));
 
     if (map_path.string().front() != '/') {
@@ -189,10 +189,10 @@ void World::LoadModels(const std::string &yaml_path) {
       YamlReader model_yaml = models_yaml.SubNode(i, YamlReader::MAP, "models");
 
       std::string in = "model index=" + std::to_string(i);
-      std::string name = model_yaml.GetString("name", in);
-      std::string ns = model_yaml.GetStringOpt("namespace", "", in);
+      std::string name = model_yaml.Get<std::string>("name", in);
+      std::string ns = model_yaml.GetOpt<std::string>("namespace", "", in);
       Pose pose = model_yaml.GetPoseOpt("pose", Pose(0, 0, 0), in);
-      boost::filesystem::path model_path(model_yaml.GetString("model", in));
+      boost::filesystem::path model_path(model_yaml.Get<std::string>("model", in));
 
       if (model_path.string().front() != '/') {
         model_path =

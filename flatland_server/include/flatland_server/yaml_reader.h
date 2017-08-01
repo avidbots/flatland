@@ -47,8 +47,12 @@
 #ifndef FLATLAND_SERVER_YAML_READER_H
 #define FLATLAND_SERVER_YAML_READER_H
 
+#include <flatland_server/exceptions.h>
 #include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/type_index.hpp>
+#include <string>
+#include <vector>
 
 namespace flatland_server {
 
@@ -79,46 +83,122 @@ class YamlReader {
                         std::string in = "");
 
   template <typename T>
-  T Get(const std::string &key, const std::string &type_name, std::string in);
+  T Get(const std::string &key, std::string in = "");
 
   template <typename T>
-  T GetOpt(const std::string &key, const T &default_val,
-           const std::string &type_name, std::string in);
+  T GetOpt(const std::string &key, const T &default_val, std::string in = "");
 
-  //   template <typename T>
-  //   std::vector<T> GetList(const std::string &key, const std::string
-  //   &type_name,
-  //                          int exact_size, int min_size, int max_size,
-  //                          std::string in);
+  template <typename T>
+  std::vector<T> GetList(const std::string &key, int min_size, int max_size,
+                         std::string in = "");
 
-  //   template <typename T>
-  //   T Index(const YAML::Node &node, int index, const ::string &type_name,
-  //           std::string in);
+  template <typename T>
+  std::vector<T> GetListOpt(const std::string &key,
+                            const std::vector<T> default_val, int min_size,
+                            int max_size, std::string in = "");
 
-  //   template <typename T>
-  //   std::vector<T> GetListOpt(const std::string &key,
-  //                             const std::vector<T> default_val, int
-  //                             exact_size,
-  //                             int min_size, int max_size,
-  //                             const std::string &type_name, std::string in);
-
-  double GetDouble(const std::string &key, std::string in = "");
-
-  double GetDoubleOpt(const std::string &key, double default_val,
-                      std::string in = "");
-
-  std::string GetString(const std::string &key, std::string in = "");
-
-  std::string GetStringOpt(const std::string &key,
-                           const std::string &default_val, std::string in = "");
-
+  Vec2 GetVec2(const std::string &key, std::string in = "");
   Color GetColorOpt(const std::string &key, const Color &default_val,
                     std::string in = "");
 
   Pose GetPose(const std::string &key, std::string in = "");
   Pose GetPoseOpt(const std::string &key, const Pose &default_val,
                   std::string in = "");
+
+private:
+  std::string in_fmt(const std::string &msg);
+  std::string quote(const std::string &msg);
 };
+
+template <typename T>
+T YamlReader::Get(const std::string &key, std::string in) {
+  if (!node_[key]) {
+    throw YAMLException("Entry key=" + quote(key) + " does not exist" +
+                        in_fmt(in));
+  }
+
+  T ret;
+
+  try {
+    ret = node_[key].as<T>();
+  } catch (const YAML::RepresentationException &e) {
+    throw YAMLException("Error converting entry key=" + quote(key) + " to " +
+                        boost::typeindex::type_id<T>().pretty_name() + " " +
+                        in_fmt(in));
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
+  }
+
+  return ret;
+}
+
+template <typename T>
+T YamlReader::GetOpt(const std::string &key, const T &default_val,
+                     std::string in) {
+  if (!node_[key]) {
+    return default_val;
+  }
+
+  return Get<T>(key, in);
+}
+
+template <typename T>
+std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
+                                   int max_size, std::string in) {
+  if (!node_[key]) {
+    throw YAMLException("Entry key=" + quote(key) + " does not exist" +
+                        in_fmt(in));
+  }
+
+  YamlReader yr = SubNode(key, LIST, in);
+  YAML::Node n = yr.Node();
+
+  std::vector<T> list;
+
+  if (min_size > 0 && max_size > 0 && min_size == max_size &&
+      n.size() != max_size) {
+    throw YAMLException("Entry " + quote(key) + " must have size of exactly " +
+                        std::to_string(min_size) + in_fmt(in));
+  }
+
+  if (min_size > 0 && n.size() < min_size) {
+    throw YAMLException("Entry " + quote(key) + " must have size <" +
+                        std::to_string(min_size) + in_fmt(in));
+  }
+
+  if (max_size > 0 && n.size() > max_size) {
+    throw YAMLException("Entry " + quote(key) + " must have size >" +
+                        std::to_string(max_size) + in_fmt(in));
+  }
+
+  for (int i = 0; i < n.size(); i++) {
+    T val;
+    try {
+      val = n[i].as<T>();
+    } catch (const YAML::RepresentationException &e) {
+      throw YAMLException(
+          "Error converting entry index=" + std::to_string(i) + " to " +
+          boost::typeindex::type_id<T>().pretty_name() + " " + in_fmt(in));
+    } catch (const YAML::Exception &e) {
+      throw YAMLException("Error reading entry index=" + std::to_string(i) +
+                          in_fmt(in));
+    }
+
+    list.push_back(val);
+  }
+}
+
+template <typename T>
+std::vector<T> YamlReader::GetListOpt(const std::string &key,
+                                      const std::vector<T> default_val,
+                                      int min_size, int max_size,
+                                      std::string in) {
+  if (!node_[key]) {
+    return default_val;
+  }
+
+  GetList<T>(key, min_size, max_size, in);
+}
 };
 
 #endif
