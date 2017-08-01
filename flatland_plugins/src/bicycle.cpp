@@ -9,7 +9,7 @@
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	Bicycle.cpp
  * @brief   Bicycle plugin
- * @author  Chunshang Li
+ * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -54,59 +54,6 @@
 
 namespace flatland_plugins {
 
-// This code simply moves the origin of the chassis
-// and prints it out in yaml format
-/*
-void Bicycle::addMeA(double offset) {
-    b2Vec2 vert[6];
-    vert[0].Set(-0.337,-1.03);
-    vert[1].Set(-0.337, .07983);
-    vert[2].Set(-.16111, .30);
-    vert[3].Set(.16111, .30);
-    vert[4].Set(0.337, .07983);
-    vert[5].Set(0.337,-1.03);
-    for(int i=0; i<8 ;i++) {
-        std::cout << "          ["<< vert[i].x << ", " << vert[i].y+offset <<
-"]," << std::endl;
-    }
-    std::cout << " " << std::endl;
-}
-
-void Bicycle::addMeB(double offset) {
-    b2Vec2 vertA[8];
-    vertA[0].Set(-0, 0);
-    vertA[1].Set(-0.337, 0);
-    vertA[2].Set(-0.337, 1.13983);
-    vertA[3].Set(-0.31971, 1.18634);
-    vertA[4].Set(-0.27569, 1.24002);
-    vertA[5].Set(-0.18131, 1.3056);
-    vertA[6].Set(-0.11, 1.33058);
-    vertA[7].Set(-0,  1.33058);
-
-    b2Vec2 vertB[8];
-    vertB[0].Set(-0, 0);
-    vertB[1].Set(0,  1.33058);
-    vertB[2].Set(0.11, 1.33058);
-    vertB[3].Set(0.18131, 1.3056);
-    vertB[4].Set(0.27569, 1.24002);
-    vertB[5].Set(0.31971, 1.18634);
-    vertB[6].Set(0.337, 1.13983);
-    vertB[7].Set(0.337, 0);
-
-    for(int i=0; i<8 ;i++) {
-        std::cout << "          ["<< vertA[i].x << ", " << vertA[i].y+offset <<
-"]," << std::endl;
-    }
-    std::cout << " " << std::endl;
-    for(int i=0; i<8 ;i++) {
-        std::cout << "          ["<< vertB[i].x << ", " << vertB[i].y+offset <<
-"]," << std::endl;
-    }
-    std::cout << " " << std::endl;
-
-}
-*/
-
 void Bicycle::OnInitialize(const YAML::Node& config) {
   ROS_INFO_NAMED("BicyclePlugin", "Bicycle Initialized");
   robot_angle = 0.0;
@@ -121,16 +68,13 @@ void Bicycle::OnInitialize(const YAML::Node& config) {
 
   Bicycle::CreateFrontWheel();
 
-  // Bicycle::addMe2(-1.03);
-
-  //  robotIsInMotion = false;
   model_is_dynamic = true;
 }
 
 //
 // rotates a b2Vec2 point about the origin by angle radians
 //
-b2Vec2 RotateVertex(b2Vec2 vertex, double angle) {
+b2Vec2 Bicycle::RotateVertex(b2Vec2 vertex, double angle) {
   return b2Vec2(vertex.x * cos(angle) + vertex.y * sin(angle),
                 vertex.x * -sin(angle) + vertex.y * cos(angle));
 }

@@ -23,7 +23,7 @@ bodies:  # List of named bodies
       - type: polygon
         density: 100000.0
         friction: 1000000.0
-        is_sensor: true
+        is_sensor: false
 
 
 
