@@ -56,8 +56,10 @@
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     float initial_rate)
-    : initial_rate_(initial_rate), world_yaml_file_(world_yaml_file) {
+                                     float initial_rate, bool show_viz)
+    : initial_rate_(initial_rate),
+      world_yaml_file_(world_yaml_file),
+      show_viz_(show_viz) {
   // Todo: Initialize SimTime class here once written
 }
 
@@ -72,26 +74,44 @@ void SimulationManager::Main() {
   }
 
   ROS_INFO_NAMED("SimMan", "World loaded");
-  world_->DebugVisualize();
 
-  ros::Rate rate(initial_rate_);
+  if (show_viz_) {
+    world_->DebugVisualize();
+  }
+
+  timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
+
+  double cycle_time_sum = 0;
+  double expected_cycle_time_sum = 0;
+
+  // TODO (Chunshang): Not sure how to do time so the faster than realtime
+  // simulation can be done properly
+  ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
   while (ros::ok() && run_simulator_) {
     // Step physics by ros cycle time
-    world_->Update(rate.expectedCycleTime().toSec());
+    world_->Update(timekeeper_);
 
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
-    DebugVisualization::Get().Publish();  // Publish debug visualization output
+    if (show_viz_) {
+      // don't update layers because they don't change
+      world_->DebugVisualize(false);
+      DebugVisualization::Get().Publish();  // publish debug visualization
+    }
 
     rate.sleep();
 
+    cycle_time_sum += rate.cycleTime().toSec();
+    expected_cycle_time_sum += rate.expectedCycleTime().toSec();
+
     ROS_INFO_THROTTLE_NAMED(
-        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%)",
+        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%, %.1f%% average)",
         rate.cycleTime().toSec() * 1000,
         rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec());
+        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec(),
+        100.0 * cycle_time_sum / expected_cycle_time_sum);
   }
 
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");

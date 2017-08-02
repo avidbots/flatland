@@ -1,0 +1,9 @@
+<!--
+Test launchfile for model_tf_publisher_test
+
+This file is used so that rosmaster is running when the test is executed,
+in order to test publish/subscribe
+-->
+<launch>
+  <test pkg="flatland_plugins" type="model_tf_publisher_test" test-name="model_tf_publisher_test"/>
+</launch>

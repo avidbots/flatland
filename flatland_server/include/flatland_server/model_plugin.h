@@ -48,8 +48,8 @@
 #define FLATLAND_SERVER_MODEL_PLUGIN_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
@@ -66,6 +66,7 @@ class ModelPlugin {
   std::string name_;    ///< name of the plugin
   ros::NodeHandle nh_;  ///< ROS node handle
   Model *model_;        ///< model this plugin is tied to
+  int num_laser_points_;
 
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
@@ -79,6 +80,30 @@ class ModelPlugin {
                   Model *model, const YAML::Node &config);
 
   /**
+   * @brief Helper function check if this model is part of the contact, and
+   * extracts all the useful information
+   * @param[in] contact Box2D contact
+   * @param[out] entity The entity that collided with this model
+   * @param[out] this_fixture The fixture from this model involved in the
+   * collision
+   * @param[out] other_fixture The fixture from the other entity involved in the
+   * collision
+   * @return True or false depending on if this model is involved. If false
+   * is returned, none of the entity, this_fixture, other_fixture pointers will
+   * be
+   * populated
+   */
+  bool FilterContact(b2Contact *contact, Entity *&entity,
+                     b2Fixture *&this_fixture, b2Fixture *&other_fixture);
+
+  /**
+   * @brief Helper function check if this model is part of the contact
+   * @param[in] contact Box2D contact
+   * @return True or false depending on if this model is involved
+   */
+  bool FilterContact(b2Contact *contact);
+
+  /**
    * @brief The method for the particular model plugin to override and provide
    * its own initialization
    * @param[in] config The plugin YAML node
@@ -87,72 +112,41 @@ class ModelPlugin {
 
   /**
    * @brief This method is called before the Box2D physics step
-   * @param[in] timestep how much the physics time will increment
+   * @param[in] timekeeper provide time related information
    */
-  virtual void BeforePhysicsStep(double timestep) {}
+  virtual void BeforePhysicsStep(const Timekeeper &timekeeper) {}
 
   /**
    * @brief This method is called after the Box2D physics step
-   * @param[in] timestep how much the physics time have incremented
+   * @param[in] timekeeper provide time related information
    */
-  virtual void AfterPhysicsStep(double timestep) {}
-
-  /**
-   * @brief This method is called when the model starts to collide with the map
-   * (layer)
-   * @param[in] layer The layer that collided with the model
-   * @param[in] layer_fixture The fixture in the collided layer
-   * @param[in] this_fixture The fixture in the model that collided with the map
-   * @param[in] contact Box2D contact contain all relevant contact data
-   */
-  virtual void BeginContactWithMap(Layer *layer, b2Fixture *layer_fixture,
-                                   b2Fixture *this_fixture,
-                                   b2Contact *contact) {}
-
-  /**
-   * @brief This method is called when this model starts to collided with
-   * the other model
-   * @param[in] model The other model that this model collided with
-   * @param[in] model_fixture The fixture in the other model
-   * @param[in] this_fixture The fixture in this model
-   * @param[in] contact Box2D contact contain all relevant contact data
-   */
-  virtual void BeginContactWithModel(Model *model, b2Fixture *model_fixture,
-                                     b2Fixture *this_fixture,
-                                     b2Contact *contact) {}
-
-  /**
-   * @brief This method is called when the model stopped collide with another
-   * model, i.e. the model and layer are no longer contacting
-   * @param[in] layer The layer that collided with the model
-   * @param[in] layer_fixture The fixture in the collided layer
-   * @param[in] this_fixture The fixture in the model that collided with the map
-   * @param[in] contact Box2D contact contain all relevant contact data
-   */
-  virtual void EndContactWithMap(Layer *layer, b2Fixture *layer_fixture,
-                                 b2Fixture *this_fixture, b2Contact *contact) {}
-
-  /**
-   * @brief This method is called when this model stopped colliding with the
-   * other model, i.e. the models are no longer contacting
-   * @param[in] model The other model that this model collided with
-   * @param[in] model_fixture The fixture in the other model
-   * @param[in] this_fixture The fixture in this model
-   * @param[in] contact Box2D contact contain all relevant contact data
-   */
-  virtual void EndContactWithModel(Model *model, b2Fixture *model_fixture,
-                                   b2Fixture *this_fixture,
-                                   b2Contact *contact) {}
+  virtual void AfterPhysicsStep(const Timekeeper &timekeeper) {}
 
   /**
    * @brief A method that is called for all Box2D begin contacts
+   * @param[in] contact Box2D contact
    */
   virtual void BeginContact(b2Contact *contact) {}
 
   /**
    * @brief A method that is called for all Box2D end contacts
+   * @param[in] contact Box2D contact
    */
   virtual void EndContact(b2Contact *contact) {}
+
+  /**
+   * @brief A method that is called for Box2D presolve
+   * @param[in] contact Box2D contact
+   * @param[in] oldManifold Manifold from the previous iteration
+   */
+  virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {}
+
+  /**
+   * @brief A method that is called for Box2D postsolve
+   * @param[in] contact Box2D contact
+   * @param[in] impulse Impulse from the collision resolution
+   */
+  virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}
 
   /**
    * @brief Model plugin destructor

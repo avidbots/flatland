@@ -5,7 +5,6 @@ layers:
     color: [0, 1, 0, 0]
   - name: "3d"
     map: "map3d.yaml"
-    color: [1.0, 0.0, 0.0, 0.5]
 models:  
   - name: turtlebot1 
     pose: [0, 0, 0]
@@ -13,6 +12,7 @@ models:
   - name: turtlebot2
     pose: [3, 4.5, 3.14159]
     model: "turtlebot.model.yaml"
+    namespace: robot2
   - name: chair1
     pose: [1.2, 3.5, 2.123]
     model: "chair.model.yaml"

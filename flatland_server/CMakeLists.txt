@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   geometry_msgs
   visualization_msgs
-  message_generation
+  flatland_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -46,25 +46,13 @@ if("${COVERAGE}" STREQUAL "ON")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
 endif()
 
-################
-## Build MSGS ##
-################
-add_message_files(FILES
-  DebugTopicList.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
 ###################################
 ## catkin specific configuration ##
 ###################################
 catkin_package(
   INCLUDE_DIRS include thirdparty
   LIBRARIES flatland_lib
-  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs message_runtime
+  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs
   DEPENDS OpenCV YAML_CPP
 )
 
@@ -97,6 +85,8 @@ add_library(flatland_lib
   src/collision_filter_registry.cpp
   src/model_plugin.cpp
   src/plugin_manager.cpp
+  src/timekeeper.cpp
+  src/service_manager.cpp
 )
 
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -164,14 +154,13 @@ install(DIRECTORY launch
 if(CATKIN_ENABLE_TESTING)
 
   catkin_add_gtest(null_test test/null.cpp)
-
-  catkin_add_gtest(load_world_test
+  
+  add_rostest_gtest(load_world_test
+    test/load_world_test.test
     test/load_world_test.cpp)
   target_link_libraries(load_world_test
-    ${catkin_LIBRARIES}
-    ${GTEST_LIBRARIES}
-    flatland_lib
-  )
+    flatland_lib)
+
 
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test
@@ -186,6 +175,12 @@ if(CATKIN_ENABLE_TESTING)
     test/plugin_manager_test.test
     test/plugin_manager_test.cpp)
   target_link_libraries(plugin_manager_test
+    flatland_lib)
+
+  add_rostest_gtest(service_manager_test
+    test/service_manager_test.test
+    test/service_manager_test.cpp)
+  target_link_libraries(service_manager_test
     flatland_lib)
 
 

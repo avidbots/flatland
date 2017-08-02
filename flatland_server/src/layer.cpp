@@ -61,9 +61,8 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::array<double, 4> &color,
              const std::array<double, 3> &origin, double resolution,
              double occupied_thresh, double free_thresh)
-    : Entity(physics_world),
+    : Entity(physics_world, name),
       cfr_(cfr),
-      name_(name),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
       free_thresh_(free_thresh) {
@@ -108,8 +107,11 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
     color[1] = layer_node["color"][1].as<double>();
     color[2] = layer_node["color"][2].as<double>();
     color[3] = layer_node["color"][3].as<double>();
+  } else if (layer_node["color"]) {
+    throw YAMLException("Invalid \"color\" in " + name +
+                        " layer, must be a sequence of exactly 4 items");
   } else {
-    throw YAMLException("Missing/invalid \"color\" in " + name + " layer");
+    color = {1, 1, 1, 1};
   }
 
   // use absolute path if start with '/', use relative otherwise
@@ -123,7 +125,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
   try {
     yaml = YAML::LoadFile(map_yaml_path.string());
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading " + map_yaml_path.string(), e);
+    throw YAMLException("Error loading \"" + map_yaml_path.string() + "\"", e);
   }
 
   if (yaml["resolution"]) {
@@ -175,9 +177,10 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 void Layer::LoadMap() {
-  int layer_id = cfr_->LookUpLayerId(name_);
+  uint16_t category_bits = cfr_->GetCategoryBits({name_});
 
-  auto add_edge = [this, layer_id](double x1, double y1, double x2, double y2) {
+  auto add_edge = [this, category_bits](double x1, double y1, double x2,
+                                        double y2) {
     b2EdgeShape edge;
     double rows = bitmap_.rows;
     double res = resolution_;
@@ -187,7 +190,7 @@ void Layer::LoadMap() {
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
-    fixture_def.filter.categoryBits = 1 << layer_id;
+    fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     body_->physics_body_->CreateFixture(&fixture_def);
   };
@@ -269,7 +272,7 @@ void Layer::LoadMap() {
 }
 
 void Layer::DebugVisualize() {
-  std::string viz_name = "layer_" + name_;
+  std::string viz_name = "layer/" + name_;
 
   DebugVisualization::Get().Reset(viz_name);
   DebugVisualization::Get().Visualize(viz_name, body_->physics_body_,
