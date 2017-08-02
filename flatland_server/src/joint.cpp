@@ -63,18 +63,17 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
   Joint *j;
 
   std::string name = joint_reader.Get<std::string>("name");
-  std::string err_location = "joint " + name;
+  std::string err_location = "model " + Q(model->name_) + " joint " + Q(name);
   joint_reader.SetErrorLocationMsg(err_location);
 
   std::string type = joint_reader.Get<std::string>("type");
   Color color = joint_reader.GetColor("color", Color(1, 1, 1, 0.5));
   bool collide_connected = joint_reader.Get<bool>("collide_connected", false);
 
-  YamlReader bodies_reader =
-      joint_reader.SubNode("bodies", YamlReader::LIST, err_location);
+  YamlReader bodies_reader = joint_reader.SubNode("bodies", YamlReader::LIST);
   if (bodies_reader.NodeSize() != 2) {
-    throw YAMLException("Invalid \"bodies\" in " + name +
-                        " joint, must be a sequence of exactly two items");
+    throw YAMLException("Invalid joint \"bodies\" in " + err_location +
+                        ", must be a sequence of exactly two items");
   }
 
   Vec2 anchors[2];
@@ -82,13 +81,13 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
   for (int i = 0; i < 2; i++) {
     YamlReader body_reader =
         bodies_reader.SubNode(i, YamlReader::MAP, err_location);
-    std::string name = body_reader.Get<std::string>("name");
+    std::string body_name = body_reader.Get<std::string>("name");
     anchors[i] = body_reader.GetVec2("anchor");
-    bodies[i] = model->GetBody(name);
+    bodies[i] = model->GetBody(body_name);
 
     if (bodies[i] == nullptr) {
-      throw YAMLException("Cannot find body with name " + name +
-                          " from joint " + name);
+      throw YAMLException("Cannot find body with name " + body_name + " in " +
+                          err_location);
     }
   }
 
@@ -105,8 +104,8 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
     j = MakeWeldJoint(physics_world, model, joint_reader, name, color, body_A,
                       anchor_A, body_B, anchor_B, collide_connected);
   } else {
-    throw YAMLException("Invalid joint \"type\" in " + name +
-                        " joint, supported joints are: revolute, weld");
+    throw YAMLException("Invalid joint \"type\" in " + err_location +
+                        ", supported joints are: revolute, weld");
   }
 
   return j;
@@ -120,7 +119,6 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
   double upper_limit, lower_limit;
   bool has_limits = false;
 
-  std::string in = "joint " + name;
   std::vector<double> limits = joint_reader.GetList<double>("limits", {}, 2, 2);
   if (limits.size() == 2) {
     lower_limit = limits[0];
@@ -151,14 +149,9 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
                             const Color &color, b2Body *body_A, b2Vec2 anchor_A,
                             b2Body *body_B, b2Vec2 anchor_B,
                             bool collide_connected) {
-  std::string in = "joint " + name;
-  double angle = 0;
-  double frequency = 0;
-  double damping = 0;
-
-  joint_reader.Get<double>("angle", 0.0);
-  joint_reader.Get<double>("frequency", 0.0);
-  joint_reader.Get<double>("damping", 0.0);
+  double angle = joint_reader.Get<double>("angle", 0.0);
+  double frequency = joint_reader.Get<double>("frequency", 0.0);
+  double damping = joint_reader.Get<double>("damping", 0.0);
 
   b2WeldJointDef joint_def;
   joint_def.bodyA = body_A;

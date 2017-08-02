@@ -7,7 +7,6 @@ layers:
     map: "map3d.yaml"
 models:  
   - name: turtlebot1 
-    pose: [0, 0, 0]
     model: "turtlebot.model.yaml"
   - name: turtlebot2
     pose: [3, 4.5, 3.14159]

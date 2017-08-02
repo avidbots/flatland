@@ -49,6 +49,7 @@
 #include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
+#include <flatland_server/types.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
@@ -140,14 +141,11 @@ class LoadWorldTest : public ::testing::Test {
     }
   }
 
-  bool ColorEq(const std::array<double, 4> &c1,
-               const std::array<double, 4> &c2) {
-    for (int i = 0; i < 4; i++) {
-      if (!float_cmp(c1[i], c2[i])) {
-        printf("Color Actual:[%f,%f,%f,%f] != Expected:[%f,%f,%f,%f]\n", c1[0],
-               c1[1], c1[2], c1[3], c2[0], c2[1], c2[2], c2[3]);
-        return false;
-      }
+  bool ColorEq(const Color &c1, const Color &c2) {
+    if (c1 != c2) {
+      printf("Color Actual:[%f,%f,%f,%f] != Expected:[%f,%f,%f,%f]\n", c1.r,
+             c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a);
+      return false;
     }
     return true;
   }
@@ -186,7 +184,7 @@ class LoadWorldTest : public ::testing::Test {
       return false;
     }
 
-    if (!ColorEq(body->color_, color)) {
+    if (!ColorEq(body->color_, Color(color))) {
       return false;
     }
 

@@ -66,6 +66,7 @@ class YamlReader {
 
   YAML::Node node_;                           ///< The YAML Node this processes
   std::map<std::string, bool> key_accessed_;  /// Records of the keys processed
+  std::string error_location_msg_;
   std::string in_;
 
   /**
@@ -107,15 +108,16 @@ class YamlReader {
 
   Vec2 GetVec2(const std::string &key);
 
+  Vec2 GetVec2(const std::string &key, const Vec2 &default_val);
+
   Color GetColor(const std::string &key, const Color &default_val);
 
   Pose GetPose(const std::string &key);
 
   Pose GetPose(const std::string &key, const Pose &default_val);
-
- private:
-  std::string Q(const std::string &msg);
 };
+
+inline std::string Q(const std::string &msg) { return "\"" + msg + "\""; }
 
 template <typename T>
 T YamlReader::Get(const std::string &key) {
@@ -129,7 +131,7 @@ T YamlReader::Get(const std::string &key) {
     ret = node_[key].as<T>();
   } catch (const YAML::RepresentationException &e) {
     throw YAMLException("Error converting entry key=" + Q(key) + " to " +
-                        boost::typeindex::type_id<T>().pretty_name() + " " +
+                        boost::typeindex::type_id<T>().pretty_name() +
                         in_);
   } catch (const YAML::Exception &e) {
     throw YAMLException("Error reading entry key=" + Q(key) + in_);
@@ -182,7 +184,7 @@ std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
     } catch (const YAML::RepresentationException &e) {
       throw YAMLException(
           "Error converting entry index=" + std::to_string(i) + " to " +
-          boost::typeindex::type_id<T>().pretty_name() + " " + in_);
+          boost::typeindex::type_id<T>().pretty_name() + in_);
     } catch (const YAML::Exception &e) {
       throw YAMLException("Error reading entry index=" + std::to_string(i) +
                           in_);
@@ -190,6 +192,8 @@ std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
 
     list.push_back(val);
   }
+
+  return list;
 }
 
 template <typename T>
@@ -200,7 +204,7 @@ std::vector<T> YamlReader::GetList(const std::string &key,
     return default_val;
   }
 
-  GetList<T>(key, min_size, max_size);
+  return GetList<T>(key, min_size, max_size);
 }
 }
 

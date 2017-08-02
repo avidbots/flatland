@@ -62,7 +62,9 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
                                YamlReader &body_reader) {
   std::string name = body_reader.Get<std::string>("name");
-  body_reader.SetErrorLocationMsg("body " + name);
+  std::string err_location = "model " + Q(model->name_) + " body " + Q(name);
+  body_reader.SetErrorLocationMsg(err_location);
+
   Pose origin = body_reader.GetPose("origin", Pose(0, 0, 0));
   Color color = body_reader.GetColor("color", Color(1, 1, 1, 0.5));
   std::string type_str = body_reader.Get<std::string>("type");
@@ -77,8 +79,8 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   } else if (type_str == "dynamic") {
     type = b2_dynamicBody;
   } else {
-    throw YAMLException("Invalid \"type\" in " + name +
-                        " body, must be one of: static, kinematic, dynamic");
+    throw YAMLException("Invalid \"type\" in " + err_location +
+                        ", must be one of: static, kinematic, dynamic");
   }
 
   ModelBody *m = new ModelBody(physics_world, cfr, model, name, color, origin,
@@ -97,12 +99,12 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 }
 
 void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
-  std::string in = "body " + name_;
-
   for (int i = 0; i < footprints_reader.NodeSize(); i++) {
-    YamlReader reader = footprints_reader.SubNode(
-        i, YamlReader::MAP,
-        "body " + name_ + " footprint index=" + std::to_string(i));
+    std::string err_location = "model " + Q(entity_->name_) + " body " +
+                               Q(name_) + " footprint index=" +
+                               std::to_string(i);
+    YamlReader reader =
+        footprints_reader.SubNode(i, YamlReader::MAP, err_location);
 
     std::string type = reader.Get<std::string>("type");
     if (type == "circle") {
@@ -110,8 +112,8 @@ void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
     } else if (type == "polygon") {
       LoadPolygonFootprint(reader);
     } else {
-      throw YAMLException("Invalid footprint \"type\" in " + name_ +
-                          " body, support footprints are: circle, polygon");
+      throw YAMLException("Invalid footprint \"type\" in " + err_location +
+                          ", support footprints are: circle, polygon");
     }
   }
 }
@@ -124,7 +126,7 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   fixture_def.restitution = footprint_reader.Get<float>("restitution", 0.0);
 
   // config collision properties
-  fixture_def.isSensor = footprint_reader.Get<bool>("restitution", false);
+  fixture_def.isSensor = footprint_reader.Get<bool>("sensor", false);
   bool self_collide = footprint_reader.Get<bool>("self_collide", false);
   std::vector<std::string> layers =
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
@@ -147,7 +149,8 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   uint16_t category_bits = cfr_->GetCategoryBits(layers, &failed_layers);
 
   if (!failed_layers.empty()) {
-    throw YAMLException("Invalid footprint \"layer\" in " + name_ + " body, {" +
+    throw YAMLException("Invalid footprint \"layer\" in " +
+                        footprint_reader.error_location_msg_ + ", {" +
                         boost::algorithm::join(failed_layers, ",") +
                         "} layer(s) does not exist");
   }
@@ -157,9 +160,7 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
 }
 
 void ModelBody::LoadCircleFootprint(YamlReader &footprint_reader) {
-  std::string in = "body " + name_;
-
-  Vec2 center = footprint_reader.GetVec2("center");
+  Vec2 center = footprint_reader.GetVec2("center", Vec2(0, 0));
   double radius = footprint_reader.Get<double>("radius");
 
   b2FixtureDef fixture_def;

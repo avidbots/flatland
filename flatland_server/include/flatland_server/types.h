@@ -77,7 +77,19 @@ struct Pose {
     this->theta = theta;
   }
 
+  Pose(const std::array<double, 3> &p) {
+    this->x = p[0];
+    this->y = p[1];
+    this->theta = p[3];
+  }
+
   Pose() : x(0), y(0), theta(0) {}
+
+  bool operator==(const Pose &p) const {
+    return x == p.x && y == p.y && theta == p.theta;
+  }
+
+  bool operator!=(const Pose &p) const { return !operator==(p); }
 };
 
 struct Color {
@@ -91,6 +103,19 @@ struct Color {
     this->b = b;
     this->a = a;
   }
+
+  Color(const std::array<double, 4> &c) {
+    this->r = c[0];
+    this->g = c[1];
+    this->b = c[2];
+    this->a = c[3];
+  }
+
+  bool operator==(const Color &c) const {
+    return r == c.r && g == c.g && b == c.b && a == c.a;
+  }
+
+  bool operator!=(const Color &c) const { return !operator==(c); }
 };
 };
 

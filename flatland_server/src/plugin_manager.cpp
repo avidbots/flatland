@@ -73,7 +73,8 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
 
 void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   std::string name = plugin_reader.Get<std::string>("name");
-  plugin_reader.SetErrorLocationMsg("plugin " + name);
+  plugin_reader.SetErrorLocationMsg("model " + Q(model->name_) + "plugin " +
+                                    Q(name));
   std::string type = plugin_reader.Get<std::string>("type");
 
   // remove the name and type of the YAML Node, the plugin does not need to know

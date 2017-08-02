@@ -73,16 +73,15 @@ Model::~Model() {
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &model_yaml_path,
                         const std::string &ns, const std::string &name) {
-  YamlReader r(model_yaml_path);
+  YamlReader reader(model_yaml_path, "model " + Q(name));
 
   Model *m = new Model(physics_world, cfr, ns, name);
 
-  std::string in = "model " + name;
-  m->plugins_reader_ = r.SubNode("plugins", YamlReader::LIST);
+  m->plugins_reader_ = reader.SubNodeOpt("plugins", YamlReader::LIST);
 
   try {
-    YamlReader bodies_reader = r.SubNode("bodies", YamlReader::LIST);
-    YamlReader joints_reader = r.SubNode("joints", YamlReader::LIST);
+    YamlReader bodies_reader = reader.SubNode("bodies", YamlReader::LIST);
+    YamlReader joints_reader = reader.SubNodeOpt("joints", YamlReader::LIST);
     m->LoadBodies(bodies_reader);
     m->LoadJoints(joints_reader);
   } catch (const YAML::Exception &e) {
@@ -94,8 +93,8 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 void Model::LoadBodies(YamlReader &bodies_reader) {
-  if (bodies_reader.NodeSize() <= 1) {
-    throw YAMLException("Invalid \"bodies\" in " + name_ +
+  if (bodies_reader.NodeSize() <= 0) {
+    throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
                         " model, "
                         "must a be list of bodies of at least size 1");
   } else {

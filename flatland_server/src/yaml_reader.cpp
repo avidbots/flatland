@@ -52,6 +52,8 @@ namespace flatland_server {
 *@brief Helper function to format the in message adding spaces and brackets
 */
 void YamlReader::SetErrorLocationMsg(const std::string &msg) {
+  error_location_msg_ = msg;
+
   if (msg.size() == 0) {
     in_ = "";
   }
@@ -59,8 +61,6 @@ void YamlReader::SetErrorLocationMsg(const std::string &msg) {
   boost::algorithm::to_lower(msg_cpy);
   in_ = " (in " + msg_cpy + ")";
 }
-
-std::string YamlReader::Q(const std::string &msg) { return "\"" + msg + "\""; }
 
 YamlReader::YamlReader() : node_(YAML::Node()) { SetErrorLocationMsg(""); }
 
@@ -108,7 +108,10 @@ YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check,
                         "  must be a list" + in_);
   }
 
-  return YamlReader(node_[index], error_location_msg);
+  // default to use the error location message of its parent
+  return YamlReader(node_[index], error_location_msg == ""
+                                      ? error_location_msg_
+                                      : error_location_msg);
 }
 
 YamlReader YamlReader::SubNode(const std::string &key, NodeTypeCheck type_check,
@@ -124,7 +127,9 @@ YamlReader YamlReader::SubNode(const std::string &key, NodeTypeCheck type_check,
     throw YAMLException("Entry key=" + Q(key) + " must be a list" + in_);
   }
 
-  return YamlReader(node_[key], error_location_msg);
+  // default to use the error location message of its parent
+  return YamlReader(node_[key], error_location_msg == "" ? error_location_msg_
+                                                         : error_location_msg);
 }
 
 YamlReader YamlReader::SubNodeOpt(const std::string &key,
@@ -139,6 +144,14 @@ YamlReader YamlReader::SubNodeOpt(const std::string &key,
 Vec2 YamlReader::GetVec2(const std::string &key) {
   std::vector<double> v = GetList<double>(key, 2, 2);
   return Vec2(v[0], v[1]);
+}
+
+Vec2 YamlReader::GetVec2(const std::string &key, const Vec2 &vec2) {
+  if (!node_[key]) {
+    return vec2;
+  }
+
+  return GetVec2(key);
 }
 
 Color YamlReader::GetColor(const std::string &key, const Color &default_val) {

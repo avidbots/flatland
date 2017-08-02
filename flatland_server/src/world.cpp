@@ -160,9 +160,9 @@ void World::LoadLayers(const std::string &yaml_path) {
                           std::to_string(cfr_.MAX_LAYERS));
     }
 
-    YamlReader reader = layers_reader.SubNode(i, YamlReader::MAP, "layers");
+    YamlReader reader = layers_reader.SubNode(
+        i, YamlReader::MAP, "layer index=" + std::to_string(i));
 
-    std::string in = "layer index=" + std::to_string(i);
     std::string name = reader.Get<std::string>("name");
     boost::filesystem::path map_path(reader.Get<std::string>("map"));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
@@ -186,9 +186,9 @@ void World::LoadModels(const std::string &yaml_path) {
 
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
-      YamlReader reader = models_reader.SubNode(i, YamlReader::MAP, "models");
+      YamlReader reader = models_reader.SubNode(
+          i, YamlReader::MAP, "model index=" + std::to_string(i));
 
-      std::string in = "model index=" + std::to_string(i);
       std::string name = reader.Get<std::string>("name");
       std::string ns = reader.Get<std::string>("namespace", "");
       Pose pose = reader.GetPose("pose", Pose(0, 0, 0));
@@ -212,7 +212,6 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
 
   for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
     YamlReader plugin_reader = m->plugins_reader_.SubNode(i, YamlReader::MAP);
-    plugin_manager_.LoadModelPlugin(m, plugin_reader);
   }
 
   ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());

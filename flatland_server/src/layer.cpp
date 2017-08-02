@@ -81,13 +81,12 @@ Layer::~Layer() { delete body_; }
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &map_path, const std::string &name,
                         const Color &color) {
-  YamlReader reader(map_path);
+  YamlReader reader(map_path, "layer " + Q(name));
 
-  std::string in = name + " layer";  // to display in case of error
   double resolution = reader.Get<double>("resolution");
   double occupied_thresh = reader.Get<double>("occupied_thresh");
   double free_thresh = reader.Get<double>("free_thresh");
-  Pose pose = reader.GetPose("origin");
+  Pose origin = reader.GetPose("origin");
 
   boost::filesystem::path image_path(reader.Get<std::string>("image"));
   if (image_path.string().front() != '/') {
@@ -102,7 +101,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
   cv::Mat bitmap;
   map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
 
-  return new Layer(physics_world, cfr, name, bitmap, {1, 1, 1, 1}, {0, 0, 0},
+  return new Layer(physics_world, cfr, name, bitmap, color, origin,
                    resolution, occupied_thresh, free_thresh);
 }
 
