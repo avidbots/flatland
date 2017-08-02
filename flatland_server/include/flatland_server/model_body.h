@@ -79,9 +79,9 @@ class ModelBody : public Body {
    * @param[in] angular_damping Box2D body angular damping
    */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
-            const std::string &name, const Color &color,
-            const Pose &origin, b2BodyType body_type,
-            double linear_damping, double angular_damping);
+            const std::string &name, const Color &color, const Pose &origin,
+            b2BodyType body_type, double linear_damping,
+            double angular_damping);
 
   /**
    * @brief Load footprints (Box2D fixtures) into the body
@@ -94,16 +94,16 @@ class ModelBody : public Body {
    * @param[in] footprint_node Node containing the footprint parameters
    * @param[out] fixture_def Box2D fixture definition
    */
-  void ConfigFootprintCollision(const YAML::Node &footprint_node,
-                                b2FixtureDef &fixture_def);
+  void ConfigFootprintDefCollision(const YAML::Node &footprint_node,
+                                   b2FixtureDef &fixture_def);
 
   /**
    * @brief Configures the common properties of footprints
    * @param[in] footprint_node Node containing the footprint parameters
    * @param[out] fixture_def Box2D fixture definition
    */
-  void ConfigFootprintCommon(const YAML::Node &footprint_node,
-                             b2FixtureDef &fixture_def);
+  void ConfigFootprintDef(const YAML::Node &footprint_node,
+                          b2FixtureDef &fixture_def);
 
   /**
    * @brief Loads a circle footprint

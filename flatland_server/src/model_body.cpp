@@ -51,8 +51,7 @@
 namespace flatland_server {
 
 ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
-                     Model *model, const std::string &name,
-                     const Color &color,
+                     Model *model, const std::string &name, const Color &color,
                      const Pose &origin, b2BodyType body_type,
                      double linear_damping, double angular_damping)
     : Body(physics_world, model, name, color, origin, body_type, linear_damping,
@@ -62,71 +61,34 @@ ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
 ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
                                const YAML::Node &body_node) {
-  std::string name;
-  Color color;
-  Pose origin;
-  double linear_damping = 0, angular_damping = 0;
+  YamlReader reader(body_node);
+
+  std::string name = reader.Get<std::string>("name");
+  std::string in = "body " + name;
+  Pose origin = reader.GetPoseOpt("origin", Pose(0, 0, 0), in);
+  Pose color = reader.GetColorOpt("color", Color(1, 1, 1, 0.5), in);
+  std::string type_str = reader.Get<std::string>("type", in);
+  double linear_damping = reader.GetOpt("linear_damping", 0.0, in);
+  double angular_damping = reader.GetOpt("angular_damping", 0.0, in);
+
   b2BodyType type;
-
-  if (body_node["name"]) {
-    name = body_node["name"].as<std::string>();
+  if (type_str == "static") {
+    type = b2_staticBody;
+  } else if (type_str == "kinematic") {
+    type = b2_kinematicBody;
+  } else if (type_str == "dynamic") {
+    type = b2_dynamicBody;
   } else {
-    throw YAMLException("Missing a body name");
-  }
-
-  // if (body_node["origin"] && body_node["origin"].IsSequence() &&
-  //     body_node["origin"].size() == 3) {
-  //   origin[0] = body_node["origin"][0].as<double>();
-  //   origin[1] = body_node["origin"][1].as<double>();
-  //   origin[2] = body_node["origin"][2].as<double>();
-  // } else {
-  //   throw YAMLException("Missing/invalid \"origin\" in " + name + " body");
-  // }
-
-  // if (body_node["color"] && body_node["color"].IsSequence() &&
-  //     body_node["color"].size() == 4) {
-  //   color[0] = body_node["color"][0].as<double>();
-  //   color[1] = body_node["color"][1].as<double>();
-  //   color[2] = body_node["color"][2].as<double>();
-  //   color[3] = body_node["color"][3].as<double>();
-  // } else if (body_node["color"]) {
-  //   throw YAMLException("Invalid \"color\" in " + name +
-  //                       " body, must be a sequence");
-  // } else {
-  //   color = {1, 1, 1, 0.5};
-  // }
-
-  if (body_node["type"]) {
-    std::string type_str = body_node["type"].as<std::string>();
-
-    if (type_str == "static") {
-      type = b2_staticBody;
-    } else if (type_str == "kinematic") {
-      type = b2_kinematicBody;
-    } else if (type_str == "dynamic") {
-      type = b2_dynamicBody;
-    } else {
-      throw YAMLException("Invalid \"type\" in " + name +
-                          " body, supported body types are: "
-                          "static, kinematic, dynamic");
-    }
-  } else {
-    throw YAMLException("Missing \"type\" in " + name + " body");
-  }
-
-  if (body_node["linear_damping"]) {
-    linear_damping = body_node["linear_damping"].as<double>();
-  }
-
-  if (body_node["angular_damping"]) {
-    angular_damping = body_node["angular_damping"].as<double>();
+    throw YAMLException("Invalid \"type\" in " + name +
+                        " body, must be one of: static, kinematic, dynamic");
   }
 
   ModelBody *m = new ModelBody(physics_world, cfr, model, name, color, origin,
                                type, linear_damping, angular_damping);
 
   try {
-    m->LoadFootprints(body_node["footprints"]);
+    m->LoadFootprints(
+        reader.SubNode("footprints", YamlReader::LIST, in).Node());
   } catch (const YAML::Exception &e) {
     delete m;
     throw YAMLException(e);
@@ -136,31 +98,25 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 }
 
 void ModelBody::LoadFootprints(const YAML::Node &footprints_node) {
-  const YAML::Node &node = footprints_node;
+  YamlReader footprints_reader(footprints_node);
+  std::string in = "body " + name;
 
-  if (!node || !node.IsSequence() || node.size() <= 0) {
-    throw YAMLException("Missing/Invalid \"footprints\" in " + name_ + " body");
-  } else {
-    for (int i = 0; i < node.size(); i++) {
-      if (node[i]["type"]) {
-        std::string type = node[i]["type"].as<std::string>();
+  for (int i = 0; i < footprints_reader.NodeSize(); i++) {
+    YamlReader reader = footprints_reader.SubNode(i, YamlReader::MAP, in);
 
-        if (type == "circle") {
-          LoadCircleFootprint(node[i]);
-        } else if (type == "polygon") {
-          LoadPolygonFootprint(node[i]);
-        } else {
-          throw YAMLException("Invalid footprint \"type\" in " + name_ +
-                              " body, support footprints are: circle, polygon");
-        }
-      } else {
-        throw YAMLException("Missing footprint \"type\" in " + name_ + " body");
-      }
-    }
+    std::string type = reader.Get<std::string>("type", in);
+    if (type == "circle") {
+      LoadCircleFootprint(reader.Node());
+    } else if (type == "polygon") {
+      LoadPolygonFootprint(reader.Node());
+    } else {
+      throw YAMLException("Invalid footprint \"type\" in " + name_ +
+                          " body, support footprints are: circle, polygon");
+    } 
   }
 }
 
-void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
+void ModelBody::ConfigFootprintDefCollision(const YAML::Node &footprint_node,
                                          b2FixtureDef &fixture_def) {
   const YAML::Node &n = footprint_node;
 
@@ -219,7 +175,7 @@ void ModelBody::ConfigFootprintCollision(const YAML::Node &footprint_node,
   fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
 }
 
-void ModelBody::ConfigFootprintCommon(const YAML::Node &footprint_node,
+void ModelBody::ConfigFootprintDef(const YAML::Node &footprint_node,
                                       b2FixtureDef &fixture_def) {
   const YAML::Node &n = footprint_node;
   double density = 0, friction = 0, restitution = 0;
@@ -240,7 +196,7 @@ void ModelBody::ConfigFootprintCommon(const YAML::Node &footprint_node,
   fixture_def.friction = friction;
   fixture_def.restitution = restitution;
 
-  ConfigFootprintCollision(n, fixture_def);
+  ConfigFootprintDefCollision(n, fixture_def);
 }
 
 void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
@@ -264,7 +220,7 @@ void ModelBody::LoadCircleFootprint(const YAML::Node &footprint_node) {
   }
 
   b2FixtureDef fixture_def;
-  ConfigFootprintCommon(n, fixture_def);
+  ConfigFootprintDef(n, fixture_def);
 
   b2CircleShape shape;
   shape.m_p.Set(x, y);
@@ -302,7 +258,7 @@ void ModelBody::LoadPolygonFootprint(const YAML::Node &footprint_node) {
   }
 
   b2FixtureDef fixture_def;
-  ConfigFootprintCommon(n, fixture_def);
+  ConfigFootprintDef(n, fixture_def);
 
   b2PolygonShape shape;
   shape.Set(points.data(), points.size());

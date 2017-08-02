@@ -160,13 +160,12 @@ void World::LoadLayers(const std::string &yaml_path) {
                           std::to_string(cfr_.MAX_LAYERS));
     }
 
-    YamlReader layer_reader =
-        layers_reader.SubNode(i, YamlReader::MAP, "layers");
+    YamlReader reader = layers_reader.SubNode(i, YamlReader::MAP, "layers");
 
     std::string in = "layer index=" + std::to_string(i);
-    std::string name = layer_reader.Get<std::string>("name", in);
-    boost::filesystem::path map_path(layer_reader.Get<std::string>("map", in));
-    Color color = layer_reader.GetColorOpt("color", Color(1, 1, 1, 1));
+    std::string name = reader.Get<std::string>("name", in);
+    boost::filesystem::path map_path(reader.Get<std::string>("map", in));
+    Color color = reader.GetColorOpt("color", Color(1, 1, 1, 1));
 
     if (map_path.string().front() != '/') {
       map_path = boost::filesystem::path(yaml_path).parent_path() / map_path;
@@ -187,15 +186,13 @@ void World::LoadModels(const std::string &yaml_path) {
 
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
-      YamlReader model_reader =
-          models_reader.SubNode(i, YamlReader::MAP, "models");
+      YamlReader reader = models_reader.SubNode(i, YamlReader::MAP, "models");
 
       std::string in = "model index=" + std::to_string(i);
-      std::string name = model_reader.Get<std::string>("name", in);
-      std::string ns = model_reader.GetOpt<std::string>("namespace", "", in);
-      Pose pose = model_reader.GetPoseOpt("pose", Pose(0, 0, 0), in);
-      boost::filesystem::path model_path(
-          model_reader.Get<std::string>("model", in));
+      std::string name = reader.Get<std::string>("name", in);
+      std::string ns = reader.GetOpt<std::string>("namespace", "", in);
+      Pose pose = reader.GetPoseOpt("pose", Pose(0, 0, 0), in);
+      boost::filesystem::path model_path(reader.Get<std::string>("model", in));
 
       if (model_path.string().front() != '/') {
         model_path =
