@@ -49,6 +49,7 @@
 
 #include <flatland_server/model.h>
 #include <flatland_server/types.h>
+#include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -87,18 +88,20 @@ class Joint {
    * @brief Creates a joint for the given params, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
-   * @param[in] joint_node YAML node that contains joint information
+   * @param[in] joint_reader YAML reader for node that contains joint
+   * information
    * @return A new joint as defined by the input data
    */
   static Joint *MakeJoint(b2World *physics_world, Model *model,
-                          const YAML::Node &joint_node);
+                          YamlReader &joint_reader);
 
   /**
    * @brief Creates a revolute joint for the given params, throws exceptions
    * upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
-   * @param[in] joint_node YAML node that contains joint information
+   * @param[in] joint_reader YAML reader for node that contains joint
+   * information
    * @param[in] name Name of the joint
    * @param[in] color Color to visualize the joint
    * @param[in] body_A pointer to the first body
@@ -110,7 +113,7 @@ class Joint {
    * @return A new revolute joint as defined by the input data
    */
   static Joint *MakeRevoluteJoint(b2World *physics_world, Model *model,
-                                  const YAML::Node &joint_node,
+                                  YamlReader &joint_reader,
                                   const std::string &name, const Color &color,
                                   b2Body *body_A, b2Vec2 anchor_A,
                                   b2Body *body_B, b2Vec2 anchor_B,
@@ -121,7 +124,8 @@ class Joint {
    * failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
-   * @param[in] joint_node YAML node that contains joint information
+   * @param[in] joint_reader YAML reader for node that contains joint
+   * information
    * @param[in] name Name of the joint
    * @param[in] color Color to visualize the joint
    * @param[in] body_A pointer to the first body
@@ -133,10 +137,10 @@ class Joint {
    * @return A new weld joint as defined by the input data
    */
   static Joint *MakeWeldJoint(b2World *physics_world, Model *model,
-                              const YAML::Node &joint_node,
-                              const std::string &name, const Color &color,
-                              b2Body *body_A, b2Vec2 anchor_A, b2Body *body_B,
-                              b2Vec2 anchor_B, bool collide_connected);
+                              YamlReader &joint_reader, const std::string &name,
+                              const Color &color, b2Body *body_A,
+                              b2Vec2 anchor_A, b2Body *body_B, b2Vec2 anchor_B,
+                              bool collide_connected);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

@@ -46,7 +46,6 @@
 
 #include <flatland_server/exceptions.h>
 #include <flatland_server/joint.h>
-#include <flatland_server/yaml_reader.h>
 
 namespace flatland_server {
 
@@ -60,28 +59,31 @@ Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
 Joint::~Joint() { physics_world_->DestroyJoint(physics_joint_); }
 
 Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
-                        const YAML::Node &joint_node) {
-  YamlReader reader(joint_node);
+                        YamlReader &joint_reader) {
   Joint *j;
 
-  std::string name = reader.Get<std::string>("name");
-  std::string in = "joint " + name;
-  std::string type = reader.Get<std::string>("type", in);
-  Color color = reader.GetColor("color", Color(1, 1, 1, 0.5), in);
-  bool collide_connected = reader.Get<bool>("collide_connected", false, in);
+  std::string name = joint_reader.Get<std::string>("name");
+  std::string err_location = "joint " + name;
+  joint_reader.SetErrorLocationMsg(err_location);
 
-  YamlReader bodies_yr = reader.SubNode("bodies", YamlReader::LIST, in);
-  if (bodies_yr.NodeSize() != 2) {
-    throw YAMLException("Missing/invalid \"bodies\" in " + name +
+  std::string type = joint_reader.Get<std::string>("type");
+  Color color = joint_reader.GetColor("color", Color(1, 1, 1, 0.5));
+  bool collide_connected = joint_reader.Get<bool>("collide_connected", false);
+
+  YamlReader bodies_reader =
+      joint_reader.SubNode("bodies", YamlReader::LIST, err_location);
+  if (bodies_reader.NodeSize() != 2) {
+    throw YAMLException("Invalid \"bodies\" in " + name +
                         " joint, must be a sequence of exactly two items");
   }
 
   Vec2 anchors[2];
   ModelBody *bodies[2];
   for (int i = 0; i < 2; i++) {
-    YamlReader body_yr = bodies_yr.SubNode(i, YamlReader::MAP, in);
-    std::string name = body_yr.Get<std::string>("name", in);
-    anchors[i] = body_yr.GetVec2("anchor", in);
+    YamlReader body_reader =
+        bodies_reader.SubNode(i, YamlReader::MAP, err_location);
+    std::string name = body_reader.Get<std::string>("name");
+    anchors[i] = body_reader.GetVec2("anchor");
     bodies[i] = model->GetBody(name);
 
     if (bodies[i] == nullptr) {
@@ -96,10 +98,11 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
   b2Body *body_B = bodies[1]->physics_body_;
 
   if (type == "revolute") {
-    j = MakeRevoluteJoint(physics_world, model, reader.Node(), name, color, body_A,
-                          anchor_A, body_B, anchor_B, collide_connected);
+    j = MakeRevoluteJoint(physics_world, model, joint_reader, name, color,
+                          body_A, anchor_A, body_B, anchor_B,
+                          collide_connected);
   } else if (type == "weld") {
-    j = MakeWeldJoint(physics_world, model, reader.Node(), name, color, body_A,
+    j = MakeWeldJoint(physics_world, model, joint_reader, name, color, body_A,
                       anchor_A, body_B, anchor_B, collide_connected);
   } else {
     throw YAMLException("Invalid joint \"type\" in " + name +
@@ -110,16 +113,15 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
 }
 
 Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
-                                const YAML::Node &joint_node,
+                                YamlReader &joint_reader,
                                 const std::string &name, const Color &color,
                                 b2Body *body_A, b2Vec2 anchor_A, b2Body *body_B,
                                 b2Vec2 anchor_B, bool collide_connected) {
   double upper_limit, lower_limit;
   bool has_limits = false;
 
-  YamlReader reader(joint_node);
   std::string in = "joint " + name;
-  std::vector<double> limits = reader.GetList<double>("limits", {}, 2, 2, in);
+  std::vector<double> limits = joint_reader.GetList<double>("limits", {}, 2, 2);
   if (limits.size() == 2) {
     lower_limit = limits[0];
     upper_limit = limits[1];
@@ -145,19 +147,18 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
 }
 
 Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
-                            const YAML::Node &joint_node,
+                            YamlReader &joint_reader,
                             const std::string &name, const Color &color,
                             b2Body *body_A, b2Vec2 anchor_A, b2Body *body_B,
                             b2Vec2 anchor_B, bool collide_connected) {
-  YamlReader reader(joint_node);
   std::string in = "joint " + name;
   double angle = 0;
   double frequency = 0;
   double damping = 0;
 
-  reader.Get<double>("angle", 0.0, in);
-  reader.Get<double>("frequency", 0.0, in);
-  reader.Get<double>("damping", 0.0, in);
+  joint_reader.Get<double>("angle", 0.0);
+  joint_reader.Get<double>("frequency", 0.0);
+  joint_reader.Get<double>("damping", 0.0);
 
   b2WeldJointDef joint_def;
   joint_def.bodyA = body_A;

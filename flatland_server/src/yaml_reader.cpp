@@ -51,33 +51,39 @@ namespace flatland_server {
 /**
 *@brief Helper function to format the in message adding spaces and brackets
 */
-std::string YamlReader::in_fmt(const std::string &msg) {
+void YamlReader::SetErrorLocationMsg(const std::string &msg) {
   if (msg.size() == 0) {
-    return "";
+    in_ = "";
   }
   std::string msg_cpy = msg;
   boost::algorithm::to_lower(msg_cpy);
-  return " (in " + msg_cpy + ")";
+  in_ = " (in " + msg_cpy + ")";
 }
 
-std::string YamlReader::quote(const std::string &msg) {
-  return "\"" + msg + "\"";
+std::string YamlReader::Q(const std::string &msg) { return "\"" + msg + "\""; }
+
+YamlReader::YamlReader() : node_(YAML::Node()) { SetErrorLocationMsg(""); }
+
+YamlReader::YamlReader(const YAML::Node &node, std::string error_location_msg)
+    : node_(node) {
+  SetErrorLocationMsg(error_location_msg);
 }
 
-YamlReader::YamlReader(const YAML::Node &node) : node_(node) {}
-
-YamlReader::YamlReader(const std::string &path) {
+YamlReader::YamlReader(const std::string &path,
+                       std::string error_location_msg) {
   try {
     node_ = YAML::LoadFile(path);
   } catch (const YAML::BadFile &e) {
-    throw YAMLException("File does not exist, path=" + quote(path), e);
+    throw YAMLException("File does not exist, path=" + Q(path), e);
 
   } catch (const YAML::ParserException &e) {
-    throw YAMLException("Malformatted file, path=" + quote(path), e);
+    throw YAMLException("Malformatted file, path=" + Q(path), e);
 
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading file, path=" + quote(path), e);
+    throw YAMLException("Error loading file, path=" + Q(path), e);
   }
+
+  SetErrorLocationMsg(error_location_msg);
 }
 
 YAML::Node YamlReader::Node() { return node_; }
@@ -87,75 +93,70 @@ bool YamlReader::IsNodeNull() { return node_.IsNull(); }
 int YamlReader::NodeSize() { return node_.size(); }
 
 YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check,
-                               std::string in) {
+                               std::string error_location_msg) {
   if (!node_[index]) {
     throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  does not exist" + in_fmt(in));
+                        "  does not exist" + in_);
   }
 
   if (type_check == NodeTypeCheck::MAP && !node_[index].IsMap()) {
     throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  must be a map" + in_fmt(in));
+                        "  must be a map" + in_);
 
   } else if (type_check == NodeTypeCheck::LIST && !node_[index].IsSequence()) {
     throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  must be a list" + in_fmt(in));
+                        "  must be a list" + in_);
   }
 
-  return YamlReader(node_[index]);
+  return YamlReader(node_[index], error_location_msg);
 }
 
 YamlReader YamlReader::SubNode(const std::string &key, NodeTypeCheck type_check,
-                               std::string in) {
+                               std::string error_location_msg) {
   if (!node_[key]) {
-    throw YAMLException("Entry key=" + quote(key) + " does not exist" +
-                        in_fmt(in));
+    throw YAMLException("Entry key=" + Q(key) + " does not exist" + in_);
   }
 
   if (type_check == NodeTypeCheck::MAP && !node_[key].IsMap()) {
-    throw YAMLException("Entry key=" + quote(key) + " must be a map" +
-                        in_fmt(in));
+    throw YAMLException("Entry key=" + Q(key) + " must be a map" + in_);
 
   } else if (type_check == NodeTypeCheck::LIST && !node_[key].IsSequence()) {
-    throw YAMLException("Entry key=" + quote(key) + " must be a list" +
-                        in_fmt(in));
+    throw YAMLException("Entry key=" + Q(key) + " must be a list" + in_);
   }
 
-  return YamlReader(node_[key]);
+  return YamlReader(node_[key], error_location_msg);
 }
 
 YamlReader YamlReader::SubNodeOpt(const std::string &key,
-                                  NodeTypeCheck type_check, std::string in) {
+                                  NodeTypeCheck type_check,
+                                  std::string error_location_msg) {
   if (!node_[key]) {
-    return YamlReader(YAML::Node());
+    return YamlReader(YAML::Node(), error_location_msg);
   }
-  return SubNode(key, type_check, in);
+  return SubNode(key, type_check, error_location_msg);
 }
 
-Vec2 YamlReader::GetVec2(const std::string &key, std::string in) {
-  std::vector<double> v = GetList<double>(key, 2, 2, in);
+Vec2 YamlReader::GetVec2(const std::string &key) {
+  std::vector<double> v = GetList<double>(key, 2, 2);
   return Vec2(v[0], v[1]);
 }
 
-Color YamlReader::GetColor(const std::string &key, const Color &default_val,
-                              std::string in) {
+Color YamlReader::GetColor(const std::string &key, const Color &default_val) {
   std::vector<double> v = GetList<double>(
-      key, {default_val.r, default_val.g, default_val.b, default_val.a}, 4, 4,
-      in);
+      key, {default_val.r, default_val.g, default_val.b, default_val.a}, 4, 4);
   return Color(v[0], v[1], v[2], v[3]);
 }
 
-Pose YamlReader::GetPose(const std::string &key, std::string in) {
-  std::vector<double> v = GetList<double>(key, 3, 3, in);
+Pose YamlReader::GetPose(const std::string &key) {
+  std::vector<double> v = GetList<double>(key, 3, 3);
   return Pose(v[0], v[1], v[2]);
 }
 
-Pose YamlReader::GetPose(const std::string &key, const Pose &default_val,
-                            std::string in) {
+Pose YamlReader::GetPose(const std::string &key, const Pose &default_val) {
   if (!node_[key]) {
     return default_val;
   }
 
-  return GetPose(key, in);
+  return GetPose(key);
 }
 }

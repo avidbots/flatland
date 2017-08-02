@@ -51,6 +51,7 @@
 #include <flatland_server/entity.h>
 #include <flatland_server/joint.h>
 #include <flatland_server/model_body.h>
+#include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 
@@ -68,7 +69,7 @@ class Model : public Entity {
   std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
   std::vector<Joint *> joints_;      ///< list of joints in the model
-  YAML::Node plugins_node_;          ///< for storing plugins when paring YAML
+  YamlReader plugins_reader_;          ///< for storing plugins when paring YAML
   CollisionFilterRegistry *cfr_;     ///< Collision filter registry
   /// Box2D collision group assigned to this body by the CFR
   int no_collide_group_index_;
@@ -95,15 +96,15 @@ class Model : public Entity {
 
   /**
    * @brief load bodies to this model, throws exceptions upon failure
-   * @param[in] bodies_node YAML node containing the list of bodies
+   * @param[in] bodies_reader YAML reader for node containing the list of bodies
    */
-  void LoadBodies(const YAML::Node &bodies_node);
+  void LoadBodies(YamlReader &bodies_reader);
 
   /**
    * @brief load joints to this model, throws exceptions upon failure
-   * @param[in] joints_node YAML node containing the list of joints
+   * @param[in] joints_reader YAML reader for node containing the list of joints
    */
-  void LoadJoints(const YAML::Node &joints_node);
+  void LoadJoints(YamlReader &joints_reader);
 
   /**
    * @brief Get a body in the model using its name

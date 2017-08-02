@@ -48,7 +48,6 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
-#include <flatland_server/yaml_reader.h>
 
 namespace flatland_server {
 
@@ -79,11 +78,13 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
   Model *m = new Model(physics_world, cfr, ns, name);
 
   std::string in = "model " + name;
-  m->plugins_node_ = r.SubNode("plugins", YamlReader::LIST, in).Node();
+  m->plugins_reader_ = r.SubNode("plugins", YamlReader::LIST);
 
   try {
-    m->LoadBodies(r.SubNode("bodies", YamlReader::LIST, in).Node());
-    m->LoadBodies(r.SubNodeOpt("joints", YamlReader::LIST, in).Node());
+    YamlReader bodies_reader = r.SubNode("bodies", YamlReader::LIST);
+    YamlReader joints_reader = r.SubNode("joints", YamlReader::LIST);
+    m->LoadBodies(bodies_reader);
+    m->LoadJoints(joints_reader);
   } catch (const YAML::Exception &e) {
     delete m;
     throw YAMLException(e);
@@ -92,23 +93,26 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
   return m;
 }
 
-void Model::LoadBodies(const YAML::Node &bodies_node) {
-  if (bodies_node.size() <= 1) {
+void Model::LoadBodies(YamlReader &bodies_reader) {
+  if (bodies_reader.NodeSize() <= 1) {
     throw YAMLException("Invalid \"bodies\" in " + name_ +
                         " model, "
                         "must a be list of bodies of at least size 1");
   } else {
-    for (const auto &body_node : bodies_node) {
-      ModelBody *b = ModelBody::MakeBody(physics_world_, cfr_, this, body_node);
+    for (int i = 0; i < bodies_reader.NodeSize(); i++) {
+      YamlReader body_reader = bodies_reader.SubNode(i, YamlReader::MAP);
+      ModelBody *b =
+          ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
       bodies_.push_back(b);
     }
   }
 }
 
-void Model::LoadJoints(const YAML::Node &joints_node) {
-  if (joints_node) {
-    for (const auto &joint_node : joints_node) {
-      Joint *j = Joint::MakeJoint(physics_world_, this, joint_node);
+void Model::LoadJoints(YamlReader &joints_reader) {
+  if (!joints_reader.IsNodeNull()) {
+    for (int i = 0; i < joints_reader.NodeSize(); i++) {
+      YamlReader joint_reader = joints_reader.SubNode(i, YamlReader::MAP);
+      Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);
     }
   }
