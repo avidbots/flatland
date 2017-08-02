@@ -3,18 +3,17 @@
 
 bodies:  # List of named bodies
   - name: base
-    origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
-    type: dynamic  # dynamic | static | kinematic
-    color: [1, 1, 0, 0.25] # r g b a
+    type: dynamic  
+    color: [1, 1, 0, 0.25] 
     linear_damping: 0.1
     angular_damping: 0.125
     footprints:
       - type: circle
-        center: [0, 0]  # relative to body origin
-        radius: 1.777  # m
-        layers: ["all"] # any other layers, default is all
-        sensor: false # Box2d Sensor, false is default
-        self_collide: false # collides with other bodies, default is false
+        center: [0, 0] 
+        radius: 1.777 
+        layers: ["all"]
+        sensor: false 
+        self_collide: false 
         density: 0
       - type: polygon
         density: 982.24

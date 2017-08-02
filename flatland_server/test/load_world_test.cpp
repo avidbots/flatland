@@ -727,7 +727,9 @@ TEST_F(LoadWorldTest, simple_test_A) {
 TEST_F(LoadWorldTest, wrong_world_path) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
-  test_yaml_fail("Flatland YAML: Error loading.*world.yaml.*bad file");
+  test_yaml_fail(
+      "Flatland YAML: File does not exist, "
+      "path=\".*/load_world_tests/random_path/world.yaml\".*");
 }
 
 /**
@@ -737,7 +739,7 @@ TEST_F(LoadWorldTest, wrong_world_path) {
 TEST_F(LoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid world param \"properties\"");
+  test_yaml_fail("Flatland YAML: Entry key=\"properties\" does not exist");
 }
 
 /**
@@ -748,8 +750,8 @@ TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Invalid \"color\" in 2d layer, must be a sequence of "
-      "exactly 4 items");
+      "Flatland YAML: Entry \"color\" must have size of exactly 4 \\(in layer "
+      "index=0\\)");
 }
 
 /**
@@ -759,7 +761,9 @@ TEST_F(LoadWorldTest, world_invalid_B) {
 TEST_F(LoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in 2d layer");
+  test_yaml_fail(
+      "Flatland YAML: Entry key=\"origin\" does not exist \\(in layer "
+      "\"2d\"\\)");
 }
 
 /**
@@ -771,7 +775,7 @@ TEST_F(LoadWorldTest, map_invalid_A) {
 TEST_F(LoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
-  test_yaml_fail("Flatland YAML: Failed to load .*.png");
+  test_yaml_fail("Flatland YAML: Failed to load \".*\\.png\" in layer \"2d\"");
 }
 
 /**
@@ -780,7 +784,9 @@ TEST_F(LoadWorldTest, map_invalid_B) {
 TEST_F(LoadWorldTest, model_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in base body");
+  test_yaml_fail(
+      "Flatland YAML: Entry key=\"bodies\" must be a list \\(in model "
+      "\"turtlebot\"\\)");
 }
 
 /**
@@ -790,8 +796,8 @@ TEST_F(LoadWorldTest, model_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Missing/invalid polygon footprint \"points\" in base "
-      "body, must be a sequence with at least 3 items");
+      "Flatland YAML: Entry \"points\" must have size <3 \\(in model "
+      "\"turtlebot\" body \"base\" footprint index=1\\)");
 }
 
 /**
@@ -801,8 +807,8 @@ TEST_F(LoadWorldTest, model_invalid_C) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Missing/invalid body \"anchor\" in right_wheel_weld "
-      "joint body index=1, must be a sequence of exactly two numbers");
+      "Flatland YAML: Entry \"anchor\" must have size of exactly 2 \\(in model "
+      "\"turtlebot\" joint \"right_wheel_weld\"\\)");
 }
 
 /**
@@ -812,8 +818,8 @@ TEST_F(LoadWorldTest, model_invalid_D) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Cannot find body with name left_wheel_123 from joint "
-      "left_wheel_weld");
+      "Flatland YAML: Cannot find body with name left_wheel_123 in model "
+      "\"turtlebot\" joint \"left_wheel_weld\"");
 }
 
 /**
@@ -823,8 +829,9 @@ TEST_F(LoadWorldTest, model_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Invalid footprint \"layer\" in left_wheel body, "
-      "\\{random_layer\\} layer\\(s\\) does not exist");
+      "Flatland YAML: Invalid footprint \"layer\" in model \"turtlebot\" body "
+      "\"left_wheel\" footprint index=0, \\{random_layer\\} layer\\(s\\) does "
+      "not exist");
 }
 
 // Run all the tests that were declared with TEST()

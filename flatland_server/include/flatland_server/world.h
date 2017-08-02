@@ -72,7 +72,9 @@ class World : public b2ContactListener {
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
   PluginManager plugin_manager_;  ///< for loading and updating plugins
-  ServiceManager service_manager_;  ///< For spawning models in world
+  ServiceManager service_manager_;   ///< For spawning models in world
+  int physics_position_iterations_;  ///< Box2D solver param
+  int physics_velocity_iterations_;  ///< Box2D solver param
 
   /**
    * @brief Constructor for the world class. All data required for

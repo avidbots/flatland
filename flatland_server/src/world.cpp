@@ -95,7 +95,8 @@ World::~World() {
 
 void World::Update(Timekeeper &timekeeper) {
   plugin_manager_.BeforePhysicsStep(timekeeper);
-  physics_world_->Step(timekeeper.GetStepSize(), 10, 10);
+  physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
+                       physics_position_iterations_);
   timekeeper.StepTime();
   plugin_manager_.AfterPhysicsStep(timekeeper);
 }
@@ -120,19 +121,15 @@ World *World::MakeWorld(const std::string &yaml_path) {
   // parse the world YAML file
   YAML::Node yaml;
 
-  try {
-    yaml = YAML::LoadFile(yaml_path);
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading \"" + yaml_path + "\"", e);
-  }
-
-  if (yaml["properties"] && yaml["properties"].IsMap()) {
-    // TODO (Chunshang): parse properties
-  } else {
-    throw YAMLException("Missing/invalid world param \"properties\"");
-  }
+  YamlReader reader =
+      YamlReader(yaml_path).SubNode("properties", YamlReader::MAP);
+  int v = reader.Get<int>("velocity_iterations", 10);
+  int p = reader.Get<int>("position_iterations", 10);
 
   World *w = new World();
+
+  w->physics_velocity_iterations_ = v;
+  w->physics_position_iterations_ = p;
 
   try {
     w->LoadLayers(yaml_path);

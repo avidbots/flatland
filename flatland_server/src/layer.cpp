@@ -95,14 +95,15 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
   if (map.empty()) {
-    throw YAMLException("Failed to load " + image_path.string());
+    throw YAMLException("Failed to load " + Q(image_path.string()) +
+                        " in layer " + Q(name));
   }
 
   cv::Mat bitmap;
   map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
 
-  return new Layer(physics_world, cfr, name, bitmap, color, origin,
-                   resolution, occupied_thresh, free_thresh);
+  return new Layer(physics_world, cfr, name, bitmap, color, origin, resolution,
+                   occupied_thresh, free_thresh);
 }
 
 void Layer::LoadMap() {

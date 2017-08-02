@@ -56,10 +56,11 @@ void YamlReader::SetErrorLocationMsg(const std::string &msg) {
 
   if (msg.size() == 0) {
     in_ = "";
+  } else {
+    std::string msg_cpy = msg;
+    boost::algorithm::to_lower(msg_cpy);
+    in_ = " (in " + msg_cpy + ")";
   }
-  std::string msg_cpy = msg;
-  boost::algorithm::to_lower(msg_cpy);
-  in_ = " (in " + msg_cpy + ")";
 }
 
 YamlReader::YamlReader() : node_(YAML::Node()) { SetErrorLocationMsg(""); }

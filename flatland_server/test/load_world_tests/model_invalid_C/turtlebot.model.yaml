@@ -33,7 +33,7 @@ bodies:  # List of named bodies
     color: [0, 1, 0, 0.25] 
     footprints:
       - type: polygon
-      density: 0
+        density: 0
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
 joints:
