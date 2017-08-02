@@ -1,0 +1,9 @@
+<!--
+Test launchfile for service_manager_test
+
+This file is used so that rosmaster is running when the test is executed,
+in order to test publish/subscribe
+-->
+<launch>
+  <test pkg="flatland_server" type="service_manager_test" test-name="service_manager_test"/>
+</launch>

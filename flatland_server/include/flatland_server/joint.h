@@ -60,20 +60,22 @@ class Model;
  */
 class Joint {
  public:
-  Model *model_;            ///< Model the joint belongs to
-  std::string name_;        ///< Name of the joint
-  b2Joint *physics_joint_;  ///< Box2D physics joint
-  b2World *physics_world_;  ///< Box2D physics world
+  Model *model_;                 ///< Model the joint belongs to
+  std::string name_;             ///< Name of the joint
+  b2Joint *physics_joint_;       ///< Box2D physics joint
+  b2World *physics_world_;       ///< Box2D physics world
+  std::array<double, 4> color_;  ///< Color for visualization
 
   /**
    * @brief Constructor for the joint
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to
    * @param[in] name Name of the joint
+   * @param[in] color Color to visualize the joint
    * @param[in] joint_def Box2D joint definition
    */
   Joint(b2World *physics_world, Model *model, const std::string &name,
-        const b2JointDef &joint_def);
+        const std::array<double, 4> &color, const b2JointDef &joint_def);
   ~Joint();
 
   /// Disallow copying of joints, problematic for constructors and destructors
@@ -122,6 +124,7 @@ class Joint {
    * @param[in] model Model the joint belongs to
    * @param[in] joint_node YAML node that contains joint information
    * @param[in] name Name of the joint
+   * @param[in] color Color to visualize the joint
    * @param[out] body_A pointer to the first body
    * @param[out] anchor_B anchor point on the first body
    * @param[out] body_B pointer to the second body
@@ -130,7 +133,8 @@ class Joint {
    * collide
    */
   static void ParseJointCommon(Model *model, const YAML::Node &joint_node,
-                               const std::string &joint_name, b2Body *&body_A,
+                               const std::string &joint_name,
+                               std::array<double, 4> &color, b2Body *&body_A,
                                b2Vec2 &anchor_A, b2Body *&body_B,
                                b2Vec2 &anchor_B, bool &collide_connected);
 };

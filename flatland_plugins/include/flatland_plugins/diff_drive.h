@@ -9,7 +9,7 @@
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	Bicycle.h
  * @brief   Bicycle plugin
- * @author  Chunshang Li
+ * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -46,6 +46,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include "geometry_msgs/Twist.h"
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
@@ -53,7 +54,7 @@
 
 namespace flatland_plugins {
 
-class Diff_drive : public flatland_server::ModelPlugin {
+class DiffDrive : public flatland_server::ModelPlugin {
  public:
   ros::Subscriber sub;
   b2Body* robot;
@@ -62,23 +63,32 @@ class Diff_drive : public flatland_server::ModelPlugin {
   double time_step;
   double velocity;
   double omega;
-  double speedFactor = 1.0;
+  double speed_factor = 1.0;
 
   /**
-   * Override the BeforePhysicsStep method
-   * @param[in] config The plugin YAML node
+   * @name          OnInitialize
+   * @brief         override the BeforePhysicsStep method
+   * @param[in]     config The plugin YAML node
    */
   void OnInitialize(const YAML::Node& config) override;
-
-  void BeforePhysicsStep(double timestep) override;
   /**
-     * Callback to apply twist (velocity and omega)
-     * @param[in] timestep how much the physics time will increment
-     */
+   * @name          BeforePhysicsStep
+   * @brief         override the BeforePhysicsStep method
+   * @param[in]     config The plugin YAML node
+   */
+  void BeforePhysicsStep(
+
+      const flatland_server::Timekeeper& timekeeper) override;
+  /**
+   * @name        TwistCallback
+   * @brief       callback to apply twist (velocity and omega)
+   * @param[in]   timestep how much the physics time will increment
+   */
   void TwistCallback(const geometry_msgs::Twist& msg);
   /**
-   * Apply the twist using the kinematic model
-   * @param[in] twist ros message (msg.linear and msg.angular)
+   * @name          ApplyVelocity
+   * @brief         apply the twist using the kinematic model
+   * @param[in]     twist ros message (msg.linear and msg.angular)
    */
   void ApplyVelocity();
 };

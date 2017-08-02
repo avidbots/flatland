@@ -1,0 +1,9 @@
+properties: {}
+layers: 
+  - name: "layer_1"
+    map: "map_1.yaml"
+    color: [0, 1, 0, 1]
+models: 
+  - name: robot1
+    pose: [0, 0, 0]
+    model: robot.model.yaml

@@ -1,0 +1,16 @@
+# Turtlebot
+
+bodies:  # List of named bodies
+  - name: base
+    origin: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 0, 1]
+    footprints:
+      - type: polygon
+        density: 1
+        points: [[1.5, 0], [0.9, 0.7], [-0.9, 0.7], [-0.9, -0.7], [0.9, -0.7]]
+
+plugins:
+  - type: ModelTfPublisher
+    name: model_tf_publisher
+    exclude: [random_body_1, random_body_2]

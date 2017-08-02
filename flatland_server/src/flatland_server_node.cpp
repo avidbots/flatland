@@ -75,7 +75,7 @@ void SigintHandler(int sig) {
  * @brief       Entrypoint for Flatland Server ros node
  */
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "Node", ros::init_options::NoSigintHandler);
+  ros::init(argc, argv, "flatland", ros::init_options::NoSigintHandler);
   ros::NodeHandle node_handle("~");
 
   // Load parameters
@@ -95,9 +95,16 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  bool show_viz = false;
+  if (node_handle.getParam("show_viz", show_viz)) {
+    ROS_INFO_STREAM_NAMED("Node", "show_viz: " << show_viz);
+  } else {
+    ROS_INFO_STREAM_NAMED("Node", "default show_viz = false");
+  }
+
   // Create simulation manager object
-  simulation_manager =
-      new flatland_server::SimulationManager(world_path, initial_rate);
+  simulation_manager = new flatland_server::SimulationManager(
+      world_path, initial_rate, show_viz);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);

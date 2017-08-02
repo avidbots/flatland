@@ -1,0 +1,9 @@
+<!--
+Test launchfile for update_timer_test
+
+This file is used so that rosmaster is running when the test is executed,
+in order to test publish/subscribe
+-->
+<launch>
+  <test pkg="flatland_plugins" type="update_timer_test" test-name="update_timer_test"/>
+</launch>

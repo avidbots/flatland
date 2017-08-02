@@ -21,7 +21,7 @@ bodies:  # List of named bodies
         is_sensor: true
         points: [[.4, -.125], [.3, -.125], [.3, .125], [.4, .125]]
 plugins:
-  - type: Diff_drive # plugin class name
+  - type: DiffDrive # plugin class name
     name: diff_drive # for registering list of plugins
     body: base
     origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied

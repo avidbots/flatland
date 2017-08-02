@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	Diff_drive.cpp
- * @brief   Diff_drive plugin
+ * @name	DiffDrive.cpp
+ * @brief   DiffDrive plugin
  * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
@@ -54,8 +54,8 @@
 
 namespace flatland_plugins {
 
-void Diff_drive::OnInitialize(const YAML::Node& config) {
-  ROS_INFO_NAMED("Diff_drivePlugin", "Diff_drive Initialized");
+void DiffDrive::OnInitialize(const YAML::Node& config) {
+  ROS_INFO_NAMED("DiffDrivePlugin", "DiffDrive Initialized");
   robot_angle = 0.0;
   robot_position = b2Vec2(0.0, 0.0);
 
@@ -63,11 +63,12 @@ void Diff_drive::OnInitialize(const YAML::Node& config) {
   robot = model_->GetBody("base")->physics_body_;
 
   // subscribe to the cmd_vel topic
-  sub = nh_.subscribe("/cmd_vel", 0, &Diff_drive::TwistCallback, this);
+  sub = nh_.subscribe("/cmd_vel", 0, &DiffDrive::TwistCallback, this);
 }
 
-void Diff_drive::BeforePhysicsStep(double timestep) {
-  time_step = timestep * speedFactor;
+void DiffDrive::BeforePhysicsStep(
+    const flatland_server::Timekeeper& timekeeper) {
+  time_step = timekeeper.GetStepSize() * speed_factor;
 
   robot = model_->GetBody("base")->physics_body_;
 
@@ -78,12 +79,12 @@ void Diff_drive::BeforePhysicsStep(double timestep) {
                                                        1.0, 1.0, 0.5);
 }
 
-void Diff_drive::TwistCallback(const geometry_msgs::Twist& msg) {
+void DiffDrive::TwistCallback(const geometry_msgs::Twist& msg) {
   velocity = msg.linear.x;
   omega = msg.angular.z;
 }
 
-void Diff_drive::ApplyVelocity() {
+void DiffDrive::ApplyVelocity() {
   // Integrate the twist
   robot_position.x += velocity * -sin(robot_angle) * time_step;
   robot_position.y += velocity * cos(robot_angle) * time_step;
@@ -98,5 +99,5 @@ void Diff_drive::ApplyVelocity() {
 }
 };
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::Diff_drive,
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DiffDrive,
                        flatland_server::ModelPlugin)

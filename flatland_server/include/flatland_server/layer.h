@@ -64,7 +64,6 @@ namespace flatland_server {
  */
 class Layer : public Entity {
  public:
-  std::string name_;              ///< name of the layer
   CollisionFilterRegistry *cfr_;  ///< collision filter registry
   cv::Mat bitmap_;                ///< OpenCV bitmap storing the image
   double resolution_;             ///< map resolution m/pixel
@@ -111,7 +110,7 @@ class Layer : public Entity {
   /**
    * @brief Visualize layer for debugging purposes
    */
-  void DebugVisualize();
+  void DebugVisualize() override;
 
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon

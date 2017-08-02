@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rviz
   flatland_server
+  flatland_msgs
 )
 
 ##############

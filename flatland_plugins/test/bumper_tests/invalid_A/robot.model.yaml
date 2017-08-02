@@ -1,0 +1,23 @@
+# Turtlebot
+
+
+bodies:  # List of named bodies
+  - name: base_link_1
+    origin: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 1, 0.5]
+    footprints:
+      - type: circle
+        density: 30
+        center: [0, 0]
+        radius: 1
+        is_sensor: true
+
+plugins:
+  - type: Bumper
+    name: Bumper_B
+    world_frame_id: world
+    topic: collisions_B
+    publish_all_collisions: false
+    update_rate: 10
+    exclude: ["random_body"]

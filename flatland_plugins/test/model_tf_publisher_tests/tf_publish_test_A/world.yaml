@@ -1,0 +1,10 @@
+properties: {}
+layers: 
+  - name: "layer_1"
+    map: "map_1.yaml"
+    color: [0, 1, 0, 1]
+models: 
+  - name: robot1
+    pose: [8, 6, -0.575958653]
+    model: robot.model.yaml
+    namespace: "my_robot"

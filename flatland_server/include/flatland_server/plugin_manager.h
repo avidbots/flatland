@@ -50,16 +50,16 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/timekeeper.h>
 #include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
 class PluginManager {
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
-
  public:
-  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins;
+  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> *class_loader_;
 
   /**
    * @brief Plugin manager constructor
@@ -73,15 +73,15 @@ class PluginManager {
 
   /**
    * @brief This method is called before the Box2D physics step
-   * @param[in] timestep how much the physics time will increment
+   * @param[in] timekeeper provide time related information
    */
-  void BeforePhysicsStep(double timestep);
+  void BeforePhysicsStep(const Timekeeper &timekeeper);
 
   /**
    * @brief This method is called after the Box2D physics step
-   * @param[in] timestep how much the physics time have incremented
+   * @param[in] timekeeper provide time related information
    */
-  void AfterPhysicsStep(double timestep);
+  void AfterPhysicsStep(const Timekeeper &timekeeper);
 
   /**
    * @brief Load model plugins
@@ -101,6 +101,20 @@ class PluginManager {
    * @param[in] contact Box2D contact information
    */
   void EndContact(b2Contact *contact);
+
+  /**
+   * @brief Method called for Box2D presolve
+   * @param[in] contact Box2D contact information
+   * @param[in] oldManifold The manifold from the previous timestep
+   */
+  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
+
+  /**
+   * @brief Method called for Box2D Postsolve
+   * @param[in] contact Box2D contact information
+   * @param[in] impulse The calculated impulse from the collision resolute
+   */
+  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H
