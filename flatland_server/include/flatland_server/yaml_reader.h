@@ -131,8 +131,7 @@ T YamlReader::Get(const std::string &key) {
     ret = node_[key].as<T>();
   } catch (const YAML::RepresentationException &e) {
     throw YAMLException("Error converting entry key=" + Q(key) + " to " +
-                        boost::typeindex::type_id<T>().pretty_name() +
-                        in_);
+                        boost::typeindex::type_id<T>().pretty_name() + in_);
   } catch (const YAML::Exception &e) {
     throw YAMLException("Error reading entry key=" + Q(key) + in_);
   }
@@ -182,9 +181,9 @@ std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
     try {
       val = n[i].as<T>();
     } catch (const YAML::RepresentationException &e) {
-      throw YAMLException(
-          "Error converting entry index=" + std::to_string(i) + " to " +
-          boost::typeindex::type_id<T>().pretty_name() + in_);
+      throw YAMLException("Error converting entry index=" + std::to_string(i) +
+                          " to " +
+                          boost::typeindex::type_id<T>().pretty_name() + in_);
     } catch (const YAML::Exception &e) {
       throw YAMLException("Error reading entry index=" + std::to_string(i) +
                           in_);
