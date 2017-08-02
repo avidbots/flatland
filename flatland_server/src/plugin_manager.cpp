@@ -71,24 +71,16 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
   }
 }
 
-void PluginManager::LoadModelPlugin(Model *model,
-                                    const YAML::Node &plugin_node) {
-  const YAML::Node &n = plugin_node;
+void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
+  std::string name = plugin_reader.Get<std::string>("name");
+  plugin_reader.SetErrorLocationMsg("plugin " + name);
+  std::string type = plugin_reader.Get<std::string>("type");
 
-  std::string name;
-  std::string type;
-
-  if (n["name"]) {
-    name = n["name"].as<std::string>();
-  } else {
-    throw YAMLException("Missing plugin name");
-  }
-
-  if (n["type"]) {
-    type = n["type"].as<std::string>();
-  } else {
-    throw YAMLException("Missing \"type\" in plugin " + name);
-  }
+  // remove the name and type of the YAML Node, the plugin does not need to know
+  // about these parameters
+  YAML::Node yaml_node = plugin_reader.Node();
+  yaml_node.remove(yaml_node["name"]);
+  yaml_node.remove(yaml_node["type"]);
 
   boost::shared_ptr<ModelPlugin> model_plugin;
 
@@ -99,7 +91,7 @@ void PluginManager::LoadModelPlugin(Model *model,
   }
 
   try {
-    model_plugin->Initialize(type, name, model, plugin_node);
+    model_plugin->Initialize(type, name, model, yaml_node);
   } catch (const std::exception &e) {
     throw PluginException("ModelPlugin", type, name,
                           "Init Error model=" + model->name_ + " (" +

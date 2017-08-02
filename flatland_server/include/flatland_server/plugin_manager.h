@@ -51,6 +51,7 @@
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
+#include <flatland_server/yaml_reader.h>
 #include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
@@ -86,9 +87,10 @@ class PluginManager {
   /**
    * @brief Load model plugins
    * @param[in] model The model that this plugin is tied to
-   * @param[in] plugin_node The YAML node with the plugin parameter
+   * @param[in] plugin_reader The YAML reader with node containing the plugin
+   * parameter
    */
-  void LoadModelPlugin(Model *model, const YAML::Node &plugin_node);
+  void LoadModelPlugin(Model *model, YamlReader &plugin_reader);
 
   /**
    * @brief Method called for a box2D begin contact
