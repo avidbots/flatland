@@ -47,6 +47,7 @@
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
+#include <flatland_server/types.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_broadcaster.h>
@@ -68,7 +69,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
   std::string topic_;             ///< topic name to publish the laser scan
   Body *body_;                    ///<  body the laser frame attaches to
-  std::array<double, 3> origin_;  ///< laser frame w.r.t the body
+  Pose origin_;  ///< laser frame w.r.t the body
   double range_;                  ///< laser max range
   double max_angle_;              /// < laser max angle
   double min_angle_;              ///< laser min angle

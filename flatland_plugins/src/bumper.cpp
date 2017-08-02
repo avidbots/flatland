@@ -49,6 +49,7 @@
 #include <flatland_plugins/bumper.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/timekeeper.h>
+#include <flatland_server/yaml_reader.h>
 #include <pluginlib/class_list_macros.h>
 #include <boost/algorithm/string/join.hpp>
 
@@ -67,44 +68,27 @@ void Bumper::ContactState::Reset() {
 }
 
 void Bumper::OnInitialize(const YAML::Node &config) {
+  YamlReader reader(config);
+
   // defaults
-  world_frame_id_ = "map";
-  topic_name_ = "collisions";
-  publish_all_collisions_ = true;
-  update_rate_ = std::numeric_limits<double>::infinity();
+  world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
+  topic_name_ = reader.Get<std::string>("topic", "collisions");
+  publish_all_collisions_ = reader.Get<bool>("publish_all_collisions", true);
+  update_rate_ = reader.Get<double>("update_rate",
+                                    std::numeric_limits<double>::infinity());
 
-  if (config["topic"]) {
-    topic_name_ = config["topic"].as<std::string>();
-  }
+  std::vector<std::string> excluded_body_names =
+      reader.GetList<std::string>("exclude", {});
 
-  if (config["world_frame_id"]) {
-    world_frame_id_ = config["world_frame_id"].as<std::string>();
-  }
+  for (int i = 0; i < excluded_body_names.size(); i++) {
+    Body *body = model_->GetBody(excluded_body_names[i]);
 
-  if (config["update_rate"]) {
-    update_rate_ = config["update_rate"].as<double>();
-  }
-
-  if (config["publish_all_collisions"]) {
-    publish_all_collisions_ = config["publish_all_collisions"].as<bool>();
-  }
-
-  std::vector<std::string> excluded_body_names;
-  if (config["exclude"] && config["exclude"].IsSequence()) {
-    for (int i = 0; i < config["exclude"].size(); i++) {
-      std::string body_name = config["exclude"][i].as<std::string>();
-      excluded_body_names.push_back(body_name);
-      Body *body = model_->GetBody(body_name);
-
-      if (body == nullptr) {
-        throw YAMLException("Body with name \"" + body_name +
-                            "\" does not exist");
-      } else {
-        excluded_bodies_.push_back(body);
-      }
+    if (body == nullptr) {
+      throw YAMLException("Body with name \"" + excluded_body_names[i] +
+                          "\" does not exist");
+    } else {
+      excluded_bodies_.push_back(body);
     }
-  } else if (config["exclude"]) {
-    throw YAMLException("Invalid \"exclude\", must be a list of strings");
   }
 
   update_timer_.SetRate(update_rate_);

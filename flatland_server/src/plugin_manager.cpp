@@ -95,7 +95,7 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
     model_plugin->Initialize(type, name, model, yaml_node);
   } catch (const std::exception &e) {
     throw PluginException("ModelPlugin", type, name,
-                          "Init Error model=" + model->name_ + " (" +
+                          "Init Error in model " + Q(model->name_) + " (" +
                               std::string(e.what()) + ")");
   }
   model_plugins_.push_back(model_plugin);
