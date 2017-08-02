@@ -174,8 +174,8 @@ void ModelBody::LoadCircleFootprint(YamlReader &footprint_reader) {
 }
 
 void ModelBody::LoadPolygonFootprint(YamlReader &footprint_reader) {
-  std::vector<b2Vec2> points = footprint_reader.GetList<b2Vec2>(
-      "points", 3, b2_maxPolygonVertices);
+  std::vector<b2Vec2> points =
+      footprint_reader.GetList<b2Vec2>("points", 3, b2_maxPolygonVertices);
 
   b2FixtureDef fixture_def;
   ConfigFootprintDef(footprint_reader, fixture_def);

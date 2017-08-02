@@ -45,8 +45,8 @@
  */
 
 #include <flatland_server/service_manager.h>
-#include <exception>
 #include <flatland_server/types.h>
+#include <exception>
 
 namespace flatland_server {
 

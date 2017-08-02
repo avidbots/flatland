@@ -69,7 +69,7 @@ class Model : public Entity {
   std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
   std::vector<Joint *> joints_;      ///< list of joints in the model
-  YamlReader plugins_reader_;          ///< for storing plugins when paring YAML
+  YamlReader plugins_reader_;        ///< for storing plugins when paring YAML
   CollisionFilterRegistry *cfr_;     ///< Collision filter registry
   /// Box2D collision group assigned to this body by the CFR
   int no_collide_group_index_;

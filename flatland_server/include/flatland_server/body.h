@@ -58,10 +58,10 @@ namespace flatland_server {
  */
 class Body {
  public:
-  Entity *entity_;               ///< The entity the body belongs to
-  std::string name_;             ///< name of the body, unique within a model
-  b2Body *physics_body_;         ///< Box2D physics body
-  Color color_;  ///< color, for visualization
+  Entity *entity_;        ///< The entity the body belongs to
+  std::string name_;      ///< name of the body, unique within a model
+  b2Body *physics_body_;  ///< Box2D physics body
+  Color color_;           ///< color, for visualization
 
   /**
    * @brief constructor for body, takes in all the required parameters
@@ -75,8 +75,8 @@ class Body {
    * @param[in] angular_damping Box2D body angular damping
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
-       const Color &color, const Pose &origin,
-       b2BodyType body_type, double linear_damping, double angular_damping);
+       const Color &color, const Pose &origin, b2BodyType body_type,
+       double linear_damping, double angular_damping);
 
   /**
    * Destructor for the body

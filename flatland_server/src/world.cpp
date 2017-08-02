@@ -211,8 +211,8 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   models_.push_back(m);
 
   for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
-    plugin_manager_.LoadModelPlugin(m,
-        m->plugins_reader_.SubNode(i, YamlReader::MAP).Node());
+    plugin_manager_.LoadModelPlugin(
+        m, m->plugins_reader_.SubNode(i, YamlReader::MAP).Node());
   }
 
   ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());

@@ -147,10 +147,10 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
 }
 
 Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
-                            YamlReader &joint_reader,
-                            const std::string &name, const Color &color,
-                            b2Body *body_A, b2Vec2 anchor_A, b2Body *body_B,
-                            b2Vec2 anchor_B, bool collide_connected) {
+                            YamlReader &joint_reader, const std::string &name,
+                            const Color &color, b2Body *body_A, b2Vec2 anchor_A,
+                            b2Body *body_B, b2Vec2 anchor_B,
+                            bool collide_connected) {
   std::string in = "joint " + name;
   double angle = 0;
   double frequency = 0;

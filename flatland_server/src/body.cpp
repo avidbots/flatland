@@ -49,8 +49,7 @@
 namespace flatland_server {
 
 Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
-           const Color &color,
-           const Pose &origin, b2BodyType body_type,
+           const Color &color, const Pose &origin, b2BodyType body_type,
            double linear_damping, double angular_damping)
     : entity_(entity), name_(name), color_(color) {
   b2BodyDef body_def;
