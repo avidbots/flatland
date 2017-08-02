@@ -45,13 +45,12 @@
  */
 
 #include <flatland_server/yaml_reader.h>
-#include <boost/algorithm/string.hpp>
 
 namespace flatland_server {
 
 /**
- * @brief Helper function to format the in message adding spaces and brackets
- */
+*@brief Helper function to format the in message adding spaces and brackets
+*/
 std::string YamlReader::in_fmt(const std::string &msg) {
   if (msg.size() == 0) {
     return "";
@@ -61,7 +60,9 @@ std::string YamlReader::in_fmt(const std::string &msg) {
   return " (in " + msg_cpy + ")";
 }
 
-std::string YamlReader::quote(const std::string &msg) { return "\"" + msg + "\""; }
+std::string YamlReader::quote(const std::string &msg) {
+  return "\"" + msg + "\"";
+}
 
 YamlReader::YamlReader(const YAML::Node &node) : node_(node) {}
 
@@ -138,57 +139,67 @@ Vec2 YamlReader::GetVec2(const std::string &key, std::string in) {
 
 Color YamlReader::GetColorOpt(const std::string &key, const Color &default_val,
                               std::string in) {
-  if (!node_[key]) {
-    return default_val;
-  }
+  std::vector<double> v = GetListOpt<double>(
+      key, {default_val.r, default_val.g, default_val.b, default_val.a}, 4, 4,
+      in);
+  return Color(v[0], v[1], v[2], v[3]);
 
-  if (!node_[key].IsSequence() || node_[key].size() != 4) {
-    throw YAMLException("Color entry " + quote(key) +
-                        " must be a list of exactly 4 numbers" + in_fmt(in));
-  }
+  // if (!node_[key]) {
+  //   return default_val;
+  // }
 
-  Color c;
+  // if (!node_[key].IsSequence() || node_[key].size() != 4) {
+  //   throw YAMLException("Color entry " + quote(key) +
+  //                       " must be a list of exactly 4 numbers" + in_fmt(in));
+  // }
 
-  try {
-    c.r = node_[key][0].as<double>();
-    c.g = node_[key][1].as<double>();
-    c.b = node_[key][2].as<double>();
-    c.a = node_[key][2].as<double>();
-  } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry key=" + quote(key) +
-                        " to floats " + in_fmt(in));
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
-  }
+  // Color c;
 
-  return c;
+  // try {
+  //   c.r = node_[key][0].as<double>();
+  //   c.g = node_[key][1].as<double>();
+  //   c.b = node_[key][2].as<double>();
+  //   c.a = node_[key][2].as<double>();
+  // } catch (const YAML::RepresentationException &e) {
+  //   throw YAMLException("Error converting entry key=" + quote(key) +
+  //                       " to floats " + in_fmt(in));
+  // } catch (const YAML::Exception &e) {
+  //   throw YAMLException("Error reading entry key=" + quote(key) +
+  //   in_fmt(in));
+  // }
+
+  // return c;
 }
 
 Pose YamlReader::GetPose(const std::string &key, std::string in) {
-  if (!node_[key]) {
-    throw YAMLException("Entry key=" + quote(key) + " does not exist" +
-                        in_fmt(in));
-  }
+  std::vector<double> v = GetList<double>(key, 3, 3, in);
+  return Pose(v[0], v[1], v[2]);
 
-  if (!node_[key].IsSequence() || node_[key].size() != 3) {
-    throw YAMLException("Pose entry " + quote(key) +
-                        " must be a list of exactly 3 numbers" + in_fmt(in));
-  }
+  // if (!node_[key]) {
+  //   throw YAMLException("Entry key=" + quote(key) + " does not exist" +
+  //                       in_fmt(in));
+  // }
 
-  Pose p;
+  // if (!node_[key].IsSequence() || node_[key].size() != 3) {
+  //   throw YAMLException("Pose entry " + quote(key) +
+  //                       " must be a list of exactly 3 numbers" + in_fmt(in));
+  // }
 
-  try {
-    p.x = node_[key][0].as<double>();
-    p.y = node_[key][1].as<double>();
-    p.theta = node_[key][2].as<double>();
-  } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry key=" + quote(key) +
-                        " to floats " + in_fmt(in));
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error reading entry key=" + quote(key) + in_fmt(in));
-  }
+  // Pose p;
 
-  return p;
+  // try {
+  //   p.x = node_[key][0].as<double>();
+  //   p.y = node_[key][1].as<double>();
+  //   p.theta = node_[key][2].as<double>();
+  // } catch (const YAML::RepresentationException &e) {
+  //   throw YAMLException("Error converting entry key=" + quote(key) +
+  //                       " to floats " + in_fmt(in));
+  // } catch (const YAML::Exception &e) {
+  //   throw YAMLException("Error reading entry key=" + quote(key) +
+  //   in_fmt(in));
+  // }
+
+  // return p;
 }
 
 Pose YamlReader::GetPoseOpt(const std::string &key, const Pose &default_val,

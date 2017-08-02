@@ -50,6 +50,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/algorithm/string.hpp>
 #include <boost/type_index.hpp>
 #include <string>
 #include <vector>
@@ -105,7 +106,7 @@ class YamlReader {
   Pose GetPoseOpt(const std::string &key, const Pose &default_val,
                   std::string in = "");
 
-private:
+ private:
   std::string in_fmt(const std::string &msg);
   std::string quote(const std::string &msg);
 };

@@ -150,22 +150,23 @@ World *World::MakeWorld(const std::string &yaml_path) {
 }
 
 void World::LoadLayers(const std::string &yaml_path) {
-  YamlReader layers_yaml =
+  YamlReader layers_reader =
       YamlReader(yaml_path).SubNode("layers", YamlReader::LIST);
 
   // loop through each layer and parse the data
-  for (int i = 0; i < layers_yaml.NodeSize(); i++) {
+  for (int i = 0; i < layers_reader.NodeSize(); i++) {
     if (cfr_.IsLayersFull()) {
       throw YAMLException("Max number of layers reached, max is " +
                           std::to_string(cfr_.MAX_LAYERS));
     }
 
-    YamlReader layer_yaml = layers_yaml.SubNode(i, YamlReader::MAP, "layers");
+    YamlReader layer_reader =
+        layers_reader.SubNode(i, YamlReader::MAP, "layers");
 
     std::string in = "layer index=" + std::to_string(i);
-    std::string name = layer_yaml.Get<std::string>("name", in);
-    boost::filesystem::path map_path(layer_yaml.Get<std::string>("map", in));
-    Color color = layer_yaml.GetColorOpt("color", Color(1, 1, 1, 1));
+    std::string name = layer_reader.Get<std::string>("name", in);
+    boost::filesystem::path map_path(layer_reader.Get<std::string>("map", in));
+    Color color = layer_reader.GetColorOpt("color", Color(1, 1, 1, 1));
 
     if (map_path.string().front() != '/') {
       map_path = boost::filesystem::path(yaml_path).parent_path() / map_path;
@@ -181,18 +182,20 @@ void World::LoadLayers(const std::string &yaml_path) {
 }
 
 void World::LoadModels(const std::string &yaml_path) {
-  YamlReader models_yaml =
+  YamlReader models_reader =
       YamlReader(yaml_path).SubNodeOpt("models", YamlReader::LIST);
 
-  if (!models_yaml.IsNodeNull()) {
-    for (int i = 0; i < models_yaml.NodeSize(); i++) {
-      YamlReader model_yaml = models_yaml.SubNode(i, YamlReader::MAP, "models");
+  if (!models_reader.IsNodeNull()) {
+    for (int i = 0; i < models_reader.NodeSize(); i++) {
+      YamlReader model_reader =
+          models_reader.SubNode(i, YamlReader::MAP, "models");
 
       std::string in = "model index=" + std::to_string(i);
-      std::string name = model_yaml.Get<std::string>("name", in);
-      std::string ns = model_yaml.GetOpt<std::string>("namespace", "", in);
-      Pose pose = model_yaml.GetPoseOpt("pose", Pose(0, 0, 0), in);
-      boost::filesystem::path model_path(model_yaml.Get<std::string>("model", in));
+      std::string name = model_reader.Get<std::string>("name", in);
+      std::string ns = model_reader.GetOpt<std::string>("namespace", "", in);
+      Pose pose = model_reader.GetPoseOpt("pose", Pose(0, 0, 0), in);
+      boost::filesystem::path model_path(
+          model_reader.Get<std::string>("model", in));
 
       if (model_path.string().front() != '/') {
         model_path =
