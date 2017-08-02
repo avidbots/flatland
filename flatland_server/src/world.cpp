@@ -165,7 +165,7 @@ void World::LoadLayers(const std::string &yaml_path) {
     std::string in = "layer index=" + std::to_string(i);
     std::string name = reader.Get<std::string>("name", in);
     boost::filesystem::path map_path(reader.Get<std::string>("map", in));
-    Color color = reader.GetColorOpt("color", Color(1, 1, 1, 1));
+    Color color = reader.GetColor("color", Color(1, 1, 1, 1));
 
     if (map_path.string().front() != '/') {
       map_path = boost::filesystem::path(yaml_path).parent_path() / map_path;
@@ -190,8 +190,8 @@ void World::LoadModels(const std::string &yaml_path) {
 
       std::string in = "model index=" + std::to_string(i);
       std::string name = reader.Get<std::string>("name", in);
-      std::string ns = reader.GetOpt<std::string>("namespace", "", in);
-      Pose pose = reader.GetPoseOpt("pose", Pose(0, 0, 0), in);
+      std::string ns = reader.Get<std::string>("namespace", "", in);
+      Pose pose = reader.GetPose("pose", Pose(0, 0, 0), in);
       boost::filesystem::path model_path(reader.Get<std::string>("model", in));
 
       if (model_path.string().front() != '/') {

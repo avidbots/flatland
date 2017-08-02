@@ -54,6 +54,7 @@
 #include <boost/type_index.hpp>
 #include <string>
 #include <vector>
+#include <Box2D/Box2D.h>
 
 namespace flatland_server {
 
@@ -87,23 +88,23 @@ class YamlReader {
   T Get(const std::string &key, std::string in = "");
 
   template <typename T>
-  T GetOpt(const std::string &key, const T &default_val, std::string in = "");
+  T Get(const std::string &key, const T &default_val, std::string in = "");
 
   template <typename T>
   std::vector<T> GetList(const std::string &key, int min_size, int max_size,
                          std::string in = "");
 
   template <typename T>
-  std::vector<T> GetListOpt(const std::string &key,
+  std::vector<T> GetList(const std::string &key,
                             const std::vector<T> default_val, int min_size,
                             int max_size, std::string in = "");
 
   Vec2 GetVec2(const std::string &key, std::string in = "");
-  Color GetColorOpt(const std::string &key, const Color &default_val,
+  Color GetColor(const std::string &key, const Color &default_val,
                     std::string in = "");
 
   Pose GetPose(const std::string &key, std::string in = "");
-  Pose GetPoseOpt(const std::string &key, const Pose &default_val,
+  Pose GetPose(const std::string &key, const Pose &default_val,
                   std::string in = "");
 
  private:
@@ -134,7 +135,7 @@ T YamlReader::Get(const std::string &key, std::string in) {
 }
 
 template <typename T>
-T YamlReader::GetOpt(const std::string &key, const T &default_val,
+T YamlReader::Get(const std::string &key, const T &default_val,
                      std::string in) {
   if (!node_[key]) {
     return default_val;
@@ -190,7 +191,7 @@ std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
 }
 
 template <typename T>
-std::vector<T> YamlReader::GetListOpt(const std::string &key,
+std::vector<T> YamlReader::GetList(const std::string &key,
                                       const std::vector<T> default_val,
                                       int min_size, int max_size,
                                       std::string in) {
@@ -200,6 +201,65 @@ std::vector<T> YamlReader::GetListOpt(const std::string &key,
 
   GetList<T>(key, min_size, max_size, in);
 }
+}
+
+// encode and decode functions for yaml-cpp to convert values for commonly used
+// types in flatland server
+namespace YAML {
+template <>
+struct convert<b2Vec2> {
+  static bool decode(const Node &node, b2Vec2 &rhs) {
+    if (!node.IsSequence() || node.size() != 2) {
+      return false;
+    }
+
+    rhs.x = node[0].as<double>();
+    rhs.y = node[1].as<double>();
+    return true;
+  }
 };
+
+template <>
+struct convert<flatland_server::Vec2> {
+  static bool decode(const Node &node, flatland_server::Vec2 &rhs) {
+    if (!node.IsSequence() || node.size() != 2) {
+      return false;
+    }
+
+    rhs.x = node[0].as<double>();
+    rhs.y = node[1].as<double>();
+    return true;
+  }
+};
+
+template <>
+struct convert<flatland_server::Color> {
+  static bool decode(const Node &node, flatland_server::Color &rhs) {
+    if (!node.IsSequence() || node.size() != 4) {
+      return false;
+    }
+
+    rhs.r = node[0].as<double>();
+    rhs.g = node[1].as<double>();
+    rhs.b = node[2].as<double>();
+    rhs.a = node[3].as<double>();
+    return true;
+  }
+};
+
+template <>
+struct convert<flatland_server::Pose> {
+  static bool decode(const Node &node, flatland_server::Pose &rhs) {
+    if (!node.IsSequence() || node.size() != 3) {
+      return false;
+    }
+
+    rhs.x = node[0].as<double>();
+    rhs.y = node[1].as<double>();
+    rhs.theta = node[2].as<double>();
+    return true;
+  }
+};
+}
 
 #endif

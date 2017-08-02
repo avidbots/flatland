@@ -137,72 +137,20 @@ Vec2 YamlReader::GetVec2(const std::string &key, std::string in) {
   return Vec2(v[0], v[1]);
 }
 
-Color YamlReader::GetColorOpt(const std::string &key, const Color &default_val,
+Color YamlReader::GetColor(const std::string &key, const Color &default_val,
                               std::string in) {
-  std::vector<double> v = GetListOpt<double>(
+  std::vector<double> v = GetList<double>(
       key, {default_val.r, default_val.g, default_val.b, default_val.a}, 4, 4,
       in);
   return Color(v[0], v[1], v[2], v[3]);
-
-  // if (!node_[key]) {
-  //   return default_val;
-  // }
-
-  // if (!node_[key].IsSequence() || node_[key].size() != 4) {
-  //   throw YAMLException("Color entry " + quote(key) +
-  //                       " must be a list of exactly 4 numbers" + in_fmt(in));
-  // }
-
-  // Color c;
-
-  // try {
-  //   c.r = node_[key][0].as<double>();
-  //   c.g = node_[key][1].as<double>();
-  //   c.b = node_[key][2].as<double>();
-  //   c.a = node_[key][2].as<double>();
-  // } catch (const YAML::RepresentationException &e) {
-  //   throw YAMLException("Error converting entry key=" + quote(key) +
-  //                       " to floats " + in_fmt(in));
-  // } catch (const YAML::Exception &e) {
-  //   throw YAMLException("Error reading entry key=" + quote(key) +
-  //   in_fmt(in));
-  // }
-
-  // return c;
 }
 
 Pose YamlReader::GetPose(const std::string &key, std::string in) {
   std::vector<double> v = GetList<double>(key, 3, 3, in);
   return Pose(v[0], v[1], v[2]);
-
-  // if (!node_[key]) {
-  //   throw YAMLException("Entry key=" + quote(key) + " does not exist" +
-  //                       in_fmt(in));
-  // }
-
-  // if (!node_[key].IsSequence() || node_[key].size() != 3) {
-  //   throw YAMLException("Pose entry " + quote(key) +
-  //                       " must be a list of exactly 3 numbers" + in_fmt(in));
-  // }
-
-  // Pose p;
-
-  // try {
-  //   p.x = node_[key][0].as<double>();
-  //   p.y = node_[key][1].as<double>();
-  //   p.theta = node_[key][2].as<double>();
-  // } catch (const YAML::RepresentationException &e) {
-  //   throw YAMLException("Error converting entry key=" + quote(key) +
-  //                       " to floats " + in_fmt(in));
-  // } catch (const YAML::Exception &e) {
-  //   throw YAMLException("Error reading entry key=" + quote(key) +
-  //   in_fmt(in));
-  // }
-
-  // return p;
 }
 
-Pose YamlReader::GetPoseOpt(const std::string &key, const Pose &default_val,
+Pose YamlReader::GetPose(const std::string &key, const Pose &default_val,
                             std::string in) {
   if (!node_[key]) {
     return default_val;
@@ -210,4 +158,4 @@ Pose YamlReader::GetPoseOpt(const std::string &key, const Pose &default_val,
 
   return GetPose(key, in);
 }
-};
+}

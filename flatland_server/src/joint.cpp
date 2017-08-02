@@ -67,8 +67,8 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
   std::string name = reader.Get<std::string>("name");
   std::string in = "joint " + name;
   std::string type = reader.Get<std::string>("type", in);
-  Color color = reader.GetColorOpt("color", Color(1, 1, 1, 0.5), in);
-  bool collide_connected = reader.GetOpt<bool>("collide_connected", false, in);
+  Color color = reader.GetColor("color", Color(1, 1, 1, 0.5), in);
+  bool collide_connected = reader.Get<bool>("collide_connected", false, in);
 
   YamlReader bodies_yr = reader.SubNode("bodies", YamlReader::LIST, in);
   if (bodies_yr.NodeSize() != 2) {
@@ -119,7 +119,7 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
 
   YamlReader reader(joint_node);
   std::string in = "joint " + name;
-  std::vector<double> limits = reader.GetListOpt<double>("limits", {}, 2, 2, in);
+  std::vector<double> limits = reader.GetList<double>("limits", {}, 2, 2, in);
   if (limits.size() == 2) {
     lower_limit = limits[0];
     upper_limit = limits[1];
@@ -155,9 +155,9 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   double frequency = 0;
   double damping = 0;
 
-  reader.GetOpt<double>("angle", 0.0, in);
-  reader.GetOpt<double>("frequency", 0.0, in);
-  reader.GetOpt<double>("damping", 0.0, in);
+  reader.Get<double>("angle", 0.0, in);
+  reader.Get<double>("frequency", 0.0, in);
+  reader.Get<double>("damping", 0.0, in);
 
   b2WeldJointDef joint_def;
   joint_def.bodyA = body_A;

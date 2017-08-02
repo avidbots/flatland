@@ -90,14 +90,6 @@ class ModelBody : public Body {
   void LoadFootprints(const YAML::Node &footprints_node);
 
   /**
-   * @brief Configures collision properties of footprints
-   * @param[in] footprint_node Node containing the footprint parameters
-   * @param[out] fixture_def Box2D fixture definition
-   */
-  void ConfigFootprintDefCollision(const YAML::Node &footprint_node,
-                                   b2FixtureDef &fixture_def);
-
-  /**
    * @brief Configures the common properties of footprints
    * @param[in] footprint_node Node containing the footprint parameters
    * @param[out] fixture_def Box2D fixture definition
