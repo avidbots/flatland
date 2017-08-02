@@ -83,7 +83,7 @@ class ModelDialog : public QWidget {
   void OkButtonClicked();
   /**
    * @name        SelectFile
-   * @brief       Callback to create model
+   * @brief       Callback to choose model
    */
   QString SelectFile();
   /**
