@@ -66,9 +66,10 @@ TEST(FlatlandPluginsBicycleTest, pluginlib_load_test) {
     b2World physics_world_(gravity_);
 
     flatland_server::Model* model = flatland_server::Model::MakeModel(
-        &physics_world_, &cfr, "test",
+        &physics_world_, &cfr,
         ros::package::getPath("flatland_server") +
-            "/test/conestogo_office_test/cleaner.model.yaml");
+            "/test/conestogo_office_test/cleaner.model.yaml",
+        "", "test");
 
     bicycle->Initialize("Bicycle", "BicycleTest", model, YAML::Node());
   } catch (pluginlib::PluginlibException& e) {
