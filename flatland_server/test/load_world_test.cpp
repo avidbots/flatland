@@ -75,7 +75,7 @@ class LoadWorldTest : public ::testing::Test {
       World *w = World::MakeWorld(world_yaml.string());
       delete w;
       ADD_FAILURE() << "Expected an exception, but none were raised";
-    } catch (const YAML::Exception &e) {
+    } catch (const YAMLException &e) {
       // do a regex match against error messages
       std::cmatch match;
       std::regex regex(regex_str);

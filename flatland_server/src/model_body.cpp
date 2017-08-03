@@ -90,9 +90,9 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
     YamlReader footprints_node =
         body_reader.SubNode("footprints", YamlReader::LIST);
     m->LoadFootprints(footprints_node);
-  } catch (const YAML::Exception &e) {
+  } catch (const YAMLException &e) {
     delete m;
-    throw YAMLException(e);
+    throw e;
   }
 
   return m;

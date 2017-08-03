@@ -84,9 +84,9 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
     YamlReader joints_reader = reader.SubNodeOpt("joints", YamlReader::LIST);
     m->LoadBodies(bodies_reader);
     m->LoadJoints(joints_reader);
-  } catch (const YAML::Exception &e) {
+  } catch (const YAMLException &e) {
     delete m;
-    throw YAMLException(e);
+    throw e;
   }
 
   return m;

@@ -134,10 +134,10 @@ World *World::MakeWorld(const std::string &yaml_path) {
   try {
     w->LoadLayers(yaml_path);
     w->LoadModels(yaml_path);
-  } catch (const YAML::Exception &e) {
+  } catch (const YAMLException &e) {
     ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
-    throw YAMLException(e);
+    throw e;
   } catch (const PluginException &e) {
     ROS_FATAL_NAMED("World", "Error loading plugins");
     delete w;
@@ -208,7 +208,10 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   models_.push_back(m);
 
   for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
-    YamlReader plugin_reader = m->plugins_reader_.SubNode(i, YamlReader::MAP);
+    std::string err_location =
+        "model " + Q(m->name_) + " plugin index=" + std::to_string(i);
+    YamlReader plugin_reader =
+        m->plugins_reader_.SubNode(i, YamlReader::MAP, err_location);
     plugin_manager_.LoadModelPlugin(m, plugin_reader);
   }
 

@@ -73,8 +73,6 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
 
 void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   std::string name = plugin_reader.Get<std::string>("name");
-  plugin_reader.SetErrorLocationMsg("model " + Q(model->name_) + "plugin " +
-                                    Q(name));
   std::string type = plugin_reader.Get<std::string>("type");
 
   // remove the name and type of the YAML Node, the plugin does not need to know
@@ -85,24 +83,23 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
 
   boost::shared_ptr<ModelPlugin> model_plugin;
 
+  std::string msg = "Model Plugin" + Q(name) + " type " + Q(type) + " model " +
+                    Q(model->name_);
+
   try {
     model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
-    throw PluginException("ModelPlugin", type, name, e.what());
+    throw PluginException(msg + ": " + std::string(e.what()));
   }
 
   try {
     model_plugin->Initialize(type, name, model, yaml_node);
   } catch (const std::exception &e) {
-    throw PluginException("ModelPlugin", type, name,
-                          "Init Error in model " + Q(model->name_) + " (" +
-                              std::string(e.what()) + ")");
+    throw PluginException(msg + ": " + std::string(e.what()));
   }
   model_plugins_.push_back(model_plugin);
 
-  ROS_INFO_NAMED("PluginManager",
-                 "Model Plugin %s of type %s loaded for model %s", name.c_str(),
-                 type.c_str(), model->name_.c_str());
+  ROS_INFO_NAMED("PluginManager", "%s loaded", msg.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {
