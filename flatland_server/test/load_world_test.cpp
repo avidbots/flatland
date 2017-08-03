@@ -739,7 +739,7 @@ TEST_F(LoadWorldTest, wrong_world_path) {
 TEST_F(LoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Entry key=\"properties\" does not exist");
+  test_yaml_fail("Flatland YAML: Entry \"properties\" does not exist");
 }
 
 /**
@@ -750,8 +750,8 @@ TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Entry \"color\" must have size of exactly 4 \\(in layer "
-      "index=0\\)");
+      "Flatland YAML: Entry \"color\" must have size of exactly 4 \\(in "
+      "\"layers\" index=0\\)");
 }
 
 /**
@@ -762,7 +762,7 @@ TEST_F(LoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Entry key=\"origin\" does not exist \\(in layer "
+      "Flatland YAML: Entry \"origin\" does not exist \\(in layer "
       "\"2d\"\\)");
 }
 
@@ -785,7 +785,7 @@ TEST_F(LoadWorldTest, model_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Entry key=\"bodies\" must be a list \\(in model "
+      "Flatland YAML: Entry \"bodies\" must be a list \\(in model "
       "\"turtlebot\"\\)");
 }
 
@@ -796,8 +796,8 @@ TEST_F(LoadWorldTest, model_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Entry \"points\" must have size <3 \\(in model "
-      "\"turtlebot\" body \"base\" footprint index=1\\)");
+      "Flatland YAML: Entry \"points\" must have size < 3 \\(in model "
+      "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");
 }
 
 /**
@@ -808,7 +808,7 @@ TEST_F(LoadWorldTest, model_invalid_C) {
       this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
   test_yaml_fail(
       "Flatland YAML: Entry \"anchor\" must have size of exactly 2 \\(in model "
-      "\"turtlebot\" joint \"right_wheel_weld\"\\)");
+      "\"turtlebot\" joint \"right_wheel_weld\" \"bodies\" index=1\\)");
 }
 
 /**
@@ -818,8 +818,8 @@ TEST_F(LoadWorldTest, model_invalid_D) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Cannot find body with name left_wheel_123 in model "
-      "\"turtlebot\" joint \"left_wheel_weld\"");
+      "Flatland YAML: Cannot find body with name \"left_wheel_123\" in model "
+      "\"turtlebot\" joint \"left_wheel_weld\" \"bodies\" index=1");
 }
 
 /**
@@ -829,9 +829,9 @@ TEST_F(LoadWorldTest, model_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Invalid footprint \"layer\" in model \"turtlebot\" body "
-      "\"left_wheel\" footprint index=0, \\{random_layer\\} layer\\(s\\) does "
-      "not exist");
+      "Flatland YAML: Invalid footprint \"layers\" in model \"turtlebot\" body "
+      "\"left_wheel\" \"footprints\" index=0, \\{random_layer\\} layer\\(s\\) "
+      "does not exist");
 }
 
 // Run all the tests that were declared with TEST()

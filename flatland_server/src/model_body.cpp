@@ -62,8 +62,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
                                YamlReader &body_reader) {
   std::string name = body_reader.Get<std::string>("name");
-  std::string err_location = "model " + Q(model->name_) + " body " + Q(name);
-  body_reader.SetErrorInfo(err_location);
+  body_reader.SetErrorInfo("model " + Q(model->name_), "body " + Q(name));
 
   Pose origin = body_reader.GetPose("origin", Pose(0, 0, 0));
   Color color = body_reader.GetColor("color", Color(1, 1, 1, 0.5));
@@ -79,7 +78,8 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   } else if (type_str == "dynamic") {
     type = b2_dynamicBody;
   } else {
-    throw YAMLException("Invalid \"type\" in " + err_location +
+    throw YAMLException("Invalid \"type\" in " + body_reader.entry_location_ +
+                        " " + body_reader.entry_name_ +
                         ", must be one of: static, kinematic, dynamic");
   }
 
@@ -88,7 +88,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 
   try {
     YamlReader footprints_node =
-        body_reader.SubNode("footprints", YamlReader::LIST);
+        body_reader.Subnode("footprints", YamlReader::LIST);
     m->LoadFootprints(footprints_node);
   } catch (const YAMLException &e) {
     delete m;
@@ -100,7 +100,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 
 void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
   for (int i = 0; i < footprints_reader.NodeSize(); i++) {
-    YamlReader reader = footprints_reader.SubNode(i, YamlReader::MAP);
+    YamlReader reader = footprints_reader.Subnode(i, YamlReader::MAP);
 
     std::string type = reader.Get<std::string>("type");
     if (type == "circle") {
@@ -109,7 +109,8 @@ void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
       LoadPolygonFootprint(reader);
     } else {
       throw YAMLException("Invalid footprint \"type\" in " +
-                          reader.entry_location_ +
+                          reader.entry_location_ + " " +
+                          reader.entry_name_ +
                           ", support footprints are: circle, polygon");
     }
   }
@@ -146,8 +147,9 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   uint16_t category_bits = cfr_->GetCategoryBits(layers, &failed_layers);
 
   if (!failed_layers.empty()) {
-    throw YAMLException("Invalid footprint \"layer\" in " +
-                        footprint_reader.entry_location_ + ", {" +
+    throw YAMLException("Invalid footprint \"layers\" in " +
+                        footprint_reader.entry_location_ + " " +
+                        footprint_reader.entry_name_ + ", {" +
                         boost::algorithm::join(failed_layers, ",") +
                         "} layer(s) does not exist");
   }

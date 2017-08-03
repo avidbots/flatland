@@ -193,7 +193,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   std::vector<std::string> layers =
       reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
-  YamlReader angle_reader = reader.SubNode("angle", YamlReader::MAP);
+  YamlReader angle_reader = reader.Subnode("angle", YamlReader::MAP);
   min_angle_ = angle_reader.Get<double>("min");
   max_angle_ = angle_reader.Get<double>("max");
   increment_ = angle_reader.Get<double>("increment");

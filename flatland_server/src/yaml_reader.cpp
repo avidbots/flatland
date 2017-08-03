@@ -53,10 +53,9 @@ namespace flatland_server {
 */
 void YamlReader::SetErrorInfo(std::string entry_location,
                               std::string entry_name) {
-
   boost::algorithm::trim(entry_location);
   boost::algorithm::trim(entry_name);
-  
+
   if (entry_location == "_NONE_") {
     entry_location_ = "";
   } else if (entry_location != "") {
@@ -108,64 +107,59 @@ bool YamlReader::IsNodeNull() { return node_.IsNull(); }
 
 int YamlReader::NodeSize() { return node_.size(); }
 
-void YamlReader::EnsureEntryExist(const std::string &key) {
-  if (!node_[key]) {
-    throw YAMLException("Entry key=" + Q(key) + " does not exist" + in_);
-  }
-}
-
-void YamlReader::EnsureEntryExist(int index) {
-  if (!node_[index]) {
-    throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  does not exist" + in_);
-  }
-}
-
-YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check) {
-  EnsureEntryExist(index);
-
-  if (type_check == NodeTypeCheck::MAP && !node_[index].IsMap()) {
-    throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  must be a map" + in_);
-
-  } else if (type_check == NodeTypeCheck::LIST && !node_[index].IsSequence()) {
-    throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  must be a list" + in_);
-  }
-
+YamlReader YamlReader::Subnode(int index, NodeTypeCheck type_check,
+                               std::string subnode_location) {
   YamlReader reader(node_[index]);
 
   // default to use the error location message of its parent
-  reader.SetErrorInfo(entry_location_ + " " + entry_name_,
-                      "index=" + std::to_string(index));
+  std::string location = subnode_location == ""
+                             ? (entry_location_ + " " + entry_name_)
+                             : subnode_location;
+  reader.SetErrorInfo(location, "index=" + std::to_string(index));
+
+  if (reader.IsNodeNull()) {
+    throw YAMLException("Entry index=" + std::to_string(index) +
+                        "  does not exist" + reader.in_);
+  } else if (type_check == NodeTypeCheck::MAP && !node_[index].IsMap()) {
+    throw YAMLException("Entry index=" + std::to_string(index) +
+                        "  must be a map" + reader.in_);
+
+  } else if (type_check == NodeTypeCheck::LIST && !node_[index].IsSequence()) {
+    throw YAMLException("Entry index=" + std::to_string(index) +
+                        "  must be a list" + reader.in_);
+  }
+
   return reader;
 }
 
-YamlReader YamlReader::SubNode(const std::string &key,
-                               NodeTypeCheck type_check) {
-  EnsureEntryExist(key);
-
-  if (type_check == NodeTypeCheck::MAP && !node_[key].IsMap()) {
-    throw YAMLException("Entry key=" + Q(key) + " must be a map" + in_);
-
-  } else if (type_check == NodeTypeCheck::LIST && !node_[key].IsSequence()) {
-    throw YAMLException("Entry key=" + Q(key) + " must be a list" + in_);
-  }
-
+YamlReader YamlReader::Subnode(const std::string &key, NodeTypeCheck type_check,
+                               std::string subnode_location) {
   YamlReader reader(node_[key]);
 
   // default to use the error location message of its parent
-  reader.SetErrorInfo(entry_location_ + " " + entry_name_,
-                      "key=" + Q(key));
+  std::string location = subnode_location == ""
+                             ? (entry_location_ + " " + entry_name_)
+                             : subnode_location;
+  reader.SetErrorInfo(location, Q(key));
+
+  if (!node_[key]) {
+    throw YAMLException("Entry " + Q(key) + " does not exist" + reader.in_);
+  } else if (type_check == NodeTypeCheck::MAP && !node_[key].IsMap()) {
+    throw YAMLException("Entry " + Q(key) + " must be a map" + reader.in_);
+  } else if (type_check == NodeTypeCheck::LIST && !node_[key].IsSequence()) {
+    throw YAMLException("Entry " + Q(key) + " must be a list" + reader.in_);
+  }
+
   return reader;
 }
 
-YamlReader YamlReader::SubNodeOpt(const std::string &key,
-                                  NodeTypeCheck type_check) {
+YamlReader YamlReader::SubnodeOpt(const std::string &key,
+                                  NodeTypeCheck type_check,
+                                  std::string subnode_location) {
   if (!node_[key]) {
     return YamlReader(YAML::Node());
   }
-  return SubNode(key, type_check);
+  return Subnode(key, type_check, subnode_location);
 }
 
 Vec2 YamlReader::GetVec2(const std::string &key) {

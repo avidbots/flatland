@@ -119,7 +119,7 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
 
 World *World::MakeWorld(const std::string &yaml_path) {
   YamlReader reader =
-      YamlReader(yaml_path).SubNode("properties", YamlReader::MAP);
+      YamlReader(yaml_path).Subnode("properties", YamlReader::MAP);
   int v = reader.Get<int>("velocity_iterations", 10);
   int p = reader.Get<int>("position_iterations", 10);
 
@@ -145,7 +145,7 @@ World *World::MakeWorld(const std::string &yaml_path) {
 
 void World::LoadLayers(const std::string &yaml_path) {
   YamlReader layers_reader =
-      YamlReader(yaml_path).SubNode("layers", YamlReader::LIST);
+      YamlReader(yaml_path).Subnode("layers", YamlReader::LIST);
 
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
@@ -154,7 +154,7 @@ void World::LoadLayers(const std::string &yaml_path) {
                           std::to_string(cfr_.MAX_LAYERS));
     }
 
-    YamlReader reader = layers_reader.SubNode(i, YamlReader::MAP);
+    YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
 
     std::string name = reader.Get<std::string>("name");
     boost::filesystem::path map_path(reader.Get<std::string>("map"));
@@ -175,11 +175,11 @@ void World::LoadLayers(const std::string &yaml_path) {
 
 void World::LoadModels(const std::string &yaml_path) {
   YamlReader models_reader =
-      YamlReader(yaml_path).SubNodeOpt("models", YamlReader::LIST);
+      YamlReader(yaml_path).SubnodeOpt("models", YamlReader::LIST);
 
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
-      YamlReader reader = models_reader.SubNode(i, YamlReader::MAP);
+      YamlReader reader = models_reader.Subnode(i, YamlReader::MAP);
 
       std::string name = reader.Get<std::string>("name");
       std::string ns = reader.Get<std::string>("namespace", "");
@@ -203,7 +203,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   models_.push_back(m);
 
   for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
-    YamlReader plugin_reader = m->plugins_reader_.SubNode(i, YamlReader::MAP);
+    YamlReader plugin_reader = m->plugins_reader_.Subnode(i, YamlReader::MAP);
     plugin_manager_.LoadModelPlugin(m, plugin_reader);
   }
 

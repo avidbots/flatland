@@ -78,11 +78,11 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   Model *m = new Model(physics_world, cfr, ns, name);
 
-  m->plugins_reader_ = reader.SubNodeOpt("plugins", YamlReader::LIST);
+  m->plugins_reader_ = reader.SubnodeOpt("plugins", YamlReader::LIST);
 
   try {
-    YamlReader bodies_reader = reader.SubNode("bodies", YamlReader::LIST);
-    YamlReader joints_reader = reader.SubNodeOpt("joints", YamlReader::LIST);
+    YamlReader bodies_reader = reader.Subnode("bodies", YamlReader::LIST);
+    YamlReader joints_reader = reader.SubnodeOpt("joints", YamlReader::LIST);
     m->LoadBodies(bodies_reader);
     m->LoadJoints(joints_reader);
   } catch (const YAMLException &e) {
@@ -100,7 +100,7 @@ void Model::LoadBodies(YamlReader &bodies_reader) {
                         "must a be list of bodies of at least size 1");
   } else {
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
-      YamlReader body_reader = bodies_reader.SubNode(i, YamlReader::MAP);
+      YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
       ModelBody *b =
           ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
       bodies_.push_back(b);
@@ -111,7 +111,7 @@ void Model::LoadBodies(YamlReader &bodies_reader) {
 void Model::LoadJoints(YamlReader &joints_reader) {
   if (!joints_reader.IsNodeNull()) {
     for (int i = 0; i < joints_reader.NodeSize(); i++) {
-      YamlReader joint_reader = joints_reader.SubNode(i, YamlReader::MAP);
+      YamlReader joint_reader = joints_reader.Subnode(i, YamlReader::MAP);
       Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);
     }

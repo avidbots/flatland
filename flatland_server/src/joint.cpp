@@ -63,30 +63,31 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
   Joint *j;
 
   std::string name = joint_reader.Get<std::string>("name");
-  std::string err_location = "model " + Q(model->name_) + " joint " + Q(name);
-  joint_reader.SetErrorInfo(err_location);
+  joint_reader.SetErrorInfo("model " + Q(model->name_), "joint " + Q(name));
 
   std::string type = joint_reader.Get<std::string>("type");
   Color color = joint_reader.GetColor("color", Color(1, 1, 1, 0.5));
   bool collide_connected = joint_reader.Get<bool>("collide_connected", false);
 
-  YamlReader bodies_reader = joint_reader.SubNode("bodies", YamlReader::LIST);
+  YamlReader bodies_reader = joint_reader.Subnode("bodies", YamlReader::LIST);
   if (bodies_reader.NodeSize() != 2) {
-    throw YAMLException("Invalid joint \"bodies\" in " + err_location +
+    throw YAMLException("Invalid \"bodies\" in " +
+                        bodies_reader.entry_location_ +
                         ", must be a sequence of exactly two items");
   }
 
   Vec2 anchors[2];
   ModelBody *bodies[2];
   for (int i = 0; i < 2; i++) {
-    YamlReader body_reader = bodies_reader.SubNode(i, YamlReader::MAP);
+    YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
     std::string body_name = body_reader.Get<std::string>("name");
     anchors[i] = body_reader.GetVec2("anchor");
     bodies[i] = model->GetBody(body_name);
 
     if (bodies[i] == nullptr) {
-      throw YAMLException("Cannot find body with name " + body_name + " in " +
-                          err_location);
+      throw YAMLException("Cannot find body with name " + Q(body_name) +
+                          " in " + body_reader.entry_location_ + " " +
+                          body_reader.entry_name_);
     }
   }
 
@@ -103,8 +104,9 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
     j = MakeWeldJoint(physics_world, model, joint_reader, name, color, body_A,
                       anchor_A, body_B, anchor_B, collide_connected);
   } else {
-    throw YAMLException("Invalid joint \"type\" in " + err_location +
-                        ", supported joints are: revolute, weld");
+    throw YAMLException(
+        "Invalid joint \"type\" in " + joint_reader.entry_location_ + " " +
+        joint_reader.entry_name_ + ", supported joints are: revolute, weld");
   }
 
   return j;

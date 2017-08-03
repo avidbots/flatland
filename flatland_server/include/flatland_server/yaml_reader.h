@@ -77,22 +77,21 @@ class YamlReader {
   YamlReader(const YAML::Node &node);
   YamlReader(const std::string &path);
 
-  void SetErrorInfo(std::string entry_location,
-                    std::string entry_name = "");
+  void SetErrorInfo(std::string entry_location, std::string entry_name = "");
 
   YAML::Node Node();
 
   bool IsNodeNull();
   int NodeSize();
 
-  void EnsureEntryExist(const std::string &key);
-  void EnsureEntryExist(int index);
+  YamlReader Subnode(int index, NodeTypeCheck type_check,
+                     std::string sub_node_location = "");
 
-  YamlReader SubNode(int index, NodeTypeCheck type_check);
+  YamlReader Subnode(const std::string &key, NodeTypeCheck type_check,
+                     std::string sub_node_location = "");
 
-  YamlReader SubNode(const std::string &key, NodeTypeCheck type_check);
-
-  YamlReader SubNodeOpt(const std::string &key, NodeTypeCheck type_check);
+  YamlReader SubnodeOpt(const std::string &key, NodeTypeCheck type_check,
+                     std::string sub_node_location = "");
 
   template <typename T>
   T As();
@@ -154,17 +153,17 @@ std::vector<T> YamlReader::AsList(int min_size, int max_size) {
   }
 
   if (min_size > 0 && NodeSize() < min_size) {
-    throw YAMLException("Entry " + entry_name_ + " must have size <" +
+    throw YAMLException("Entry " + entry_name_ + " must have size < " +
                         std::to_string(min_size) + in_);
   }
 
   if (max_size > 0 && NodeSize() > max_size) {
-    throw YAMLException("Entry " + entry_name_ + " must have size >" +
+    throw YAMLException("Entry " + entry_name_ + " must have size > " +
                         std::to_string(max_size) + in_);
   }
 
   for (int i = 0; i < NodeSize(); i++) {
-    list.push_back(SubNode(i, NO_CHECK).As<T>());
+    list.push_back(Subnode(i, NO_CHECK).As<T>());
   }
 
   return list;
@@ -172,8 +171,7 @@ std::vector<T> YamlReader::AsList(int min_size, int max_size) {
 
 template <typename T>
 T YamlReader::Get(const std::string &key) {
-  EnsureEntryExist(key);
-  return SubNode(key, NO_CHECK).As<T>();
+  return Subnode(key, NO_CHECK).As<T>();
 }
 
 template <typename T>
@@ -187,9 +185,7 @@ T YamlReader::Get(const std::string &key, const T &default_val) {
 template <typename T>
 std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
                                    int max_size) {
-  EnsureEntryExist(key);
-
-  return SubNode(key, LIST).AsList<T>(min_size, max_size);
+  return Subnode(key, LIST).AsList<T>(min_size, max_size);
 }
 
 template <typename T>
