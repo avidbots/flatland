@@ -360,7 +360,8 @@ TEST_F(PluginManagerTest, invalid_plugin_yaml) {
     FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(
-        "Flatland YAML: Entry \"name\" does not exist (in model \"turtlebot1\" \"plugins\" index=0)",
+        "Flatland YAML: Entry \"name\" does not exist (in model \"turtlebot1\" "
+        "\"plugins\" index=0)",
         e.what());
   } catch (const std::exception &e) {
     ADD_FAILURE() << "Was expecting a YAMLException, another exception was "

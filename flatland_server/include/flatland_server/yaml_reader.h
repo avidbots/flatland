@@ -91,7 +91,7 @@ class YamlReader {
                      std::string sub_node_location = "");
 
   YamlReader SubnodeOpt(const std::string &key, NodeTypeCheck type_check,
-                     std::string sub_node_location = "");
+                        std::string sub_node_location = "");
 
   template <typename T>
   T As();

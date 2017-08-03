@@ -109,8 +109,7 @@ void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
       LoadPolygonFootprint(reader);
     } else {
       throw YAMLException("Invalid footprint \"type\" in " +
-                          reader.entry_location_ + " " +
-                          reader.entry_name_ +
+                          reader.entry_location_ + " " + reader.entry_name_ +
                           ", support footprints are: circle, polygon");
     }
   }

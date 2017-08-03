@@ -67,15 +67,15 @@ namespace flatland_plugins {
  */
 class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
-  std::string topic_;             ///< topic name to publish the laser scan
-  Body *body_;                    ///<  body the laser frame attaches to
-  Pose origin_;  ///< laser frame w.r.t the body
-  double range_;                  ///< laser max range
-  double max_angle_;              /// < laser max angle
-  double min_angle_;              ///< laser min angle
-  double increment_;              ///< laser angle increment
-  double update_rate_;            ///< the rate laser scan will be published
-  std::string frame_id_;          ///< laser frame id name
+  std::string topic_;     ///< topic name to publish the laser scan
+  Body *body_;            ///<  body the laser frame attaches to
+  Pose origin_;           ///< laser frame w.r.t the body
+  double range_;          ///< laser max range
+  double max_angle_;      /// < laser max angle
+  double min_angle_;      ///< laser min angle
+  double increment_;      ///< laser angle increment
+  double update_rate_;    ///< the rate laser scan will be published
+  std::string frame_id_;  ///< laser frame id name
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
 
   Eigen::Matrix3f m_body_to_laser_;       ///< tf from body to laser
