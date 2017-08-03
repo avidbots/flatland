@@ -61,6 +61,7 @@
 #include <iostream>
 #include <regex>
 //#include <thread>
+#include <flatland_viz/model_dialog.h>
 #include <signal.h>
 
 class QCheckBox;
@@ -104,6 +105,8 @@ class ModelDialog : public QWidget {
   /**
    * @name        SetButtonColor
    * @brief       Changes a button's color
+   * @param[in]   QColor, color to set button to (incl alpha)
+   * @param[in]   QPushButton, button to set color on
    */
   void SetButtonColor(const QColor* c, QPushButton* b);
   /**
@@ -112,7 +115,9 @@ class ModelDialog : public QWidget {
    */
 
   void SpawnModelClient();
-  void SigintHandler(int sig);
+  void Sigint3Handler(int sig);
+
+  void CloseDialog();
 
  private:
   QPushButton* color_button;
@@ -121,14 +126,9 @@ class ModelDialog : public QWidget {
 
  protected:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
-  boost::filesystem::path robot_yaml;
-  // Timekeeper timekeeper;
   ros::NodeHandle nh;
   ros::ServiceClient client;
   flatland_msgs::SpawnModel srv;
-  // std::thread simulation_thread;
-  // bool stop_thread;
   World* w;
 };
 

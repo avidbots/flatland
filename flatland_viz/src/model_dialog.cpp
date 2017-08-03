@@ -77,12 +77,25 @@ QString ModelDialog::SelectFile() {
   }
 }
 
+void Sigint2Handler(int sig) {
+  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+  // ModelDialog::CloseDialog();
+}
+
+void ModelDialog::Sigint3Handler(int sig) {
+  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+  // ModelDialog::CloseDialog();
+}
+
+void ModelDialog::CloseDialog() { this->close(); }
+
 ModelDialog::ModelDialog(QWidget *parent) : QWidget(parent) {
   ROS_ERROR_STREAM("ModelDialog::ModelDialog");
 
   // Register sigint shutdown handler
   // signal(SIGINT, &ModelDialog::SigintHandler);
-  // signal(SIGINT, SigintHandler);
+  // signal(SIGINT, Sigint2Handler);
+  // signal(SIGINT, ModelDialog::Sigint3Handler);
 
   path_to_model_file = SelectFile();
   QVBoxLayout *v_layout = new QVBoxLayout;
@@ -138,17 +151,16 @@ ModelDialog::ModelDialog(QWidget *parent) : QWidget(parent) {
   }
 
   // x label and x LineEdit
-  // QLineEdit *x_edit = new QLineEdit;
   x_edit = new QLineEdit;
   h4_layout->addWidget(new QLabel("x:"));
   h4_layout->addWidget(x_edit);
 
-  // x label and x LineEdit
+  // y label and y LineEdit
   y_edit = new QLineEdit;
   h4_layout->addWidget(new QLabel("y:"));
   h4_layout->addWidget(y_edit);
 
-  // x label and x LineEdit
+  // a label and a LineEdit
   a_edit = new QLineEdit;
   h4_layout->addWidget(new QLabel("a:"));
   h4_layout->addWidget(a_edit);
@@ -211,7 +223,6 @@ void ModelDialog::SetButtonColor(const QColor *c, QPushButton *b) {
   b->setAutoFillBackground(true);
   QPalette pal = b->palette();
   pal.setColor(QPalette::Button, *c);
-  // c->setAutoFillBackground(true);
   QString qs = "background-color:" + c->name();
   color_button->setStyleSheet(qs);
 }
@@ -224,13 +235,6 @@ void ModelDialog::SpawnModelClient() {
   srv.request.pose.y = y_edit->text().toFloat();
   srv.request.pose.theta = a_edit->text().toFloat();
 
-  // srv.request.ns = n_edit->text();
-  // srv.request.ns = "xxx";
-  // srv.request.yaml_path = path_to_model_file.toStdString();
-  // srv.request.pose.x = 1;
-  // srv.request.pose.y = 2;
-  // srv.request.pose.theta = 3;
-
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
 
   client.call(srv);
@@ -241,17 +245,18 @@ void ModelDialog::SpawnModelClient() {
  * @brief       Interrupt handler - sends shutdown signal to simulation_manager
  * @param[in]   sig: signal itself
  */
-void ModelDialog::SigintHandler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+// void SigintHandler(int sig) {
+//   // void ModelDialog::SigintHandler(int sig) {
+//   ROS_WARN_NAMED("Node", "*** Shutting down... ***");
 
-  // if (simulation_manager != nullptr) {
-  //   simulation_manager->Shutdown();
-  //   delete simulation_manager;
-  //   simulation_manager = nullptr;
-  // }
-  // ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-  // ros::shutdown();
-}
+//   // if (simulation_manager != nullptr) {
+//   //   simulation_manager->Shutdown();
+//   //   delete simulation_manager;
+//   //   simulation_manager = nullptr;
+//   // }
+//   // ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
+//   // ros::shutdown();
+// }
 
 /**
  * @name        SigintHandler
