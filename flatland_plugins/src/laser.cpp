@@ -190,12 +190,13 @@ void Laser::ParseParameters(const YAML::Node &config) {
                                     std::numeric_limits<double>::infinity());
   origin_ = reader.GetPose("origin", Pose(0, 0, 0));
   range_ = reader.Get<double>("range");
-  std::vector<std::string> layers = reader.GetList<std::string>("layers", {"all"});
+  std::vector<std::string> layers =
+      reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
   YamlReader angle_reader = reader.SubNode("angle", YamlReader::MAP, "angle");
   min_angle_ = angle_reader.Get<double>("min");
   max_angle_ = angle_reader.Get<double>("max");
-  increment_ = angle_reader.Get<double>("increment");  
+  increment_ = angle_reader.Get<double>("increment");
 
   if (max_angle_ < min_angle_) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");

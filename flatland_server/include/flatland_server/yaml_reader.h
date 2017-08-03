@@ -99,14 +99,13 @@ class YamlReader {
   T Get(const std::string &key, const T &default_val);
 
   template <typename T>
-  std::vector<T> GetList(const std::string &key, int min_size = -1,
-                         int max_size = -1);
+  std::vector<T> GetList(const std::string &key, int min_size, int max_size);
 
   template <typename T>
   std::vector<T> GetList(const std::string &key,
-                         const std::vector<T> default_val, int min_size = -1,
-                         int max_size = -1);
-
+                         const std::vector<T> default_val, int min_size,
+                         int max_size);
+                         
   Vec2 GetVec2(const std::string &key);
 
   Vec2 GetVec2(const std::string &key, const Vec2 &default_val);
