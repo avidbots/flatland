@@ -80,6 +80,8 @@ void Bumper::OnInitialize(const YAML::Node &config) {
   std::vector<std::string> excluded_body_names =
       reader.GetList<std::string>("exclude", {}, -1, -1);
 
+  reader.EnsureAccessedAllKeys();
+
   for (int i = 0; i < excluded_body_names.size(); i++) {
     Body *body = model_->GetBody(excluded_body_names[i]);
 

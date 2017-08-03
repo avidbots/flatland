@@ -78,8 +78,8 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   // remove the name and type of the YAML Node, the plugin does not need to know
   // about these parameters
   YAML::Node yaml_node = plugin_reader.Node();
-  yaml_node.remove(yaml_node["name"]);
-  yaml_node.remove(yaml_node["type"]);
+  bool ret = yaml_node.remove(yaml_node["name"]);
+  ret = yaml_node.remove(yaml_node["type"]);
 
   boost::shared_ptr<ModelPlugin> model_plugin;
 

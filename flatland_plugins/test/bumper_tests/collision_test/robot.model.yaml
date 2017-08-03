@@ -35,6 +35,7 @@ joints:
 plugins:
   - type: Bumper
     name: Bumper_A
+    abcd: 123
 
   - type: Bumper
     name: Bumper_B
