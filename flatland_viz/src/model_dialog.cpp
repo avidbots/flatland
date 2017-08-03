@@ -92,6 +92,7 @@ ModelDialog::ModelDialog(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *h2_layout = new QHBoxLayout;
   QHBoxLayout *h3_layout = new QHBoxLayout;
   QHBoxLayout *h4_layout = new QHBoxLayout;
+  QHBoxLayout *h5_layout = new QHBoxLayout;
 
   QLabel *colorLabel = new QLabel;
   int frameStyle = QFrame::Sunken | QFrame::Panel;
@@ -107,30 +108,21 @@ ModelDialog::ModelDialog(QWidget *parent) : QWidget(parent) {
   path->setText(path_to_model_file);
   h1_layout->addWidget(new QLabel("path:"));
   h1_layout->addWidget(path);
-  v_layout->addLayout(h1_layout);
 
   // name label and name LineEdit
-  QLineEdit *name_edit = new QLineEdit;
+  n_edit = new QLineEdit;
   h2_layout->addWidget(new QLabel("name:"));
-  h2_layout->addWidget(name_edit);
+  h2_layout->addWidget(n_edit);
 
   // set the default name to the filename parsed using boost
   std::string bsfn =
       boost::filesystem::basename(path_to_model_file.toStdString());
   QString fn = QString::fromStdString(bsfn);
-  name_edit->setText(fn);
-
-  v_layout->addLayout(h2_layout);
+  n_edit->setText(fn);
 
   // color label and button
   h3_layout->addWidget(new QLabel("color"));
   h3_layout->addWidget(color_button);
-  v_layout->addLayout(h3_layout);
-
-  // ok button
-  h4_layout->addWidget(okButton);
-  connect(okButton, &QAbstractButton::clicked, this,
-          &ModelDialog::OkButtonClicked);
 
   // first time use color
   // after that, use saved_color_
@@ -145,15 +137,42 @@ ModelDialog::ModelDialog(QWidget *parent) : QWidget(parent) {
     color = saved_color_;
   }
 
+  // x label and x LineEdit
+  // QLineEdit *x_edit = new QLineEdit;
+  x_edit = new QLineEdit;
+  h4_layout->addWidget(new QLabel("x:"));
+  h4_layout->addWidget(x_edit);
+
+  // x label and x LineEdit
+  y_edit = new QLineEdit;
+  h4_layout->addWidget(new QLabel("y:"));
+  h4_layout->addWidget(y_edit);
+
+  // x label and x LineEdit
+  a_edit = new QLineEdit;
+  h4_layout->addWidget(new QLabel("a:"));
+  h4_layout->addWidget(a_edit);
+
+  // ok button
+  h5_layout->addWidget(okButton);
+  connect(okButton, &QAbstractButton::clicked, this,
+          &ModelDialog::OkButtonClicked);
+
   ModelDialog::SetButtonColor(&color, color_button);
 
   // cancel button
-  h4_layout->addWidget(cancelButton);
+  h5_layout->addWidget(cancelButton);
   connect(cancelButton, &QAbstractButton::clicked, this,
           &ModelDialog::CancelButtonClicked);
 
+  // add the horizontal layouts to the vertical layout
+  v_layout->addLayout(h1_layout);
+  v_layout->addLayout(h2_layout);
+  v_layout->addLayout(h3_layout);
   v_layout->addLayout(h4_layout);
+  v_layout->addLayout(h5_layout);
 
+  // set the top level layout
   setLayout(v_layout);
 
   // delete the Dialog if the user clicks on the x to close window
@@ -197,39 +216,20 @@ void ModelDialog::SetButtonColor(const QColor *c, QPushButton *b) {
   color_button->setStyleSheet(qs);
 }
 
-// void SetUp() {
-//   this_file_dir = boost::filesystem::path(__FILE__).parent_path();
-//   stop_thread = false;
-//   timekeeper.SetMaxStepSize(1.0);
-// }
-
-// void StartSimulationThread() {
-//   simulation_thread = std::thread(&ServiceManagerTest::SimulationThread,
-//                                   dynamic_cast<ServiceManagerTest *>(this));
-// }
-
-// void StopSimulationThread() {
-//   stop_thread = true;
-//   simulation_thread.join();
-// }
-
-// void SimulationThread() {
-//   ros::WallRate rate(30);
-
-//   while (!stop_thread) {
-//     w->Update(timekeeper);
-//     ros::spinOnce();
-//     rate.sleep();
-//   }
-// }
-
 void ModelDialog::SpawnModelClient() {
   srv.request.name = "service_manager_test_robot";
-  srv.request.ns = "robot123";
+  srv.request.ns = n_edit->text().toStdString();
   srv.request.yaml_path = path_to_model_file.toStdString();
-  srv.request.pose.x = 1;
-  srv.request.pose.y = 2;
-  srv.request.pose.theta = 3;
+  srv.request.pose.x = x_edit->text().toFloat();
+  srv.request.pose.y = y_edit->text().toFloat();
+  srv.request.pose.theta = a_edit->text().toFloat();
+
+  // srv.request.ns = n_edit->text();
+  // srv.request.ns = "xxx";
+  // srv.request.yaml_path = path_to_model_file.toStdString();
+  // srv.request.pose.x = 1;
+  // srv.request.pose.y = 2;
+  // srv.request.pose.theta = 3;
 
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
 

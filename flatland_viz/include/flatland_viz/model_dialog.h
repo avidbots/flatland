@@ -48,6 +48,7 @@
 #ifndef MODEL_DIALOG_H
 #define MODEL_DIALOG_H
 
+#include <QLineEdit>
 #include <QPushButton>
 #include <QWidget>
 
@@ -116,6 +117,7 @@ class ModelDialog : public QWidget {
  private:
   QPushButton* color_button;
   QString path_to_model_file;
+  QLineEdit *x_edit, *y_edit, *a_edit, *n_edit;
 
  protected:
   boost::filesystem::path this_file_dir;
