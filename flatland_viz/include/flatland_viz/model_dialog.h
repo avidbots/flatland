@@ -51,11 +51,25 @@
 #include <QPushButton>
 #include <QWidget>
 
+#include <flatland_msgs/SpawnModel.h>
+#include <flatland_server/timekeeper.h>
+#include <flatland_server/world.h>
+#include <gtest/gtest.h>
+#include <ros/ros.h>
+#include <boost/filesystem.hpp>
+#include <iostream>
+#include <regex>
+//#include <thread>
+#include <signal.h>
+
 class QCheckBox;
 class QLabel;
 class QErrorMessage;
 
 class DialogOptionsWidget;
+
+namespace fs = boost::filesystem;
+using namespace flatland_server;
 
 class ModelDialog : public QWidget {
   Q_OBJECT
@@ -91,10 +105,29 @@ class ModelDialog : public QWidget {
    * @brief       Changes a button's color
    */
   void SetButtonColor(const QColor* c, QPushButton* b);
+  /**
+   * @name        SpawnModelClient
+   * @brief       Makes a call to spawn model ros service
+   */
+
+  void SpawnModelClient();
+  void SigintHandler(int sig);
 
  private:
   QPushButton* color_button;
   QString path_to_model_file;
+
+ protected:
+  boost::filesystem::path this_file_dir;
+  boost::filesystem::path world_yaml;
+  boost::filesystem::path robot_yaml;
+  // Timekeeper timekeeper;
+  ros::NodeHandle nh;
+  ros::ServiceClient client;
+  flatland_msgs::SpawnModel srv;
+  // std::thread simulation_thread;
+  // bool stop_thread;
+  World* w;
 };
 
 #endif
