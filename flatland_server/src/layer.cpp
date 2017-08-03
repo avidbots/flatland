@@ -81,7 +81,9 @@ Layer::~Layer() { delete body_; }
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &map_path, const std::string &name,
                         const Color &color) {
-  YamlReader reader(map_path, "layer " + Q(name));
+  YamlReader reader(map_path);
+
+  reader.SetErrorInfo("layer " + Q(name));
 
   double resolution = reader.Get<double>("resolution");
   double occupied_thresh = reader.Get<double>("occupied_thresh");

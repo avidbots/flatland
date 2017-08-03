@@ -83,7 +83,7 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
 
   boost::shared_ptr<ModelPlugin> model_plugin;
 
-  std::string msg = "Model Plugin" + Q(name) + " type " + Q(type) + " model " +
+  std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) + " model " +
                     Q(model->name_);
 
   try {

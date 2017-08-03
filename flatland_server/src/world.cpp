@@ -118,9 +118,6 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
 }
 
 World *World::MakeWorld(const std::string &yaml_path) {
-  // parse the world YAML file
-  YAML::Node yaml;
-
   YamlReader reader =
       YamlReader(yaml_path).SubNode("properties", YamlReader::MAP);
   int v = reader.Get<int>("velocity_iterations", 10);
@@ -157,8 +154,7 @@ void World::LoadLayers(const std::string &yaml_path) {
                           std::to_string(cfr_.MAX_LAYERS));
     }
 
-    YamlReader reader = layers_reader.SubNode(
-        i, YamlReader::MAP, "layer index=" + std::to_string(i));
+    YamlReader reader = layers_reader.SubNode(i, YamlReader::MAP);
 
     std::string name = reader.Get<std::string>("name");
     boost::filesystem::path map_path(reader.Get<std::string>("map"));
@@ -183,8 +179,7 @@ void World::LoadModels(const std::string &yaml_path) {
 
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
-      YamlReader reader = models_reader.SubNode(
-          i, YamlReader::MAP, "model index=" + std::to_string(i));
+      YamlReader reader = models_reader.SubNode(i, YamlReader::MAP);
 
       std::string name = reader.Get<std::string>("name");
       std::string ns = reader.Get<std::string>("namespace", "");
@@ -208,10 +203,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   models_.push_back(m);
 
   for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
-    std::string err_location =
-        "model " + Q(m->name_) + " plugin index=" + std::to_string(i);
-    YamlReader plugin_reader =
-        m->plugins_reader_.SubNode(i, YamlReader::MAP, err_location);
+    YamlReader plugin_reader = m->plugins_reader_.SubNode(i, YamlReader::MAP);
     plugin_manager_.LoadModelPlugin(m, plugin_reader);
   }
 

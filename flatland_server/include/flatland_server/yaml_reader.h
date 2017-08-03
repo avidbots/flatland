@@ -66,31 +66,39 @@ class YamlReader {
 
   YAML::Node node_;                           ///< The YAML Node this processes
   std::map<std::string, bool> key_accessed_;  /// Records of the keys processed
-  std::string error_location_msg_;
+  std::string entry_location_;
+  std::string entry_name_;
   std::string in_;
 
   /**
    * @brief
    */
   YamlReader();
-  YamlReader(const YAML::Node &node, std::string error_location_msg = "");
-  YamlReader(const std::string &path, std::string error_location_msg = "");
+  YamlReader(const YAML::Node &node);
+  YamlReader(const std::string &path);
 
-  void SetErrorLocationMsg(const std::string &msg);
+  void SetErrorInfo(std::string entry_location,
+                    std::string entry_name = "");
 
   YAML::Node Node();
 
   bool IsNodeNull();
   int NodeSize();
 
-  YamlReader SubNode(int index, NodeTypeCheck type_check,
-                     std::string error_location_msg = "");
+  void EnsureEntryExist(const std::string &key);
+  void EnsureEntryExist(int index);
 
-  YamlReader SubNode(const std::string &key, NodeTypeCheck type_check,
-                     std::string error_location_msg = "");
+  YamlReader SubNode(int index, NodeTypeCheck type_check);
 
-  YamlReader SubNodeOpt(const std::string &key, NodeTypeCheck type_check,
-                        std::string error_location_msg = "");
+  YamlReader SubNode(const std::string &key, NodeTypeCheck type_check);
+
+  YamlReader SubNodeOpt(const std::string &key, NodeTypeCheck type_check);
+
+  template <typename T>
+  T As();
+
+  template <typename T>
+  std::vector<T> AsList(int min_size, int max_size);
 
   template <typename T>
   T Get(const std::string &key);
@@ -105,7 +113,7 @@ class YamlReader {
   std::vector<T> GetList(const std::string &key,
                          const std::vector<T> default_val, int min_size,
                          int max_size);
-                         
+
   Vec2 GetVec2(const std::string &key);
 
   Vec2 GetVec2(const std::string &key, const Vec2 &default_val);
@@ -117,26 +125,55 @@ class YamlReader {
   Pose GetPose(const std::string &key, const Pose &default_val);
 };
 
-inline std::string Q(const std::string &msg) { return "\"" + msg + "\""; }
+inline std::string Q(const std::string &str) { return "\"" + str + "\""; }
 
 template <typename T>
-T YamlReader::Get(const std::string &key) {
-  if (!node_[key]) {
-    throw YAMLException("Entry key=" + Q(key) + " does not exist" + in_);
-  }
-
+T YamlReader::As() {
   T ret;
 
   try {
-    ret = node_[key].as<T>();
+    ret = node_.as<T>();
   } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry key=" + Q(key) + " to " +
+    throw YAMLException("Error converting entry " + entry_name_ + " to " +
                         boost::typeindex::type_id<T>().pretty_name() + in_);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error reading entry key=" + Q(key) + in_);
+    throw YAMLException("Error reading entry " + entry_name_ + in_);
   }
 
   return ret;
+}
+
+template <typename T>
+std::vector<T> YamlReader::AsList(int min_size, int max_size) {
+  std::vector<T> list;
+
+  if (min_size > 0 && max_size > 0 && min_size == max_size &&
+      NodeSize() != max_size) {
+    throw YAMLException("Entry " + entry_name_ + " must have size of exactly " +
+                        std::to_string(min_size) + in_);
+  }
+
+  if (min_size > 0 && NodeSize() < min_size) {
+    throw YAMLException("Entry " + entry_name_ + " must have size <" +
+                        std::to_string(min_size) + in_);
+  }
+
+  if (max_size > 0 && NodeSize() > max_size) {
+    throw YAMLException("Entry " + entry_name_ + " must have size >" +
+                        std::to_string(max_size) + in_);
+  }
+
+  for (int i = 0; i < NodeSize(); i++) {
+    list.push_back(SubNode(i, NO_CHECK).As<T>());
+  }
+
+  return list;
+}
+
+template <typename T>
+T YamlReader::Get(const std::string &key) {
+  EnsureEntryExist(key);
+  return SubNode(key, NO_CHECK).As<T>();
 }
 
 template <typename T>
@@ -144,55 +181,15 @@ T YamlReader::Get(const std::string &key, const T &default_val) {
   if (!node_[key]) {
     return default_val;
   }
-
   return Get<T>(key);
 }
 
 template <typename T>
 std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
                                    int max_size) {
-  if (!node_[key]) {
-    throw YAMLException("Entry key=" + Q(key) + " does not exist" + in_);
-  }
+  EnsureEntryExist(key);
 
-  YamlReader reader = SubNode(key, LIST);
-  YAML::Node n = reader.Node();
-
-  std::vector<T> list;
-
-  if (min_size > 0 && max_size > 0 && min_size == max_size &&
-      n.size() != max_size) {
-    throw YAMLException("Entry " + Q(key) + " must have size of exactly " +
-                        std::to_string(min_size) + in_);
-  }
-
-  if (min_size > 0 && n.size() < min_size) {
-    throw YAMLException("Entry " + Q(key) + " must have size <" +
-                        std::to_string(min_size) + in_);
-  }
-
-  if (max_size > 0 && n.size() > max_size) {
-    throw YAMLException("Entry " + Q(key) + " must have size >" +
-                        std::to_string(max_size) + in_);
-  }
-
-  for (int i = 0; i < n.size(); i++) {
-    T val;
-    try {
-      val = n[i].as<T>();
-    } catch (const YAML::RepresentationException &e) {
-      throw YAMLException("Error converting entry index=" + std::to_string(i) +
-                          " to " +
-                          boost::typeindex::type_id<T>().pretty_name() + in_);
-    } catch (const YAML::Exception &e) {
-      throw YAMLException("Error reading entry index=" + std::to_string(i) +
-                          in_);
-    }
-
-    list.push_back(val);
-  }
-
-  return list;
+  return SubNode(key, LIST).AsList<T>(min_size, max_size);
 }
 
 template <typename T>

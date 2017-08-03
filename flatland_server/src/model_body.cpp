@@ -63,7 +63,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                YamlReader &body_reader) {
   std::string name = body_reader.Get<std::string>("name");
   std::string err_location = "model " + Q(model->name_) + " body " + Q(name);
-  body_reader.SetErrorLocationMsg(err_location);
+  body_reader.SetErrorInfo(err_location);
 
   Pose origin = body_reader.GetPose("origin", Pose(0, 0, 0));
   Color color = body_reader.GetColor("color", Color(1, 1, 1, 0.5));
@@ -100,11 +100,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 
 void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
   for (int i = 0; i < footprints_reader.NodeSize(); i++) {
-    std::string err_location = "model " + Q(entity_->name_) + " body " +
-                               Q(name_) + " footprint index=" +
-                               std::to_string(i);
-    YamlReader reader =
-        footprints_reader.SubNode(i, YamlReader::MAP, err_location);
+    YamlReader reader = footprints_reader.SubNode(i, YamlReader::MAP);
 
     std::string type = reader.Get<std::string>("type");
     if (type == "circle") {
@@ -112,7 +108,8 @@ void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
     } else if (type == "polygon") {
       LoadPolygonFootprint(reader);
     } else {
-      throw YAMLException("Invalid footprint \"type\" in " + err_location +
+      throw YAMLException("Invalid footprint \"type\" in " +
+                          reader.entry_location_ +
                           ", support footprints are: circle, polygon");
     }
   }
@@ -150,7 +147,7 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
 
   if (!failed_layers.empty()) {
     throw YAMLException("Invalid footprint \"layer\" in " +
-                        footprint_reader.error_location_msg_ + ", {" +
+                        footprint_reader.entry_location_ + ", {" +
                         boost::algorithm::join(failed_layers, ",") +
                         "} layer(s) does not exist");
   }

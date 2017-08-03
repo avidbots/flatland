@@ -51,27 +51,42 @@ namespace flatland_server {
 /**
 *@brief Helper function to format the in message adding spaces and brackets
 */
-void YamlReader::SetErrorLocationMsg(const std::string &msg) {
-  error_location_msg_ = msg;
+void YamlReader::SetErrorInfo(std::string entry_location,
+                              std::string entry_name) {
 
-  if (msg.size() == 0) {
+  boost::algorithm::trim(entry_location);
+  boost::algorithm::trim(entry_name);
+  
+  if (entry_location == "_NONE_") {
+    entry_location_ = "";
+  } else if (entry_location != "") {
+    entry_location_ = entry_location;
+  }
+
+  if (entry_name == "_NONE_") {
+    entry_name_ = "";
+  } else if (entry_name != "") {
+    entry_name_ = entry_name;
+  }
+
+  if (entry_location_.size() == 0) {
     in_ = "";
   } else {
-    std::string msg_cpy = msg;
-    boost::algorithm::to_lower(msg_cpy);
-    in_ = " (in " + msg_cpy + ")";
+    std::string msg = entry_location_;
+    boost::algorithm::to_lower(msg);
+    in_ = " (in " + msg + ")";
   }
 }
 
-YamlReader::YamlReader() : node_(YAML::Node()) { SetErrorLocationMsg(""); }
-
-YamlReader::YamlReader(const YAML::Node &node, std::string error_location_msg)
-    : node_(node) {
-  SetErrorLocationMsg(error_location_msg);
+YamlReader::YamlReader() : node_(YAML::Node()) {
+  SetErrorInfo("_NONE_", "_NONE_");
 }
 
-YamlReader::YamlReader(const std::string &path,
-                       std::string error_location_msg) {
+YamlReader::YamlReader(const YAML::Node &node) : node_(node) {
+  SetErrorInfo("_NONE_", "_NONE_");
+}
+
+YamlReader::YamlReader(const std::string &path) {
   try {
     node_ = YAML::LoadFile(path);
   } catch (const YAML::BadFile &e) {
@@ -84,7 +99,7 @@ YamlReader::YamlReader(const std::string &path,
     throw YAMLException("Error loading file, path=" + Q(path), e);
   }
 
-  SetErrorLocationMsg(error_location_msg);
+  SetErrorInfo("_NONE_", "_NONE_");
 }
 
 YAML::Node YamlReader::Node() { return node_; }
@@ -93,12 +108,21 @@ bool YamlReader::IsNodeNull() { return node_.IsNull(); }
 
 int YamlReader::NodeSize() { return node_.size(); }
 
-YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check,
-                               std::string error_location_msg) {
+void YamlReader::EnsureEntryExist(const std::string &key) {
+  if (!node_[key]) {
+    throw YAMLException("Entry key=" + Q(key) + " does not exist" + in_);
+  }
+}
+
+void YamlReader::EnsureEntryExist(int index) {
   if (!node_[index]) {
     throw YAMLException("Entry index=" + std::to_string(index) +
                         "  does not exist" + in_);
   }
+}
+
+YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check) {
+  EnsureEntryExist(index);
 
   if (type_check == NodeTypeCheck::MAP && !node_[index].IsMap()) {
     throw YAMLException("Entry index=" + std::to_string(index) +
@@ -109,17 +133,17 @@ YamlReader YamlReader::SubNode(int index, NodeTypeCheck type_check,
                         "  must be a list" + in_);
   }
 
+  YamlReader reader(node_[index]);
+
   // default to use the error location message of its parent
-  return YamlReader(node_[index], error_location_msg == ""
-                                      ? error_location_msg_
-                                      : error_location_msg);
+  reader.SetErrorInfo(entry_location_ + " " + entry_name_,
+                      "index=" + std::to_string(index));
+  return reader;
 }
 
-YamlReader YamlReader::SubNode(const std::string &key, NodeTypeCheck type_check,
-                               std::string error_location_msg) {
-  if (!node_[key]) {
-    throw YAMLException("Entry key=" + Q(key) + " does not exist" + in_);
-  }
+YamlReader YamlReader::SubNode(const std::string &key,
+                               NodeTypeCheck type_check) {
+  EnsureEntryExist(key);
 
   if (type_check == NodeTypeCheck::MAP && !node_[key].IsMap()) {
     throw YAMLException("Entry key=" + Q(key) + " must be a map" + in_);
@@ -128,18 +152,20 @@ YamlReader YamlReader::SubNode(const std::string &key, NodeTypeCheck type_check,
     throw YAMLException("Entry key=" + Q(key) + " must be a list" + in_);
   }
 
+  YamlReader reader(node_[key]);
+
   // default to use the error location message of its parent
-  return YamlReader(node_[key], error_location_msg == "" ? error_location_msg_
-                                                         : error_location_msg);
+  reader.SetErrorInfo(entry_location_ + " " + entry_name_,
+                      "key=" + Q(key));
+  return reader;
 }
 
 YamlReader YamlReader::SubNodeOpt(const std::string &key,
-                                  NodeTypeCheck type_check,
-                                  std::string error_location_msg) {
+                                  NodeTypeCheck type_check) {
   if (!node_[key]) {
-    return YamlReader(YAML::Node(), error_location_msg);
+    return YamlReader(YAML::Node());
   }
-  return SubNode(key, type_check, error_location_msg);
+  return SubNode(key, type_check);
 }
 
 Vec2 YamlReader::GetVec2(const std::string &key) {

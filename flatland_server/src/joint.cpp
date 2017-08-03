@@ -64,7 +64,7 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
 
   std::string name = joint_reader.Get<std::string>("name");
   std::string err_location = "model " + Q(model->name_) + " joint " + Q(name);
-  joint_reader.SetErrorLocationMsg(err_location);
+  joint_reader.SetErrorInfo(err_location);
 
   std::string type = joint_reader.Get<std::string>("type");
   Color color = joint_reader.GetColor("color", Color(1, 1, 1, 0.5));
@@ -79,8 +79,7 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
   Vec2 anchors[2];
   ModelBody *bodies[2];
   for (int i = 0; i < 2; i++) {
-    YamlReader body_reader =
-        bodies_reader.SubNode(i, YamlReader::MAP, err_location);
+    YamlReader body_reader = bodies_reader.SubNode(i, YamlReader::MAP);
     std::string body_name = body_reader.Get<std::string>("name");
     anchors[i] = body_reader.GetVec2("anchor");
     bodies[i] = model->GetBody(body_name);
