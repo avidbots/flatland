@@ -56,11 +56,19 @@
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     float initial_rate, bool show_viz, float viz_pub_rate)
+                                     float initial_rate, bool show_viz,
+                                     float viz_pub_rate)
     : initial_rate_(initial_rate),
       world_yaml_file_(world_yaml_file),
-      show_viz_(show_viz), viz_pub_rate_(viz_pub_rate) {
+      show_viz_(show_viz),
+      viz_pub_rate_(viz_pub_rate) {
   // Todo: Initialize SimTime class here once written
+
+  ROS_INFO_NAMED("SimMan",
+                 "Simulation params: world_yaml_file(%s) initial_rate(%f), "
+                 "show_viz(%s), viz_pub_rate(%f)",
+                 world_yaml_file_, initial_rate_, show_viz_ ? "true" : "false",
+                 viz_pub_rate_);
 }
 
 void SimulationManager::Main() {
@@ -84,6 +92,9 @@ void SimulationManager::Main() {
   double cycle_time_sum = 0;
   double expected_cycle_time_sum = 0;
 
+  ros::WallTime last_viz_update = ros::WallTime::now();
+  ros::WallDuration viz_update_period(1.0f / viz_pub_rate_);
+
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
   ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
@@ -95,7 +106,10 @@ void SimulationManager::Main() {
     ros::spinOnce();  // Normal ROS event loop
     // Todo: Update bodies
 
-    if (show_viz_) {
+    if (show_viz_ &&
+        (ros::WallTime::now() - last_viz_update) > viz_update_period) {
+      last_viz_update = ros::WallTime::now();
+          
       // don't update layers because they don't change
       world_->DebugVisualize(false);
       DebugVisualization::Get().Publish();  // publish debug visualization

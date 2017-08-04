@@ -79,37 +79,21 @@ int main(int argc, char **argv) {
   ros::NodeHandle node_handle("~");
 
   // Load parameters
-  float initial_rate = 60.0;  // The physics update rate (Hz)
-  if (node_handle.getParam("initial_rate", initial_rate)) {
-    ROS_INFO_STREAM_NAMED("Node", "initial rate: " << initial_rate);
-  } else {
-    ROS_INFO_STREAM_NAMED("Node", "assuming initial rate: " << initial_rate);
-  }
-
   std::string world_path;  // The file path to the world.yaml file
-  if (node_handle.getParam("world_path", world_path)) {
-    ROS_INFO_STREAM_NAMED("Node", "world path: " << world_path);
-  } else {
+  if (!node_handle.getParam("world_path", world_path)) {
     ROS_FATAL_NAMED("Node", "No world_path parameter given!");
     ros::shutdown();
     return 1;
   }
 
+  float initial_rate = 60.0;  // The physics update rate (Hz)
+  node_handle.getParam("initial_rate", initial_rate);
+
   bool show_viz = false;
-  if (node_handle.getParam("show_viz", show_viz)) {
-    ROS_INFO_STREAM_NAMED("Node", "show visualization: " << show_viz);
-  } else {
-    ROS_INFO_STREAM_NAMED("Node", "default show visualization: false");
-  }
+  node_handle.getParam("show_viz", show_viz);
 
   float viz_pub_rate = 30.0;
-  if (node_handle.getParam("viz_pub_rate", viz_pub_rate)) {
-    ROS_INFO_STREAM_NAMED("Node",
-                          "visualization publish rate: " << viz_pub_rate);
-  } else {
-    ROS_INFO_STREAM_NAMED(
-        "Node", "assuming visualization publish rate: " << viz_pub_rate);
-  }
+  node_handle.getParam("viz_pub_rate", viz_pub_rate);
 
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
