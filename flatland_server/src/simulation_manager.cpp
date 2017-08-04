@@ -109,7 +109,7 @@ void SimulationManager::Main() {
     if (show_viz_ &&
         (ros::WallTime::now() - last_viz_update) > viz_update_period) {
       last_viz_update = ros::WallTime::now();
-          
+
       // don't update layers because they don't change
       world_->DebugVisualize(false);
       DebugVisualization::Get().Publish();  // publish debug visualization
