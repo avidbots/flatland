@@ -763,7 +763,7 @@ TEST_F(LoadWorldTest, world_invalid_C) {
       this_file_dir / fs::path("load_world_tests/world_invalid_C/world.yaml");
   test_yaml_fail(
       "Flatland YAML: Entry index=0 contains unrecognized entry\\(s\\) "
-      "\\{\"random_param_2\", \"random_param_1\", \"random_param_3\"\\} \\(in "
+      "\\{\"random_param_1\", \"random_param_2\", \"random_param_3\"\\} \\(in "
       "\"layers\"\\)");
 }
 

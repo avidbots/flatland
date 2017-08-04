@@ -209,19 +209,27 @@ void YamlReader::EnsureAccessedAllKeys() {
   }
 
   std::vector<std::string> unused_keys;
-  for (YAML::const_iterator it = node_.begin(); it != node_.end(); ++it) {
-    std::string key = it->first.as<std::string>();
+  std::vector<std::string> keys;
 
+  for (const auto &k : node_) {
+    keys.push_back(k.first.as<std::string>());
+  }
+
+  std::sort(keys.begin(), keys.end());
+
+  for (const auto &key : keys) {
     if (accessed_keys_.count(key) == 0) {
       unused_keys.push_back("\"" + key + "\"");
     }
   }
 
-  std::string keys = "{" + boost::algorithm::join(unused_keys, ", ") + "}";
+  std::string unused_keys_str =
+      "{" + boost::algorithm::join(unused_keys, ", ") + "}";
 
   if (unused_keys.size() > 0) {
     throw YAMLException("Entry" + fmt_name_ +
-                        " contains unrecognized entry(s) " + keys + fmt_in_);
+                        " contains unrecognized entry(s) " + unused_keys_str +
+                        fmt_in_);
   }
 }
 }
