@@ -797,7 +797,6 @@ TEST_F(LoadWorldTest, world_invalid_F) {
   test_yaml_fail("Flatland YAML: Number of layers must be less than 16");
 }
 
-
 /**
  * This test tries to loads valid world yaml file which in turn tries to
  * load a invalid map yaml file. It should throw an exception.
