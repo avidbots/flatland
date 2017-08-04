@@ -108,6 +108,7 @@ void Bumper::OnInitialize(const YAML::Node &config) {
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
+  
 
   model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
 

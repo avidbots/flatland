@@ -63,7 +63,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
-  scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
+  scan_publisher_ = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
 
   // construct the body to laser transformation matrix once since it never
   // changes
@@ -109,15 +109,15 @@ void Laser::OnInitialize(const YAML::Node &config) {
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
-  static_tf.header.frame_id = tf::resolve(model_->namespace_, body_->name_);
-  static_tf.child_frame_id = tf::resolve(model_->namespace_, frame_id_);
-  static_tf.transform.translation.x = origin_.x;
-  static_tf.transform.translation.y = origin_.y;
-  static_tf.transform.translation.z = 0;
-  static_tf.transform.rotation.x = q.x();
-  static_tf.transform.rotation.y = q.y();
-  static_tf.transform.rotation.z = q.z();
-  static_tf.transform.rotation.w = q.w();
+  static_tf_.header.frame_id = tf::resolve(model_->namespace_, body_->name_);
+  static_tf_.child_frame_id = tf::resolve(model_->namespace_, frame_id_);
+  static_tf_.transform.translation.x = origin_.x;
+  static_tf_.transform.translation.y = origin_.y;
+  static_tf_.transform.translation.z = 0;
+  static_tf_.transform.rotation.x = q.x();
+  static_tf_.transform.rotation.y = q.y();
+  static_tf_.transform.rotation.z = q.z();
+  static_tf_.transform.rotation.w = q.w();
 
   ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
 }
@@ -128,6 +128,18 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
     return;
   }
 
+  // only compute and publish when the number of subscribers is not zero
+  if (scan_publisher_.getNumSubscribers() > 0) {
+    ComputeLaserRanges();
+    laser_scan_.header.stamp = ros::Time::now();
+    scan_publisher_.publish(laser_scan_);
+  }
+
+  static_tf_.header.stamp = ros::Time::now();
+  tf_broadcaster_.sendTransform(static_tf_);
+}
+
+void Laser::ComputeLaserRanges() {
   // get the transformation matrix from the world to the body, and get the
   // world to laser frame transformation matrix by multiplying the world to body
   // and body to laser
@@ -160,12 +172,6 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
       laser_scan_.ranges[i] = fraction_ * range_;
     }
   }
-
-  laser_scan_.header.stamp = ros::Time::now();
-  scan_publisher.publish(laser_scan_);
-
-  static_tf.header.stamp = ros::Time::now();
-  tf_broadcaster.sendTransform(static_tf);
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,

@@ -89,8 +89,7 @@ void SimulationManager::Main() {
 
   timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
 
-  double cycle_time_sum = 0;
-  double expected_cycle_time_sum = 0;
+  double filtered_cycle_utilization = 0;
 
   double viz_update_period = 1.0f / viz_pub_rate_;
 
@@ -119,15 +118,17 @@ void SimulationManager::Main() {
     ros::spinOnce();  // Normal ROS event loop
     rate.sleep();
 
-    cycle_time_sum += rate.cycleTime().toSec();
-    expected_cycle_time_sum += rate.expectedCycleTime().toSec();
+    double cycle_utilization =
+        rate.cycleTime().toSec() / rate.expectedCycleTime().toSec();
+
+    filtered_cycle_utilization =
+        0.99 * filtered_cycle_utilization + 0.01 * cycle_utilization;
 
     ROS_INFO_THROTTLE_NAMED(
         1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%, %.1f%% average)",
         rate.cycleTime().toSec() * 1000,
-        rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec(),
-        100.0 * cycle_time_sum / expected_cycle_time_sum);
+        rate.expectedCycleTime().toSec() * 1000.0, 100.0 * cycle_utilization,
+        100.0 * filtered_cycle_utilization);
   }
 
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
