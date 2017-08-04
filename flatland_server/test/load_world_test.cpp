@@ -510,6 +510,9 @@ TEST_F(LoadWorldTest, simple_test_A) {
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::MakeWorld(world_yaml.string());
 
+  EXPECT_EQ(w->physics_velocity_iterations_, 11);
+  EXPECT_EQ(w->physics_position_iterations_, 12);
+
   ASSERT_EQ(w->layers_.size(), 2);
 
   // check that layer 0 settings are loaded correctly
