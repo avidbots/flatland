@@ -1,0 +1,16 @@
+# Turtlebot
+
+bodies:
+  - name: base # invalid, the entry is a map without the dash
+    origin: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 0, 0.25]
+    random_paramter: 123
+    footprints:
+      - type: circle
+        center: [0, 0]
+        radius: 1.777
+        density: 0
+      - type: polygon
+        points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
+        density: 0
