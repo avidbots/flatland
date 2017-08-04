@@ -768,6 +768,28 @@ TEST_F(LoadWorldTest, world_invalid_C) {
 }
 
 /**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_D) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_D/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Layer with name \"layer\" already exists");
+}
+
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_E) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_E/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Model with name \"turtlebot\" already exists");
+}
+
+/**
  * This test tries to loads valid world yaml file which in turn tries to
  * load a invalid map yaml file. It should throw an exception.
  */
@@ -868,6 +890,28 @@ TEST_F(LoadWorldTest, model_invalid_G) {
   test_yaml_fail(
       "Flatland YAML: Entry body \"base\" contains unrecognized entry\\(s\\) "
       "\\{\"random_paramter\"\\} \\(in model \"turtlebot\"\\)");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_H) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_H/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Invalid \"bodies\" in \"turtlebot\" model, body with "
+      "name \"base\" already exists");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_I) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_I/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Invalid \"joints\" in \"turtlebot\" model, joint with "
+      "name \"wheel_weld\" already exists");
 }
 
 // Run all the tests that were declared with TEST()

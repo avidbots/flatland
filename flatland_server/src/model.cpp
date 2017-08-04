@@ -98,14 +98,21 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
 void Model::LoadBodies(YamlReader &bodies_reader) {
   if (bodies_reader.NodeSize() <= 0) {
     throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
-                        " model, "
-                        "must a be list of bodies of at least size 1");
+                        " model, must a be list of bodies of at least size 1");
   } else {
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
       YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
       ModelBody *b =
           ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
       bodies_.push_back(b);
+
+      // ensure body is not a duplicate
+      if (std::count_if(bodies_.begin(), bodies_.end(),
+                        [&](Body *i) { return i->name_ == b->name_; }) > 1) {
+        throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
+                            " model, body with name " + Q(b->name_) +
+                            " already exists");
+      }
     }
   }
 }
@@ -116,6 +123,14 @@ void Model::LoadJoints(YamlReader &joints_reader) {
       YamlReader joint_reader = joints_reader.Subnode(i, YamlReader::MAP);
       Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);
+
+      // ensure joint is not a duplicate
+      if (std::count_if(joints_.begin(), joints_.end(),
+                        [&](Joint *i) { return i->name_ == j->name_; }) > 1) {
+        throw YAMLException("Invalid \"joints\" in " + Q(name_) +
+                            " model, joint with name " + Q(j->name_) +
+                            " already exists");
+      }
     }
   }
 }

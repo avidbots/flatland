@@ -75,6 +75,16 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   std::string name = plugin_reader.Get<std::string>("name");
   std::string type = plugin_reader.Get<std::string>("type");
 
+  // ensure no plugin with the same model and name
+  if (std::count_if(model_plugins_.begin(), model_plugins_.end(),
+                    [&](boost::shared_ptr<ModelPlugin> i) {
+                      return i->name_ == name && i->model_ == model;
+                    }) >= 1) {
+    throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
+                        " model, plugin with name " + Q(name) +
+                        " already exists");
+  }
+
   // remove the name and type of the YAML Node, the plugin does not need to know
   // about these parameters, remove method is broken in yaml cpp 5.2, so we
   // create a new node and add everything

@@ -165,6 +165,12 @@ void World::LoadLayers(YamlReader &layers_reader) {
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
     reader.EnsureAccessedAllKeys();
 
+    // end sure no duplicate layer names
+    if (std::count_if(layers_.begin(), layers_.end(),
+                      [&](Layer *l) { return l->name_ == name; }) >= 1) {
+      throw YAMLException("Layer with name " + Q(name) + " already exists");
+    }
+
     if (map_path.string().front() != '/') {
       map_path = world_yaml_dir_ / map_path;
     }
@@ -195,6 +201,12 @@ void World::LoadModels(YamlReader &models_reader) {
 
 void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
                       const std::string &name, const Pose &pose) {
+  // ensure no duplicate model names
+  if (std::count_if(models_.begin(), models_.end(),
+                    [&](Model *m) { return m->name_ == name; }) >= 1) {
+    throw YAMLException("Model with name " + Q(name) + " already exists");
+  }
+
   boost::filesystem::path abs_path(model_yaml_path);
   if (model_yaml_path.front() != '/') {
     abs_path = world_yaml_dir_ / abs_path;
