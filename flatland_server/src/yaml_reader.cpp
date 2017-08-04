@@ -221,7 +221,7 @@ void YamlReader::EnsureAccessedAllKeys() {
 
   if (unused_keys.size() > 0) {
     throw YAMLException("Entry" + fmt_name_ +
-                        " contains unrecognized items(s) " + keys + fmt_in_);
+                        " contains unrecognized entry(s) " + keys + fmt_in_);
   }
 }
 }

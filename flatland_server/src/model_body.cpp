@@ -89,6 +89,8 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   try {
     YamlReader footprints_node =
         body_reader.Subnode("footprints", YamlReader::LIST);
+    body_reader.EnsureAccessedAllKeys();
+
     m->LoadFootprints(footprints_node);
   } catch (const YAMLException &e) {
     delete m;
@@ -112,6 +114,8 @@ void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
                           reader.entry_location_ + " " + reader.entry_name_ +
                           ", support footprints are: circle, polygon");
     }
+
+    reader.EnsureAccessedAllKeys();
   }
 }
 

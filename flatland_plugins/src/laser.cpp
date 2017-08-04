@@ -198,6 +198,9 @@ void Laser::ParseParameters(const YAML::Node &config) {
   max_angle_ = angle_reader.Get<double>("max");
   increment_ = angle_reader.Get<double>("increment");
 
+  angle_reader.EnsureAccessedAllKeys();
+  reader.EnsureAccessedAllKeys();
+
   if (max_angle_ < min_angle_) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
   }

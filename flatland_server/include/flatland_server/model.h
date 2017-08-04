@@ -128,7 +128,7 @@ class Model : public Entity {
    * @brief Create a model, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
-   * @param[in] model_yaml_path path to the model yaml file
+   * @param[in] model_yaml_path Absolute path to the model yaml file
    * @param[in] ns Namespace of the robot
    * @param[in] name Name of the model
    * @return A new model

@@ -66,8 +66,11 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
   tf_prefix_ = model_->namespace_;
-
   std::string ref_body_name = reader.Get<std::string>("reference", "");
+  std::vector<std::string> excluded_body_names =
+      reader.GetList<std::string>("exclude", {}, -1, -1);
+  reader.EnsureAccessedAllKeys();
+
   if (ref_body_name.size() != 0) {
     reference_body_ = model_->GetBody(ref_body_name);
 
@@ -80,9 +83,6 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
     // final result, but it changes how the TF would look
     reference_body_ = model_->bodies_[0];
   }
-
-  std::vector<std::string> excluded_body_names =
-      reader.GetList<std::string>("exclude", {}, -1, -1);
 
   for (int i = 0; i < excluded_body_names.size(); i++) {
     Body *body = model_->GetBody(excluded_body_names[i]);

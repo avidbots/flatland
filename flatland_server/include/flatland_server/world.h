@@ -66,7 +66,8 @@ namespace flatland_server {
  */
 class World : public b2ContactListener {
  public:
-  b2World *physics_world_;        ///< Box2D physics world
+  boost::filesystem::path world_yaml_dir_;  ///<directory containing world file
+  b2World *physics_world_;                  ///< Box2D physics world
   b2Vec2 gravity_;                ///< Box2D world gravity, always (0, 0)
   std::vector<Layer *> layers_;   ///< list of layers
   std::vector<Model *> models_;   ///< list of models
@@ -122,20 +123,19 @@ class World : public b2ContactListener {
   /**
    * @brief load layers into the world. Throws derivatives of
    * YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of
-   * layers
+   * @param[in] layers_reader Yaml reader for node that has list of layers
    */
-  void LoadLayers(const std::string &yaml_path);
+  void LoadLayers(YamlReader &layers_reader);
 
   /**
    * @brief load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] yaml_path Path to the world yaml file containing list of models
+   * @param[in] layers_reader Yaml reader for node that has a list of models
    */
-  void LoadModels(const std::string &yaml_path);
+  void LoadModels(YamlReader &models_reader);
 
   /**
    * @brief load models into the world. Throws derivatives of YAML::Exception
-   * @param[in] model_yaml_path Path to the model yaml file
+   * @param[in] model_yaml_path Relative path to the model yaml file
    * @param[in] ns Namespace of the robot
    * @param[in] name Name of the model
    * @param[in] pose Initial pose of the model in x, y, yaw

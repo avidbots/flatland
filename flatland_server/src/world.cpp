@@ -118,19 +118,26 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
 }
 
 World *World::MakeWorld(const std::string &yaml_path) {
-  YamlReader reader =
-      YamlReader(yaml_path).Subnode("properties", YamlReader::MAP);
-  int v = reader.Get<int>("velocity_iterations", 10);
-  int p = reader.Get<int>("position_iterations", 10);
+  YamlReader world_reader = YamlReader(yaml_path);
+  YamlReader prop_reader = world_reader.Subnode("properties", YamlReader::MAP);
+  int v = prop_reader.Get<int>("velocity_iterations", 10);
+  int p = prop_reader.Get<int>("position_iterations", 10);
+  prop_reader.EnsureAccessedAllKeys();
 
   World *w = new World();
 
+  w->world_yaml_dir_ = boost::filesystem::path(yaml_path).parent_path();
   w->physics_velocity_iterations_ = v;
   w->physics_position_iterations_ = p;
 
   try {
-    w->LoadLayers(yaml_path);
-    w->LoadModels(yaml_path);
+    YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
+    YamlReader models_reader =
+        world_reader.SubnodeOpt("models", YamlReader::LIST);
+    world_reader.EnsureAccessedAllKeys();
+
+    w->LoadLayers(layers_reader);
+    w->LoadModels(models_reader);
   } catch (const YAMLException &e) {
     ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
@@ -143,10 +150,7 @@ World *World::MakeWorld(const std::string &yaml_path) {
   return w;
 }
 
-void World::LoadLayers(const std::string &yaml_path) {
-  YamlReader layers_reader =
-      YamlReader(yaml_path).Subnode("layers", YamlReader::LIST);
-
+void World::LoadLayers(YamlReader &layers_reader) {
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
     if (cfr_.IsLayersFull()) {
@@ -159,9 +163,10 @@ void World::LoadLayers(const std::string &yaml_path) {
     std::string name = reader.Get<std::string>("name");
     boost::filesystem::path map_path(reader.Get<std::string>("map"));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
+    reader.EnsureAccessedAllKeys();
 
     if (map_path.string().front() != '/') {
-      map_path = boost::filesystem::path(yaml_path).parent_path() / map_path;
+      map_path = world_yaml_dir_ / map_path;
     }
 
     Layer *layer =
@@ -173,10 +178,7 @@ void World::LoadLayers(const std::string &yaml_path) {
   }
 }
 
-void World::LoadModels(const std::string &yaml_path) {
-  YamlReader models_reader =
-      YamlReader(yaml_path).SubnodeOpt("models", YamlReader::LIST);
-
+void World::LoadModels(YamlReader &models_reader) {
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
       YamlReader reader = models_reader.Subnode(i, YamlReader::MAP);
@@ -184,21 +186,22 @@ void World::LoadModels(const std::string &yaml_path) {
       std::string name = reader.Get<std::string>("name");
       std::string ns = reader.Get<std::string>("namespace", "");
       Pose pose = reader.GetPose("pose", Pose(0, 0, 0));
-      boost::filesystem::path model_path(reader.Get<std::string>("model"));
-
-      if (model_path.string().front() != '/') {
-        model_path =
-            boost::filesystem::path(yaml_path).parent_path() / model_path;
-      }
-
-      LoadModel(model_path.string(), ns, name, pose);
+      std::string path = reader.Get<std::string>("model");
+      reader.EnsureAccessedAllKeys();
+      LoadModel(path, ns, name, pose);
     }
   }
 }
 
 void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
                       const std::string &name, const Pose &pose) {
-  Model *m = Model::MakeModel(physics_world_, &cfr_, model_yaml_path, ns, name);
+  boost::filesystem::path abs_path(model_yaml_path);
+  if (model_yaml_path.front() != '/') {
+    abs_path = world_yaml_dir_ / abs_path;
+  }
+
+  Model *m =
+      Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
   m->TransformAll(pose);
   models_.push_back(m);
 

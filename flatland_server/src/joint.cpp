@@ -109,6 +109,12 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
         joint_reader.entry_name_ + ", supported joints are: revolute, weld");
   }
 
+  try {
+    joint_reader.EnsureAccessedAllKeys();
+  } catch (const YAMLException &e) {
+    delete j;
+    throw e;
+  }
   return j;
 }
 

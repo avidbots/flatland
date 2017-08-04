@@ -44,7 +44,6 @@ bodies:  # List of named bodies
     color: [1, 1, 1, 1]
     footprints:
       - type: polygon
-        center: [0, 0]
         density: 0
         points: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
 
@@ -55,7 +54,6 @@ bodies:  # List of named bodies
     footprints:
       - type: polygon
         density: 0
-        center: [0, 0]
         points: [[0.1, 0.1], [-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1]]
 
 plugins:
