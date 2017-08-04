@@ -119,9 +119,8 @@ void CollisionFilterRegistry::ListAllLayers(
 uint16_t CollisionFilterRegistry::GetCategoryBits(
     const std::vector<std::string> &layers,
     std::vector<std::string> *invalid_layers) {
-
   if (layers.size() == 1 && layers[0] == "all") {
-    return ~((uint16_t) 0x0);
+    return ~((uint16_t)0x0);
   }
 
   if (invalid_layers) {
