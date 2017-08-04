@@ -128,22 +128,21 @@ YamlReader YamlReader::Subnode(const std::string &key, NodeTypeCheck type_check,
 YamlReader YamlReader::SubnodeOpt(const std::string &key,
                                   NodeTypeCheck type_check,
                                   std::string subnode_location) {
-  accessed_keys_.insert(key);
   if (!node_[key]) {
+    accessed_keys_.insert(key);
     return YamlReader(YAML::Node());
   }
   return Subnode(key, type_check, subnode_location);
 }
 
 Vec2 YamlReader::GetVec2(const std::string &key) {
-  accessed_keys_.insert(key);
   std::vector<double> v = GetList<double>(key, 2, 2);
   return Vec2(v[0], v[1]);
 }
 
 Vec2 YamlReader::GetVec2(const std::string &key, const Vec2 &vec2) {
-  accessed_keys_.insert(key);
   if (!node_[key]) {
+    accessed_keys_.insert(key);
     return vec2;
   }
 
@@ -151,21 +150,19 @@ Vec2 YamlReader::GetVec2(const std::string &key, const Vec2 &vec2) {
 }
 
 Color YamlReader::GetColor(const std::string &key, const Color &default_val) {
-  accessed_keys_.insert(key);
   std::vector<double> v = GetList<double>(
       key, {default_val.r, default_val.g, default_val.b, default_val.a}, 4, 4);
   return Color(v[0], v[1], v[2], v[3]);
 }
 
 Pose YamlReader::GetPose(const std::string &key) {
-  accessed_keys_.insert(key);
   std::vector<double> v = GetList<double>(key, 3, 3);
   return Pose(v[0], v[1], v[2]);
 }
 
 Pose YamlReader::GetPose(const std::string &key, const Pose &default_val) {
-  accessed_keys_.insert(key);
   if (!node_[key]) {
+    accessed_keys_.insert(key);
     return default_val;
   }
 

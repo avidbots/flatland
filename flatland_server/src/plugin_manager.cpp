@@ -76,10 +76,15 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   std::string type = plugin_reader.Get<std::string>("type");
 
   // remove the name and type of the YAML Node, the plugin does not need to know
-  // about these parameters
-  YAML::Node yaml_node = plugin_reader.Node();
-  bool ret = yaml_node.remove(yaml_node["name"]);
-  ret = yaml_node.remove(yaml_node["type"]);
+  // about these parameters, remove method is broken in yaml cpp 5.2, so we
+  // create a new node and add everything
+  YAML::Node yaml_node;
+  for (const auto &k : plugin_reader.Node()) {
+    if (k.first.as<std::string>() != "name" &&
+        k.first.as<std::string>() != "type") {
+      yaml_node[k.first] = k.second;
+    }
+  }
 
   boost::shared_ptr<ModelPlugin> model_plugin;
 

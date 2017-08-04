@@ -174,14 +174,13 @@ std::vector<T> YamlReader::AsList(int mfmt_in_size, int max_size) {
 
 template <typename T>
 T YamlReader::Get(const std::string &key) {
-  accessed_keys_.insert(key);
   return Subnode(key, NO_CHECK).As<T>();
 }
 
 template <typename T>
 T YamlReader::Get(const std::string &key, const T &default_val) {
-  accessed_keys_.insert(key);
   if (!node_[key]) {
+    accessed_keys_.insert(key);
     return default_val;
   }
   return Get<T>(key);
@@ -190,7 +189,6 @@ T YamlReader::Get(const std::string &key, const T &default_val) {
 template <typename T>
 std::vector<T> YamlReader::GetList(const std::string &key, int mfmt_in_size,
                                    int max_size) {
-  accessed_keys_.insert(key);
   return Subnode(key, LIST).AsList<T>(mfmt_in_size, max_size);
 }
 
@@ -198,8 +196,8 @@ template <typename T>
 std::vector<T> YamlReader::GetList(const std::string &key,
                                    const std::vector<T> default_val,
                                    int mfmt_in_size, int max_size) {
-  accessed_keys_.insert(key);
   if (!node_[key]) {
+    accessed_keys_.insert(key);
     return default_val;
   }
 
