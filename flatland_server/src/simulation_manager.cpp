@@ -56,10 +56,10 @@
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     float initial_rate, bool show_viz)
+                                     float initial_rate, bool show_viz, float viz_pub_rate)
     : initial_rate_(initial_rate),
       world_yaml_file_(world_yaml_file),
-      show_viz_(show_viz) {
+      show_viz_(show_viz), viz_pub_rate_(viz_pub_rate) {
   // Todo: Initialize SimTime class here once written
 }
 

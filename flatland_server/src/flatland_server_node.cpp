@@ -97,14 +97,23 @@ int main(int argc, char **argv) {
 
   bool show_viz = false;
   if (node_handle.getParam("show_viz", show_viz)) {
-    ROS_INFO_STREAM_NAMED("Node", "show_viz: " << show_viz);
+    ROS_INFO_STREAM_NAMED("Node", "show visualization: " << show_viz);
   } else {
-    ROS_INFO_STREAM_NAMED("Node", "default show_viz = false");
+    ROS_INFO_STREAM_NAMED("Node", "default show visualization: false");
+  }
+
+  float viz_pub_rate = 30.0;
+  if (node_handle.getParam("viz_pub_rate", viz_pub_rate)) {
+    ROS_INFO_STREAM_NAMED("Node",
+                          "visualization publish rate: " << viz_pub_rate);
+  } else {
+    ROS_INFO_STREAM_NAMED(
+        "Node", "assuming visualization publish rate: " << viz_pub_rate);
   }
 
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
-      world_path, initial_rate, show_viz);
+      world_path, initial_rate, show_viz, viz_pub_rate);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
