@@ -92,29 +92,31 @@ void SimulationManager::Main() {
   double cycle_time_sum = 0;
   double expected_cycle_time_sum = 0;
 
-  ros::WallTime last_viz_update = ros::WallTime::now();
-  ros::WallDuration viz_update_period(1.0f / viz_pub_rate_);
+  double viz_update_period = 1.0f / viz_pub_rate_;
 
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
   ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
+
   while (ros::ok() && run_simulator_) {
+    // for updating visualization at a given rate, see
+    // flatland_plugins/update_timer.cpp for this formula
+    double f = fmod(
+        ros::WallTime::now().toSec() + (rate.expectedCycleTime().toSec() / 2.0),
+        viz_update_period);
+    bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
+
     // Step physics by ros cycle time
     world_->Update(timekeeper_);
 
-    ros::spinOnce();  // Normal ROS event loop
-    // Todo: Update bodies
-
-    if (show_viz_ &&
-        (ros::WallTime::now() - last_viz_update) > viz_update_period) {
-      last_viz_update = ros::WallTime::now();
-
+    if (show_viz_ && update_viz) {
       // don't update layers because they don't change
-      world_->DebugVisualize(false);
+      world_->DebugVisualize(false);        //
       DebugVisualization::Get().Publish();  // publish debug visualization
     }
 
+    ros::spinOnce();  // Normal ROS event loop
     rate.sleep();
 
     cycle_time_sum += rate.cycleTime().toSec();
