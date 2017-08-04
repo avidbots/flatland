@@ -774,8 +774,7 @@ TEST_F(LoadWorldTest, world_invalid_C) {
 TEST_F(LoadWorldTest, world_invalid_D) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_D/world.yaml");
-  test_yaml_fail(
-      "Flatland YAML: Layer with name \"layer\" already exists");
+  test_yaml_fail("Flatland YAML: Layer with name \"layer\" already exists");
 }
 
 /**
@@ -785,9 +784,19 @@ TEST_F(LoadWorldTest, world_invalid_D) {
 TEST_F(LoadWorldTest, world_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_E/world.yaml");
-  test_yaml_fail(
-      "Flatland YAML: Model with name \"turtlebot\" already exists");
+  test_yaml_fail("Flatland YAML: Model with name \"turtlebot\" already exists");
 }
+
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_F) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_F/world.yaml");
+  test_yaml_fail("Flatland YAML: Number of layers must be less than 16");
+}
+
 
 /**
  * This test tries to loads valid world yaml file which in turn tries to
@@ -831,7 +840,7 @@ TEST_F(LoadWorldTest, model_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Entry \"points\" must have size < 3 \\(in model "
+      "Flatland YAML: Entry \"points\" must have size >= 3 \\(in model "
       "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");
 }
 
@@ -912,6 +921,17 @@ TEST_F(LoadWorldTest, model_invalid_I) {
   test_yaml_fail(
       "Flatland YAML: Invalid \"joints\" in \"turtlebot\" model, joint with "
       "name \"wheel_weld\" already exists");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_J) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_J/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry \"points\" must have size <= 8 \\(in model "
+      "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");
 }
 
 // Run all the tests that were declared with TEST()

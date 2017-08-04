@@ -1,0 +1,13 @@
+# Turtlebot
+
+
+bodies:  # List of named bodies
+  - name: base
+    type: dynamic  
+    footprints:
+      - type: polygon
+        density: 0
+        points: [[0, 0], [0, 10], [1, 9], [2, 7], [3, 4], [4, 0], [5, -5], [6, -11]]
+      - type: polygon
+        density: 0
+        points: [[0, 0], [0, 10], [1, 9], [2, 7], [3, 4], [4, 0], [5, -5], [6, -11], [7, -18]] # invalid, max is 8

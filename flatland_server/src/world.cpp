@@ -154,7 +154,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
     if (cfr_.IsLayersFull()) {
-      throw YAMLException("Max number of layers reached, max is " +
+      throw YAMLException("Number of layers must be less than " +
                           std::to_string(cfr_.MAX_LAYERS));
     }
 

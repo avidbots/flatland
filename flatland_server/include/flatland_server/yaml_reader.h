@@ -156,12 +156,12 @@ std::vector<T> YamlReader::AsList(int mfmt_in_size, int max_size) {
   }
 
   if (mfmt_in_size > 0 && NodeSize() < mfmt_in_size) {
-    throw YAMLException("Entry" + fmt_name_ + " must have size < " +
+    throw YAMLException("Entry" + fmt_name_ + " must have size >= " +
                         std::to_string(mfmt_in_size) + fmt_in_);
   }
 
   if (max_size > 0 && NodeSize() > max_size) {
-    throw YAMLException("Entry" + fmt_name_ + " must have size > " +
+    throw YAMLException("Entry" + fmt_name_ + " must have size <= " +
                         std::to_string(max_size) + fmt_in_);
   }
 
