@@ -132,11 +132,6 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   std::vector<std::string> layers =
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
-  if (layers.size() == 1 && layers[0] == "all") {
-    layers.clear();
-    cfr_->ListAllLayers(layers);
-  }
-
   if (self_collide) {
     fixture_def.filter.groupIndex = cfr_->RegisterCollide();
   } else {
@@ -146,14 +141,14 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
 
   fixture_def.filter.categoryBits = 0x0;
 
-  std::vector<std::string> failed_layers;
-  uint16_t category_bits = cfr_->GetCategoryBits(layers, &failed_layers);
+  std::vector<std::string> invalid_layers;
+  uint16_t category_bits = cfr_->GetCategoryBits(layers, &invalid_layers);
 
-  if (!failed_layers.empty()) {
+  if (!invalid_layers.empty()) {
     throw YAMLException("Invalid footprint \"layers\" in " +
                         footprint_reader.entry_location_ + " " +
                         footprint_reader.entry_name_ + ", {" +
-                        boost::algorithm::join(failed_layers, ",") +
+                        boost::algorithm::join(invalid_layers, ",") +
                         "} layer(s) does not exist");
   }
 

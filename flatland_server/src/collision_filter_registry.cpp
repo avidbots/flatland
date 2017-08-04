@@ -118,17 +118,22 @@ void CollisionFilterRegistry::ListAllLayers(
 
 uint16_t CollisionFilterRegistry::GetCategoryBits(
     const std::vector<std::string> &layers,
-    std::vector<std::string> *layers_failed) {
-  if (layers_failed) {
-    layers_failed->clear();
+    std::vector<std::string> *invalid_layers) {
+
+  if (layers.size() == 1 && layers[0] == "all") {
+    return ~((uint16_t) 0x0);
+  }
+
+  if (invalid_layers) {
+    invalid_layers->clear();
   }
   uint16_t category_bits = 0;
 
   for (const auto &layer : layers) {
     int layer_id = LookUpLayerId(layer);
 
-    if (layer_id < 0 && layers_failed) {
-      layers_failed->push_back(layer);
+    if (layer_id < 0 && invalid_layers) {
+      invalid_layers->push_back(layer);
     } else {
       category_bits |= 1 << layer_id;
     }

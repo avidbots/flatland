@@ -205,23 +205,16 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
   }
 
-  if (layers.size() == 1 && layers[0] == "all") {
-    layers.clear();
-    model_->cfr_->ListAllLayers(layers);
-  }
-
   body_ = model_->GetBody(body_name);
-
   if (!body_) {
     throw YAMLException("Cannot find body with name " + body_name);
   }
 
-  std::vector<std::string> failed_layers;
-  layers_bits_ = model_->cfr_->GetCategoryBits(layers, &failed_layers);
-
-  if (!failed_layers.empty()) {
+  std::vector<std::string> invalid_layers;
+  layers_bits_ = model_->cfr_->GetCategoryBits(layers, &invalid_layers);
+  if (!invalid_layers.empty()) {
     throw YAMLException("Cannot find layer(s): {" +
-                        boost::algorithm::join(failed_layers, ",") + "}");
+                        boost::algorithm::join(invalid_layers, ",") + "}");
   }
 
   ROS_INFO_NAMED("LaserPlugin",

@@ -617,9 +617,9 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 0, 0.25}, 0.1, 0.125));
   auto fs = GetBodyFixtures(m0->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
-  EXPECT_TRUE(FixtureEq(fs[1], false, -1, 0b11, 0b11, 982.24, 0.59, 0.234));
+  EXPECT_TRUE(FixtureEq(fs[1], false, -1, 0xFFFF, 0xFFFF, 982.24, 0.59, 0.234));
   EXPECT_TRUE(
       PolygonEq(fs[1], {{-0.1, 0.1}, {-0.1, -0.1}, {0.1, -0.1}, {0.1, 0.1}}));
 
@@ -637,7 +637,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {0, 1, 0, 0.25}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[2]);
   ASSERT_EQ(fs.size(), 1);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(PolygonEq(
       fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
 
@@ -698,12 +698,12 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 1, 0.5}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1));
 
   // the groupIndex is 3 since the first two turtlebots has one self collide
   // fixtures each
-  EXPECT_TRUE(FixtureEq(fs[1], false, 3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[1], false, 3, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[1], 0, 0, 0.2));
 
   // Check model 3 which is the chair

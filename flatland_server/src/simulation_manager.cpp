@@ -67,7 +67,7 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
   ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) initial_rate(%f), "
                  "show_viz(%s), viz_pub_rate(%f)",
-                 world_yaml_file_, initial_rate_, show_viz_ ? "true" : "false",
+                 world_yaml_file_.c_str(), initial_rate_, show_viz_ ? "true" : "false",
                  viz_pub_rate_);
 }
 

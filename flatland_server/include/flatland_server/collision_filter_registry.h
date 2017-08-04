@@ -116,12 +116,13 @@ class CollisionFilterRegistry {
 
   /**
    * @brief: Get the Box2D category bits from a list of layers
-   * @param[in] layers The layers for generating the category bits
-   * @param[out] layers_failed if a given layer does not exist, it is pushed to
+   * @param[in] layers The layers for generating the category bits, if the input
+   * exactly equals to {"all"}, it returns all bits to 1 (0xFFFF)
+   * @param[out] invalid_layers if a given layer does not exist, it is pushed to
    * this list, optional
    */
   uint16_t GetCategoryBits(const std::vector<std::string> &layers,
-                           std::vector<std::string> *layers_failed = nullptr);
+                           std::vector<std::string> *invalid_layers = nullptr);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
