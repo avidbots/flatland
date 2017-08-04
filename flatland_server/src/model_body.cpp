@@ -133,7 +133,7 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
   if (self_collide) {
-    fixture_def.filter.groupIndex = cfr_->RegisterCollide();
+    fixture_def.filter.groupIndex = 0;
   } else {
     fixture_def.filter.groupIndex =
         (dynamic_cast<Model *>(entity_))->no_collide_group_index_;

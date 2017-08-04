@@ -110,7 +110,7 @@ void Bumper::OnInitialize(const YAML::Node &config) {
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
   
 
-  model_->GetBody("base")->physics_body_->SetAngularVelocity(3);
+  model_->GetBody("base")->physics_body_->SetAngularVelocity(0.5);
 
   std::map<b2Contact *, ContactState>::iterator it;
 
