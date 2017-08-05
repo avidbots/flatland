@@ -128,7 +128,7 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
 
   // config collision properties
   fixture_def.isSensor = footprint_reader.Get<bool>("sensor", false);
-  bool self_collide = footprint_reader.Get<bool>("self_collide", false);
+  bool self_collide = footprint_reader.Get<bool>("self_collide", true);
   std::vector<std::string> layers =
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
