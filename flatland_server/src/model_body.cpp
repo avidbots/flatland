@@ -129,7 +129,7 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   // config collision properties
   fixture_def.isSensor = footprint_reader.Get<bool>("sensor", false);
   fixture_def.filter.groupIndex = 0;
-  
+
   std::vector<std::string> layers =
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
   std::vector<std::string> invalid_layers;

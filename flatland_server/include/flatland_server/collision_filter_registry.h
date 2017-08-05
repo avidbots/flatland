@@ -119,7 +119,7 @@ class CollisionFilterRegistry {
    * @brief Get number of layers
    * @return number of layers
    */
-  int LayersCount(); 
+  int LayersCount();
 
   /**
    * @brief: Get the Box2D category bits from a list of layers

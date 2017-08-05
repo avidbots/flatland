@@ -117,9 +117,7 @@ std::vector<std::string> CollisionFilterRegistry::GetAllLayers() {
   return layer_names;
 }
 
-int CollisionFilterRegistry::LayersCount() {
-  return layer_id_table_.size();
-}
+int CollisionFilterRegistry::LayersCount() { return layer_id_table_.size(); }
 
 uint16_t CollisionFilterRegistry::GetCategoryBits(
     const std::vector<std::string> &layers,

@@ -104,12 +104,9 @@ void Bumper::OnInitialize(const YAML::Node &config) {
                  publish_all_collisions_, update_rate_,
                  boost::algorithm::join(excluded_body_names, ",").c_str());
   // model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
-                 
 }
 
 void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  
-
   // model_->GetBody("base")->physics_body_->SetAngularVelocity(0.5);
 
   std::map<b2Contact *, ContactState>::iterator it;
