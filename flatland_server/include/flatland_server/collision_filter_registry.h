@@ -90,6 +90,7 @@ class CollisionFilterRegistry {
 
   /**
    * @brief Check if the number of layers maxed out
+   * @return if layers are full
    */
   bool IsLayersFull();
 
@@ -110,9 +111,15 @@ class CollisionFilterRegistry {
 
   /**
    * @brief Get all registered layers
-   * @param[in] vector to store layer names in, will be cleared
+   * @return vector to store layer names in, will be cleared
    */
-  void ListAllLayers(std::vector<std::string> &layer_names);
+  std::vector<std::string> GetAllLayers();
+
+  /**
+   * @brief Get number of layers
+   * @return number of layers
+   */
+  int LayersCount(); 
 
   /**
    * @brief: Get the Box2D category bits from a list of layers

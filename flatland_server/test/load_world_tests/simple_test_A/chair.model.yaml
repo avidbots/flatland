@@ -10,6 +10,8 @@ bodies:
         center: [0, 0]
         radius: 1
         density: 0
+        layers: ["4d", "5d"]
+
       - type: circle
         center: [0, 0]
         density: 0

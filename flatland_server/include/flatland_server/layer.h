@@ -65,9 +65,10 @@ namespace flatland_server {
  */
 class Layer : public Entity {
  public:
-  CollisionFilterRegistry *cfr_;  ///< collision filter registry
-  cv::Mat bitmap_;                ///< OpenCV bitmap storing the image
-  double resolution_;             ///< map resolution m/pixel
+  std::vector<std::string> names_;  ///< list of layer names
+  CollisionFilterRegistry *cfr_;    ///< collision filter registry
+  cv::Mat bitmap_;                  ///< OpenCV bitmap storing the image
+  double resolution_;               ///< map resolution m/pixel
   double occupied_thresh_;  ///< a cell is considered filled over this threshold
   double free_thresh_;  ///< a cell is considered filled under this threshold
 
@@ -78,7 +79,8 @@ class Layer : public Entity {
    * initialization should be passed in here
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
-   * @param[in] name Name of the layer
+   * @param[in] names A list of names for the layer, the first name is used
+   * for the name of the body
    * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
    * @param[in] origin Coordinate of the lower left corner of the image, in the
@@ -88,9 +90,9 @@ class Layer : public Entity {
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::string &name, const cv::Mat &bitmap, const Color &color,
-        const Pose &origin, double resolution, double occupied_thresh,
-        double free_thresh);
+        const std::vector<std::string> &names, const cv::Mat &bitmap,
+        const Color &color, const Pose &origin, double resolution,
+        double occupied_thresh, double free_thresh);
 
   /**
    * @brief Destructor for the layer class
@@ -119,13 +121,16 @@ class Layer : public Entity {
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
    * @param[in] map_path Path to the file containing layer data
-   * @param[in] name Name of the layer
+   * @param[in] names A list of names for the layer, the first name is used
+   * for the name of the body. All names are registered in the CFR. Multiple
+   * names allow the physics body to be used as if there are multiple layers
    * @param[in] color Color of the layer
    * file, this is used to calculate the path to the layermap yaml file
    * @return A new layer
    */
   static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
-                          const std::string &map_path, const std::string &name,
+                          const std::string &map_path,
+                          const std::vector<std::string> &names,
                           const Color &color);
 };
 };      // namespace flatland_server

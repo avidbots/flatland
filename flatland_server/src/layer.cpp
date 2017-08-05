@@ -59,10 +59,11 @@
 namespace flatland_server {
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::string &name, const cv::Mat &bitmap, const Color &color,
-             const Pose &origin, double resolution, double occupied_thresh,
-             double free_thresh)
-    : Entity(physics_world, name),
+             const std::vector<std::string> &names, const cv::Mat &bitmap,
+             const Color &color, const Pose &origin, double resolution,
+             double occupied_thresh, double free_thresh)
+    : Entity(physics_world, names[0]),
+      names_(names),
       cfr_(cfr),
       resolution_(resolution),
       occupied_thresh_(occupied_thresh),
@@ -71,7 +72,6 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   body_ =
       new Body(physics_world_, this, name_, color, origin, b2_staticBody, 0, 0);
-  cfr->RegisterLayer(name_);
 
   LoadMap();
 }
@@ -79,11 +79,12 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 Layer::~Layer() { delete body_; }
 
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const std::string &map_path, const std::string &name,
+                        const std::string &map_path,
+                        const std::vector<std::string> &names,
                         const Color &color) {
   YamlReader reader(map_path);
 
-  reader.SetErrorInfo("layer " + Q(name));
+  reader.SetErrorInfo("layer " + Q(names[0]));
 
   double resolution = reader.Get<double>("resolution");
   double occupied_thresh = reader.Get<double>("occupied_thresh");
@@ -98,18 +99,18 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
   cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
   if (map.empty()) {
     throw YAMLException("Failed to load " + Q(image_path.string()) +
-                        " in layer " + Q(name));
+                        " in layer " + Q(names[0]));
   }
 
   cv::Mat bitmap;
   map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
 
-  return new Layer(physics_world, cfr, name, bitmap, color, origin, resolution,
+  return new Layer(physics_world, cfr, names, bitmap, color, origin, resolution,
                    occupied_thresh, free_thresh);
 }
 
 void Layer::LoadMap() {
-  uint16_t category_bits = cfr_->GetCategoryBits({name_});
+  uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
   auto add_edge = [this, category_bits](double x1, double y1, double x2,
                                         double y2) {

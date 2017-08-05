@@ -153,30 +153,41 @@ World *World::MakeWorld(const std::string &yaml_path) {
 void World::LoadLayers(YamlReader &layers_reader) {
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
-    if (cfr_.IsLayersFull()) {
-      throw YAMLException("Number of layers must be less than " +
-                          std::to_string(cfr_.MAX_LAYERS));
+    YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
+    YamlReader name_reader = reader.Subnode("name", YamlReader::NO_CHECK);
+
+    // allow names to be either a just a string or a list of strings
+    std::vector<std::string> names;
+    if (name_reader.Node().IsSequence()) {
+      names = name_reader.AsList<std::string>(1, -1);
+    } else {
+      names.push_back(name_reader.As<std::string>());
     }
 
-    YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
+    if (cfr_.LayersCount() + names.size() > cfr_.MAX_LAYERS) {
+      throw YAMLException(
+          "Unable to add " + std::to_string(names.size()) +
+          " additional layer(s) {" + boost::algorithm::join(names, ", ") +
+          "}, current layers count is " + std::to_string(cfr_.LayersCount()) +
+          ", max allowed is " + std::to_string(cfr_.MAX_LAYERS));
+    }
 
-    std::string name = reader.Get<std::string>("name");
     boost::filesystem::path map_path(reader.Get<std::string>("map"));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
     reader.EnsureAccessedAllKeys();
 
-    // end sure no duplicate layer names
-    if (std::count_if(layers_.begin(), layers_.end(),
-                      [&](Layer *l) { return l->name_ == name; }) >= 1) {
-      throw YAMLException("Layer with name " + Q(name) + " already exists");
+    for (const auto &name : names) {
+      if (cfr_.RegisterLayer(name) == cfr_.LAYER_ALREADY_EXIST) {
+        throw YAMLException("Layer with name " + Q(name) + " already exists");
+      }
     }
 
     if (map_path.string().front() != '/') {
       map_path = world_yaml_dir_ / map_path;
     }
 
-    Layer *layer =
-        Layer::MakeLayer(physics_world_, &cfr_, map_path.string(), name, color);
+    Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
+                                    names, color);
 
     layers_.push_back(layer);
 

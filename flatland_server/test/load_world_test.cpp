@@ -597,8 +597,8 @@ TEST_F(LoadWorldTest, simple_test_A) {
     layer1_edges.push_back(e);
 
     // check that collision groups are correctly assigned
-    EXPECT_EQ(f->GetFilterData().categoryBits, 0x2);
-    EXPECT_EQ(f->GetFilterData().maskBits, 0x2);
+    EXPECT_EQ(f->GetFilterData().categoryBits, 0b1110);
+    EXPECT_EQ(f->GetFilterData().maskBits, 0b1110);
   }
   EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
@@ -698,7 +698,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 1, 0.5}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b1100, 0b1100, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1));
 
   EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
@@ -792,7 +792,9 @@ TEST_F(LoadWorldTest, world_invalid_E) {
 TEST_F(LoadWorldTest, world_invalid_F) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_F/world.yaml");
-  test_yaml_fail("Flatland YAML: Number of layers must be less than 16");
+  test_yaml_fail(
+      "Flatland YAML: Unable to add 3 additional layer\\(s\\) \\{layer_15, "
+      "layer_16, layer_17\\}, current layers count is 14, max allowed is 16");
 }
 
 /**
