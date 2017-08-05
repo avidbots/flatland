@@ -128,21 +128,13 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
 
   // config collision properties
   fixture_def.isSensor = footprint_reader.Get<bool>("sensor", false);
-  bool self_collide = footprint_reader.Get<bool>("self_collide", true);
+  fixture_def.filter.groupIndex = 0;
+  
   std::vector<std::string> layers =
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
-
-  if (self_collide) {
-    fixture_def.filter.groupIndex = 0;
-  } else {
-    fixture_def.filter.groupIndex =
-        (dynamic_cast<Model *>(entity_))->no_collide_group_index_;
-  }
-
-  fixture_def.filter.categoryBits = 0x0;
-
   std::vector<std::string> invalid_layers;
-  uint16_t category_bits = cfr_->GetCategoryBits(layers, &invalid_layers);
+  fixture_def.filter.categoryBits =
+      cfr_->GetCategoryBits(layers, &invalid_layers);
 
   if (!invalid_layers.empty()) {
     throw YAMLException("Invalid footprint \"layers\" in " +
@@ -152,7 +144,6 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
                         "} layer(s) does not exist");
   }
 
-  fixture_def.filter.categoryBits = category_bits;
   fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
 }
 

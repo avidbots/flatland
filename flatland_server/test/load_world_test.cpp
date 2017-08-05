@@ -617,7 +617,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 0, 0.25}, 0.1, 0.125));
   auto fs = GetBodyFixtures(m0->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0xFFFF, 0xFFFF, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
   EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 982.24, 0.59, 0.234));
   EXPECT_TRUE(
@@ -698,7 +698,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 1, 0.5}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0xFFFF, 0xFFFF, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1));
 
   EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
