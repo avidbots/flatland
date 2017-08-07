@@ -97,7 +97,7 @@ class Layer : public Entity {
    * @brief Destructor for the layer class
    */
   ~Layer();
-  
+
   /**
    * @return The list of names the layer has
    */
@@ -108,7 +108,6 @@ class Layer : public Entity {
    */
   const CollisionFilterRegistry *GetCfr() const;
 
-  
   Body *GetBody();
 
   /**

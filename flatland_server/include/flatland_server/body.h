@@ -94,7 +94,7 @@ class Body {
    * @return Color of the body
    */
   const Color &GetColor() const;
-  
+
   /**
    * @brief Set of the color of the body
    */

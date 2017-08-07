@@ -117,17 +117,17 @@ class Model : public Entity {
    * @return pointer to the joint, nullptr if the joint does not exist
    */
   Joint *GetJoint(const std::string &name);
-  
+
   /**
    * @return List of bodies the model has
    */
-  const std::vector<ModelBody*> &GetBodies();
-  
+  const std::vector<ModelBody *> &GetBodies();
+
   /**
    * @return List of joints the model has
    */
-  const std::vector<Joint*> &GetJoints();
-  
+  const std::vector<Joint *> &GetJoints();
+
   /**
    * @return The namespace of the model
    */

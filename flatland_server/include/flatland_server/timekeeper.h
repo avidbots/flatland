@@ -66,7 +66,7 @@ class Timekeeper {
   Timekeeper();
 
   /**
-   * @brief Step time once with the current set of parameters 
+   * @brief Step time once with the current set of parameters
    */
   void StepTime();
 
