@@ -54,18 +54,46 @@ namespace flatland_server {
 
 class Timekeeper {
  public:
-  ros::Publisher clock_pub_;
-  ros::NodeHandle nh_;
-  ros::Time time_;
-  double max_step_size_;
-  const std::string clock_topic_;
+  ros::Publisher clock_pub_;       ///< the topic to publish the clock
+  ros::NodeHandle nh_;             ///< ROS Node handle
+  ros::Time time_;                 ///< simulation time
+  double max_step_size_;           ///< maximum step size
+  const std::string clock_topic_;  ///< the name of the clock topic
 
+  /**
+   * @brief constructor
+   */
   Timekeeper();
+
+  /**
+   * @brief Step time once with the current set of parameters 
+   */
   void StepTime();
+
+  /**
+   * @brief Publish the clock to ROS
+   */
   void UpdateRosClock() const;
+
+  /**
+   * @brief Set the maximum step size
+   * @param[in] step_size The step size
+   */
   void SetMaxStepSize(double step_size);
+
+  /**
+   * @return The current simulation time
+   */
   const ros::Time& GetSimTime() const;
+
+  /**
+   * @return The current step size used for the world
+   */
   double GetStepSize() const;
+
+  /**
+   * @return the max step size possible
+   */
   double GetMaxStepSize() const;
 };
 };      // namespace flatland_server
