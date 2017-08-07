@@ -144,6 +144,12 @@ class World : public b2ContactListener {
                  const std::string &name, const Pose &pose);
 
   /**
+   * @brief remove model with a given name
+   * @param[in] name The name of the model to remove
+   */
+  void RemoveModel(const std::string &name);  
+
+  /**
    * @brief factory method to create a instance of the world class. Cleans all
    * the inputs before instantiation of the class. Throws derivatives of
    * YAML::Exception

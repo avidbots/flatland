@@ -58,6 +58,18 @@ Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
 
 Joint::~Joint() { physics_world_->DestroyJoint(physics_joint_); }
 
+Model *Joint::GetModel() { return model_; }
+
+const std::string &Joint::GetName() const { return name_; }
+
+const Color &Joint::GetColor() const { return color_; }
+
+void Joint::SetColor(const Color &color) { color_ = color; }
+
+b2Joint *Joint::GetPhysicsJoint() { return physics_joint_; }
+
+b2World *Joint::GetphysicsWorld() { return physics_world_; }
+
 Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
                         YamlReader &joint_reader) {
   Joint *j;

@@ -52,7 +52,6 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/entity.h>
 #include <flatland_server/types.h>
-#include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -98,12 +97,25 @@ class Layer : public Entity {
    * @brief Destructor for the layer class
    */
   ~Layer();
+  
+  /**
+   * @return The list of names the layer has
+   */
+  const std::vector<std::string> &GetNames() const;
+
+  /**
+   * @return The collision filter registrar
+   */
+  const CollisionFilterRegistry *GetCfr() const;
+
+  
+  Body *GetBody();
 
   /**
    * @brief Return the type of entity
    * @return type indicating it is a layer
    */
-  virtual EntityType Type() { return EntityType::LAYER; }
+  EntityType Type() { return EntityType::LAYER; }
 
   /**
    * @brief Load the map. It vectorizes the bitmap and apply the transformations

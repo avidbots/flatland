@@ -236,6 +236,18 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
 }
 
+void World::RemoveModel(const std::string &name) {
+  for (int i = 0; i < models_.size(); i++) {
+    // name is unique, so there will only be one object with this name
+    if (models_[i]->GetName() == name) {
+      models_.erase(models_.begin() + i);
+      // delete the plugins associated with the model
+      plugin_manager_.RemoveModelPlugin(models_[i]);
+      break;
+    }
+  }
+}
+
 void World::DebugVisualize(bool update_layers) {
   if (update_layers) {
     for (auto &layer : layers_) {

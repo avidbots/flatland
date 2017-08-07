@@ -72,6 +72,18 @@ class Entity {
   Entity(b2World *physics_world, const std::string &name);
   virtual ~Entity() = default;
 
+  /**
+   * @return name of the entity
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @brief Get Box2D physics world
+   * @return Pointer to Box2D physics world, use this to call Box2D world
+   * methods
+   */
+  b2World *GetPhysicsWorld();
+
   /// This class should be non-copyable. This will cause the destructor to be
   /// called twice for a given b2Body
   Entity(const Entity &) = delete;

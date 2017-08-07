@@ -58,6 +58,8 @@ ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
            angular_damping),
       cfr_(cfr) {}
 
+const CollisionFilterRegistry *ModelBody::GetCfr() const { return cfr_; }
+
 ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
                                YamlReader &body_reader) {

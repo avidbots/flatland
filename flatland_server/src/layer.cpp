@@ -78,6 +78,11 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
 Layer::~Layer() { delete body_; }
 
+const std::vector<std::string> &Layer::GetNames() const { return names_; }
+
+const CollisionFilterRegistry *Layer::GetCfr() const { return cfr_; }
+Body *Layer::GetBody() { return body_; }
+
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &map_path,
                         const std::vector<std::string> &names,

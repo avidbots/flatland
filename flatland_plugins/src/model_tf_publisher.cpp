@@ -65,7 +65,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
-  tf_prefix_ = model_->namespace_;
+  tf_prefix_ = model_->GetNameSpace();
   std::string ref_body_name = reader.Get<std::string>("reference", "");
   std::vector<std::string> excluded_body_names =
       reader.GetList<std::string>("exclude", {}, -1, -1);

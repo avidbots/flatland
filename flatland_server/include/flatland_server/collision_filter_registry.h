@@ -92,7 +92,7 @@ class CollisionFilterRegistry {
    * @brief Check if the number of layers maxed out
    * @return if layers are full
    */
-  bool IsLayersFull();
+  bool IsLayersFull() const;
 
   /**
    * @brief Register a new layer
@@ -107,19 +107,19 @@ class CollisionFilterRegistry {
    * @param[in] name Name of the layer
    * @return the id of the layer, or LAYER_NOT_EXIST
    */
-  int LookUpLayerId(std::string name);
+  int LookUpLayerId(std::string name) const;
 
   /**
    * @brief Get all registered layers
    * @return vector to store layer names in, will be cleared
    */
-  std::vector<std::string> GetAllLayers();
+  std::vector<std::string> GetAllLayers() const;
 
   /**
    * @brief Get number of layers
    * @return number of layers
    */
-  int LayersCount();
+  int LayersCount() const;
 
   /**
    * @brief: Get the Box2D category bits from a list of layers
@@ -128,8 +128,9 @@ class CollisionFilterRegistry {
    * @param[out] invalid_layers if a given layer does not exist, it is pushed to
    * this list, optional
    */
-  uint16_t GetCategoryBits(const std::vector<std::string> &layers,
-                           std::vector<std::string> *invalid_layers = nullptr);
+  uint16_t GetCategoryBits(
+      const std::vector<std::string> &layers,
+      std::vector<std::string> *invalid_layers = nullptr) const;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H

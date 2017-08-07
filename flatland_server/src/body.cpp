@@ -69,4 +69,12 @@ Body::~Body() {
   }
 }
 
+const std::string &Body::GetName() const { return name_; }
+
+b2Body *Body::GetPhysicsBody() { return physics_body_; }
+
+const Color &Body::GetColor() const { return color_; }
+
+void Body::SetColor(const Color &color) { color_ = color; }
+
 };  // namespace flatland_server

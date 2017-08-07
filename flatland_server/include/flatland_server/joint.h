@@ -85,6 +85,36 @@ class Joint {
   Joint &operator=(const Joint &) = delete;
 
   /**
+   * @return Pointer to the model that contains the joint
+   */
+  Model *GetModel();
+
+  /**
+   * @return Name of the the joint
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @return Color of the joint for visualization
+   */
+  const Color &GetColor() const;
+
+  /**
+   * @return Color of the joint for visualization
+   */
+  void SetColor(const Color &color);
+
+  /**
+   * @return Get pointer to the Box2D physics joint
+   */
+  b2Joint *GetPhysicsJoint();
+
+  /**
+   * @return Get pointer of the Box2D physics world
+   */
+  b2World *GetphysicsWorld();
+
+  /**
    * @brief Creates a joint for the given params, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] model Model the joint belongs to

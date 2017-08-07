@@ -53,9 +53,7 @@ namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &ns, const std::string &name)
-    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {
-  no_collide_group_index_ = cfr->RegisterNoCollide();
-}
+    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {}
 
 Model::~Model() {
   for (int i = 0; i < joints_.size(); i++) {
@@ -143,6 +141,25 @@ ModelBody *Model::GetBody(const std::string &name) {
   }
   return nullptr;
 }
+
+Joint *Model::GetJoint(const std::string &name) {
+  for (int i = 0; i < joints_.size(); i++) {
+    if (joints_[i]->name_ == name) {
+      return joints_[i];
+    }
+  }
+  return nullptr;
+}
+
+const std::vector<ModelBody *> &Model::GetBodies() { return bodies_; }
+
+const std::vector<Joint *> &Model::GetJoints() { return joints_; }
+
+const std::string &Model::GetNameSpace() const { return namespace_; }
+
+const std::string &Model::GetName() const { return name_; }
+
+const CollisionFilterRegistry *Model::GetCfr() const { return cfr_; }
 
 void Model::TransformAll(const Pose &pose_delta) {
   //     --                --   --                --

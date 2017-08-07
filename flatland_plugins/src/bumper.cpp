@@ -141,7 +141,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
     b2Contact *c = it->first;
     ContactState *s = &it->second;
     flatland_msgs::Collision collision;
-    collision.entity_A = model_->name_;
+    collision.entity_A = model_->GetName();
     collision.entity_B = s->entity_B->name_;
 
     collision.body_A = s->body_A->name_;

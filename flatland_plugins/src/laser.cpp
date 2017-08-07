@@ -72,16 +72,17 @@ void Laser::OnInitialize(const YAML::Node &config) {
   double x = origin_.x, y = origin_.y;
   m_body_to_laser_ << c, -s, x, s, c, y, 0, 0, 1;
 
-  num_laser_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
+  int num_laser_points =
+      std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
   // initialize size for the matrix storing the laser points
-  m_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
-  m_world_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
+  m_laser_points_ = Eigen::MatrixXf(3, num_laser_points);
+  m_world_laser_points_ = Eigen::MatrixXf(3, num_laser_points);
   v_zero_point_ << 0, 0, 1;
 
   // pre-calculate the laser points w.r.t to the laser frame, since this never
   // changes
-  for (int i = 0; i < num_laser_points_; i++) {
+  for (int i = 0; i < num_laser_points; i++) {
     float angle = min_angle_ + i * increment_;
 
     float x = range_ * cos(angle);
@@ -100,17 +101,17 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.scan_time = 0;
   laser_scan_.range_min = 0;
   laser_scan_.range_max = range_;
-  laser_scan_.ranges.resize(num_laser_points_);
+  laser_scan_.ranges.resize(num_laser_points);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id = tf::resolve(model_->namespace_, frame_id_);
+  laser_scan_.header.frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
-  static_tf_.header.frame_id = tf::resolve(model_->namespace_, body_->name_);
-  static_tf_.child_frame_id = tf::resolve(model_->namespace_, frame_id_);
+  static_tf_.header.frame_id = tf::resolve(model_->GetNameSpace(), body_->GetName());
+  static_tf_.child_frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
   static_tf_.transform.translation.x = origin_.x;
   static_tf_.transform.translation.y = origin_.y;
   static_tf_.transform.translation.z = 0;
@@ -143,7 +144,7 @@ void Laser::ComputeLaserRanges() {
   // get the transformation matrix from the world to the body, and get the
   // world to laser frame transformation matrix by multiplying the world to body
   // and body to laser
-  const b2Transform &t = body_->physics_body_->GetTransform();
+  const b2Transform &t = body_->GetPhysicsBody()->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
@@ -158,13 +159,13 @@ void Laser::ComputeLaserRanges() {
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   // loop through the laser points and call the Box2D world raycast
-  for (int i = 0; i < num_laser_points_; ++i) {
+  for (int i = 0; i < laser_scan_.ranges.size(); ++i) {
     laser_point.x = m_world_laser_points_(0, i);
     laser_point.y = m_world_laser_points_(1, i);
 
     did_hit_ = false;
 
-    model_->physics_world_->RayCast(this, laser_origin_point, laser_point);
+    model_->GetPhysicsWorld()->RayCast(this, laser_origin_point, laser_point);
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
@@ -217,7 +218,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   }
 
   std::vector<std::string> invalid_layers;
-  layers_bits_ = model_->cfr_->GetCategoryBits(layers, &invalid_layers);
+  layers_bits_ = model_->GetCfr()->GetCategoryBits(layers, &invalid_layers);
   if (!invalid_layers.empty()) {
     throw YAMLException("Cannot find layer(s): {" +
                         boost::algorithm::join(invalid_layers, ",") + "}");

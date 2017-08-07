@@ -79,6 +79,28 @@ class Body {
        double linear_damping, double angular_damping);
 
   /**
+   * @return name of the body
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @brief Get the Box2D body, use this to manipulate the body in physics
+   * through the Box2D methods
+   * @return Pointer to Box2D physics body
+   */
+  b2Body *GetPhysicsBody();
+
+  /**
+   * @return Color of the body
+   */
+  const Color &GetColor() const;
+  
+  /**
+   * @brief Set of the color of the body
+   */
+  void SetColor(const Color &color);
+
+  /**
    * Destructor for the body
    */
   virtual ~Body();
