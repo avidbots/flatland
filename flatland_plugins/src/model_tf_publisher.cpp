@@ -97,7 +97,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   update_timer_.SetRate(update_rate_);
 
-  ROS_INFO_NAMED(
+  ROS_DEBUG_NAMED(
       "ModelTfPublisher",
       "Initialized with params: reference(%s %p) "
       "publish_tf_world(%d) world_frame_id(%s) update_rate(%f), exclude({%s})",

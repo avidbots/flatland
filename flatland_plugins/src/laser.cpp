@@ -110,7 +110,8 @@ void Laser::OnInitialize(const YAML::Node &config) {
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
-  static_tf_.header.frame_id = tf::resolve(model_->GetNameSpace(), body_->GetName());
+  static_tf_.header.frame_id =
+      tf::resolve(model_->GetNameSpace(), body_->GetName());
   static_tf_.child_frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
   static_tf_.transform.translation.x = origin_.x;
   static_tf_.transform.translation.y = origin_.y;
@@ -224,14 +225,14 @@ void Laser::ParseParameters(const YAML::Node &config) {
                         boost::algorithm::join(invalid_layers, ",") + "}");
   }
 
-  ROS_INFO_NAMED("LaserPlugin",
-                 "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) "
-                 "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
-                 "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
-                 name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
-                 origin_.x, origin_.y, origin_.theta, frame_id_.c_str(),
-                 update_rate_, range_, min_angle_, max_angle_, increment_,
-                 layers_bits_, boost::algorithm::join(layers, ",").c_str());
+  ROS_DEBUG_NAMED("LaserPlugin",
+                  "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) "
+                  "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
+                  "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
+                  name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
+                  origin_.x, origin_.y, origin_.theta, frame_id_.c_str(),
+                  update_rate_, range_, min_angle_, max_angle_, increment_,
+                  layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }
 };
 

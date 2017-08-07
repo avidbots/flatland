@@ -97,12 +97,12 @@ void Bumper::OnInitialize(const YAML::Node &config) {
   collisions_publisher_ =
       nh_.advertise<flatland_msgs::Collisions>(topic_name_, 1);
 
-  ROS_INFO_NAMED("Bumper",
-                 "Initialized with params: topic(%s) world_frame_id(%s) "
-                 "publish_all_collisions(%d) update_rate(%f) exclude({%s})",
-                 topic_name_.c_str(), world_frame_id_.c_str(),
-                 publish_all_collisions_, update_rate_,
-                 boost::algorithm::join(excluded_body_names, ",").c_str());
+  ROS_DEBUG_NAMED("Bumper",
+                  "Initialized with params: topic(%s) world_frame_id(%s) "
+                  "publish_all_collisions(%d) update_rate(%f) exclude({%s})",
+                  topic_name_.c_str(), world_frame_id_.c_str(),
+                  publish_all_collisions_, update_rate_,
+                  boost::algorithm::join(excluded_body_names, ",").c_str());
   model_->GetBody("base")->physics_body_->SetLinearVelocity(b2Vec2(3, 0));
 }
 
