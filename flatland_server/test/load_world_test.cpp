@@ -520,12 +520,6 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
                      {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
-  EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
-  EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
-  EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->resolution_, 0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
   EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
 
   // check that layer 1 settings are loaded correctly
@@ -533,13 +527,6 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0},
                      {1, 1, 1, 1}, 0, 0));
-  EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
-  EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
-  EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 1.5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
   EXPECT_EQ(w->cfr_.LookUpLayerId("3d"), 1);
 
   // check that bitmap is transformed correctly. This involves flipping the y

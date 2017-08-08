@@ -66,11 +66,6 @@ class Layer : public Entity {
  public:
   std::vector<std::string> names_;  ///< list of layer names
   CollisionFilterRegistry *cfr_;    ///< collision filter registry
-  cv::Mat bitmap_;                  ///< OpenCV bitmap storing the image
-  double resolution_;               ///< map resolution m/pixel
-  double occupied_thresh_;  ///< a cell is considered filled over this threshold
-  double free_thresh_;  ///< a cell is considered filled under this threshold
-
   Body *body_;
 
   /**
@@ -80,18 +75,17 @@ class Layer : public Entity {
    * @param[in] cfr Collision filter registry
    * @param[in] names A list of names for the layer, the first name is used
    * for the name of the body
-   * @param[in] bitmap Matrix containing the map image
    * @param[in] color Color in the form of r, g, b, a, used for visualization
    * @param[in] origin Coordinate of the lower left corner of the image, in the
    * form of x, y, theta
-   * @param[in] resolution Resolution of the map image in meters per pixel
    * @param[in] occupied_thresh Threshold indicating obstacle if above
-   * @param[in] free_thresh Threshold indicating no obstale if below
+   * @param[in] bitmap Matrix containing the map image
+   * @param[in] resolution Resolution of the map image in meters per pixel
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::vector<std::string> &names, const cv::Mat &bitmap,
-        const Color &color, const Pose &origin, double resolution,
-        double occupied_thresh, double free_thresh);
+        const std::vector<std::string> &names, const Color &color,
+        const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
+        double resolution);
 
   /**
    * @brief Destructor for the layer class
@@ -119,7 +113,8 @@ class Layer : public Entity {
   /**
    * @brief Load the map. It vectorizes the bitmap and apply the transformations
    */
-  void LoadMap();
+  void LoadMap(const cv::Mat &bitmap, double occupied_thresh,
+               double resolution);
 
   /**
    * @brief Visualize layer for debugging purposes
