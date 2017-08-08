@@ -1,0 +1,19 @@
+properties: {}
+layers:
+  - {name: "layer_1", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_2", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_3", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_4", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_5", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_6", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_7", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_8", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_9", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_10", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_11", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_12", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_13", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_14", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_15", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_16", map: "../simple_test_A/map.yaml"}
+  - {name: "layer_17", map: "../simple_test_A/map.yaml"}

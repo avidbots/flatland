@@ -12,8 +12,10 @@ bodies:  # List of named bodies
       - type: circle
         center: [0, 0] 
         radius: 1.777 
+        density: 0
       - type: polygon
         points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
+        density: 0        
 
   - name: left_wheel
     origin: [-1, 0, 0] 
@@ -22,8 +24,9 @@ bodies:  # List of named bodies
     footprints:
       - type: polygon
         layers: ["3d", "random_layer"] # invalid, random_layer does not exist
-        is_sensor: true
+        sensor: true
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+        density: 0
 
   - name: right_wheel
     origin: [1, 0, 0] 
@@ -32,3 +35,4 @@ bodies:  # List of named bodies
     footprints:
       - type: polygon
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+        density: 0

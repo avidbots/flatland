@@ -47,6 +47,7 @@
 #include <flatland_plugins/model_tf_publisher.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/yaml_reader.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
 #include <Eigen/Dense>
@@ -57,55 +58,41 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
-  // default values
-  publish_tf_world_ = false;
-  world_frame_id_ = "map";
-  update_rate_ = std::numeric_limits<double>::infinity();
-  tf_prefix_ = model_->namespace_;
+  YamlReader reader(config);
 
-  if (config["reference"]) {
-    std::string body_name = config["reference"].as<std::string>();
-    reference_body_ = model_->GetBody(body_name);
+  // default values
+  publish_tf_world_ = reader.Get<bool>("publish_tf_world", false);
+  world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
+  update_rate_ = reader.Get<double>("update_rate",
+                                    std::numeric_limits<double>::infinity());
+  tf_prefix_ = model_->namespace_;
+  std::string ref_body_name = reader.Get<std::string>("reference", "");
+  std::vector<std::string> excluded_body_names =
+      reader.GetList<std::string>("exclude", {}, -1, -1);
+  reader.EnsureAccessedAllKeys();
+
+  if (ref_body_name.size() != 0) {
+    reference_body_ = model_->GetBody(ref_body_name);
 
     if (reference_body_ == nullptr) {
-      throw YAMLException("Body with name \"" + body_name +
+      throw YAMLException("Body with name \"" + ref_body_name +
                           "\" does not exist");
     }
-
   } else {
     // defaults to the first body, the reference body has no effect on the
     // final result, but it changes how the TF would look
     reference_body_ = model_->bodies_[0];
   }
 
-  if (config["world_frame_id"]) {
-    world_frame_id_ = config["world_frame_id"].as<std::string>();
-  }
+  for (int i = 0; i < excluded_body_names.size(); i++) {
+    Body *body = model_->GetBody(excluded_body_names[i]);
 
-  if (config["publish_tf_world"]) {
-    publish_tf_world_ = config["publish_tf_world"].as<bool>();
-  }
-
-  if (config["update_rate"]) {
-    update_rate_ = config["update_rate"].as<double>();
-  }
-
-  std::vector<std::string> excluded_body_names;
-  if (config["exclude"] && config["exclude"].IsSequence()) {
-    for (int i = 0; i < config["exclude"].size(); i++) {
-      std::string body_name = config["exclude"][i].as<std::string>();
-      excluded_body_names.push_back(body_name);
-      Body *body = model_->GetBody(body_name);
-
-      if (body == nullptr) {
-        throw YAMLException("Body with name \"" + body_name +
-                            "\" does not exist");
-      } else {
-        excluded_bodies_.push_back(body);
-      }
+    if (body == nullptr) {
+      throw YAMLException("Body with name \"" + excluded_body_names[i] +
+                          "\" does not exist");
+    } else {
+      excluded_bodies_.push_back(body);
     }
-  } else if (config["exclude"]) {
-    throw YAMLException("Invalid \"exclude\", must be a list of strings");
   }
 
   update_timer_.SetRate(update_rate_);

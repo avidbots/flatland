@@ -68,7 +68,7 @@ void SimulationManager::Main() {
 
   try {
     world_ = World::MakeWorld(world_yaml_file_);
-  } catch (const std::runtime_error &e) {
+  } catch (const std::exception &e) {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
   }

@@ -172,7 +172,7 @@ TEST_F(UpdateTimerTest, rate_test_D) {
  */
 TEST_F(UpdateTimerTest, rate_test_E) {
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
-  set_rate = NAN;
+  set_rate = 0;
   expected_rate = 0;
   sim_test_time = 2;
 

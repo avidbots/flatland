@@ -8,17 +8,17 @@ bodies:  # List of named bodies
     color: [1, 0, 0, 0.25] 
     footprints:
       - type: circle
-        is_sensor: true
+        sensor: true
         radius: 0.5
         center: [0.0, 0.0]
       - type: polygon
-        is_sensor: true
+        sensor: true
         points: [[-.05, -.45], [0.05, -.45], [0.05, -.35], [-0.05, -.35]]
       - type: polygon
-        is_sensor: true
+        sensor: true
         points: [[-.4, -.125], [-.3, -.125], [-.3, .125], [-.4, .125]]
       - type: polygon
-        is_sensor: true
+        sensor: true
         points: [[.4, -.125], [.3, -.125], [.3, .125], [.4, .125]]
 plugins:
   - type: DiffDrive # plugin class name

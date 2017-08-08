@@ -73,49 +73,64 @@ Model::~Model() {
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &model_yaml_path,
                         const std::string &ns, const std::string &name) {
-  YAML::Node model_node;
-  try {
-    model_node = YAML::LoadFile(model_yaml_path);
-  } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading \"" + model_yaml_path + "\"", e);
-  }
+  YamlReader reader(model_yaml_path);
+  reader.SetErrorInfo("model " + Q(name));
 
   Model *m = new Model(physics_world, cfr, ns, name);
 
-  m->plugins_node_ = model_node["plugins"];
+  m->plugins_reader_ = reader.SubnodeOpt("plugins", YamlReader::LIST);
 
   try {
-    m->LoadBodies(model_node["bodies"]);
-    m->LoadJoints(model_node["joints"]);
-  } catch (const YAML::Exception &e) {
+    YamlReader bodies_reader = reader.Subnode("bodies", YamlReader::LIST);
+    YamlReader joints_reader = reader.SubnodeOpt("joints", YamlReader::LIST);
+    reader.EnsureAccessedAllKeys();
+
+    m->LoadBodies(bodies_reader);
+    m->LoadJoints(joints_reader);
+  } catch (const YAMLException &e) {
     delete m;
-    throw YAMLException(e);
+    throw e;
   }
 
   return m;
 }
 
-void Model::LoadBodies(const YAML::Node &bodies_node) {
-  if (!bodies_node || !bodies_node.IsSequence() || bodies_node.size() <= 0) {
-    throw YAMLException("Invalid \"bodies\" in " + name_ +
-                        " model, "
-                        "must a be list of bodies of at least size 1");
+void Model::LoadBodies(YamlReader &bodies_reader) {
+  if (bodies_reader.NodeSize() <= 0) {
+    throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
+                        " model, must a be list of bodies of at least size 1");
   } else {
-    for (const auto &body_node : bodies_node) {
-      ModelBody *b = ModelBody::MakeBody(physics_world_, cfr_, this, body_node);
+    for (int i = 0; i < bodies_reader.NodeSize(); i++) {
+      YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
+      ModelBody *b =
+          ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
       bodies_.push_back(b);
+
+      // ensure body is not a duplicate
+      if (std::count_if(bodies_.begin(), bodies_.end(),
+                        [&](Body *i) { return i->name_ == b->name_; }) > 1) {
+        throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
+                            " model, body with name " + Q(b->name_) +
+                            " already exists");
+      }
     }
   }
 }
 
-void Model::LoadJoints(const YAML::Node &joints_node) {
-  if (joints_node && !joints_node.IsSequence()) {
-    // if joints exists and it is not a sequence, it is okay to have no joints
-    throw YAMLException("Invalid \"joints\" in " + name_ + " model");
-  } else if (joints_node) {
-    for (const auto &joint_node : joints_node) {
-      Joint *j = Joint::MakeJoint(physics_world_, this, joint_node);
+void Model::LoadJoints(YamlReader &joints_reader) {
+  if (!joints_reader.IsNodeNull()) {
+    for (int i = 0; i < joints_reader.NodeSize(); i++) {
+      YamlReader joint_reader = joints_reader.Subnode(i, YamlReader::MAP);
+      Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);
+
+      // ensure joint is not a duplicate
+      if (std::count_if(joints_.begin(), joints_.end(),
+                        [&](Joint *i) { return i->name_ == j->name_; }) > 1) {
+        throw YAMLException("Invalid \"joints\" in " + Q(name_) +
+                            " model, joint with name " + Q(j->name_) +
+                            " already exists");
+      }
     }
   }
 }
@@ -129,7 +144,7 @@ ModelBody *Model::GetBody(const std::string &name) {
   return nullptr;
 }
 
-void Model::TransformAll(const std::array<double, 3> &pose_delta) {
+void Model::TransformAll(const Pose &pose_delta) {
   //     --                --   --                --
   //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |
   //     | sin(a)  cos(a) y | x | sin(b)  cos(b) v |
@@ -142,12 +157,12 @@ void Model::TransformAll(const std::array<double, 3> &pose_delta) {
   //       --                                          --
 
   RotateTranslate tf =
-      Geometry::CreateTransform(pose_delta[0], pose_delta[1], pose_delta[2]);
+      Geometry::CreateTransform(pose_delta.x, pose_delta.y, pose_delta.theta);
 
   for (int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
-        bodies_[i]->physics_body_->GetAngle() + pose_delta[2]);
+        bodies_[i]->physics_body_->GetAngle() + pose_delta.theta);
   }
 }
 
@@ -157,14 +172,14 @@ void Model::DebugVisualize() {
 
   for (auto &body : bodies_) {
     DebugVisualization::Get().Visualize(name, body->physics_body_,
-                                        body->color_[0], body->color_[1],
-                                        body->color_[2], body->color_[3]);
+                                        body->color_.r, body->color_.g,
+                                        body->color_.b, body->color_.a);
   }
 
   for (auto &joint : joints_) {
     DebugVisualization::Get().Visualize(name, joint->physics_joint_,
-                                        joint->color_[0], joint->color_[1],
-                                        joint->color_[2], joint->color_[3]);
+                                        joint->color_.r, joint->color_.g,
+                                        joint->color_.b, joint->color_.a);
   }
 }
 
