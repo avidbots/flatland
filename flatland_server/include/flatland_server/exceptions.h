@@ -54,22 +54,21 @@
 
 namespace flatland_server {
 
-class RuntimeException : public std::runtime_error {
-  public:
-  RuntimeException(const std::String &msg) : runtime_error(ErrorMsg(msg)) {}
+class Exception : public std::runtime_error {
+ public:
   /**
-   * @brief Constructor for the Exception class
-   * 
-   */
-}
+  * @brief Constructor for the Exception class
+  */
+  Exception(const std::string &msg) : runtime_error(msg) {}
+};
 
-class PluginException : public std::runtime_error {
+class PluginException : public Exception {
  public:
   /**
    * @brief Constructor for PluginException
    * @param[in] msg custom message
    */
-  PluginException(const std::string &msg) : runtime_error(ErrorMsg(msg)) {}
+  PluginException(const std::string &msg) : Exception(ErrorMsg(msg)) {}
 
  private:
   /**
@@ -84,7 +83,7 @@ class PluginException : public std::runtime_error {
   }
 };
 
-class YAMLException : public std::runtime_error {
+class YAMLException : public Exception {
  public:
   /**
    * @brief Constructor for the YAMLException class, stores and generates
@@ -94,16 +93,15 @@ class YAMLException : public std::runtime_error {
    */
   YAMLException(const std::string &msg,
                 const YAML::Exception &yaml_cpp_exception)
-      : std::runtime_error(
-            ErrorMsg(msg, yaml_cpp_exception.msg, yaml_cpp_exception.mark)) {}
+      : Exception(ErrorMsg(msg, yaml_cpp_exception.msg,
+                                            yaml_cpp_exception.mark)) {}
 
   /**
    * @brief Constructor for the YAMLException class, stores and generates
    * exception message using just a message
    * @param[in] msg Exception message
    */
-  YAMLException(const std::string &msg)
-      : std::runtime_error("Flatland YAML: " + msg) {}
+  YAMLException(const std::string &msg) : Exception("Flatland YAML: " + msg) {}
 
  private:
   /**

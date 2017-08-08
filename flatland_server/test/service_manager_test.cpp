@@ -182,8 +182,8 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
  * Testing service for deleting a model
  */
 TEST_F(ServiceManagerTest, delete_model) {
-  world_yaml =
-      this_file_dir / fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
   w = World::MakeWorld(world_yaml.string());
 
@@ -203,6 +203,7 @@ TEST_F(ServiceManagerTest, delete_model) {
   StopSimulationThread();
 
   ASSERT_TRUE(srv.response.success);
+  // after deleting a mode, there should be one less model, and one less plugin
   ASSERT_EQ(w->models_.size(), models_size - 1);
   ASSERT_EQ(w->plugin_manager_.model_plugins_.size(), plugins_size - 1);
   count = std::count_if(w->models_.begin(), w->models_.end(),
@@ -212,29 +213,32 @@ TEST_F(ServiceManagerTest, delete_model) {
   delete w;
 }
 
-// /**
-//  * Testing service for deleting a model that does not exist, shoudl fail
-//  */
-// TEST_F(ServiceManagerTest, delete_nonexistent_model) {
-//   world_yaml = this_file_dir /
-//                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+/**
+ * Testing service for deleting a model that does not exist, shoudl fail
+ */
+TEST_F(ServiceManagerTest, delete_nonexistent_model) {
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-//   w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
 
-//   ASSERT_EQ(count, 1);
+  flatland_msgs::DeleteModel srv;
+  srv.request.name = "random_model";
 
-//   flatland_msgs::DeleteModel srv;
-//   srv.request.name = "turthe";
+  client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
 
-//   client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
+  StartSimulationThread();
+  ASSERT_TRUE(client.call(srv));
+  StopSimulationThread();
 
-//   StartSimulationThread();
-//   ASSERT_TRUE(client.call(srv));
-//   StopSimulationThread();
+  ASSERT_FALSE(srv.response.success);
+  EXPECT_STREQ(
+      "Flatland World: failed to delete model, model with name "
+      "\"random_model\" does not exist",
+      srv.response.message.c_str());
 
-//   ASSERT_FALSE(srv.response.success);
-//   delete w;
-// }
+  delete w;
+}
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {

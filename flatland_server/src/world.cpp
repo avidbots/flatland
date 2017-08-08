@@ -250,7 +250,10 @@ void World::DeleteModel(const std::string &name) {
     }
   }
 
-  
+  if (!found) {
+    throw Exception("Flatland World: failed to delete model, model with name " +
+                    Q(name) + " does not exist");
+  }
 }
 
 void World::DebugVisualize(bool update_layers) {
