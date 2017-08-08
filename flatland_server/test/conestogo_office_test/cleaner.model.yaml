@@ -52,7 +52,7 @@ bodies:  # List of named bodies
 
       # - type: polygon
       #   density: 1000000.0
-      #   is_sensor: true
+      #   sensor: true
       #   points: [
         
       #    [0, -1.03],
@@ -80,7 +80,7 @@ bodies:  # List of named bodies
       #   ]
 
       # - type: polygon
-      #   is_sensor: true
+      #   sensor: true
       #   points: [
         
       #   [0, 0], 
@@ -95,11 +95,11 @@ bodies:  # List of named bodies
       #   ]
 
       - type: polygon
-        is_sensor: true
+        sensor: true
         density: 0.0
         points: [[-.3155, -.7425], [-.2645, -.7425], [-.2645, -.9175], [-.3155, -.9175]]
       - type: polygon
-        is_sensor: true
+        sensor: true
         density: 0.0
         points: [[.3155, -.7425], [.2645, -.7425], [.2645, -.9175], [.3155, -.9175]]
 
@@ -109,7 +109,7 @@ bodies:  # List of named bodies
   #   color: [1, 0, 0, 0.25] 
   #   footprints:
   #     - type: polygon
-  #       is_sensor: true
+  #       sensor: true
   #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   # - name: right_wheel
