@@ -50,7 +50,7 @@
 namespace flatland_server {
 
 Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
-             const std::array<double, 4> &color, const b2JointDef &joint_def)
+             const Color &color, const b2JointDef &joint_def)
     : physics_world_(physics_world), model_(model), name_(name), color_(color) {
   physics_joint_ = physics_world->CreateJoint(&joint_def);
   physics_joint_->SetUserData(this);
@@ -59,61 +59,79 @@ Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
 Joint::~Joint() { physics_world_->DestroyJoint(physics_joint_); }
 
 Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
-                        const YAML::Node &joint_node) {
-  const YAML::Node &n = joint_node;
-
-  std::string name;
-
-  if (n["name"]) {
-    name = n["name"].as<std::string>();
-  } else {
-    throw YAMLException("Missing a joint name");
-  }
-
+                        YamlReader &joint_reader) {
   Joint *j;
-  std::string type;
 
-  if (n["type"]) {
-    type = n["type"].as<std::string>();
-  } else {
-    throw YAMLException("Missing \"type\" in " + name + " joint");
+  std::string name = joint_reader.Get<std::string>("name");
+  joint_reader.SetErrorInfo("model " + Q(model->name_), "joint " + Q(name));
+
+  std::string type = joint_reader.Get<std::string>("type");
+  Color color = joint_reader.GetColor("color", Color(1, 1, 1, 0.5));
+  bool collide_connected = joint_reader.Get<bool>("collide_connected", false);
+
+  YamlReader bodies_reader = joint_reader.Subnode("bodies", YamlReader::LIST);
+  if (bodies_reader.NodeSize() != 2) {
+    throw YAMLException("Invalid \"bodies\" in " +
+                        bodies_reader.entry_location_ +
+                        ", must be a sequence of exactly two items");
   }
+
+  Vec2 anchors[2];
+  ModelBody *bodies[2];
+  for (int i = 0; i < 2; i++) {
+    YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
+    std::string body_name = body_reader.Get<std::string>("name");
+    anchors[i] = body_reader.GetVec2("anchor");
+    bodies[i] = model->GetBody(body_name);
+
+    if (bodies[i] == nullptr) {
+      throw YAMLException("Cannot find body with name " + Q(body_name) +
+                          " in " + body_reader.entry_location_ + " " +
+                          body_reader.entry_name_);
+    }
+  }
+
+  b2Vec2 anchor_A = anchors[0].Box2D();
+  b2Vec2 anchor_B = anchors[1].Box2D();
+  b2Body *body_A = bodies[0]->physics_body_;
+  b2Body *body_B = bodies[1]->physics_body_;
 
   if (type == "revolute") {
-    j = MakeRevoluteJoint(physics_world, model, n, name);
+    j = MakeRevoluteJoint(physics_world, model, joint_reader, name, color,
+                          body_A, anchor_A, body_B, anchor_B,
+                          collide_connected);
   } else if (type == "weld") {
-    j = MakeWeldJoint(physics_world, model, n, name);
+    j = MakeWeldJoint(physics_world, model, joint_reader, name, color, body_A,
+                      anchor_A, body_B, anchor_B, collide_connected);
   } else {
-    throw YAMLException("Invalid joint \"type\" in " + name +
-                        " joint, support joints are: revolute, weld");
+    throw YAMLException(
+        "Invalid joint \"type\" in " + joint_reader.entry_location_ + " " +
+        joint_reader.entry_name_ + ", supported joints are: revolute, weld");
   }
 
+  try {
+    joint_reader.EnsureAccessedAllKeys();
+  } catch (const YAMLException &e) {
+    delete j;
+    throw e;
+  }
   return j;
 }
 
 Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
-                                const YAML::Node &joint_node,
-                                const std::string &name) {
-  const YAML::Node &n = joint_node;
+                                YamlReader &joint_reader,
+                                const std::string &name, const Color &color,
+                                b2Body *body_A, b2Vec2 anchor_A, b2Body *body_B,
+                                b2Vec2 anchor_B, bool collide_connected) {
   double upper_limit, lower_limit;
   bool has_limits = false;
-  bool collide_connected;
-  b2Body *body_A, *body_B;
-  b2Vec2 anchor_A, anchor_B;
-  std::array<double, 4> color;
 
-  if (n["limits"] && (!n["limits"].IsSequence() || n["limits"].size() != 2)) {
-    throw YAMLException("Invalid \"limits\" in " + name +
-                        " joint, must be "
-                        "a sequence of exactly two items");
-  } else if (n["limits"]) {
-    lower_limit = n["limits"][0].as<double>();
-    upper_limit = n["limits"][1].as<double>();
+  std::vector<double> limits = joint_reader.GetList<double>("limits", {}, 2, 2);
+  if (limits.size() == 2) {
+    lower_limit = limits[0];
+    upper_limit = limits[1];
     has_limits = true;
   }
-
-  ParseJointCommon(model, n, name, color, body_A, anchor_A, body_B, anchor_B,
-                   collide_connected);
 
   b2RevoluteJointDef joint_def;
   joint_def.bodyA = body_A;
@@ -134,32 +152,13 @@ Joint *Joint::MakeRevoluteJoint(b2World *physics_world, Model *model,
 }
 
 Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
-                            const YAML::Node &joint_node,
-                            const std::string &name) {
-  const YAML::Node &n = joint_node;
-
-  double angle = 0;
-  double frequency = 0;
-  double damping = 0;
-  b2Body *body_A, *body_B;
-  b2Vec2 anchor_A, anchor_B;
-  bool collide_connected;
-  std::array<double, 4> color;
-
-  if (n["angle"]) {
-    angle = n["angle"].as<double>();
-  }
-
-  if (n["frequency"]) {
-    frequency = n["frequency"].as<double>();
-  }
-
-  if (n["damping"]) {
-    damping = n["damping"].as<double>();
-  }
-
-  ParseJointCommon(model, n, name, color, body_A, anchor_A, body_B, anchor_B,
-                   collide_connected);
+                            YamlReader &joint_reader, const std::string &name,
+                            const Color &color, b2Body *body_A, b2Vec2 anchor_A,
+                            b2Body *body_B, b2Vec2 anchor_B,
+                            bool collide_connected) {
+  double angle = joint_reader.Get<double>("angle", 0.0);
+  double frequency = joint_reader.Get<double>("frequency", 0.0);
+  double damping = joint_reader.Get<double>("damping", 0.0);
 
   b2WeldJointDef joint_def;
   joint_def.bodyA = body_A;
@@ -171,75 +170,6 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   joint_def.referenceAngle = angle;
 
   return new Joint(physics_world, model, name, color, joint_def);
-}
-
-void Joint::ParseJointCommon(Model *model, const YAML::Node &joint_node,
-                             const std::string &joint_name,
-                             std::array<double, 4> &color, b2Body *&body_A,
-                             b2Vec2 &anchor_A, b2Body *&body_B,
-                             b2Vec2 &anchor_B, bool &collide_connected) {
-  const YAML::Node &n = joint_node;
-  b2Vec2 anchors[2];
-  ModelBody *bodies[2];
-  collide_connected = false;
-
-  if (n["color"] && n["color"].IsSequence() && n["color"].size() == 4) {
-    color[0] = n["color"][0].as<double>();
-    color[1] = n["color"][1].as<double>();
-    color[2] = n["color"][2].as<double>();
-    color[3] = n["color"][3].as<double>();
-  } else if (n["color"]) {
-    throw YAMLException("Invalid \"color\" in " + joint_name +
-                        " body, must be a sequence");
-  } else {
-    color = {1, 1, 1, 0.5};
-  }
-
-  if (n["collide_connected"]) {
-    collide_connected = n["collide_connected"].as<bool>();
-  }
-
-  if (n["bodies"] && n["bodies"].IsSequence() && n["bodies"].size() == 2) {
-    for (int i = 0; i < 2; i++) {
-      YAML::Node body = n["bodies"][i];
-      if (body["name"]) {
-        std::string name = body["name"].as<std::string>();
-
-        bodies[i] = model->GetBody(name);
-
-        if (bodies[i] == nullptr) {
-          throw YAMLException("Cannot find body with name " + name +
-                              " from joint " + joint_name);
-        }
-      } else {
-        throw YAMLException("Missing body \"name\" in " + joint_name +
-                            " joint "
-                            "body index=" +
-                            std::to_string(i));
-      }
-
-      if (body["anchor"] && body["anchor"].IsSequence() &&
-          body["anchor"].size() == 2) {
-        double x = body["anchor"][0].as<double>();
-        double y = body["anchor"][1].as<double>();
-
-        anchors[i].Set(x, y);
-      } else {
-        throw YAMLException("Missing/invalid body \"anchor\" in " + joint_name +
-                            " joint body index=" + std::to_string(i) +
-                            ", must be a sequence of exactly two numbers");
-      }
-    }
-
-    anchor_A = anchors[0];
-    anchor_B = anchors[1];
-    body_A = bodies[0]->physics_body_;
-    body_B = bodies[1]->physics_body_;
-
-  } else {
-    throw YAMLException("Missing/invalid \"bodies\" in " + joint_name +
-                        " joint, must be a sequence of exactly two items");
-  }
 }
 
 };  // namespace flatland_server

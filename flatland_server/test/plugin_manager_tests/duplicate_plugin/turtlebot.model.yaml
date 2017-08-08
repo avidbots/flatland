@@ -1,0 +1,26 @@
+# Turtlebot
+
+bodies: 
+  - name: base
+    origin: [0, 0, 0]
+    type: dynamic
+    color: [1, 1, 0, 0.25]
+    footprints:
+      - type: circle
+        center: [0, 0]
+        radius: 0.4
+        sensor: true
+        density: 0
+
+plugins:
+  - type: DummyModelPlugin
+    name: dummy_test_plugin
+    dummy_param_float: 0.123456
+    dummy_param_int: 123456
+    dummy_param_string: dummy_test_123456
+
+  - type: DummyModelPlugin
+    name: dummy_test_plugin
+    dummy_param_float: 0.123456
+    dummy_param_int: 123456
+    dummy_param_string: dummy_test_123456

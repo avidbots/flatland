@@ -166,7 +166,8 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
 
   std::cmatch match;
   std::string regex_str =
-      ".*Error loading \".*random_path/turtlebot.model.yaml\".*bad file";
+      "Flatland YAML: File does not exist, "
+      "path=\".*/random_path/turtlebot.model.yaml\".*";
   std::regex regex(regex_str);
   EXPECT_TRUE(std::regex_match(srv.response.message.c_str(), match, regex))
       << "Error Message '" + srv.response.message + "'" +

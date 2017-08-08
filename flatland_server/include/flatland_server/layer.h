@@ -51,8 +51,8 @@
 #include <flatland_server/body.h>
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/entity.h>
+#include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
-#include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
 
@@ -87,9 +87,9 @@ class Layer : public Entity {
    * @param[in] free_thresh Threshold indicating no obstale if below
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::string &name, const cv::Mat &bitmap,
-        const std::array<double, 4> &color, const std::array<double, 3> &origin,
-        double resolution, double occupied_thresh, double free_thresh);
+        const std::string &name, const cv::Mat &bitmap, const Color &color,
+        const Pose &origin, double resolution, double occupied_thresh,
+        double free_thresh);
 
   /**
    * @brief Destructor for the layer class
@@ -117,14 +117,15 @@ class Layer : public Entity {
    * failure
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
-   * @param[in] world_yaml_dir Path to the directory containing the world yaml
+   * @param[in] map_path Path to the file containing layer data
+   * @param[in] name Name of the layer
+   * @param[in] color Color of the layer
    * file, this is used to calculate the path to the layermap yaml file
-   * @param[in] layer_node YAML node containing data for a layer
    * @return A new layer
    */
   static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
-                          const boost::filesystem::path &world_yaml_dir,
-                          const YAML::Node &layer_node);
+                          const std::string &map_path, const std::string &name,
+                          const Color &color);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

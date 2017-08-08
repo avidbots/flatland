@@ -48,6 +48,7 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/yaml_reader.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
 #include <boost/algorithm/string/join.hpp>
@@ -66,9 +67,9 @@ void Laser::OnInitialize(const YAML::Node &config) {
 
   // construct the body to laser transformation matrix once since it never
   // changes
-  double c = cos(origin_[2]);
-  double s = sin(origin_[2]);
-  double x = origin_[0], y = origin_[1];
+  double c = cos(origin_.theta);
+  double s = sin(origin_.theta);
+  double x = origin_.x, y = origin_.y;
   m_body_to_laser_ << c, -s, x, s, c, y, 0, 0, 1;
 
   num_laser_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
@@ -106,12 +107,12 @@ void Laser::OnInitialize(const YAML::Node &config) {
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
-  q.setRPY(0, 0, origin_[2]);
+  q.setRPY(0, 0, origin_.theta);
 
   static_tf.header.frame_id = tf::resolve(model_->namespace_, body_->name_);
   static_tf.child_frame_id = tf::resolve(model_->namespace_, frame_id_);
-  static_tf.transform.translation.x = origin_[0];
-  static_tf.transform.translation.y = origin_[1];
+  static_tf.transform.translation.x = origin_.x;
+  static_tf.transform.translation.y = origin_.y;
   static_tf.transform.translation.z = 0;
   static_tf.transform.rotation.x = q.x();
   static_tf.transform.rotation.y = q.y();
@@ -181,71 +182,27 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
 }
 
 void Laser::ParseParameters(const YAML::Node &config) {
-  const YAML::Node &n = config;
-  std::string body_name;
+  YamlReader reader(config);
+  std::string body_name = reader.Get<std::string>("body");
+  topic_ = reader.Get<std::string>("topic", "scan");
+  frame_id_ = reader.Get<std::string>("frame", name_);
+  update_rate_ = reader.Get<double>("update_rate",
+                                    std::numeric_limits<double>::infinity());
+  origin_ = reader.GetPose("origin", Pose(0, 0, 0));
+  range_ = reader.Get<double>("range");
+  std::vector<std::string> layers =
+      reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
-  // default values
-  topic_ = "scan";
-  frame_id_ = name_;
-  update_rate_ = std::numeric_limits<double>::infinity();
-  origin_ = {0, 0, 0};
-  std::vector<std::string> layers = {"all"};
+  YamlReader angle_reader = reader.Subnode("angle", YamlReader::MAP);
+  min_angle_ = angle_reader.Get<double>("min");
+  max_angle_ = angle_reader.Get<double>("max");
+  increment_ = angle_reader.Get<double>("increment");
 
-  if (n["topic"]) {
-    topic_ = n["topic"].as<std::string>();
-  }
-
-  if (n["body"]) {
-    body_name = n["body"].as<std::string>();
-  } else {
-    throw YAMLException("Missing \"body\" param");
-  }
-
-  if (n["frame"]) {
-    frame_id_ = n["frame"].as<std::string>();
-  }
-
-  if (n["update_rate"]) {
-    update_rate_ = n["update_rate"].as<double>();
-  }
-
-  if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
-    origin_[0] = n["origin"][0].as<double>();
-    origin_[1] = n["origin"][1].as<double>();
-    origin_[2] = n["origin"][2].as<double>();
-  } else if (n["origin"]) {
-    throw YAMLException("Missing/invalid \"origin\" param");
-  }
-
-  if (n["range"]) {
-    range_ = n["range"].as<double>();
-  } else {
-    throw YAMLException("Missing \"range\" input");
-  }
-
-  if (n["angle"] && n["angle"].IsMap() && n["angle"]["min"] &&
-      n["angle"]["max"] && n["angle"]["increment"]) {
-    const YAML::Node &angle = n["angle"];
-    min_angle_ = angle["min"].as<double>();
-    max_angle_ = angle["max"].as<double>();
-    increment_ = angle["increment"].as<double>();
-  } else {
-    throw YAMLException(
-        "Missing/invalid \"angle\" param, must be a map with keys \"min\", "
-        "\"max\", and \"increment\"");
-  }
+  angle_reader.EnsureAccessedAllKeys();
+  reader.EnsureAccessedAllKeys();
 
   if (max_angle_ < min_angle_) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
-  }
-
-  if (n["layers"] && n["layers"].IsSequence()) {
-    layers.clear();
-    for (int i = 0; i < n["layers"].size(); i++) {
-      layers.push_back(n["layers"][i].as<std::string>());
-    }
-  } else if (n["layers"]) {
-    throw YAMLException("Invalid layers, must be a sequence");
   }
 
   if (layers.size() == 1 && layers[0] == "all") {
@@ -272,7 +229,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
                  "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
                  "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
                  name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
-                 origin_[0], origin_[1], origin_[2], frame_id_.c_str(),
+                 origin_.x, origin_.y, origin_.theta, frame_id_.c_str(),
                  update_rate_, range_, min_angle_, max_angle_, increment_,
                  layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }

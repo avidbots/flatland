@@ -45,6 +45,7 @@
  */
 
 #include <flatland_server/service_manager.h>
+#include <flatland_server/types.h>
 #include <exception>
 
 namespace flatland_server {
@@ -71,8 +72,7 @@ bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
                  request.name.c_str(), request.pose.x, request.pose.y,
                  request.pose.theta);
 
-  std::array<double, 3> pose = {request.pose.x, request.pose.y,
-                                request.pose.theta};
+  Pose pose(request.pose.x, request.pose.y, request.pose.theta);
 
   try {
     world_->LoadModel(request.yaml_path, request.ns, request.name, pose);
