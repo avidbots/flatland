@@ -69,8 +69,8 @@ class Layer : public Entity {
   Body *body_;
 
   /**
-   * @brief Constructor for the Layer class. All data required for
-   * initialization should be passed in here
+   * @brief Constructor for the Layer class for initialization using a image
+   * map file
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
    * @param[in] names A list of names for the layer, the first name is used
@@ -86,6 +86,25 @@ class Layer : public Entity {
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
         double resolution);
+
+  /**
+   * @brief Constructor for the Layer class for initialization using line
+   * segments
+   * @param[in] physics_world Pointer to the box2d physics world
+   * @param[in] cfr Collision filter registry
+   * @param[in] names A list of names for the layer, the first name is used
+   * for the name of the body
+   * @param[in] color Color in the form of r, g, b, a, used for visualization
+   * @param[in] origin Coordinate of the lower left corner of the image, in the
+   * form of x, y, theta
+   * @param[in] line_segments List of line segments
+   * @param[in] scale Scale to apply to the line segment end points, works in
+   * the same way as resolution
+   */
+  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+        const std::vector<std::string> &names, const Color &color,
+        const Pose &origin, const std::vector<LineSegment> &line_segments,
+        double scale);
 
   /**
    * @brief Destructor for the layer class
@@ -111,10 +130,13 @@ class Layer : public Entity {
   EntityType Type() const { return EntityType::LAYER; }
 
   /**
-   * @brief Load the map. It vectorizes the bitmap and apply the transformations
+   * @brief Load the map by extracting edges from images
+   * @param[in] bitmap OpenCV Image
+   * @param[in] occupied_thresh Threshold indicating obstacle if above
+   * @param[in] resolution Resolution of the map image in meters per pixel
    */
-  void LoadMap(const cv::Mat &bitmap, double occupied_thresh,
-               double resolution);
+  void LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
+                      double resolution);
 
   /**
    * @brief Visualize layer for debugging purposes
@@ -125,6 +147,15 @@ class Layer : public Entity {
    * @brief log debug messages for the layer
    */
   void DebugOutput() const override;
+
+  /**
+   * @brief Read line segments from a file, each line of a file represents a
+   * line segment in the form of x1 y1 x2 y2
+   * @param[in] file_path Path to the file
+   * @param[out] line_segments Line segments obtained from the file
+   */
+  static void ReadLineSegmentsFile(const std::string &file_path,
+                                   std::vector<LineSegment> &line_segments);
 
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon

@@ -54,8 +54,9 @@
 #include <yaml-cpp/yaml.h>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
+#include <fstream>
 #include <opencv2/opencv.hpp>
-#include <string>
+#include <sstream>
 
 namespace flatland_server {
 
@@ -64,10 +65,30 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
              double resolution)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
-  body_ =
-      new Body(physics_world_, this, name_, color, origin, b2_staticBody, 0, 0);
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
 
-  LoadMap(bitmap, occupied_thresh, resolution);
+  LoadFromBitmap(bitmap, occupied_thresh, resolution);
+}
+
+Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+             const std::vector<std::string> &names, const Color &color,
+             const Pose &origin, const std::vector<LineSegment> &line_segments,
+             double scale)
+    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
+
+  uint16_t category_bits = cfr_->GetCategoryBits(names_);
+
+  for (const auto &line_segment : line_segments) {
+    b2EdgeShape edge;
+    edge.Set(line_segment.start.Box2D(), line_segment.end.Box2D());
+
+    b2FixtureDef fixture_def;
+    fixture_def.shape = &edge;
+    fixture_def.filter.categoryBits = category_bits;
+    fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
+    body_->physics_body_->CreateFixture(&fixture_def);
+  }
 }
 
 Layer::~Layer() { delete body_; }
@@ -82,37 +103,86 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::vector<std::string> &names,
                         const Color &color) {
   YamlReader reader(map_path);
-
   reader.SetErrorInfo("layer " + Q(names[0]));
 
-  double resolution = reader.Get<double>("resolution");
-  double occupied_thresh = reader.Get<double>("occupied_thresh");
-  Pose origin = reader.GetPose("origin");
+  std::string type = reader.Get<std::string>("type", "");
 
-  boost::filesystem::path image_path(reader.Get<std::string>("image"));
-  if (image_path.string().front() != '/') {
-    image_path = boost::filesystem::path(map_path).parent_path() / image_path;
+  if (type == "line_segments") {
+    double scale = reader.Get<double>("scale");
+    Pose origin = reader.GetPose("origin");
+    boost::filesystem::path data_path(reader.Get<std::string>("data"));
+    if (data_path.string().front() != '/') {
+      data_path = boost::filesystem::path(map_path).parent_path() / data_path;
+    }
+
+    std::vector<LineSegment> line_segments;
+
+    ReadLineSegmentsFile(data_path.string(), line_segments);
+
+    return new Layer(physics_world, cfr, names, color, origin, line_segments,
+                     scale);
+
+  } else {
+    double resolution = reader.Get<double>("resolution");
+    double occupied_thresh = reader.Get<double>("occupied_thresh");
+    Pose origin = reader.GetPose("origin");
+
+    boost::filesystem::path image_path(reader.Get<std::string>("image"));
+    if (image_path.string().front() != '/') {
+      image_path = boost::filesystem::path(map_path).parent_path() / image_path;
+    }
+
+    cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+    if (map.empty()) {
+      throw YAMLException("Failed to load " + Q(image_path.string()) +
+                          " in layer " + Q(names[0]));
+    }
+
+    cv::Mat bitmap;
+    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
+
+    return new Layer(physics_world, cfr, names, color, origin, bitmap,
+                     occupied_thresh, resolution);
   }
-
-  cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
-  if (map.empty()) {
-    throw YAMLException("Failed to load " + Q(image_path.string()) +
-                        " in layer " + Q(names[0]));
-  }
-
-  cv::Mat bitmap;
-  map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
-
-  return new Layer(physics_world, cfr, names, color, origin, bitmap,
-                   occupied_thresh, resolution);
 }
 
-void Layer::LoadMap(const cv::Mat &bitmap, double occupied_thresh,
-                    double resolution) {
+void Layer::ReadLineSegmentsFile(const std::string &file_path,
+                          std::vector<LineSegment> &line_segments) {
+  std::ifstream in_file(file_path);
+  std::string line;
+  int line_count = 0;
+
+  line_segments.clear();
+
+  if (in_file.fail()) {
+    throw Exception("Flatland File: Failed to load " + Q(file_path));
+  }
+
+  while (std::getline(in_file, line)) {
+    line_count++;
+    std::stringstream ss(line);
+    float n[4];
+
+    for (int i = 0; i < 4; i++) {
+      ss >> n[i];
+
+      if (ss.fail()) {
+        throw Exception(
+            "Flatland File: Failed to read line segment from line " +
+            std::to_string(i) + ", in file " +
+            Q(boost::filesystem::path(file_path).filename().string()));
+      }
+    }
+
+    line_segments.push_back(LineSegment(Vec2(n[0], n[1]), Vec2(n[2], n[3])));
+  }
+}
+
+void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
+                           double resolution) {
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
-  auto add_edge = [&](double x1, double y1, double x2,
-                                        double y2) {
+  auto add_edge = [&](double x1, double y1, double x2, double y2) {
     b2EdgeShape edge;
     double rows = bitmap.rows;
     double res = resolution;

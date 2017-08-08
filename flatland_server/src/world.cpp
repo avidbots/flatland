@@ -146,6 +146,10 @@ World *World::MakeWorld(const std::string &yaml_path) {
     ROS_FATAL_NAMED("World", "Error loading plugins");
     delete w;
     throw e;
+  } catch (const Exception &e) {
+    ROS_FATAL_NAMED("World", "Error loading world");
+    delete w;
+    throw e;
   }
   return w;
 }
