@@ -44,8 +44,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/SpawnModel.h>
 #include <flatland_msgs/DeleteModel.h>
+#include <flatland_msgs/SpawnModel.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 
@@ -63,7 +63,7 @@ class World;
 class ServiceManager {
  public:
   World *world_;  ///< an handle to the simulation world
-  ros::ServiceServer spawn_model_service_;  ///< service for spawning models
+  ros::ServiceServer spawn_model_service_;   ///< service for spawning models
   ros::ServiceServer delete_model_service_;  ///< service for deleting models
 
   /**

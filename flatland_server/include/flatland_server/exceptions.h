@@ -93,8 +93,8 @@ class YAMLException : public Exception {
    */
   YAMLException(const std::string &msg,
                 const YAML::Exception &yaml_cpp_exception)
-      : Exception(ErrorMsg(msg, yaml_cpp_exception.msg,
-                                            yaml_cpp_exception.mark)) {}
+      : Exception(
+            ErrorMsg(msg, yaml_cpp_exception.msg, yaml_cpp_exception.mark)) {}
 
   /**
    * @brief Constructor for the YAMLException class, stores and generates

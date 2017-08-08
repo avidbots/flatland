@@ -73,10 +73,9 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
 
 void PluginManager::DeleteModelPlugin(Model *model) {
   model_plugins_.erase(
-      std::remove_if(model_plugins_.begin(), model_plugins_.end(),
-                     [&](boost::shared_ptr<ModelPlugin> p) {
-                       return p->model_ == model;
-                     }),
+      std::remove_if(
+          model_plugins_.begin(), model_plugins_.end(),
+          [&](boost::shared_ptr<ModelPlugin> p) { return p->model_ == model; }),
       model_plugins_.end());
   printf("hello\n");
 }
