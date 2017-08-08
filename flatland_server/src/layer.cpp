@@ -60,21 +60,14 @@
 namespace flatland_server {
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::vector<std::string> &names, const cv::Mat &bitmap,
-             const Color &color, const Pose &origin, double resolution,
-             double occupied_thresh, double free_thresh)
-    : Entity(physics_world, names[0]),
-      names_(names),
-      cfr_(cfr),
-      resolution_(resolution),
-      occupied_thresh_(occupied_thresh),
-      free_thresh_(free_thresh) {
-  bitmap.copyTo(bitmap_);
-
+             const std::vector<std::string> &names, const Color &color,
+             const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
+             double resolution)
+    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
   body_ =
       new Body(physics_world_, this, name_, color, origin, b2_staticBody, 0, 0);
 
-  LoadMap();
+  LoadMap(bitmap, occupied_thresh, resolution);
 }
 
 Layer::~Layer() { delete body_; }
@@ -94,7 +87,6 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   double resolution = reader.Get<double>("resolution");
   double occupied_thresh = reader.Get<double>("occupied_thresh");
-  double free_thresh = reader.Get<double>("free_thresh");
   Pose origin = reader.GetPose("origin");
 
   boost::filesystem::path image_path(reader.Get<std::string>("image"));
@@ -111,18 +103,19 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
   cv::Mat bitmap;
   map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
 
-  return new Layer(physics_world, cfr, names, bitmap, color, origin, resolution,
-                   occupied_thresh, free_thresh);
+  return new Layer(physics_world, cfr, names, color, origin, bitmap,
+                   occupied_thresh, resolution);
 }
 
-void Layer::LoadMap() {
+void Layer::LoadMap(const cv::Mat &bitmap, double occupied_thresh,
+                    double resolution) {
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
-  auto add_edge = [this, category_bits](double x1, double y1, double x2,
+  auto add_edge = [&](double x1, double y1, double x2,
                                         double y2) {
     b2EdgeShape edge;
-    double rows = bitmap_.rows;
-    double res = resolution_;
+    double rows = bitmap.rows;
+    double res = resolution;
 
     edge.Set(b2Vec2(res * x1, res * (rows - y1)),
              b2Vec2(res * x2, res * (rows - y2)));
@@ -138,7 +131,7 @@ void Layer::LoadMap() {
 
   // thresholds the map, values between the occupied threshold and 1.0 are
   // considered to be occupied
-  cv::inRange(bitmap_, occupied_thresh_, 1.0, obstacle_map);
+  cv::inRange(bitmap, occupied_thresh, 1.0, obstacle_map);
 
   // pad the top and bottom of the map each with an empty row (255=white). This
   // helps to look at the transition from one row of pixel to another
@@ -225,9 +218,9 @@ void Layer::DebugOutput() const {
 
   ROS_DEBUG_NAMED("Layer",
                   "Layer %p: physics_world(%p) name(%s) names(%s) "
-                  "category_bits(0x%X) resolution(%f)",
+                  "category_bits(0x%X)",
                   this, physics_world_, name_.c_str(), names.c_str(),
-                  category_bits, resolution_);
+                  category_bits);
 
   body_->DebugOutput();
 }
