@@ -88,7 +88,7 @@ class PluginManager {
    * @brief This method removes all model plugins associated with a given mode
    * @param[in] The model plugins is associated to
    */
-  void RemoveModelPlugin(Model *model);
+  void DeleteModelPlugin(Model *model);
 
   /**
    * @brief Load model plugins

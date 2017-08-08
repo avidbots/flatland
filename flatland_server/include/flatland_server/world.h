@@ -146,7 +146,7 @@ class World : public b2ContactListener {
    * @brief remove model with a given name
    * @param[in] name The name of the model to remove
    */
-  void RemoveModel(const std::string &name);
+  void DeleteModel(const std::string &name);
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all

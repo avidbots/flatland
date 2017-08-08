@@ -54,6 +54,15 @@
 
 namespace flatland_server {
 
+class RuntimeException : public std::runtime_error {
+  public:
+  RuntimeException(const std::String &msg) : runtime_error(ErrorMsg(msg)) {}
+  /**
+   * @brief Constructor for the Exception class
+   * 
+   */
+}
+
 class PluginException : public std::runtime_error {
  public:
   /**

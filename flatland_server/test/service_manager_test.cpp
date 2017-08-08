@@ -44,6 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_msgs/DeleteModel.h>
 #include <flatland_msgs/SpawnModel.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
@@ -62,7 +63,6 @@ class ServiceManagerTest : public ::testing::Test {
   Timekeeper timekeeper;
   ros::NodeHandle nh;
   ros::ServiceClient client;
-  flatland_msgs::SpawnModel srv;
   std::thread simulation_thread;
   bool stop_thread;
   World* w;
@@ -106,6 +106,8 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
 
   w = World::MakeWorld(world_yaml.string());
 
+  flatland_msgs::SpawnModel srv;
+
   srv.request.name = "service_manager_test_robot";
   srv.request.ns = "robot123";
   srv.request.yaml_path = robot_yaml.string();
@@ -147,6 +149,8 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
 
   w = World::MakeWorld(world_yaml.string());
 
+  flatland_msgs::SpawnModel srv;
+
   srv.request.name = "service_manager_test_robot";
   srv.request.yaml_path = robot_yaml.string();
   srv.request.pose.x = 1;
@@ -173,6 +177,64 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
 
   delete w;
 }
+
+/**
+ * Testing service for deleting a model
+ */
+TEST_F(ServiceManagerTest, delete_model) {
+  world_yaml =
+      this_file_dir / fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+
+  w = World::MakeWorld(world_yaml.string());
+
+  int models_size = w->models_.size();
+  int plugins_size = w->plugin_manager_.model_plugins_.size();
+  int count = std::count_if(w->models_.begin(), w->models_.end(),
+                            [](Model* m) { return m->name_ == "turtlebot1"; });
+  ASSERT_EQ(count, 1);
+
+  flatland_msgs::DeleteModel srv;
+  srv.request.name = "turtlebot1";
+
+  client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
+
+  StartSimulationThread();
+  ASSERT_TRUE(client.call(srv));
+  StopSimulationThread();
+
+  ASSERT_TRUE(srv.response.success);
+  ASSERT_EQ(w->models_.size(), models_size - 1);
+  ASSERT_EQ(w->plugin_manager_.model_plugins_.size(), plugins_size - 1);
+  count = std::count_if(w->models_.begin(), w->models_.end(),
+                        [](Model* m) { return m->name_ == "turtlebot1"; });
+  ASSERT_EQ(count, 0);
+
+  delete w;
+}
+
+// /**
+//  * Testing service for deleting a model that does not exist, shoudl fail
+//  */
+// TEST_F(ServiceManagerTest, delete_nonexistent_model) {
+//   world_yaml = this_file_dir /
+//                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+
+//   w = World::MakeWorld(world_yaml.string());
+
+//   ASSERT_EQ(count, 1);
+
+//   flatland_msgs::DeleteModel srv;
+//   srv.request.name = "turthe";
+
+//   client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
+
+//   StartSimulationThread();
+//   ASSERT_TRUE(client.call(srv));
+//   StopSimulationThread();
+
+//   ASSERT_FALSE(srv.response.success);
+//   delete w;
+// }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {

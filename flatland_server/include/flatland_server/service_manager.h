@@ -45,6 +45,7 @@
  */
 
 #include <flatland_msgs/SpawnModel.h>
+#include <flatland_msgs/DeleteModel.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 
@@ -63,6 +64,7 @@ class ServiceManager {
  public:
   World *world_;  ///< an handle to the simulation world
   ros::ServiceServer spawn_model_service_;  ///< service for spawning models
+  ros::ServiceServer delete_model_service_;  ///< service for deleting models
 
   /**
    * @brief Service manager constructor
@@ -77,6 +79,14 @@ class ServiceManager {
    */
   bool SpawnModel(flatland_msgs::SpawnModel::Request &request,
                   flatland_msgs::SpawnModel::Response &response);
+
+  /**
+   * @brief Callback for the delete model service
+   * @param[in] request Contains the request data for the service
+   * @param[in/out] response Contains the response for the service
+   */
+  bool DeleteModel(flatland_msgs::DeleteModel::Request &request,
+                   flatland_msgs::DeleteModel::Response &response);
 };
 };
 #endif

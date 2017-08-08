@@ -55,27 +55,53 @@ ServiceManager::ServiceManager(World *world) : world_(world) {
 
   spawn_model_service_ =
       nh.advertiseService("spawn_model", &ServiceManager::SpawnModel, this);
+  delete_model_service_ =
+      nh.advertiseService("delete_model", &ServiceManager::DeleteModel, this);
 
   if (spawn_model_service_) {
     ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
   } else {
     ROS_ERROR_NAMED("Service Manager", "Error starting model spawning service");
   }
+
+  if (delete_model_service_) {
+    ROS_INFO_NAMED("Service Manager", "Model deleting service ready to go");
+  } else {
+    ROS_ERROR_NAMED("Service Manager", "Error starting model deleting service");
+  }
 }
 
 bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
                                 flatland_msgs::SpawnModel::Response &response) {
-  ROS_INFO_NAMED("ModelSpawner",
-                 "Model spawn requested path(\"%s\"), namespace(\"%s\"), "
-                 "name(\'%s\"), pose(%f,%f,%f)",
-                 request.yaml_path.c_str(), request.ns.c_str(),
-                 request.name.c_str(), request.pose.x, request.pose.y,
-                 request.pose.theta);
+  ROS_DEBUG_NAMED("ServiceManager",
+                  "Model spawn requested with path(\"%s\"), namespace(\"%s\"), "
+                  "name(\'%s\"), pose(%f,%f,%f)",
+                  request.yaml_path.c_str(), request.ns.c_str(),
+                  request.name.c_str(), request.pose.x, request.pose.y,
+                  request.pose.theta);
 
   Pose pose(request.pose.x, request.pose.y, request.pose.theta);
 
   try {
     world_->LoadModel(request.yaml_path, request.ns, request.name, pose);
+    response.success = true;
+    response.message = "";
+  } catch (const std::exception &e) {
+    response.success = false;
+    response.message = std::string(e.what());
+  }
+
+  return true;
+}
+
+bool ServiceManager::DeleteModel(
+    flatland_msgs::DeleteModel::Request &request,
+    flatland_msgs::DeleteModel::Response &response) {
+  ROS_DEBUG_NAMED("ServiceManager", "Model delete requested with name(\"%s\")",
+                  request.name.c_str());
+
+  try {
+    world_->DeleteModel(request.name);
     response.success = true;
     response.message = "";
   } catch (const std::exception &e) {
