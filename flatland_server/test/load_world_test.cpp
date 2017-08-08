@@ -519,7 +519,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
-                     {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
+                     {0.05, -0.05, 1.57}, {0, 1, 0, 0.675}, 0, 0));
   EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
   EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
   EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
