@@ -52,7 +52,6 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/entity.h>
 #include <flatland_server/types.h>
-#include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
 #include <opencv2/opencv.hpp>
 #include <string>
