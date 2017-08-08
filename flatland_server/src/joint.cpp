@@ -188,8 +188,8 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
 
 void Joint::DebugOutput() const {
   b2Joint *j = physics_joint_;
-  Body *body_A = static_cast<Body *> (j->GetBodyA()->GetUserData());
-  Body *body_B = static_cast<Body *> (j->GetBodyB()->GetUserData());
+  Body *body_A = static_cast<Body *>(j->GetBodyA()->GetUserData());
+  Body *body_B = static_cast<Body *>(j->GetBodyB()->GetUserData());
 
   ROS_DEBUG_NAMED("Joint",
                   "Joint %p: model(%p, %s) name(%s) color(%f,%f,%f,%f) "

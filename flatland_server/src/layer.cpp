@@ -210,7 +210,7 @@ void Layer::LoadMap() {
   }
 }
 
-void Layer::DebugVisualize() const{
+void Layer::DebugVisualize() const {
   std::string viz_name = "layer/" + name_;
 
   DebugVisualization::Get().Reset(viz_name);

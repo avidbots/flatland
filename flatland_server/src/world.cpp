@@ -191,7 +191,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
     layers_.push_back(layer);
 
     ROS_INFO_NAMED("World", "Layer %s loaded", layer->name_.c_str());
-    layer->DebugOutput();    
+    layer->DebugOutput();
   }
 }
 
@@ -234,7 +234,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   }
 
   ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
-  m->DebugOutput();  
+  m->DebugOutput();
 }
 
 void World::DeleteModel(const std::string &name) {

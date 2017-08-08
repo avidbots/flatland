@@ -152,7 +152,7 @@ class Model : public Entity {
    * @brief log debug messages for the layer
    */
   void DebugOutput() const override;
-  
+
   /**
    * @brief Dump box2d data for debugging
    */
