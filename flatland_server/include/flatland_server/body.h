@@ -76,7 +76,7 @@ class Body {
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
        const Color &color, const Pose &origin, b2BodyType body_type,
-       double linear_damping, double angular_damping);
+       double linear_damping = 0, double angular_damping = 0);
 
   /**
    * @brief logs the debugging information for the body
