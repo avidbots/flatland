@@ -93,16 +93,9 @@
 #include <OgreRenderWindow.h>
 //#include <ogre_helpers/initialization.h>
 
-ModelDialog *myDialog;
-
-// void Sigint3Handler(int sig) {
-//   ROS_WARN_NAMED("Dialog", "*** Shutting down... ***");
-//   myDialog::closeDialog();
-// }
-
 void FlatlandWindow::CreateModelDialog() {
-  model_dialog_ = new ModelDialog();
-  // myDialog = model_dialog_;
+  model_dialog_ = new ModelDialog(this);
+  model_dialog_->setModal(true);
   model_dialog_->show();
 }
 
