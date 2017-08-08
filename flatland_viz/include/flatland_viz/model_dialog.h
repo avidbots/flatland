@@ -48,6 +48,7 @@
 #ifndef MODEL_DIALOG_H
 #define MODEL_DIALOG_H
 
+#include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QWidget>
@@ -73,7 +74,7 @@ class DialogOptionsWidget;
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-class ModelDialog : public QWidget {
+class ModelDialog : public QDialog {
   Q_OBJECT
 
  public:
@@ -115,9 +116,6 @@ class ModelDialog : public QWidget {
    */
 
   void SpawnModelClient();
-  void Sigint3Handler(int sig);
-
-  void CloseDialog();
 
  private:
   QPushButton* color_button;

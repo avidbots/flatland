@@ -77,25 +77,8 @@ QString ModelDialog::SelectFile() {
   }
 }
 
-void Sigint2Handler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
-  // ModelDialog::CloseDialog();
-}
-
-void ModelDialog::Sigint3Handler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
-  // ModelDialog::CloseDialog();
-}
-
-void ModelDialog::CloseDialog() { this->close(); }
-
-ModelDialog::ModelDialog(QWidget *parent) : QWidget(parent) {
+ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
   ROS_ERROR_STREAM("ModelDialog::ModelDialog");
-
-  // Register sigint shutdown handler
-  // signal(SIGINT, &ModelDialog::SigintHandler);
-  // signal(SIGINT, Sigint2Handler);
-  // signal(SIGINT, ModelDialog::Sigint3Handler);
 
   path_to_model_file = SelectFile();
   QVBoxLayout *v_layout = new QVBoxLayout;
