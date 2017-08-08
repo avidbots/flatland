@@ -1,0 +1,36 @@
+# Turtlebot
+
+
+bodies:  # List of named bodies
+  - name: base
+    origin: [-1, 0, 0] 
+    type: dynamic  
+    color: [1, 0, 0, 0.25] 
+    footprints:
+      - type: circle
+        is_sensor: true
+        radius: 0.5
+        center: [0.0, 0.0]
+      - type: polygon
+        is_sensor: true
+        points: [[-.05, -.45], [0.05, -.45], [0.05, -.35], [-0.05, -.35]]
+      - type: polygon
+        is_sensor: true
+        points: [[-.4, -.125], [-.3, -.125], [-.3, .125], [-.4, .125]]
+      - type: polygon
+        is_sensor: true
+        points: [[.4, -.125], [.3, -.125], [.3, .125], [.4, .125]]
+plugins:
+  - type: DiffDrive # plugin class name
+    name: diff_drive # for registering list of plugins
+    body: base
+    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
+
+  # - type: Laser
+  #   name: hokuyo_laser # every plugin has a unique name
+  #   topic: scan
+  #   body: base
+  #   origin: [0, 0, 0] # w.r.t body origin
+  #   range: 10 # m
+  #   angle: {min: -1.1, max: 1.1, increment: 0.01}
+  #   layer: "2d"
