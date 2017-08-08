@@ -120,8 +120,6 @@ void Laser::OnInitialize(const YAML::Node &config) {
   static_tf_.transform.rotation.y = q.y();
   static_tf_.transform.rotation.z = q.z();
   static_tf_.transform.rotation.w = q.w();
-
-  ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
 }
 
 void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
@@ -226,7 +224,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   }
 
   ROS_DEBUG_NAMED("LaserPlugin",
-                  "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) "
+                  "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) "
                   "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
                   "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
                   name_.c_str(), topic_.c_str(), body_name.c_str(), body_,

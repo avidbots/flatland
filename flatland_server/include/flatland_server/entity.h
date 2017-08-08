@@ -93,12 +93,17 @@ class Entity {
    * @brief Get the type of entity, subclasses must override
    * @return the type of entity
    */
-  virtual EntityType Type() = 0;
+  virtual EntityType Type() const = 0;
 
   /**
    * @brief Visualize the entity
    */
-  virtual void DebugVisualize() {}
+  virtual void DebugVisualize() const = 0;
+
+  /**
+   * @brief Print debug message for the entity
+   */
+  virtual void DebugOutput() const = 0;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_ENTITY_H

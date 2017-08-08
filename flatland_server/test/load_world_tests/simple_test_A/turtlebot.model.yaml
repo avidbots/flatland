@@ -67,7 +67,7 @@ joints:
     angle: 1.57079633
     frequency: 10
     damping: 0.5
-    collide_connected: false
+    collide_connected: true
     color: [0.1, 0.2, 0.3, 0.4]
     bodies:
       - name: base
@@ -77,6 +77,7 @@ joints:
 
   - name: right_wheel_weld
     type: weld
+    collide_connected: false    
     bodies:
       - name: base
         anchor: [1, 0]

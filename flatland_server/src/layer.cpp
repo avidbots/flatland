@@ -52,6 +52,7 @@
 #include <flatland_server/yaml_reader.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
+#include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
@@ -209,13 +210,26 @@ void Layer::LoadMap() {
   }
 }
 
-void Layer::DebugVisualize() {
+void Layer::DebugVisualize() const{
   std::string viz_name = "layer/" + name_;
 
   DebugVisualization::Get().Reset(viz_name);
   DebugVisualization::Get().Visualize(viz_name, body_->physics_body_,
                                       body_->color_.r, body_->color_.g,
                                       body_->color_.b, body_->color_.a);
+}
+
+void Layer::DebugOutput() const {
+  std::string names = "{" + boost::algorithm::join(names_, ",") + "}";
+  uint16_t category_bits = cfr_->GetCategoryBits(names_);
+
+  ROS_DEBUG_NAMED("Layer",
+                  "Layer %p: physics_world(%p) name(%s) names(%s) "
+                  "category_bits(0x%X) resolution(%f)",
+                  this, physics_world_, name_.c_str(), names.c_str(),
+                  category_bits, resolution_);
+
+  body_->DebugOutput();
 }
 
 };  // namespace flatland_server

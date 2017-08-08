@@ -85,6 +85,11 @@ class Joint {
   Joint &operator=(const Joint &) = delete;
 
   /**
+   * @brief logs the debugging information for the joint
+   */
+  void DebugOutput() const;
+
+  /**
    * @return Pointer to the model that contains the joint
    */
   Model *GetModel();

@@ -79,6 +79,11 @@ class Body {
        double linear_damping, double angular_damping);
 
   /**
+   * @brief logs the debugging information for the body
+   */
+  void DebugOutput() const;
+
+  /**
    * @return name of the body
    */
   const std::string &GetName() const;
@@ -89,6 +94,12 @@ class Body {
    * @return Pointer to Box2D physics body
    */
   b2Body *GetPhysicsBody();
+
+  /**
+   * @brief Count the number of fixtures
+   * @return number of fixtures in the body
+   */
+  int GetFixturesCount() const;
 
   /**
    * @return Color of the body

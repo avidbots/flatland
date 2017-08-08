@@ -114,7 +114,7 @@ class Layer : public Entity {
    * @brief Return the type of entity
    * @return type indicating it is a layer
    */
-  EntityType Type() { return EntityType::LAYER; }
+  EntityType Type() const { return EntityType::LAYER; }
 
   /**
    * @brief Load the map. It vectorizes the bitmap and apply the transformations
@@ -124,7 +124,12 @@ class Layer : public Entity {
   /**
    * @brief Visualize layer for debugging purposes
    */
-  void DebugVisualize() override;
+  void DebugVisualize() const override;
+
+  /**
+   * @brief log debug messages for the layer
+   */
+  void DebugOutput() const override;
 
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon

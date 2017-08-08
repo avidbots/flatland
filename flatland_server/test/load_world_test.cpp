@@ -658,7 +658,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
 
   // Check loaded joint data
   EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", {0.1, 0.2, 0.3, 0.4},
-                      m0->bodies_[0], {-1, 0}, m0->bodies_[1], {0, 0}, false));
+                      m0->bodies_[0], {-1, 0}, m0->bodies_[1], {0, 0}, true));
   EXPECT_TRUE(WeldEq(m0->joints_[0], 1.57079633, 10, 0.5));
 
   EXPECT_TRUE(JointEq(m0->joints_[1], "right_wheel_weld", {1, 1, 1, 0.5},

@@ -90,7 +90,7 @@ class Model : public Entity {
    * @brief Return the type of entity
    * @return Model type
    */
-  EntityType Type() { return EntityType::MODEL; }
+  EntityType Type() const { return EntityType::MODEL; }
 
   /**
    * @brief load bodies to this model, throws exceptions upon failure
@@ -146,7 +146,17 @@ class Model : public Entity {
   /**
    * @brief Publish debug visualizations for model
    */
-  void DebugVisualize() override;
+  void DebugVisualize() const override;
+
+  /**
+   * @brief log debug messages for the layer
+   */
+  void DebugOutput() const override;
+  
+  /**
+   * @brief Dump box2d data for debugging
+   */
+  void DumpBox2D() const;
 
   /**
    * @brief transform all bodies in the model

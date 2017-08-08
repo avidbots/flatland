@@ -24,5 +24,4 @@
 
   <node name="flatland_viz" pkg="flatland_viz" type="flatland_viz" required="true" if="$(arg show_viz)"/>
 
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find flatland_server)/test/conestogo_office_test/map.yaml"/>
 </launch>

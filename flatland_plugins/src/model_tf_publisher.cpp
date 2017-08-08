@@ -99,7 +99,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   ROS_DEBUG_NAMED(
       "ModelTfPublisher",
-      "Initialized with params: reference(%s %p) "
+      "Initialized with params: reference(%s, %p) "
       "publish_tf_world(%d) world_frame_id(%s) update_rate(%f), exclude({%s})",
       reference_body_->name_.c_str(), reference_body_, publish_tf_world_,
       world_frame_id_.c_str(), update_rate_,
