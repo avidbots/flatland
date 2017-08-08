@@ -2,7 +2,7 @@ properties: {}
 layers:
   - name: "2d"
     map: "map.yaml"
-    color: [0, 1, 0, 0]
+    color: [0, 1, 0, 0.675]
   - name: "3d"
     map: "map3d.yaml"
 models:  
