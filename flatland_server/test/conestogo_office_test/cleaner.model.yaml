@@ -11,7 +11,7 @@ bodies:  # List of named bodies
   #       center: [0, 0]  # relative to body origin
   #       radius: 0.75  # m
   #       layers: ["all"] # any other layers, default is all
-  #       is_sensor: false # Box2d Sensor, false is default
+  #       sensor: false # Box2d Sensor, false is default
   #       self_collide: false # collides with other bodies, default is false]
   #       density: 500
 
@@ -23,7 +23,7 @@ bodies:  # List of named bodies
       - type: polygon
         density: 100000.0
         friction: 1000000.0
-        is_sensor: false
+        sensor: false
 
 
 
