@@ -522,7 +522,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_STREQ(w->layers_[0]->names_[0].c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
-                     {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
+                     {0.05, -0.05, 1.57}, {0, 1, 0, 0.675}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
   EXPECT_EQ(w->cfr_.GetCategoryBits(w->layers_[0]->names_), 0b1);
 
