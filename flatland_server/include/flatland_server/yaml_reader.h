@@ -68,6 +68,8 @@ class YamlReader {
   YAML::Node node_;                      ///< The YAML Node this processes
   std::set<std::string> accessed_keys_;  /// Records of the keys processed
   ///< location of the entry, used to show where the error come from
+  std::string filename_;
+  std::string file_path_;
   std::string entry_location_;
   ///< name of the yaml entry, used to show where the error come from
   std::string entry_name_;
@@ -104,6 +106,13 @@ class YamlReader {
   void SetErrorInfo(std::string entry_location, std::string entry_name = "");
 
   /**
+   * @brief Use this method to set the file location of the yaml node
+   * @param[in] file_path path to the file, use "_NONE_" for empty string,
+   * file_path with empty string will keep current path
+   */
+  void SetFile(const std::string &file_path);
+
+  /**
    * @brief This method checks all keys in the yaml node are used, otherwise it
    * throws an exception
    */
@@ -125,7 +134,8 @@ class YamlReader {
   int NodeSize();
 
   /**
-   * @brief Get one of the subnode using a index, throws exception on failure
+   * @brief Get one of the subnode using a index, throws exception on failure,
+   * file path is inherited from the parent
    * @param[in] index Index of the subnode
    * @param[in] type_check Check if the type of the subnode, i.e. list or map
    * @param[in] sub_node_location The error location of the subnode, optional,
@@ -136,7 +146,8 @@ class YamlReader {
   YamlReader Subnode(int index, NodeTypeCheck type_check,
                      std::string sub_node_location = "");
   /**
-   * @brief Get one of the subnode using a key, throws exception on failure
+   * @brief Get one of the subnode using a key, throws exception on failure,
+   * file path is inherited from the parent
    * @param[in] key Key of the subnode
    * @param[in] type_check Check if the type of the subnode, i.e. list or map
    * @param[in] sub_node_location The error location of the subnode, optional,
@@ -148,7 +159,7 @@ class YamlReader {
                      std::string sub_node_location = "");
   /**
    * @brief Optionally get one of the subnode using a key, throws exception on
-   * failure
+   * failure, file path is inherited from the parent
    * @param[in] key Key of the subnode
    * @param[in] type_check Check if the type of the subnode, i.e. list or map
    * @param[in] sub_node_location The error location of the subnode, optional,

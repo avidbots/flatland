@@ -190,11 +190,14 @@ void World::LoadLayers(YamlReader &layers_reader) {
       map_path = world_yaml_dir_ / map_path;
     }
 
+    ROS_INFO_NAMED("World", "Loading layer \"%s\" from path=\"%s\"",
+                    names[0].c_str(), map_path.string().c_str());
+
     Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
                                     names, color);
     layers_.push_back(layer);
 
-    ROS_INFO_NAMED("World", "Layer %s loaded", layer->name_.c_str());
+    ROS_INFO_NAMED("World", "Layer \"%s\" loaded", layer->name_.c_str());
     layer->DebugOutput();
   }
 }
@@ -227,6 +230,9 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     abs_path = world_yaml_dir_ / abs_path;
   }
 
+  ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",
+                  abs_path.string().c_str());
+
   Model *m =
       Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
   m->TransformAll(pose);
@@ -237,7 +243,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     plugin_manager_.LoadModelPlugin(m, plugin_reader);
   }
 
-  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
+  ROS_INFO_NAMED("World", "Model \"%s\" loaded", m->name_.c_str());
   m->DebugOutput();
 }
 
