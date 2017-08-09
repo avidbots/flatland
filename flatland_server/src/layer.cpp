@@ -117,6 +117,10 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
       data_path = boost::filesystem::path(map_path).parent_path() / data_path;
     }
 
+    ROS_INFO_NAMED("Layer",
+                   "layer \"%s\" loading line segments from path=\"%s\"",
+                   names[0].c_str(), data_path.string().c_str());
+
     std::vector<LineSegment> line_segments;
 
     ReadLineSegmentsFile(data_path.string(), line_segments);
@@ -133,6 +137,9 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
     if (image_path.string().front() != '/') {
       image_path = boost::filesystem::path(map_path).parent_path() / image_path;
     }
+
+    ROS_INFO_NAMED("Layer", "layer \"%s\" loading image from path=\"%s\"",
+                   names[0].c_str(), image_path.string().c_str());
 
     cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
     if (map.empty()) {
