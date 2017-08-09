@@ -82,6 +82,8 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
   for (const auto &line_segment : line_segments) {
     b2EdgeShape edge;
     edge.Set(line_segment.start.Box2D(), line_segment.end.Box2D());
+    edge.m_vertex1 *= scale;
+    edge.m_vertex2 *= scale;
 
     b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
@@ -147,7 +149,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 void Layer::ReadLineSegmentsFile(const std::string &file_path,
-                          std::vector<LineSegment> &line_segments) {
+                                 std::vector<LineSegment> &line_segments) {
   std::ifstream in_file(file_path);
   std::string line;
   int line_count = 0;
