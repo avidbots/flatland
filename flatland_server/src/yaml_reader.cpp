@@ -60,7 +60,7 @@ YamlReader::YamlReader(const std::string &path) {
   try {
     node_ = YAML::LoadFile(path);
   } catch (const YAML::BadFile &e) {
-    throw YAMLException("File does not exist, path=" + Q(path), e);
+    throw YAMLException("File does not exist, path=" + Q(path));
 
   } catch (const YAML::ParserException &e) {
     throw YAMLException("Malformatted file, path=" + Q(path), e);
