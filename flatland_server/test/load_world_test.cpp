@@ -71,21 +71,22 @@ class LoadWorldTest : public ::testing::Test {
   // to test that the world instantiation will fail, and the exception
   // message matches the given regex string
   void test_yaml_fail(std::string regex_str) {
+    // do a regex match against error messages
+    std::cmatch match;
+    std::regex regex(regex_str);
+
     try {
       World *w = World::MakeWorld(world_yaml.string());
       delete w;
       ADD_FAILURE() << "Expected an exception, but none were raised";
-    } catch (const YAMLException &e) {
-      // do a regex match against error messages
-      std::cmatch match;
-      std::regex regex(regex_str);
+    } catch (const Exception &e) {
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
           << "Exception Message '" + std::string(e.what()) + "'" +
                  " did not match against regex '" + regex_str + "'";
     } catch (const std::exception &e) {
-      ADD_FAILURE()
-          << "Expected YAMLException, another exception was caught instead: "
-          << e.what();
+      ADD_FAILURE() << "Expected flatland_server::Exception, another exception "
+                       "was caught instead: "
+                    << e.what();
     }
   }
 
@@ -513,21 +514,40 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(w->physics_velocity_iterations_, 11);
   EXPECT_EQ(w->physics_position_iterations_, 12);
 
-  ASSERT_EQ(w->layers_.size(), 2);
+  ASSERT_EQ(w->layers_.size(), 3);
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
+  ASSERT_EQ(w->layers_[0]->names_.size(), 1);
+  EXPECT_STREQ(w->layers_[0]->names_[0].c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
                      {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
+  EXPECT_EQ(w->cfr_.GetCategoryBits(w->layers_[0]->names_), 0b1);
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
+  ASSERT_EQ(w->layers_[1]->names_.size(), 3);
+  EXPECT_STREQ(w->layers_[1]->names_[0].c_str(), "3d");
+  EXPECT_STREQ(w->layers_[1]->names_[1].c_str(), "4d");
+  EXPECT_STREQ(w->layers_[1]->names_[2].c_str(), "5d");
   EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0},
                      {1, 1, 1, 1}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("3d"), 1);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("4d"), 2);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("5d"), 3);
+  EXPECT_EQ(w->cfr_.GetCategoryBits(w->layers_[1]->names_), 0b1110);
+
+  // check that layer 2 settings are loaded correctly
+  EXPECT_STREQ(w->layers_[2]->name_.c_str(), "lines");
+  ASSERT_EQ(w->layers_[2]->names_.size(), 1);
+  EXPECT_STREQ(w->layers_[2]->names_[0].c_str(), "lines");
+  EXPECT_EQ(w->layers_[2]->Type(), Entity::EntityType::LAYER);
+  EXPECT_TRUE(BodyEq(w->layers_[2]->body_, "lines", b2_staticBody,
+                     {-1.20, -5, 1.23}, {1, 1, 1, 1}, 0, 0));
+  EXPECT_EQ(w->cfr_.LookUpLayerId("lines"), 4);
 
   // check that bitmap is transformed correctly. This involves flipping the y
   // coordinates and apply the resolution. Note that the translation and
@@ -554,8 +574,8 @@ TEST_F(LoadWorldTest, simple_test_A) {
     layer0_edges.push_back(e);
 
     // check that collision groups are correctly assigned
-    EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
-    EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
+    ASSERT_EQ(f->GetFilterData().categoryBits, 0x1);
+    ASSERT_EQ(f->GetFilterData().maskBits, 0x1);
   }
   EXPECT_EQ(layer0_edges.size(), layer0_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer0_edges, layer0_expected_edges));
@@ -587,11 +607,30 @@ TEST_F(LoadWorldTest, simple_test_A) {
     layer1_edges.push_back(e);
 
     // check that collision groups are correctly assigned
-    EXPECT_EQ(f->GetFilterData().categoryBits, 0b1110);
-    EXPECT_EQ(f->GetFilterData().maskBits, 0b1110);
+    ASSERT_EQ(f->GetFilterData().categoryBits, 0b1110);
+    ASSERT_EQ(f->GetFilterData().maskBits, 0b1110);
   }
   EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
+
+  // check layer[2] data
+  std::vector<std::pair<b2Vec2, b2Vec2>> layer2_expected_edges = {
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.1, 0.2), b2Vec2(0.3, 0.4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(-0.1, -0.2), b2Vec2(-0.3, -0.4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.01, 0.02), b2Vec2(0.03, 0.04))};
+
+  std::vector<b2EdgeShape> layer2_edges;
+  for (b2Fixture *f = w->layers_[2]->body_->physics_body_->GetFixtureList(); f;
+       f = f->GetNext()) {
+    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+    layer2_edges.push_back(e);
+
+    // check that collision groups are correctly assigned
+    ASSERT_EQ(f->GetFilterData().categoryBits, 0b10000);
+    ASSERT_EQ(f->GetFilterData().maskBits, 0b10000);
+  }
+  EXPECT_EQ(layer2_edges.size(), layer2_expected_edges.size());
+  EXPECT_TRUE(do_edges_exactly_match(layer2_edges, layer2_expected_edges));
 
   // Check loaded model data
   // Check model 0
@@ -796,8 +835,7 @@ TEST_F(LoadWorldTest, map_invalid_A) {
 }
 
 /**
- * This test tries to loads valid world yaml file which in turn load a map
- * yaml
+ * This test tries to loads valid world yaml file which in turn load a map yaml
  * file which then inturn tries to load a non-exists map image file. It should
  * throw an exception
  */
@@ -808,6 +846,40 @@ TEST_F(LoadWorldTest, map_invalid_B) {
 }
 
 /**
+ * This test tries to load a invalid map configuration, an exception should be
+ * thrown
+ */
+TEST_F(LoadWorldTest, map_invalid_C) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_C/world.yaml");
+  test_yaml_fail(
+      "Flatland File: Failed to load \".*/map_invalid_C/random_file.dat\"");
+}
+
+/**
+ * This test tries to load a invalid map configuration, an exception should be
+ * thrown
+ */
+TEST_F(LoadWorldTest, map_invalid_D) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_D/world.yaml");
+  test_yaml_fail(
+      "Flatland File: Failed to read line segment from line 6, in file "
+      "\"map_lines.dat\"");
+}
+
+/**
+ * This test tries to load a invalid map configuration, an exception should be
+ * thrown
+ */
+TEST_F(LoadWorldTest, map_invalid_E) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_E/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry \"scale\" does not exist \\(in layer \"lines\"\\)");
+}
+
+/**`
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_A) {

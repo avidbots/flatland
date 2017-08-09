@@ -171,7 +171,7 @@ void Layer::ReadLineSegmentsFile(const std::string &file_path,
       if (ss.fail()) {
         throw Exception(
             "Flatland File: Failed to read line segment from line " +
-            std::to_string(i) + ", in file " +
+            std::to_string(line_count) + ", in file " +
             Q(boost::filesystem::path(file_path).filename().string()));
       }
     }

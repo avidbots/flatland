@@ -7,6 +7,8 @@ layers:
     color: [0, 1, 0, 0]
   - name: ["3d", "4d", "5d"]
     map: "map3d.yaml"
+  - name: ["lines"]
+    map: "map_lines.yaml"
 models:  
   - name: turtlebot1 
     model: "turtlebot.model.yaml"
