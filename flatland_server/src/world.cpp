@@ -191,7 +191,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
     }
 
     ROS_INFO_NAMED("World", "Loading layer \"%s\" from path=\"%s\"",
-                    names[0].c_str(), map_path.string().c_str());
+                   names[0].c_str(), map_path.string().c_str());
 
     Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
                                     names, color);
@@ -231,7 +231,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   }
 
   ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",
-                  abs_path.string().c_str());
+                 abs_path.string().c_str());
 
   Model *m =
       Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
