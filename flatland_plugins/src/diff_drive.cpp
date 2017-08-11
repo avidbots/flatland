@@ -63,7 +63,7 @@ void DiffDrive::TwistCallback(const geometry_msgs::Twist& msg) {
 void DiffDrive::OnInitialize(const YAML::Node& config) {
   YamlReader reader(config);
   std::string body_name = reader.Get<std::string>("body");
-  std::string odom_frame_id = reader.Get<std::string>("odom_frame", "odom");
+  std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
   std::string twist_topic = reader.Get<std::string>("twist_sub", "cmd_vel");
   std::string odom_topic =
@@ -99,6 +99,8 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   auto odom_pose_covar = reader.GetArray<double, 36>("odom_pose_covariance",
                                                      odom_pose_covar_default);
 
+  reader.EnsureAccessedAllKeys();
+
   body_ = model_->GetBody(body_name);
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
@@ -128,20 +130,21 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
     noise_gen_[i] =
-        std::normal_distribution<double>(0.0, sqrt(odom_pose_covar[i]));
+        std::normal_distribution<double>(0.0, sqrt(odom_pose_noise[i]));
   }
 
   for (int i = 0; i < 3; i++) {
     noise_gen_[i + 3] =
-        std::normal_distribution<double>(0.0, sqrt(odom_twist_covar[i]));
+        std::normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }
 
   ROS_INFO_NAMED("DiffDrive",
                  "Initialized with params body(%p %s) odom_frame_id(%s) "
                  "twist_sub(%s) odom_pub(%s) ground_truth_pub(%s) "
                  "odom_pose_noise({%f,%f,%f}) odom_twist_noise({%f,%f,%f}) "
-                 "pub_rate(%f)\n", body_, body_->name_.c_str(),
-                 odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(),
+                 "pub_rate(%f)\n",
+                 body_, body_->name_.c_str(), odom_frame_id.c_str(),
+                 twist_topic.c_str(), odom_topic.c_str(),
                  ground_truth_topic.c_str(), odom_pose_noise[0],
                  odom_pose_noise[1], odom_pose_noise[2], odom_twist_noise[0],
                  odom_twist_noise[1], odom_twist_noise[2], pub_rate);
@@ -205,8 +208,6 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   // r is the vector from body origin to the CM in world frame
   b2Vec2 r = b2body->GetWorldCenter() - position;
   b2Vec2 linear_vel_cm = linear_vel + angular_vel * b2Vec2(-r.y, r.x);
-
-  printf("lin_vel=(%f,%f) ang_vel=%f r=(%f,%f), cm_vel(%f,%f)\n", linear_vel.x, linear_vel.y, angular_vel, r.x, r.y, linear_vel_cm.x, linear_vel_cm.y);
 
   b2body->SetLinearVelocity(linear_vel_cm);
   b2body->SetAngularVelocity(angular_vel);

@@ -45,12 +45,11 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
-#include <flatland_plugins/update_timer.h>
-
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
 #define FLATLAND_PLUGINS_DIFFDRIVE_H
@@ -71,8 +70,8 @@ class DiffDrive : public flatland_server::ModelPlugin {
   UpdateTimer update_timer_;
 
   std::default_random_engine rng_;
-  std::array<std::normal_distribution<double>, 6> noise_gen_; 
-  
+  std::array<std::normal_distribution<double>, 6> noise_gen_;
+
   /**
    * @name          OnInitialize
    * @brief         override the BeforePhysicsStep method
