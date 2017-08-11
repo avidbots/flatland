@@ -11,6 +11,6 @@ models:
   #   pose: [3, 0, 0]
   #   model: "cleaner.model.yaml"
   - name: turtlebot1 
-    pose: [1, 1, 0]
+    pose: [12, 0, 0]
     model: "turtlebot.model.yaml"
     
