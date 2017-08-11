@@ -2,7 +2,7 @@
 
 bodies:
   # - name: base # invalid, the entry is a map without the dash
-    origin: [0, 0, 0] 
+    pose: [0, 0, 0] 
     type: dynamic
     color: [1, 1, 0, 0.25]
     footprints:

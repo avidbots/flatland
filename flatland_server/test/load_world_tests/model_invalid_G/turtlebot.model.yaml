@@ -2,7 +2,7 @@
 
 bodies:
   - name: base
-    origin: [0, 0, 0] 
+    pose: [0, 0, 0] 
     type: dynamic
     color: [1, 1, 0, 0.25]
     random_paramter: 123

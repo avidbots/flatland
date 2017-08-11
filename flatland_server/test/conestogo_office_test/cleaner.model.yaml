@@ -3,20 +3,20 @@
 
 bodies:  # List of named bodies
   # - name: base
-  #   origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
-  #   type: dynamic  # dynamic | static | kinematic, default dynamic
+  #   pose: [0, 0, 0] 
+  #   type: dynamic 
   #   color: [1, 1, 0, 0.25] # r g b a
   #   footprints:
   #     - type: circle
-  #       center: [0, 0]  # relative to body origin
-  #       radius: 0.75  # m
-  #       layers: ["all"] # any other layers, default is all
-  #       sensor: false # Box2d Sensor, false is default
-  #       self_collide: false # collides with other bodies, default is false]
+  #       center: [0, 0]  
+  #       radius: 0.75
+  #       layers: ["all"] 
+  #       sensor: false 
+  #       self_collide: false
   #       density: 500
 
   - name: base
-    origin: [-1, 0, 0] 
+    pose: [-1, 0, 0] 
     type: dynamic  
     color: [1, 0, 0, 0.25] 
     footprints:
@@ -104,7 +104,7 @@ bodies:  # List of named bodies
         points: [[.3155, -.7425], [.2645, -.7425], [.2645, -.9175], [.3155, -.9175]]
 
   # - name: left_wheel
-  #   origin: [-1, 0, 0] 
+  #   pose: [-1, 0, 0] 
   #   type: dynamic  
   #   color: [1, 0, 0, 0.25] 
   #   footprints:
@@ -113,7 +113,7 @@ bodies:  # List of named bodies
   #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   # - name: right_wheel
-  #   origin: [1, 0, 0] 
+  #   pose: [1, 0, 0] 
   #   type: dynamic  
   #   color: [0, 1, 0, 0.25] 
   #   footprints:
@@ -143,15 +143,15 @@ bodies:  # List of named bodies
 
 
 plugins:
-  - type: Bicycle # plugin class name
-    name: bicycle # for registering list of plugins
+  - type: Bicycle
+    name: bicycle 
     body: base
 
   # - type: Laser
-  #   name: hokuyo_laser # every plugin has a unique name
+  #   name: hokuyo_laser 
   #   topic: scan
   #   body: base
-  #   origin: [0, 0, 0] # w.r.t body origin
+  #   pose: [0, 0, 0] 
   #   range: 10 # m
   #   angle: {min: -1.1, max: 1.1, increment: 0.01}
   #   layer: "2d"

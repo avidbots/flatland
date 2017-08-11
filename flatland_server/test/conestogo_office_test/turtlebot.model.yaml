@@ -3,7 +3,7 @@
 
 bodies:  # List of named bodies
   - name: base
-    origin: [0, 0, 0] 
+    pose: [0, 0, 0] 
     type: dynamic  
     color: [1, 1, 1, 0.75] 
     footprints:
@@ -30,10 +30,10 @@ bodies:  # List of named bodies
         density: 1
         layers: []
 plugins:
-  - type: DiffDrive # plugin class name
-    name: turtlebot_drive # for registering list of plugins
+  - type: DiffDrive 
+    name: turtlebot_drive 
     body: base
-    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
+    pose: [0, 0, 0] 
   - type: ModelTfPublisher
     name: tf_publisher
     publish_tf_world: true

@@ -2,7 +2,7 @@
 
 bodies:
   - name: body
-    origin: [0, 0, 0]
+    pose: [0, 0, 0]
     type: dynamic
     color: [0, 0.75, 0.75, 0.25]
     footprints:
