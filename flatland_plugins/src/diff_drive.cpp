@@ -51,8 +51,6 @@
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <Eigen/Dense>
-#include <boost/algorithm/string/join.hpp>
 
 namespace flatland_plugins {
 
