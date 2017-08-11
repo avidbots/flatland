@@ -69,6 +69,8 @@ void Bicycle::OnInitialize(const YAML::Node& config) {
   Bicycle::CreateFrontWheel();
 
   model_is_dynamic = true;
+  velocity = 0;
+  omega = 0;
 }
 
 //

@@ -51,6 +51,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/type_index.hpp>
 #include <set>
@@ -101,6 +102,9 @@ class YamlReader {
   template <typename T>
   std::vector<T> AsList(int mfmt_in_size, int max_size);
 
+  template <typename T, int N>
+  std::array<T, N> AsArray();
+
   template <typename T>
   T Get(const std::string &key);
 
@@ -115,6 +119,13 @@ class YamlReader {
   std::vector<T> GetList(const std::string &key,
                          const std::vector<T> default_val, int mfmt_in_size,
                          int max_size);
+
+  template <typename T, int N>
+  std::array<T, N> GetArray(const std::string &key);
+
+  template <typename T, int N>
+  std::array<T, N> GetArray(const std::string &key,
+                            const std::array<T, N> default_val);
 
   Vec2 GetVec2(const std::string &key);
 
@@ -172,6 +183,17 @@ std::vector<T> YamlReader::AsList(int mfmt_in_size, int max_size) {
   return list;
 }
 
+template <typename T, int N>
+std::array<T, N> YamlReader::AsArray() {
+  std::vector<T> list_ret = AsList<T>(N, N);
+  std::array<T, N> array_ret;
+
+  for (int i = 0; i < N; i++) {
+    array_ret[i] = list_ret[i];
+  }
+  return array_ret;
+}
+
 template <typename T>
 T YamlReader::Get(const std::string &key) {
   return Subnode(key, NO_CHECK).As<T>();
@@ -202,6 +224,22 @@ std::vector<T> YamlReader::GetList(const std::string &key,
   }
 
   return GetList<T>(key, mfmt_in_size, max_size);
+}
+
+template <typename T, int N>
+std::array<T, N> YamlReader::GetArray(const std::string &key) {
+  return Subnode(key, LIST).AsArray<T, N>();
+}
+
+template <typename T, int N>
+std::array<T, N> YamlReader::GetArray(const std::string &key,
+                                      const std::array<T, N> default_val) {
+  if (!node_[key]) {
+    accessed_keys_.insert(key);
+    return default_val;
+  }
+
+  return GetArray<T, N>(key);
 }
 }
 
