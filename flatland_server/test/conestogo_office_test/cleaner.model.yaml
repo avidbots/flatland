@@ -146,7 +146,6 @@ plugins:
   - type: Bicycle # plugin class name
     name: bicycle # for registering list of plugins
     body: base
-    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
 
   # - type: Laser
   #   name: hokuyo_laser # every plugin has a unique name
