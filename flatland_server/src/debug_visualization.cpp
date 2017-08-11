@@ -147,9 +147,9 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
 
         marker.type = marker.SPHERE_LIST;
         float diameter = circle->m_radius * 2.0;
-        marker.scale.z = diameter;
+        marker.scale.z = 0.01;
         marker.scale.x = diameter;
-        marker.scale.y = 0.01;
+        marker.scale.y = diameter;
 
         geometry_msgs::Point p;
         p.x = circle->m_p.x;

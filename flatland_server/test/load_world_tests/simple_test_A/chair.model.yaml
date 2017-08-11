@@ -2,7 +2,7 @@
 
 bodies:
   - name: chair
-    origin: [0, 0, 0]
+    pose: [0, 0, 0]
     type: static
     footprints:
     # represented by a 1 m circle and a center pole, probably a bad representation
