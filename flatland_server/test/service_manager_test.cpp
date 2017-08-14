@@ -102,7 +102,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
 
   robot_yaml = this_file_dir /
-               fs::path("load_world_tests/simple_test_A/turtlebot.model.yaml");
+               fs::path("load_world_tests/simple_test_A/person.model.yaml");
 
   w = World::MakeWorld(world_yaml.string());
 
@@ -111,9 +111,9 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   srv.request.name = "service_manager_test_robot";
   srv.request.ns = "robot123";
   srv.request.yaml_path = robot_yaml.string();
-  srv.request.pose.x = 11.124;
-  srv.request.pose.y = 12.234;
-  srv.request.pose.theta = 1.5;
+  srv.request.pose.x = 101.1;
+  srv.request.pose.y = 102.1;
+  srv.request.pose.theta = 0.23;
 
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
 
@@ -130,12 +130,12 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   ASSERT_EQ(5, w->models_.size());
   EXPECT_STREQ("service_manager_test_robot", w->models_[4]->name_.c_str());
   EXPECT_STREQ("robot123", w->models_[4]->namespace_.c_str());
-  EXPECT_FLOAT_EQ(11.124,
+  EXPECT_FLOAT_EQ(101.1,
                   w->models_[4]->bodies_[0]->physics_body_->GetPosition().x);
-  EXPECT_FLOAT_EQ(12.234,
+  EXPECT_FLOAT_EQ(102.1,
                   w->models_[4]->bodies_[0]->physics_body_->GetPosition().y);
-  EXPECT_FLOAT_EQ(1.5, w->models_[4]->bodies_[0]->physics_body_->GetAngle());
-  EXPECT_EQ(5, w->models_[4]->bodies_.size());
+  EXPECT_FLOAT_EQ(0.23, w->models_[4]->bodies_[0]->physics_body_->GetAngle());
+  EXPECT_EQ(1, w->models_[4]->bodies_.size());
 
   delete w;
 }
