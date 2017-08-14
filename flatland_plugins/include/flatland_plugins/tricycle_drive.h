@@ -45,43 +45,41 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
-#include "geometry_msgs/Twist.h"
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 
 #ifndef FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
 #define FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
+
+using namespace flatland_server;
+using namespace std;
 
 namespace flatland_plugins {
 
 class TricycleDrive : public flatland_server::ModelPlugin {
  public:
-  ros::Subscriber sub;
-  b2Body* robot;
-  b2Vec2 robot_position;
-  b2Fixture* front_wheel_fixture;
-  double robot_angle;
-  double robot_alpha;
-  double time_step;
-  double velocity;
-  double omega;
-  bool model_is_dynamic;
-  double speedFactor = 1.0;
+  Body* body_;
+  Joint* front_wj_;       ///<  front wheel joint
+  Joint* rear_left_wj_;   ///< rear left wheel joint
+  Joint* rear_right_wj_;  ///< rear right wheel joint
+  double axel_track_;     ///< normal distrance between the rear two wheels
+  double wheelbase_;      ///< distance between the front and rear wheel
+  b2Vec2 rear_center_;    ///< middle point between the two rear wheels
 
-  /*
-  * @Usage
-  *
-  *     Include the following in the model's Yaml file
-  *
-  *     plugins:
-  *         - type: Bicycle # plugin class name
-  *         name: bicycle # for registering list of plugins
-  *         body: base
-  *         origin: [0, 0, 0] # w.r.t body origin, where the twist drive is
-  *         applied
-  *
-  *     The density of the chassis main fixture must be set to 100000.0
-  */
+  geometry_msgs::Twist twist_msg_;
+  nav_msgs::Odometry odom_msg_;
+  nav_msgs::Odometry ground_truth_msg_;
+  ros::Subscriber twist_sub_;
+  ros::Publisher odom_pub_;
+  ros::Publisher ground_truth_pub_;
+
+  UpdateTimer update_timer_;
+
+  default_random_engine rng_;
+  array<normal_distribution<double>, 6> noise_gen_;
 
   /**
    * @name                OnInitialize
@@ -89,57 +87,23 @@ class TricycleDrive : public flatland_server::ModelPlugin {
    * @param world_file    The path to the world.yaml file
    */
   void OnInitialize(const YAML::Node& config) override;
-  /**
-  * @name          RotateVertex
-  * @brief         rotates a b2Vec2 point about the origin by angle radians
-  * @param[in]     b2Vec2 vertex, point ie x and y
-  * @param[in]     double angle, angle to rotate point by
-  * @param[out]    b2Vec2 the new point with the rotation
-  */
-  b2Vec2 RotateVertex(b2Vec2 vertex, double angle);
+
+  void ComputeJoints();
+
   /**
   * @name          BeforePhysicsStep
   * @brief         override the BeforePhysicsStep method
   * @param[in]     config The plugin YAML node
   */
-  void BeforePhysicsStep(
-      const flatland_server::Timekeeper& timekeeper) override;
+  void BeforePhysicsStep(const Timekeeper& timekeeper) override;
+
   /**
   * @name          TwistCallback
   * @brief         callback to apply twist (velocity and omega)
   * @param[in]     timestep how much the physics time will increment
   */
   void TwistCallback(const geometry_msgs::Twist& msg);
-  /**
-  * @name          ApplyVelocity
-  * @brief         Apply the twist using either the kinematic or dynamic model
-  * @param[in]     twist ros message (msg.linear and msg.angular)
-  */
-  void ApplyVelocity();
-  /**
-  * @name          CreateFrontWheel
-  * @brief         create the front wheel fixture and shape
-  */
-  void CreateFrontWheel();
-  /**
-  * @name          DestroyFrontWheel
-  * @brief         destroy the front wheel fixture and shape
-  */
-  void DestroyFrontWheel();
-  /**
-  * @name          RecreateFrontWheel
-  * @brief         destroy then create the front wheel fixture and shape
-  *                used to simulate steering the front wheel
-  */
-  void RecreateFrontWheel();
-  /**
-  * @brief          calculte the delta, ie the angle the vehicle must be rotated
-  *                 by, to rotate about the ICC.
-  * @param[out]     delta:change in omega calculated from the distance forward
-  *                 robot moved for this physics step
-  */
-  double CalculateDelta(double distance);
 };
-};
+}
 
 #endif
