@@ -49,12 +49,12 @@
 #include <flatland_server/timekeeper.h>
 #include "geometry_msgs/Twist.h"
 
-#ifndef FLATLAND_PLUGINS_BICYCLE_H
-#define FLATLAND_PLUGINS_BICYCLE_H
+#ifndef FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
+#define FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
 
 namespace flatland_plugins {
 
-class Bicycle : public flatland_server::ModelPlugin {
+class TricycleDrive : public flatland_server::ModelPlugin {
  public:
   ros::Subscriber sub;
   b2Body* robot;
