@@ -189,18 +189,20 @@ class YamlReader {
   template <typename T>
   std::vector<T> AsList(int min_size, int max_size);
 
-<<<<<<< HEAD
+  /**
+   * @brief Convert the current node to a array of given type, throws exception
+   * on failure
+   * @return Array of given type
+   */
   template <typename T, int N>
   std::array<T, N> AsArray();
 
-=======
   /**
    * @brief Get subnode with a given key and converted to the given type, throws
    * on failure
    * @param[in] key Key to access the subnode
    * @return Value of the converted subnode
    */
->>>>>>> 0c4feb0db486bb1f9ae8e3d6b8ec98e9aa390237
   template <typename T>
   T Get(const std::string &key);
 
