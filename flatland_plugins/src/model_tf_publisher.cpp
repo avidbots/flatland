@@ -146,22 +146,10 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     // angle of bodies w.r.t to the world
     rel_tf = ref_tf_m.inverse() * body_tf_m;
 
-    // obtain the yaw from the transformation matrice, we can use any one
-    // of the 4 trigonometric elements in matrix
+    // obtain the yaw from the transformation matrice
     double cosine = rel_tf(0, 0);
-    double yaw;
-
-    // There is a chance the cosine is slightly larger than 1.0f due to
-    // floating point error, -1 <= cos(x) <= 1, assign acos(1) = 0 to yaw.
-    // We limit this floating point error to 1e-3, if the error is larger
-    // something else is probably wrong
-    if (cosine >= -1 && cosine <= 1) {
-      yaw = acos(cosine);
-    } else if (fabs(cosine) - 1 < 1e-3) {
-      yaw = 0.0;
-    } else {
-      ROS_ERROR_NAMED("ModelTfPublisher", "fabs(cos(x)) - 1 > 1e-3");
-    }
+    double sine = rel_tf(1, 0);
+    double yaw = atan2(sine, cosine);
 
     // publish TF
     tf_stamped.header.frame_id =

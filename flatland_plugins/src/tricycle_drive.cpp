@@ -51,6 +51,7 @@
 #include <flatland_server/yaml_reader.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
+#include <tf/tf.h>
 
 namespace flatland_plugins {
 
@@ -175,11 +176,12 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
 }
 
 void TricycleDrive::ComputeJoints() {
-  auto get_anchor = [&](Joint* joint) {
+  auto get_anchor = [&](Joint* joint, bool* is_inverted = nullptr) {
 
     b2Vec2 wheel_anchor;  ///< wheel anchor point, must be (0,0)
     b2Vec2 body_anchor;   ///< body anchor point
     Body* wheel_body;
+    bool inv = false;
 
     // ensure one of the body is the main body for the odometry
     if (joint->physics_joint_->GetBodyA()->GetUserData() == body_) {
@@ -188,6 +190,7 @@ void TricycleDrive::ComputeJoints() {
     } else if (joint->physics_joint_->GetBodyB()->GetUserData() == body_) {
       wheel_anchor = joint->physics_joint_->GetAnchorA();
       body_anchor = joint->physics_joint_->GetAnchorB();
+      inv = true;
     } else {
       throw YAMLException("Joint " + Q(joint->GetName()) +
                           " does not anchor on body " + Q(body_->GetName()));
@@ -201,6 +204,10 @@ void TricycleDrive::ComputeJoints() {
     if (fabs(wheel_anchor.x) > 1e-5 || fabs(wheel_anchor.y) > 1e-5) {
       throw YAMLException("Joint " + Q(joint->GetName()) +
                           " must have its wheel anchored point at (0, 0)");
+    }
+
+    if (is_inverted) {
+      *is_inverted = inv;
     }
 
     return body_anchor;
@@ -219,12 +226,13 @@ void TricycleDrive::ComputeJoints() {
     throw YAMLException("Rear right wheel joint must be a weld joint");
   }
 
-  // Get the anchor points of wheels on the body, the front wheel must be
-  // at (0,0) of the body
-  b2Vec2 front_anchor = get_anchor(front_wj_);
+  // positive joint angle goes counter clockwise from the perspective of BodyA,
+  // if body_ is not BodyA, we need flip the steering angle for visualization
+  b2Vec2 front_anchor = get_anchor(front_wj_, &invert_steering_angle_);
   b2Vec2 rear_left_anchor = get_anchor(rear_left_wj_);
   b2Vec2 rear_right_anchor = get_anchor(rear_right_wj_);
 
+  // the front wheel must be at (0,0) of the body
   if (fabs(front_anchor.x) > 1e-5 || fabs(front_anchor.y) > 1e-5) {
     throw YAMLException(
         "Front wheel joint must have its body anchored at (0, 0)");
@@ -263,90 +271,95 @@ void TricycleDrive::ComputeJoints() {
   wheelbase_ = sqrt((x4 - x3) * (x4 - x3) + (y4 - y3) * (y4 - y3));
 }
 
-void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {}
+void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
+  bool publish = update_timer_.CheckUpdate(timekeeper);
+
+  b2Body* b2body = body_->physics_body_;
+
+  b2Vec2 position = b2body->GetPosition();
+  float angle = b2body->GetAngle();
+
+  if (publish) {
+    // get the state of the body and publish the data
+    b2Vec2 linear_vel_local =
+        b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+    float angular_vel = b2body->GetAngularVelocity();
+
+    ground_truth_msg_.pose.pose.position.x = position.x;
+    ground_truth_msg_.pose.pose.position.y = position.y;
+    ground_truth_msg_.pose.pose.position.z = 0;
+    ground_truth_msg_.pose.pose.orientation =
+        tf::createQuaternionMsgFromYaw(angle);
+    ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
+    ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
+    ground_truth_msg_.twist.twist.linear.z = 0;
+    ground_truth_msg_.twist.twist.angular.x = 0;
+    ground_truth_msg_.twist.twist.angular.y = 0;
+    ground_truth_msg_.twist.twist.angular.z = angular_vel;
+
+    // add the noise to odom messages
+    odom_msg_.pose.pose = ground_truth_msg_.pose.pose;
+    odom_msg_.twist.twist = ground_truth_msg_.twist.twist;
+    odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
+    odom_msg_.pose.pose.position.y += noise_gen_[1](rng_);
+    odom_msg_.pose.pose.orientation =
+        tf::createQuaternionMsgFromYaw(angle + noise_gen_[2](rng_));
+    odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
+    odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
+    odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
+
+    ground_truth_pub_.publish(ground_truth_msg_);
+    odom_pub_.publish(odom_msg_);
+  }
+
+  // twist message contains the speed and angle of the front wheel
+  double v_f = twist_msg_.linear.x;       // velocity at front wheel
+  double theta_f = twist_msg_.angular.z;  // front wheel steering angle
+  double theta = angle;                   // angle of the robot
+
+  // change angle of the front wheel for visualization
+
+  b2RevoluteJoint* j =
+      dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
+
+  if (invert_steering_angle_) {
+    j->SetLimits(-theta_f, -theta_f);
+  } else {
+    j->SetLimits(theta_f, theta_f);
+  }
+
+  b2Body* b = model_->GetBody("front_wheel")->physics_body_;
+
+  // calculate the desired velocity using the bicycle model in the world frame
+  // looking at the rear center, formulas obtained from avidbots robot systems
+  // confluence page
+  double v_x = v_f * cos(theta_f) * cos(theta);  // x velocity in world
+  double v_y = v_f * cos(theta_f) * sin(theta);  // y velocity in world
+  double w = v_f * sin(theta_f) / wheelbase_;    // angular velocity
+
+  // Now we would like the rear center to move at v_x, v_y, and w, since Box2D
+  // applies velocities at center of mass, we must use rigid body kinematics
+  // to transform the velocities
+  b2Vec2 linear_vel(v_x, v_y);
+
+  // V_cm = V_rc + W x r_cm/rc
+  // velocity at center of mass equals to the velocity at the rear center plus,
+  // angular velocity cross product the displacement from the rear center to the
+  // center of mass
+
+  // r is the vector from rear center to CM in world frame
+  b2Vec2 r = b2body->GetWorldCenter() - b2body->GetWorldPoint(rear_center_);
+  b2Vec2 linear_vel_cm = linear_vel + w * b2Vec2(-r.y, r.x);
+
+  b2body->SetLinearVelocity(linear_vel_cm);
+
+  // angular velocity is the same at any point in body
+  b2body->SetAngularVelocity(w);
+}
 
 void TricycleDrive::TwistCallback(const geometry_msgs::Twist& msg) {
   twist_msg_ = msg;
 }
-
-// void TricycleDrive::ApplyVelocity() {
-//   static b2Vec2 last_step, last_pos, this_pos;
-//   double distance, delta, travelLimit = 85.0 * b2_pi / 180.0;
-
-//   if (robot_alpha > travelLimit) {
-//     if (omega < 0.0) {
-//       robot_angle -= omega * time_step;
-//       robot_alpha += omega * time_step;
-//     }
-//   }
-
-//   if (robot_alpha < -travelLimit) {
-//     if (omega > 0.0) {
-//       robot_angle -= omega * time_step;
-//       robot_alpha += omega * time_step;
-//     }
-//   }
-
-//   // integrate the angual velocity
-//   robot_angle += omega * time_step;
-//   robot_alpha -= omega * time_step;
-
-//   if (model_is_dynamic) {
-//     //
-//     // Dynamic model
-//     //
-//     // future: decelerate/stop robot
-//     //
-//     //
-//     // robot->SetLinearVelocity(b2Vec2(0.0,0.0));
-//     // robot->SetAngularVelocity(0.0);
-//     double angle2 = robot->GetAngle();
-//     this_pos = robot->GetPosition();
-//     last_step = this_pos - last_pos;
-
-//     distance = sqrt(last_step.x * last_step.x + last_step.y * last_step.y);
-//     b2Vec2 linearVelocity;
-
-//     double ff = 250.0;  // fudge factor to make dynamic like kinematic
-//     linearVelocity.x = -velocity * sin(angle2 - robot_alpha) * ff *
-//     time_step;
-//     linearVelocity.y = velocity * cos(angle2 - robot_alpha) * ff * time_step;
-
-//     if (velocity != 0.0) {
-//       robot->SetLinearVelocity(linearVelocity);
-
-//       delta = CalculateDelta(distance);
-//       if (velocity > 0) {
-//         robot->SetTransform(this_pos, angle2 - delta);
-
-//       } else {
-//         robot->SetTransform(this_pos, angle2 + delta);
-//       }
-//       robot_angle -= delta;
-
-//       // set the next robot position
-//       robot_position = this_pos;
-
-//     } else {
-//       robot->SetLinearVelocity(b2Vec2(0, 0));
-//     }
-//     last_pos = this_pos;
-//   } else {
-//     //
-//     // Kinematic model
-//     //
-//     // integrate the linear velocity
-//     distance = velocity * time_step;
-
-//     // set the next robot position
-//     robot_position.x -= velocity * sin(robot_angle) * time_step;
-//     robot_position.y += velocity * cos(robot_angle) * time_step;
-
-//     delta = CalculateDelta(distance);
-//     robot_angle -= delta;
-//     robot->SetTransform(robot_position, (robot_angle + robot_alpha));
-//   }
-// }
 }
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::TricycleDrive,

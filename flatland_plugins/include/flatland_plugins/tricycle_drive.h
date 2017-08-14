@@ -68,6 +68,7 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double axel_track_;     ///< normal distrance between the rear two wheels
   double wheelbase_;      ///< distance between the front and rear wheel
   b2Vec2 rear_center_;    ///< middle point between the two rear wheels
+  bool invert_steering_angle_; ///< whether to invert steering angle
 
   geometry_msgs::Twist twist_msg_;
   nav_msgs::Odometry odom_msg_;
