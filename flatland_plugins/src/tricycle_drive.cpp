@@ -47,8 +47,8 @@
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/tricycle_drive.h>
 #include <flatland_server/debug_visualization.h>
-#include <flatland_server/yaml_reader.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/yaml_reader.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 
@@ -128,7 +128,8 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   ComputeJoints();
 
   // publish and subscribe to topics
-  twist_sub_ = nh_.subscribe(twist_topic, 1, &DiffDrive::TwistCallback, this);
+  twist_sub_ =
+      nh_.subscribe(twist_topic, 1, &TricycleDrive::TwistCallback, this);
   odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
   ground_truth_pub_ = nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
 
@@ -159,15 +160,15 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   }
 
   ROS_DEBUG_NAMED(
-      "DiffDrive",
+      "TricycleDrive",
       "Initialized with params body(%p %s) front_wj(%p %s) "
       "rear_left_wj(%p %s) rear_right_wj(%p %s) "
       "odom_frame_id(%s) twist_sub(%s) odom_pub(%s) "
       "ground_truth_pub(%s) odom_pose_noise({%f,%f,%f}) "
       "odom_twist_noise({%f,%f,%f}) pub_rate(%f)\n",
-      body_, body_->name_.c_str(), front_wj_, front_wj_->name_.c_str(),
-      rear_left_wj_, rear_left_wj_->name.c_str(),
-      rear_right_wj_ rear_right_wj_->name.c_str(), odom_frame_id.c_str(),
+      body_, body_->GetName().c_str(), front_wj_, front_wj_->GetName().c_str(),
+      rear_left_wj_, rear_left_wj_->GetName().c_str(), rear_right_wj_,
+      rear_right_wj_->GetName().c_str(), odom_frame_id.c_str(),
       twist_topic.c_str(), odom_topic.c_str(), ground_truth_topic.c_str(),
       odom_pose_noise[0], odom_pose_noise[1], odom_pose_noise[2],
       odom_twist_noise[0], odom_twist_noise[1], odom_twist_noise[2], pub_rate);
@@ -181,27 +182,24 @@ void TricycleDrive::ComputeJoints() {
     Body* wheel_body;
 
     // ensure one of the body is the main body for the odometry
-    if (joint->GetBodyA()->GetUseData() == body_) {
-      wheel_body = joint->physics_joint_->GetBodyB()->GetUseData();
+    if (joint->physics_joint_->GetBodyA()->GetUserData() == body_) {
       wheel_anchor = joint->physics_joint_->GetAnchorB();
       body_anchor = joint->physics_joint_->GetAnchorA();
-    } else if (joint->GetBodyB()->GetUseData() == body_) {
-      wheel_body = joint->physics_joint_->GetBodyA()->GetUseData();
+    } else if (joint->physics_joint_->GetBodyB()->GetUserData() == body_) {
       wheel_anchor = joint->physics_joint_->GetAnchorA();
       body_anchor = joint->physics_joint_->GetAnchorB();
     } else {
-      throw YAMLException("Joint " +
-                          Q(joint->name_) " does not anchor on body " +
-                          Q(body_->name_));
+      throw YAMLException("Joint " + Q(joint->GetName()) +
+                          " does not anchor on body " + Q(body_->GetName()));
     }
 
     // ensure the joint is anchored at (0,0) of the wheel_body
     if (fabs(wheel_anchor.x) > 1e-5 || fabs(wheel_anchor.y) > 1e-5) {
-      throw YAMLException("Joint " + Q(joint->name_) +
+      throw YAMLException("Joint " + Q(joint->GetName()) +
                           " must have its wheel anchored point at (0, 0)");
     }
 
-    return body_->GetLocalPoint(body_anchor);
+    return body_->physics_body_->GetLocalPoint(body_anchor);
   };
 
   // joints must be of expected type
@@ -231,7 +229,7 @@ void TricycleDrive::ComputeJoints() {
   // calculate the wheelbase and axeltrack. We also need to verify that
   // the rear_center is at the perpendicular intersection between the rear axel
   // and the front wheel anchor
-  rear_center_ = (rear_left_anchor + rear_right_anchor) / 2;
+  rear_center_ = 0.5 * (rear_left_anchor + rear_right_anchor);
 
   // find the perpendicular intersection between line segment given by (x1, y1)
   // and (x2, y2) and a point (x3, y3).
@@ -239,8 +237,8 @@ void TricycleDrive::ComputeJoints() {
          x2 = rear_right_anchor.x, y2 = rear_right_anchor.y,
          x3 = front_anchor.x, y3 = front_anchor.y;
 
-  k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) /
-      ((y2 - y1) ^ 2 + (x2 - x1) ^ 2);
+  double k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) /
+             ((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
   double x4 = x3 - k * (y2 - y1);
   double y4 = y3 + k * (x2 - x1);
 
@@ -347,4 +345,5 @@ void TricycleDrive::TwistCallback(const geometry_msgs::Twist& msg) {
 // }
 }
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::Bicycle, flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::TricycleDrive,
+                       flatland_server::ModelPlugin)
