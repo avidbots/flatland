@@ -68,7 +68,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
 
   Pose pose = body_reader.GetPose("pose", Pose(0, 0, 0));
   Color color = body_reader.GetColor("color", Color(1, 1, 1, 0.5));
-  std::string type_str = body_reader.Get<std::string>("type");
+  std::string type_str = body_reader.Get<std::string>("type", "dynamic");
   double linear_damping = body_reader.Get("linear_damping", 0.0);
   double angular_damping = body_reader.Get("angular_damping", 0.0);
 

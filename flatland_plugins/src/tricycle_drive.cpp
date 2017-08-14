@@ -59,7 +59,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
 
   // load all the parameters
   string body_name = r.Get<string>("body");
-  string front_wj_name = r.Get<string>("front_wj");
+  string front_wj_name = r.Get<string>("front_wheel_joint");
   string rear_left_wj_name = r.Get<string>("rear_left_wheel_joint");
   string rear_right_wj_name = r.Get<string>("rear_right_wheel_joint");
   string odom_frame_id = r.Get<string>("odom_frame_id", "odom");
@@ -193,13 +193,17 @@ void TricycleDrive::ComputeJoints() {
                           " does not anchor on body " + Q(body_->GetName()));
     }
 
+    // convert anchor is global coordinates to local body coordinates
+    wheel_anchor = body_->physics_body_->GetLocalPoint(wheel_anchor);
+    body_anchor = body_->physics_body_->GetLocalPoint(body_anchor);
+
     // ensure the joint is anchored at (0,0) of the wheel_body
     if (fabs(wheel_anchor.x) > 1e-5 || fabs(wheel_anchor.y) > 1e-5) {
       throw YAMLException("Joint " + Q(joint->GetName()) +
                           " must have its wheel anchored point at (0, 0)");
     }
 
-    return body_->physics_body_->GetLocalPoint(body_anchor);
+    return body_anchor;
   };
 
   // joints must be of expected type
