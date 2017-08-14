@@ -65,7 +65,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
-  tf_prefix_ = model_->namespace_;
+  tf_prefix_ = model_->GetNameSpace();
   std::string ref_body_name = reader.Get<std::string>("reference", "");
   std::vector<std::string> excluded_body_names =
       reader.GetList<std::string>("exclude", {}, -1, -1);
@@ -97,9 +97,9 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   update_timer_.SetRate(update_rate_);
 
-  ROS_INFO_NAMED(
+  ROS_DEBUG_NAMED(
       "ModelTfPublisher",
-      "Initialized with params: reference(%s %p) "
+      "Initialized with params: reference(%s, %p) "
       "publish_tf_world(%d) world_frame_id(%s) update_rate(%f), exclude({%s})",
       reference_body_->name_.c_str(), reference_body_, publish_tf_world_,
       world_frame_id_.c_str(), update_rate_,

@@ -89,10 +89,10 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   bool did_hit_;    ///< Box2D ray trace checking if ray hits anything
   float fraction_;  ///< Box2D ray trace fraction
 
-  ros::Publisher scan_publisher;              ///< ros laser topic publisher
-  tf::TransformBroadcaster tf_broadcaster;    ///< broadcast laser frame
-  geometry_msgs::TransformStamped static_tf;  ///< tf from body to laser frame
-  UpdateTimer update_timer_;                  ///< for controlling update rate
+  ros::Publisher scan_publisher_;              ///< ros laser topic publisher
+  tf::TransformBroadcaster tf_broadcaster_;    ///< broadcast laser frame
+  geometry_msgs::TransformStamped static_tf_;  ///< tf from body to laser frame
+  UpdateTimer update_timer_;                   ///< for controlling update rate
 
   /**
    * @brief Box2D raytrace call back method required for implementing the
@@ -116,6 +116,11 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
    * @param[in] timekeeper Object managing the simulation time
    */
   void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+
+  /**
+   * @brief Method that contains all of the laser range calculations
+   */
+  void ComputeLaserRanges();
 
   /**
    * @brief helper function to extract the paramters from the YAML Node

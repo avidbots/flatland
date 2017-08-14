@@ -46,6 +46,7 @@
 
 #include <flatland_server/exceptions.h>
 #include <flatland_server/joint.h>
+#include <ros/ros.h>
 
 namespace flatland_server {
 
@@ -57,6 +58,18 @@ Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
 }
 
 Joint::~Joint() { physics_world_->DestroyJoint(physics_joint_); }
+
+Model *Joint::GetModel() { return model_; }
+
+const std::string &Joint::GetName() const { return name_; }
+
+const Color &Joint::GetColor() const { return color_; }
+
+void Joint::SetColor(const Color &color) { color_ = color; }
+
+b2Joint *Joint::GetPhysicsJoint() { return physics_joint_; }
+
+b2World *Joint::GetphysicsWorld() { return physics_world_; }
 
 Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
                         YamlReader &joint_reader) {
@@ -168,8 +181,25 @@ Joint *Joint::MakeWeldJoint(b2World *physics_world, Model *model,
   joint_def.frequencyHz = frequency;
   joint_def.dampingRatio = damping;
   joint_def.referenceAngle = angle;
+  joint_def.collideConnected = collide_connected;
 
   return new Joint(physics_world, model, name, color, joint_def);
+}
+
+void Joint::DebugOutput() const {
+  b2Joint *j = physics_joint_;
+  Body *body_A = static_cast<Body *>(j->GetBodyA()->GetUserData());
+  Body *body_B = static_cast<Body *>(j->GetBodyB()->GetUserData());
+
+  ROS_DEBUG_NAMED("Joint",
+                  "Joint %p: model(%p, %s) name(%s) color(%f,%f,%f,%f) "
+                  "physics_joint(%p) body_A(%p, %s) anchor_A_world(%f, %f) "
+                  "body_B(%p, %s) anchor_B_world(%f, %f)",
+                  this, model_, model_->name_.c_str(), name_.c_str(), color_.r,
+                  color_.g, color_.b, color_.a, physics_joint_, body_A,
+                  body_A->name_.c_str(), j->GetAnchorA().x, j->GetAnchorA().y,
+                  body_B, body_B->name_.c_str(), j->GetAnchorB().x,
+                  j->GetAnchorB().y);
 }
 
 };  // namespace flatland_server

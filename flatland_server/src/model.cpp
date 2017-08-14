@@ -53,9 +53,7 @@ namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &ns, const std::string &name)
-    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {
-  no_collide_group_index_ = cfr->RegisterNoCollide();
-}
+    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {}
 
 Model::~Model() {
   for (int i = 0; i < joints_.size(); i++) {
@@ -144,6 +142,25 @@ ModelBody *Model::GetBody(const std::string &name) {
   return nullptr;
 }
 
+Joint *Model::GetJoint(const std::string &name) {
+  for (int i = 0; i < joints_.size(); i++) {
+    if (joints_[i]->name_ == name) {
+      return joints_[i];
+    }
+  }
+  return nullptr;
+}
+
+const std::vector<ModelBody *> &Model::GetBodies() { return bodies_; }
+
+const std::vector<Joint *> &Model::GetJoints() { return joints_; }
+
+const std::string &Model::GetNameSpace() const { return namespace_; }
+
+const std::string &Model::GetName() const { return name_; }
+
+const CollisionFilterRegistry *Model::GetCfr() const { return cfr_; }
+
 void Model::TransformAll(const Pose &pose_delta) {
   //     --                --   --                --
   //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |
@@ -166,7 +183,7 @@ void Model::TransformAll(const Pose &pose_delta) {
   }
 }
 
-void Model::DebugVisualize() {
+void Model::DebugVisualize() const {
   std::string name = "model/" + name_;
   DebugVisualization::Get().Reset(name);
 
@@ -183,4 +200,40 @@ void Model::DebugVisualize() {
   }
 }
 
+void Model::DebugOutput() const {
+  ROS_DEBUG_NAMED("Model",
+                  "Model %p: physics_world(%p) name(%s) namespace(%s) "
+                  "num_bodies(%lu) num_joints(%lu)",
+                  this, physics_world_, name_.c_str(), namespace_.c_str(),
+                  bodies_.size(), joints_.size());
+
+  for (const auto &body : bodies_) {
+    body->DebugOutput();
+  }
+
+  for (const auto &joint : joints_) {
+    joint->DebugOutput();
+  }
+}
+
+void Model::DumpBox2D() const {
+  for (const auto &body : bodies_) {
+    b2Log("BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", body,
+          body->name_.c_str(), body->physics_body_, this, name_.c_str());
+    body->physics_body_->Dump();
+  }
+
+  for (const auto &joint : joints_) {
+    Body *body_A =
+        static_cast<Body *>(joint->physics_joint_->GetBodyA()->GetUserData());
+    Body *body_B =
+        static_cast<Body *>(joint->physics_joint_->GetBodyB()->GetUserData());
+    b2Log(
+        "JOINT %p name=%s  box2d_joint=%p model=%p model_name=%s "
+        "body_A(%p %s) body_B(%p %s)\n",
+        joint, joint->name_.c_str(), joint->physics_joint_, this, name_.c_str(),
+        body_A, body_A->name_.c_str(), body_B, body_B->name_.c_str());
+    joint->physics_joint_->Dump();
+  }
+}
 };  // namespace flatland_server
