@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	Bicycle.cpp
- * @brief   Bicycle plugin
+ * @name	tricycle_drive.cpp
+ * @brief   tricycle plugin
  * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
@@ -45,7 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
-#include <flatland_plugins/bicycle.h>
+#include <flatland_plugins/tricycle_drive.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
@@ -54,7 +54,7 @@
 
 namespace flatland_plugins {
 
-void Bicycle::OnInitialize(const YAML::Node& config) {
+void TricycleDrive::OnInitialize(const YAML::Node& config) {
   ROS_INFO_NAMED("BicyclePlugin", "Bicycle Initialized");
   robot_angle = 0.0;
   robot_alpha = 0.0;
@@ -76,12 +76,12 @@ void Bicycle::OnInitialize(const YAML::Node& config) {
 //
 // rotates a b2Vec2 point about the origin by angle radians
 //
-b2Vec2 Bicycle::RotateVertex(b2Vec2 vertex, double angle) {
+b2Vec2 TricycleDrive::RotateVertex(b2Vec2 vertex, double angle) {
   return b2Vec2(vertex.x * cos(angle) + vertex.y * sin(angle),
                 vertex.x * -sin(angle) + vertex.y * cos(angle));
 }
 
-void Bicycle::CreateFrontWheel() {
+void TricycleDrive::CreateFrontWheel() {
   // create the shape
   b2PolygonShape polygon;
   const double height = .175;
@@ -112,16 +112,16 @@ void Bicycle::CreateFrontWheel() {
   front_wheel_fixture = base_body->CreateFixture(&fixtureDef);
 }
 
-void Bicycle::DestroyFrontWheel() {
+void TricycleDrive::DestroyFrontWheel() {
   robot->DestroyFixture(front_wheel_fixture);
 }
 
-void Bicycle::RecreateFrontWheel() {
+void TricycleDrive::RecreateFrontWheel() {
   DestroyFrontWheel();
   CreateFrontWheel();
 }
 
-double Bicycle::CalculateDelta(double distance) {
+double TricycleDrive::CalculateDelta(double distance) {
   double r;      // turn diameter
   double R;      // distance along wheel axis to ICC
   double B;      // distance from turning wheel to midpoint between rear wheels
@@ -140,7 +140,7 @@ double Bicycle::CalculateDelta(double distance) {
   return delta;
 }
 
-void Bicycle::BeforePhysicsStep(const flatland_server::Timekeeper& timekeeper) {
+void TricycleDrive::BeforePhysicsStep(const flatland_server::Timekeeper& timekeeper) {
   time_step = timekeeper.GetStepSize() * speedFactor;
 
   robot = model_->GetBody("base")->physics_body_;
@@ -179,13 +179,13 @@ void Bicycle::BeforePhysicsStep(const flatland_server::Timekeeper& timekeeper) {
   RecreateFrontWheel();
 }
 
-void Bicycle::TwistCallback(const geometry_msgs::Twist& msg) {
+void TricycleDrive::TwistCallback(const geometry_msgs::Twist& msg) {
   velocity = msg.linear.x;
   omega = msg.angular.z;
   //  robotIsInMotion = true;
 }
 
-void Bicycle::ApplyVelocity() {
+void TricycleDrive::ApplyVelocity() {
   static b2Vec2 last_step, last_pos, this_pos;
   double distance, delta, travelLimit = 85.0 * b2_pi / 180.0;
 
