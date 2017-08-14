@@ -45,6 +45,7 @@
  */
 
 #include <flatland_server/body.h>
+#include <ros/ros.h>
 
 namespace flatland_server {
 
@@ -67,6 +68,36 @@ Body::~Body() {
   if (physics_body_) {
     physics_body_->GetWorld()->DestroyBody(physics_body_);
   }
+}
+
+int Body::GetFixturesCount() const {
+  int count = 0;
+  for (b2Fixture *f = physics_body_->GetFixtureList(); f; f = f->GetNext()) {
+    count++;
+  }
+
+  return count;
+}
+
+const std::string &Body::GetName() const { return name_; }
+
+b2Body *Body::GetPhysicsBody() { return physics_body_; }
+
+const Color &Body::GetColor() const { return color_; }
+
+void Body::SetColor(const Color &color) { color_ = color; }
+
+void Body::DebugOutput() const {
+  ROS_DEBUG_NAMED(
+      "Body",
+      "Body %p: entity(%p, %s) name(%s) color(%f,%f,%f,%f) "
+      "physics_body(%p) num_fixtures(%d) type(%d) pose(%f, %f, %f) "
+      "angular_damping(%f) linear_damping(%f)",
+      this, entity_, entity_->name_.c_str(), name_.c_str(), color_.r, color_.g,
+      color_.b, color_.a, physics_body_, GetFixturesCount(),
+      physics_body_->GetType(), physics_body_->GetPosition().x,
+      physics_body_->GetPosition().y, physics_body_->GetAngle(),
+      physics_body_->GetAngularDamping(), physics_body_->GetLinearDamping());
 }
 
 };  // namespace flatland_server

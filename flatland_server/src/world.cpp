@@ -146,6 +146,10 @@ World *World::MakeWorld(const std::string &yaml_path) {
     ROS_FATAL_NAMED("World", "Error loading plugins");
     delete w;
     throw e;
+  } catch (const Exception &e) {
+    ROS_FATAL_NAMED("World", "Error loading world");
+    delete w;
+    throw e;
   }
   return w;
 }
@@ -153,34 +157,48 @@ World *World::MakeWorld(const std::string &yaml_path) {
 void World::LoadLayers(YamlReader &layers_reader) {
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
-    if (cfr_.IsLayersFull()) {
-      throw YAMLException("Number of layers must be less than " +
-                          std::to_string(cfr_.MAX_LAYERS));
+    YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
+    YamlReader name_reader = reader.Subnode("name", YamlReader::NO_CHECK);
+
+    // allow names to be either a just a string or a list of strings
+    std::vector<std::string> names;
+    if (name_reader.Node().IsSequence()) {
+      names = name_reader.AsList<std::string>(1, -1);
+    } else {
+      names.push_back(name_reader.As<std::string>());
     }
 
-    YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
+    if (cfr_.LayersCount() + names.size() > cfr_.MAX_LAYERS) {
+      throw YAMLException(
+          "Unable to add " + std::to_string(names.size()) +
+          " additional layer(s) {" + boost::algorithm::join(names, ", ") +
+          "}, current layers count is " + std::to_string(cfr_.LayersCount()) +
+          ", max allowed is " + std::to_string(cfr_.MAX_LAYERS));
+    }
 
-    std::string name = reader.Get<std::string>("name");
     boost::filesystem::path map_path(reader.Get<std::string>("map"));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
     reader.EnsureAccessedAllKeys();
 
-    // end sure no duplicate layer names
-    if (std::count_if(layers_.begin(), layers_.end(),
-                      [&](Layer *l) { return l->name_ == name; }) >= 1) {
-      throw YAMLException("Layer with name " + Q(name) + " already exists");
+    for (const auto &name : names) {
+      if (cfr_.RegisterLayer(name) == cfr_.LAYER_ALREADY_EXIST) {
+        throw YAMLException("Layer with name " + Q(name) + " already exists");
+      }
     }
 
     if (map_path.string().front() != '/') {
       map_path = world_yaml_dir_ / map_path;
     }
 
-    Layer *layer =
-        Layer::MakeLayer(physics_world_, &cfr_, map_path.string(), name, color);
+    ROS_INFO_NAMED("World", "Loading layer \"%s\" from path=\"%s\"",
+                   names[0].c_str(), map_path.string().c_str());
 
+    Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
+                                    names, color);
     layers_.push_back(layer);
 
-    ROS_INFO_NAMED("World", "Layer %s loaded", layer->name_.c_str());
+    ROS_INFO_NAMED("World", "Layer \"%s\" loaded", layer->name_.c_str());
+    layer->DebugOutput();
   }
 }
 
@@ -212,6 +230,9 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     abs_path = world_yaml_dir_ / abs_path;
   }
 
+  ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",
+                 abs_path.string().c_str());
+
   Model *m =
       Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
   m->TransformAll(pose);
@@ -222,7 +243,28 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     plugin_manager_.LoadModelPlugin(m, plugin_reader);
   }
 
-  ROS_INFO_NAMED("World", "Model %s loaded", m->name_.c_str());
+  ROS_INFO_NAMED("World", "Model \"%s\" loaded", m->name_.c_str());
+  m->DebugOutput();
+}
+
+void World::DeleteModel(const std::string &name) {
+  bool found = false;
+
+  for (int i = 0; i < models_.size(); i++) {
+    // name is unique, so there will only be one object with this name
+    if (models_[i]->GetName() == name) {
+      // delete the plugins associated with the model
+      plugin_manager_.DeleteModelPlugin(models_[i]);
+      models_.erase(models_.begin() + i);
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    throw Exception("Flatland World: failed to delete model, model with name " +
+                    Q(name) + " does not exist");
+  }
 }
 
 void World::DebugVisualize(bool update_layers) {

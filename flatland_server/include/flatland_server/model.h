@@ -71,8 +71,6 @@ class Model : public Entity {
   std::vector<Joint *> joints_;      ///< list of joints in the model
   YamlReader plugins_reader_;        ///< for storing plugins when paring YAML
   CollisionFilterRegistry *cfr_;     ///< Collision filter registry
-  /// Box2D collision group assigned to this body by the CFR
-  int no_collide_group_index_;
 
   /**
    * @brief Constructor for the model
@@ -92,7 +90,7 @@ class Model : public Entity {
    * @brief Return the type of entity
    * @return Model type
    */
-  virtual EntityType Type() { return EntityType::MODEL; }
+  EntityType Type() const { return EntityType::MODEL; }
 
   /**
    * @brief load bodies to this model, throws exceptions upon failure
@@ -114,9 +112,51 @@ class Model : public Entity {
   ModelBody *GetBody(const std::string &name);
 
   /**
+   * @brief Get a body in the model using its name
+   * @param[in] name Name of the joint
+   * @return pointer to the joint, nullptr if the joint does not exist
+   */
+  Joint *GetJoint(const std::string &name);
+
+  /**
+   * @return List of bodies the model has
+   */
+  const std::vector<ModelBody *> &GetBodies();
+
+  /**
+   * @return List of joints the model has
+   */
+  const std::vector<Joint *> &GetJoints();
+
+  /**
+   * @return The namespace of the model
+   */
+  const std::string &GetNameSpace() const;
+
+  /**
+   * @return The name of the model
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @return The collision filter registrar
+   */
+  const CollisionFilterRegistry *GetCfr() const;
+
+  /**
    * @brief Publish debug visualizations for model
    */
-  void DebugVisualize() override;
+  void DebugVisualize() const override;
+
+  /**
+   * @brief log debug messages for the layer
+   */
+  void DebugOutput() const override;
+
+  /**
+   * @brief Dump box2d data for debugging
+   */
+  void DumpBox2D() const;
 
   /**
    * @brief transform all bodies in the model

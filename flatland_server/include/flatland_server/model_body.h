@@ -85,6 +85,11 @@ class ModelBody : public Body {
             double angular_damping);
 
   /**
+   * @return The collision filter registry
+   */
+  const CollisionFilterRegistry *GetCfr() const;
+
+  /**
    * @brief Load footprints (Box2D fixtures) into the body
    * @param[in] footprints_reader YAML reader for node containing the footprints
    * parameters
