@@ -63,7 +63,22 @@ struct Vec2 {
 
   Vec2() : x(0), y(0) {}
 
-  b2Vec2 Box2D() { return b2Vec2(x, y); }
+  b2Vec2 Box2D() const { return b2Vec2(x, y); }
+};
+
+struct LineSegment {
+  Vec2 start;
+  Vec2 end;
+
+  LineSegment(const Vec2 &start, const Vec2 &end) {
+    this->start = start;
+    this->end = end;
+  }
+
+  LineSegment() {
+    this->start = Vec2(0, 0);
+    this->end = Vec2(0, 0);
+  }
 };
 
 struct Pose {

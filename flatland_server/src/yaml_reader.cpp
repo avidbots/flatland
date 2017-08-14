@@ -45,6 +45,7 @@
  */
 
 #include <flatland_server/yaml_reader.h>
+#include <boost/filesystem/path.hpp>
 
 namespace flatland_server {
 
@@ -60,7 +61,7 @@ YamlReader::YamlReader(const std::string &path) {
   try {
     node_ = YAML::LoadFile(path);
   } catch (const YAML::BadFile &e) {
-    throw YAMLException("File does not exist, path=" + Q(path), e);
+    throw YAMLException("File does not exist, path=" + Q(path));
 
   } catch (const YAML::ParserException &e) {
     throw YAMLException("Malformatted file, path=" + Q(path), e);
@@ -70,6 +71,7 @@ YamlReader::YamlReader(const std::string &path) {
   }
 
   SetErrorInfo("_NONE_", "_NONE_");
+  SetFile(path);
 }
 
 YAML::Node YamlReader::Node() { return node_; }
@@ -87,6 +89,7 @@ YamlReader YamlReader::Subnode(int index, NodeTypeCheck type_check,
                              ? (entry_location_ + " " + entry_name_)
                              : subnode_location;
   reader.SetErrorInfo(location, "index=" + std::to_string(index));
+  reader.SetFile(file_path_);
 
   if (reader.IsNodeNull()) {
     throw YAMLException("Entry index=" + std::to_string(index) +
@@ -113,6 +116,7 @@ YamlReader YamlReader::Subnode(const std::string &key, NodeTypeCheck type_check,
                              ? (entry_location_ + " " + entry_name_)
                              : subnode_location;
   reader.SetErrorInfo(location, Q(key));
+  reader.SetFile(file_path_);
 
   if (!node_[key]) {
     throw YAMLException("Entry " + Q(key) + " does not exist" + reader.fmt_in_);
@@ -201,6 +205,16 @@ void YamlReader::SetErrorInfo(std::string entry_location,
     boost::algorithm::to_lower(msg);
     fmt_name_ = " " + msg;
   }
+}
+
+void YamlReader::SetFile(const std::string &file_path) {
+  if (file_path == "_NONE_") {
+    file_path_ = "";
+  } else {
+    file_path_ = file_path;
+  }
+
+  filename_ = boost::filesystem::path(file_path).filename().string();
 }
 
 void YamlReader::EnsureAccessedAllKeys() {

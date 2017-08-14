@@ -76,7 +76,40 @@ class Body {
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
        const Color &color, const Pose &origin, b2BodyType body_type,
-       double linear_damping, double angular_damping);
+       double linear_damping = 0, double angular_damping = 0);
+
+  /**
+   * @brief logs the debugging information for the body
+   */
+  void DebugOutput() const;
+
+  /**
+   * @return name of the body
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @brief Get the Box2D body, use this to manipulate the body in physics
+   * through the Box2D methods
+   * @return Pointer to Box2D physics body
+   */
+  b2Body *GetPhysicsBody();
+
+  /**
+   * @brief Count the number of fixtures
+   * @return number of fixtures in the body
+   */
+  int GetFixturesCount() const;
+
+  /**
+   * @return Color of the body
+   */
+  const Color &GetColor() const;
+
+  /**
+   * @brief Set of the color of the body
+   */
+  void SetColor(const Color &color);
 
   /**
    * Destructor for the body

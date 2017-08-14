@@ -56,11 +56,19 @@
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     float initial_rate, bool show_viz)
+                                     float initial_rate, bool show_viz,
+                                     float viz_pub_rate)
     : initial_rate_(initial_rate),
       world_yaml_file_(world_yaml_file),
-      show_viz_(show_viz) {
+      show_viz_(show_viz),
+      viz_pub_rate_(viz_pub_rate) {
   // Todo: Initialize SimTime class here once written
+
+  ROS_INFO_NAMED("SimMan",
+                 "Simulation params: world_yaml_file(%s) initial_rate(%f), "
+                 "show_viz(%s), viz_pub_rate(%f)",
+                 world_yaml_file_.c_str(), initial_rate_,
+                 show_viz_ ? "true" : "false", viz_pub_rate_);
 }
 
 void SimulationManager::Main() {
@@ -81,37 +89,46 @@ void SimulationManager::Main() {
 
   timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
 
-  double cycle_time_sum = 0;
-  double expected_cycle_time_sum = 0;
+  double filtered_cycle_utilization = 0;
+
+  double viz_update_period = 1.0f / viz_pub_rate_;
 
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
   ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
+
   while (ros::ok() && run_simulator_) {
+    // for updating visualization at a given rate, see
+    // flatland_plugins/update_timer.cpp for this formula
+    double f = fmod(
+        ros::WallTime::now().toSec() + (rate.expectedCycleTime().toSec() / 2.0),
+        viz_update_period);
+    bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
+
     // Step physics by ros cycle time
     world_->Update(timekeeper_);
 
-    ros::spinOnce();  // Normal ROS event loop
-    // Todo: Update bodies
-
-    if (show_viz_) {
+    if (show_viz_ && update_viz) {
       // don't update layers because they don't change
-      world_->DebugVisualize(false);
+      world_->DebugVisualize(false);        //
       DebugVisualization::Get().Publish();  // publish debug visualization
     }
 
+    ros::spinOnce();  // Normal ROS event loop
     rate.sleep();
 
-    cycle_time_sum += rate.cycleTime().toSec();
-    expected_cycle_time_sum += rate.expectedCycleTime().toSec();
+    double cycle_utilization =
+        rate.cycleTime().toSec() / rate.expectedCycleTime().toSec();
+
+    filtered_cycle_utilization =
+        0.99 * filtered_cycle_utilization + 0.01 * cycle_utilization;
 
     ROS_INFO_THROTTLE_NAMED(
         1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%, %.1f%% average)",
         rate.cycleTime().toSec() * 1000,
-        rate.expectedCycleTime().toSec() * 1000.0,
-        100.0 * rate.cycleTime().toSec() / rate.expectedCycleTime().toSec(),
-        100.0 * cycle_time_sum / expected_cycle_time_sum);
+        rate.expectedCycleTime().toSec() * 1000.0, 100.0 * cycle_utilization,
+        100.0 * filtered_cycle_utilization);
   }
 
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
