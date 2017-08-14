@@ -85,6 +85,12 @@ class PluginManager {
   void AfterPhysicsStep(const Timekeeper &timekeeper);
 
   /**
+   * @brief This method removes all model plugins associated with a given mode
+   * @param[in] The model plugins is associated to
+   */
+  void DeleteModelPlugin(Model *model);
+
+  /**
    * @brief Load model plugins
    * @param[in] model The model that this plugin is tied to
    * @param[in] plugin_reader The YAML reader with node containing the plugin

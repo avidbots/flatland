@@ -61,6 +61,7 @@ class SimulationManager {
   World *world_;                 ///< Simulation world
   float initial_rate_;           ///< initial sim loop rate
   bool show_viz_;                ///< flag to determine if to show visualization
+  float viz_pub_rate_;           ///< rate to publish visualization
   std::string world_yaml_file_;  ///< path to the world file
   Timekeeper timekeeper_;        ///< for managing time
 
@@ -69,9 +70,10 @@ class SimulationManager {
    * @param[in] world_file   The path to the world.yaml file we wish to load
    * @param[in] initial_rate The physics step frequency in Hz
    * @param[in] show_viz if to show visualization
+   * @param[in] viz_pub_rate rate to publish visualization
    */
   SimulationManager(std::string world_yaml_file, float initial_rate,
-                    bool show_viz);
+                    bool show_viz, float viz_pub_rate);
 
   /**
    * This method contains the loop that runs the simulation

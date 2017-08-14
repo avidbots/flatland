@@ -64,3 +64,12 @@ plugins:
     publish_tf_world: true
     reference: antenna
     exclude: ["front_bumper", "rear_bumper"]
+
+joints:
+  - name: weld
+    type: weld
+    bodies: 
+      - name: base
+        anchor: [0, 0]
+      - name: antenna
+        anchor: [0, 0]      

@@ -58,6 +58,8 @@ ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
            angular_damping),
       cfr_(cfr) {}
 
+const CollisionFilterRegistry *ModelBody::GetCfr() const { return cfr_; }
+
 ModelBody *ModelBody::MakeBody(b2World *physics_world,
                                CollisionFilterRegistry *cfr, Model *model,
                                YamlReader &body_reader) {
@@ -128,36 +130,22 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
 
   // config collision properties
   fixture_def.isSensor = footprint_reader.Get<bool>("sensor", false);
-  bool self_collide = footprint_reader.Get<bool>("self_collide", false);
+  fixture_def.filter.groupIndex = 0;
+
   std::vector<std::string> layers =
       footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
+  std::vector<std::string> invalid_layers;
+  fixture_def.filter.categoryBits =
+      cfr_->GetCategoryBits(layers, &invalid_layers);
 
-  if (layers.size() == 1 && layers[0] == "all") {
-    layers.clear();
-    cfr_->ListAllLayers(layers);
-  }
-
-  if (self_collide) {
-    fixture_def.filter.groupIndex = cfr_->RegisterCollide();
-  } else {
-    fixture_def.filter.groupIndex =
-        (dynamic_cast<Model *>(entity_))->no_collide_group_index_;
-  }
-
-  fixture_def.filter.categoryBits = 0x0;
-
-  std::vector<std::string> failed_layers;
-  uint16_t category_bits = cfr_->GetCategoryBits(layers, &failed_layers);
-
-  if (!failed_layers.empty()) {
+  if (!invalid_layers.empty()) {
     throw YAMLException("Invalid footprint \"layers\" in " +
                         footprint_reader.entry_location_ + " " +
                         footprint_reader.entry_name_ + ", {" +
-                        boost::algorithm::join(failed_layers, ",") +
+                        boost::algorithm::join(invalid_layers, ",") +
                         "} layer(s) does not exist");
   }
 
-  fixture_def.filter.categoryBits = category_bits;
   fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
 }
 
