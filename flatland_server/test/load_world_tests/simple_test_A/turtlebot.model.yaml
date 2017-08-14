@@ -3,7 +3,6 @@
 
 bodies:  # List of named bodies
   - name: base
-    type: dynamic  
     color: [1, 1, 0, 0.25] 
     linear_damping: 0.1
     angular_damping: 0.125

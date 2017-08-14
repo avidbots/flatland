@@ -1,36 +1,17 @@
-# Turtlebot
 
-
-bodies:  # List of named bodies
-  # - name: base
-  #   pose: [0, 0, 0] 
-  #   type: dynamic 
-  #   color: [1, 1, 0, 0.25] # r g b a
-  #   footprints:
-  #     - type: circle
-  #       center: [0, 0]  
-  #       radius: 0.75
-  #       layers: ["all"] 
-  #       sensor: false 
-  #       self_collide: false
-  #       density: 500
-
+bodies:
   - name: base
-    pose: [-1, 0, 0] 
     type: dynamic  
     color: [1, 1, 1, 0.75] 
     footprints:
       - type: polygon
-        density: 1
-        # friction: 1000000.0
-        points: [
-          [-0.337,-1.03],
-          [-0.337, .07983],
-          [-.16111, .30],
-          [.16111, .30],
-          [0.337, .07983],
-          [0.337,-1.03]
-          ]
+        density: 100
+        points: [ [-1.03, -0.337],
+                  [.07983, -0.337],
+                  [.30, -.16111],
+                  [.30, .16111],
+                  [.07983, 0.337],
+                  [-1.03, 0.337] ]
 
       #   points: [
         
@@ -90,43 +71,87 @@ bodies:  # List of named bodies
         
       #   ]
 
+  - name: front_wheel
+    color: [1, 1, 1, 0.75] 
+    footprints:
       - type: polygon
-        sensor: true
-        density: 0.0
-        points: [[-.3155, -.7425], [-.2645, -.7425], [-.2645, -.9175], [-.3155, -.9175]]
+        density: 1.0
+        points: [[ 0.0875, -0.0250],
+                 [ 0.0875,  0.0250],
+                 [-0.0875, 0.0250],
+                 [-0.0875, -0.0250]]
+        # points: [[-.3155, -.7425], [-.2645, -.7425], [-.2645, -.9175], [-.3155, -.9175]]
+
+  - name: rear_left_wheel
+    color: [1, 1, 1, 0.75] 
+    footprints:
       - type: polygon
-        sensor: true
-        density: 0.0
-        points: [[.3155, -.7425], [.2645, -.7425], [.2645, -.9175], [.3155, -.9175]]
+        density: 1.0
+        points: [[ 0.0875, -0.0255],
+                 [ 0.0875,  0.0255],
+                 [-0.0875, 0.0255],
+                 [-0.0875, -0.0255]]
+
+  - name: rear_right_wheel
+    color: [1, 1, 1, 0.75] 
+    footprints:
+      - type: polygon
+        density: 1.0
+        points: [[ 0.0875, -0.0255],
+                 [ 0.0875,  0.0255],
+                 [-0.0875, 0.0255],
+                 [-0.0875, -0.0255]]
+
+joints:
+  - type: revolute
+    name: front_wheel_revolute
+    limits: [0, 0]
+    bodies: 
+      - name: front_wheel
+        anchor: [0, 0]
+      - name: base
+        anchor: [0, 0]
+
+  - type: weld
+    name: rear_right_wheel_weld
+    bodies: 
+      - name: rear_left_wheel
+        anchor: [0, 0]
+      - name: base
+        anchor: [-0.83, 0.29]
+
+  - type: weld
+    name: rear_left_wheel_weld  
+    bodies: 
+      - name: rear_right_wheel
+        anchor: [0, 0]
+      - name: base
+        anchor: [-0.83, -0.29]
 
 plugins:
   - type: ModelTfPublisher
     name: tf_publisher
     publish_tf_world: true
 
-
-  - type: Bicycle
-    name: bicycle 
+  - type: DiffDrive 
+    name: turtlebot_drive 
     body: base
-    front_wheel_joint: xxx
-    rear_left__wheel_joint: xxx
-    rear_right_wheel_joint: xxx
     odom_frame_id: map
-    pub_rate: 10
-    odom_pose_noise: [0.1, 0.1, 0.1]
-    odom_twist_noise: [0.1, 0.1, 0.1]
-    odom_pose_covariance: [0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 
-                            0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 
-                            0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 
-                            0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 
-                            0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 
-                            0.30, 0.31, 0.32, 0.33, 0.34, 0.35]
+    pub_rate: 60
 
-  # - type: Laser
-  #   name: hokuyo_laser 
-  #   topic: scan
-  #   body: base
-  #   pose: [0, 0, 0] 
-  #   range: 10 # m
-  #   angle: {min: -1.1, max: 1.1, increment: 0.01}
-  #   layer: "2d"
+  - type: TricycleDrive
+    name: cleaner_drive 
+    body: base
+    front_wheel_joint: front_wheel_revolute
+    rear_left_wheel_joint: rear_left_wheel_weld
+    rear_right_wheel_joint: rear_right_wheel_weld
+    odom_frame_id: map
+    # pub_rate: 10
+    # odom_pose_noise: [0.1, 0.1, 0.1]
+    # odom_twist_noise: [0.1, 0.1, 0.1]
+    # odom_pose_covariance: [0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 
+    #                         0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 
+    #                         0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 
+    #                         0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 
+    #                         0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 
+    #                         0.30, 0.31, 0.32, 0.33, 0.34, 0.35]
