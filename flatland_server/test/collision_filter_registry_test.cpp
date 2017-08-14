@@ -62,8 +62,7 @@ TEST_F(CollisionFilterRegistryTest, empty_test) {
   EXPECT_FALSE(cfr.IsLayersFull());
   EXPECT_EQ(cfr.LookUpLayerId("random_layer"), CFR::LAYER_NOT_EXIST);
 
-  std::vector<std::string> layer_names;
-  cfr.ListAllLayers(layer_names);
+  std::vector<std::string> layer_names = cfr.GetAllLayers();
   EXPECT_EQ(layer_names.size(), 0);
 }
 
@@ -98,8 +97,7 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
   EXPECT_EQ(cfr.LookUpLayerId("layer4"), 3);
   EXPECT_EQ(cfr.LookUpLayerId("layer5"), 4);
 
-  std::vector<std::string> layer_names;
-  cfr.ListAllLayers(layer_names);
+  std::vector<std::string> layer_names = cfr.GetAllLayers();
   EXPECT_EQ(layer_names.size(), 5);
 
   EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer1") !=
@@ -128,7 +126,7 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
   EXPECT_EQ(cfr.RegisterLayer("layer17"), CFR::LAYERS_FULL);
 
   EXPECT_TRUE(cfr.IsLayersFull());
-  cfr.ListAllLayers(layer_names);
+  layer_names = cfr.GetAllLayers();
 
   EXPECT_EQ(layer_names.size(), 16);
 }

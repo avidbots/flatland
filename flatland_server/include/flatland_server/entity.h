@@ -72,6 +72,18 @@ class Entity {
   Entity(b2World *physics_world, const std::string &name);
   virtual ~Entity() = default;
 
+  /**
+   * @return name of the entity
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @brief Get Box2D physics world
+   * @return Pointer to Box2D physics world, use this to call Box2D world
+   * methods
+   */
+  b2World *GetPhysicsWorld();
+
   /// This class should be non-copyable. This will cause the destructor to be
   /// called twice for a given b2Body
   Entity(const Entity &) = delete;
@@ -81,12 +93,17 @@ class Entity {
    * @brief Get the type of entity, subclasses must override
    * @return the type of entity
    */
-  virtual EntityType Type() = 0;
+  virtual EntityType Type() const = 0;
 
   /**
    * @brief Visualize the entity
    */
-  virtual void DebugVisualize() {}
+  virtual void DebugVisualize() const = 0;
+
+  /**
+   * @brief Print debug message for the entity
+   */
+  virtual void DebugOutput() const = 0;
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_ENTITY_H

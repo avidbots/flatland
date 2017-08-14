@@ -59,3 +59,12 @@ bodies:  # List of named bodies
 plugins:
   - type: ModelTfPublisher
     name: model_tf_publisher
+
+joints:
+  - name: weld
+    type: weld
+    bodies: 
+      - name: base
+        anchor: [0, 0]
+      - name: antenna
+        anchor: [0, 0]      
