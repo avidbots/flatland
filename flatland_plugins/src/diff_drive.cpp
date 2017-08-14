@@ -136,7 +136,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
         std::normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }
 
-  ROS_INFO_NAMED("DiffDrive",
+  ROS_DEBUG_NAMED("DiffDrive",
                  "Initialized with params body(%p %s) odom_frame_id(%s) "
                  "twist_sub(%s) odom_pub(%s) ground_truth_pub(%s) "
                  "odom_pose_noise({%f,%f,%f}) odom_twist_noise({%f,%f,%f}) "

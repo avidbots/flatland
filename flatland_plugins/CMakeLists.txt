@@ -68,7 +68,7 @@ include_directories(
 # Declare a C++ library
 add_library(flatland_plugins_lib
   src/laser.cpp
-  src/bicycle.cpp
+  src/tricycle_drive.cpp
   src/diff_drive.cpp
   src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp

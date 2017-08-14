@@ -18,15 +18,11 @@ bodies:  # List of named bodies
   - name: base
     pose: [-1, 0, 0] 
     type: dynamic  
-    color: [1, 0, 0, 0.25] 
+    color: [1, 1, 1, 0.75] 
     footprints:
       - type: polygon
-        density: 100000.0
-        friction: 1000000.0
-        sensor: false
-
-
-
+        density: 1
+        # friction: 1000000.0
         points: [
           [-0.337,-1.03],
           [-0.337, .07983],
@@ -103,49 +99,28 @@ bodies:  # List of named bodies
         density: 0.0
         points: [[.3155, -.7425], [.2645, -.7425], [.2645, -.9175], [.3155, -.9175]]
 
-  # - name: left_wheel
-  #   pose: [-1, 0, 0] 
-  #   type: dynamic  
-  #   color: [1, 0, 0, 0.25] 
-  #   footprints:
-  #     - type: polygon
-  #       sensor: true
-  #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
-
-  # - name: right_wheel
-  #   pose: [1, 0, 0] 
-  #   type: dynamic  
-  #   color: [0, 1, 0, 0.25] 
-  #   footprints:
-  #     - type: polygon
-  #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
-
-# joints:
-#   - name: left_wheel_weld
-#     type: weld
-#     angle: 1.57079633
-#     frequency: 10
-#     damping: 0.5
-#     collide_connected: false
-#     bodies:
-#       - name: base
-#         anchor: [0, 0]
-#       - name: left_wheel
-#         anchor: [-1, 0]
-
-#   - name: right_wheel_weld
-#     type: weld
-#     bodies:
-#       - name: base
-#         anchor: [0, 0]
-#       - name: right_wheel
-#         anchor: [1, 0]
-
-
 plugins:
+  - type: ModelTfPublisher
+    name: tf_publisher
+    publish_tf_world: true
+
+
   - type: Bicycle
     name: bicycle 
     body: base
+    front_wheel_joint: xxx
+    rear_left__wheel_joint: xxx
+    rear_right_wheel_joint: xxx
+    odom_frame_id: map
+    pub_rate: 10
+    odom_pose_noise: [0.1, 0.1, 0.1]
+    odom_twist_noise: [0.1, 0.1, 0.1]
+    odom_pose_covariance: [0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 
+                            0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 
+                            0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 
+                            0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 
+                            0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 
+                            0.30, 0.31, 0.32, 0.33, 0.34, 0.35]
 
   # - type: Laser
   #   name: hokuyo_laser 
