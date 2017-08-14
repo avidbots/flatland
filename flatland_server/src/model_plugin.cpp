@@ -48,6 +48,12 @@
 
 namespace flatland_server {
 
+const std::string &ModelPlugin::GetName() const { return name_; }
+
+const std::string &ModelPlugin::GetType() const { return type_; }
+
+Model *ModelPlugin::GetModel() { return model_; }
+
 void ModelPlugin::Initialize(const std::string &type, const std::string &name,
                              Model *model, const YAML::Node &config) {
   type_ = type;

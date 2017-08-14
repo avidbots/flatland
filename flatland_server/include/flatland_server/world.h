@@ -121,20 +121,19 @@ class World : public b2ContactListener {
   void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
 
   /**
-   * @brief load layers into the world. Throws derivatives of
-   * YAML::Exception
+   * @brief load layers into the world. Throws YAMLException.
    * @param[in] layers_reader Yaml reader for node that has list of layers
    */
   void LoadLayers(YamlReader &layers_reader);
 
   /**
-   * @brief load models into the world. Throws derivatives of YAML::Exception
+   * @brief load models into the world. Throws YAMLException.
    * @param[in] layers_reader Yaml reader for node that has a list of models
    */
   void LoadModels(YamlReader &models_reader);
 
   /**
-   * @brief load models into the world. Throws derivatives of YAML::Exception
+   * @brief load models into the world. Throws YAMLException.
    * @param[in] model_yaml_path Relative path to the model yaml file
    * @param[in] ns Namespace of the robot
    * @param[in] name Name of the model
@@ -144,9 +143,14 @@ class World : public b2ContactListener {
                  const std::string &name, const Pose &pose);
 
   /**
+   * @brief remove model with a given name
+   * @param[in] name The name of the model to remove
+   */
+  void DeleteModel(const std::string &name);
+
+  /**
    * @brief factory method to create a instance of the world class. Cleans all
-   * the inputs before instantiation of the class. Throws derivatives of
-   * YAML::Exception
+   * the inputs before instantiation of the class. TThrows YAMLException.
    * @param[in] yaml_path Path to the world yaml file
    * @return pointer to a new world
    */
