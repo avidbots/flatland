@@ -743,7 +743,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ./include/flatland_server ./src
+INPUT                  = ./flatland_server/include/flatland_server ./flatland_server/src ./flatland_plugins/include/flatland_plugins ./flatland_plugins/src ./flatland_viz/include/flatland_viz ./flatland_viz/src
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
