@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
-# Flatland Simulator documentation build configuration file, created by
-# sphinx-quickstart on Tue Aug 15 13:27:23 2017.
+# Flatland documentation build configuration file, created by
+# sphinx-quickstart on Tue Aug 15 13:55:12 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -45,9 +45,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Flatland Simulator'
-copyright = u'2017, Joeseph Duchesne, Chunshang Li, Mike Brousseau'
-author = u'Joeseph Duchesne, Chunshang Li, Mike Brousseau'
+project = u'Flatland'
+copyright = u'2017, Avidbots Corp.'
+author = u'Avidbots Corp.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -114,7 +114,7 @@ html_sidebars = {
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'FlatlandSimulatordoc'
+htmlhelp_basename = 'Flatlanddoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -141,8 +141,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'FlatlandSimulator.tex', u'Flatland Simulator Documentation',
-     u'Joeseph Duchesne, Chunshang Li, Mike Brousseau', 'manual'),
+    (master_doc, 'Flatland.tex', u'Flatland Documentation',
+     u'Avidbots Corp.'),
 ]
 
 
@@ -151,7 +151,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'flatlandsimulator', u'Flatland Simulator Documentation',
+    (master_doc, 'flatland', u'Flatland Documentation',
      [author], 1)
 ]
 
@@ -162,8 +162,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'FlatlandSimulator', u'Flatland Simulator Documentation',
-     author, 'FlatlandSimulator', 'One line description of project.',
+    (master_doc, 'Flatland', u'Flatland Documentation',
+     author, 'Flatland', 'One line description of project.',
      'Miscellaneous'),
 ]
 
