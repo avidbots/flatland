@@ -105,7 +105,6 @@ bodies:
 joints:
   - type: revolute
     name: front_wheel_revolute
-    limits: [0, 0]
     bodies: 
       - name: front_wheel
         anchor: [0, 0]
@@ -133,12 +132,6 @@ plugins:
     name: tf_publisher
     publish_tf_world: true
 
-  - type: DiffDrive 
-    name: turtlebot_drive 
-    body: base
-    odom_frame_id: map
-    pub_rate: 60
-
   - type: TricycleDrive
     name: cleaner_drive 
     body: base
@@ -146,12 +139,12 @@ plugins:
     rear_left_wheel_joint: rear_left_wheel_weld
     rear_right_wheel_joint: rear_right_wheel_weld
     odom_frame_id: map
-    # pub_rate: 10
-    # odom_pose_noise: [0.1, 0.1, 0.1]
-    # odom_twist_noise: [0.1, 0.1, 0.1]
-    # odom_pose_covariance: [0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 
-    #                         0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 
-    #                         0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 
-    #                         0.18, 0.19, 0.20, 0.21, 0.22, 0.23, 
-    #                         0.24, 0.25, 0.26, 0.27, 0.28, 0.29, 
-    #                         0.30, 0.31, 0.32, 0.33, 0.34, 0.35]
+
+  - type: Laser
+    name: laser_test
+    topic: scan
+    body: base
+    origin: [0.25, 0, 0]
+    range: 20
+    angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.004363323129985824}
+    update_rate: 40

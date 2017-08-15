@@ -203,7 +203,7 @@ void TricycleDrive::ComputeJoints() {
     // ensure the joint is anchored at (0,0) of the wheel_body
     if (fabs(wheel_anchor.x) > 1e-5 || fabs(wheel_anchor.y) > 1e-5) {
       throw YAMLException("Joint " + Q(joint->GetName()) +
-                          " must have its wheel anchored point at (0, 0)");
+                          " must be anchored at (0, 0) on the wheel");
     }
 
     if (is_inverted) {
@@ -225,6 +225,11 @@ void TricycleDrive::ComputeJoints() {
   if (rear_right_wj_->physics_joint_->GetType() != e_weldJoint) {
     throw YAMLException("Rear right wheel joint must be a weld joint");
   }
+
+  // enable limits for the front joint
+  b2RevoluteJoint* j =
+      dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
+  j->EnableLimit(true);
 
   // positive joint angle goes counter clockwise from the perspective of BodyA,
   // if body_ is not BodyA, we need flip the steering angle for visualization
@@ -321,14 +326,12 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
   b2RevoluteJoint* j =
       dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
-
+  j->EnableLimit(true);
   if (invert_steering_angle_) {
     j->SetLimits(-theta_f, -theta_f);
   } else {
     j->SetLimits(theta_f, theta_f);
   }
-
-  b2Body* b = model_->GetBody("front_wheel")->physics_body_;
 
   // calculate the desired velocity using the bicycle model in the world frame
   // looking at the rear center, formulas obtained from avidbots robot systems
