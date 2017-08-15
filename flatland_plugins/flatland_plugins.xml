@@ -8,7 +8,7 @@
   <class type="flatland_plugins::Bicycle" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland bicycle plugin</description>
   </class>
-  <class type="flatland_plugins::Diff_drive" base_class_type="flatland_server::ModelPlugin">
+  <class type="flatland_plugins::DiffDrive" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland differential drive plugin</description>
   </class>
   <class type="flatland_plugins::ModelTfPublisher" base_class_type="flatland_server::ModelPlugin">

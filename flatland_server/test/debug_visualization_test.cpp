@@ -139,7 +139,7 @@ TEST(DebugVizTest, testBodyToMarkersCircle) {
   ASSERT_EQ(markers.markers.size(), 1);
 
   // Check the marker shape
-  ASSERT_EQ(markers.markers[0].type, markers.markers[0].CYLINDER);
+  ASSERT_EQ(markers.markers[0].type, markers.markers[0].SPHERE_LIST);
   ASSERT_NEAR(markers.markers[0].scale.x, 0.4, 1e-5);
   ASSERT_NEAR(markers.markers[0].scale.y, 0.4, 1e-5);
   ASSERT_NEAR(markers.markers[0].scale.z, 0.01, 1e-5);

@@ -140,7 +140,7 @@ YamlReader YamlReader::SubnodeOpt(const std::string &key,
 }
 
 Vec2 YamlReader::GetVec2(const std::string &key) {
-  std::vector<double> v = GetList<double>(key, 2, 2);
+  std::array<double, 2> v = GetArray<double, 2>(key);
   return Vec2(v[0], v[1]);
 }
 
@@ -154,13 +154,13 @@ Vec2 YamlReader::GetVec2(const std::string &key, const Vec2 &vec2) {
 }
 
 Color YamlReader::GetColor(const std::string &key, const Color &default_val) {
-  std::vector<double> v = GetList<double>(
-      key, {default_val.r, default_val.g, default_val.b, default_val.a}, 4, 4);
+  std::array<double, 4> v = GetArray<double, 4>(
+      key, {default_val.r, default_val.g, default_val.b, default_val.a});
   return Color(v[0], v[1], v[2], v[3]);
 }
 
 Pose YamlReader::GetPose(const std::string &key) {
-  std::vector<double> v = GetList<double>(key, 3, 3);
+  std::array<double, 3> v = GetArray<double, 3>(key);
   return Pose(v[0], v[1], v[2]);
 }
 
