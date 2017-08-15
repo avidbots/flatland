@@ -89,6 +89,10 @@ class TricycleDrive : public flatland_server::ModelPlugin {
    */
   void OnInitialize(const YAML::Node& config) override;
 
+  /**
+   * @brief This is a helper function that is used to valid and extract
+   * parameters from  joints
+   */
   void ComputeJoints();
 
   /**
