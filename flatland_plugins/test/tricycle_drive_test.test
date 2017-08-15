@@ -5,5 +5,5 @@ This file is used so that rosmaster is running when the test is executed,
 in order to test publish/subscribe
 -->
 <launch>
-  <test pkg="flatland_plugins" type="bicycle_test" test-name="bicycle_test"/>
+  <test pkg="flatland_plugins" type="tricycle_drive_test" test-name="tricycle_drive_test"/>
 </launch>

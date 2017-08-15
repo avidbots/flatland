@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	Bicycle.h
- * @brief   Bicycle plugin
+ * @name	diff_drive.h
+ * @brief   Diff drive plugin
  * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
