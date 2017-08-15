@@ -51,6 +51,7 @@
 #include <flatland_server/entity.h>
 #include <flatland_server/joint.h>
 #include <flatland_server/model_body.h>
+#include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 
@@ -68,10 +69,8 @@ class Model : public Entity {
   std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
   std::vector<Joint *> joints_;      ///< list of joints in the model
-  YAML::Node plugins_node_;          ///< for storing plugins when paring YAML
+  YamlReader plugins_reader_;        ///< for storing plugins when paring YAML
   CollisionFilterRegistry *cfr_;     ///< Collision filter registry
-  /// Box2D collision group assigned to this body by the CFR
-  int no_collide_group_index_;
 
   /**
    * @brief Constructor for the model
@@ -91,19 +90,19 @@ class Model : public Entity {
    * @brief Return the type of entity
    * @return Model type
    */
-  virtual EntityType Type() { return EntityType::MODEL; }
+  EntityType Type() const { return EntityType::MODEL; }
 
   /**
    * @brief load bodies to this model, throws exceptions upon failure
-   * @param[in] bodies_node YAML node containing the list of bodies
+   * @param[in] bodies_reader YAML reader for node containing the list of bodies
    */
-  void LoadBodies(const YAML::Node &bodies_node);
+  void LoadBodies(YamlReader &bodies_reader);
 
   /**
    * @brief load joints to this model, throws exceptions upon failure
-   * @param[in] joints_node YAML node containing the list of joints
+   * @param[in] joints_reader YAML reader for node containing the list of joints
    */
-  void LoadJoints(const YAML::Node &joints_node);
+  void LoadJoints(YamlReader &joints_reader);
 
   /**
    * @brief Get a body in the model using its name
@@ -113,21 +112,63 @@ class Model : public Entity {
   ModelBody *GetBody(const std::string &name);
 
   /**
+   * @brief Get a body in the model using its name
+   * @param[in] name Name of the joint
+   * @return pointer to the joint, nullptr if the joint does not exist
+   */
+  Joint *GetJoint(const std::string &name);
+
+  /**
+   * @return List of bodies the model has
+   */
+  const std::vector<ModelBody *> &GetBodies();
+
+  /**
+   * @return List of joints the model has
+   */
+  const std::vector<Joint *> &GetJoints();
+
+  /**
+   * @return The namespace of the model
+   */
+  const std::string &GetNameSpace() const;
+
+  /**
+   * @return The name of the model
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @return The collision filter registrar
+   */
+  const CollisionFilterRegistry *GetCfr() const;
+
+  /**
    * @brief Publish debug visualizations for model
    */
-  void DebugVisualize() override;
+  void DebugVisualize() const override;
+
+  /**
+   * @brief log debug messages for the layer
+   */
+  void DebugOutput() const override;
+
+  /**
+   * @brief Dump box2d data for debugging
+   */
+  void DumpBox2D() const;
 
   /**
    * @brief transform all bodies in the model
    * @param[in] pose_delta dx, dy, dyaw
    */
-  void TransformAll(const std::array<double, 3> &pose_delta);
+  void TransformAll(const Pose &pose_delta);
 
   /**
    * @brief Create a model, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
-   * @param[in] model_yaml_path path to the model yaml file
+   * @param[in] model_yaml_path Absolute path to the model yaml file
    * @param[in] ns Namespace of the robot
    * @param[in] name Name of the model
    * @return A new model

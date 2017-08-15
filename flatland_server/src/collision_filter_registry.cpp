@@ -66,7 +66,7 @@ int CollisionFilterRegistry::RegisterNoCollide() {
   return no_collide_group_cnt_;
 }
 
-bool CollisionFilterRegistry::IsLayersFull() {
+bool CollisionFilterRegistry::IsLayersFull() const {
   return layer_id_table_.size() >= MAX_LAYERS;
 }
 
@@ -99,36 +99,45 @@ int CollisionFilterRegistry::RegisterLayer(std::string layer_name) {
   return i;
 }
 
-int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) {
+int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) const {
   if (layer_id_table_.count(layer_name) == 0) {
     return LAYER_NOT_EXIST;
   }
-  return layer_id_table_[layer_name];
+  return layer_id_table_.at(layer_name);
 }
 
-void CollisionFilterRegistry::ListAllLayers(
-    std::vector<std::string> &layer_names) {
-  layer_names.clear();
+std::vector<std::string> CollisionFilterRegistry::GetAllLayers() const {
+  std::vector<std::string> layer_names;
 
-  std::map<std::string, int>::iterator it;
+  std::map<std::string, int>::const_iterator it;
   for (it = layer_id_table_.begin(); it != layer_id_table_.end(); it++) {
     layer_names.push_back(it->first);
   }
+
+  return layer_names;
+}
+
+int CollisionFilterRegistry::LayersCount() const {
+  return layer_id_table_.size();
 }
 
 uint16_t CollisionFilterRegistry::GetCategoryBits(
     const std::vector<std::string> &layers,
-    std::vector<std::string> *layers_failed) {
-  if (layers_failed) {
-    layers_failed->clear();
+    std::vector<std::string> *invalid_layers) const {
+  if (layers.size() == 1 && layers[0] == "all") {
+    return ~((uint16_t)0x0);
+  }
+
+  if (invalid_layers) {
+    invalid_layers->clear();
   }
   uint16_t category_bits = 0;
 
   for (const auto &layer : layers) {
     int layer_id = LookUpLayerId(layer);
 
-    if (layer_id < 0 && layers_failed) {
-      layers_failed->push_back(layer);
+    if (layer_id < 0 && invalid_layers) {
+      invalid_layers->push_back(layer);
     } else {
       category_bits |= 1 << layer_id;
     }

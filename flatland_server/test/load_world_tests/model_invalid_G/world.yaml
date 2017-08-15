@@ -1,0 +1,6 @@
+properties: {}
+layers: []
+models: 
+  - name: turtlebot
+    pose: [0, 0, 0]
+    model: "turtlebot.model.yaml"

@@ -50,6 +50,7 @@
 #include <flatland_server/body.h>
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/model.h>
+#include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -79,54 +80,55 @@ class ModelBody : public Body {
    * @param[in] angular_damping Box2D body angular damping
    */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
-            const std::string &name, const std::array<double, 4> &color,
-            const std::array<double, 3> &origin, b2BodyType body_type,
-            double linear_damping, double angular_damping);
+            const std::string &name, const Color &color, const Pose &origin,
+            b2BodyType body_type, double linear_damping,
+            double angular_damping);
+
+  /**
+   * @return The collision filter registry
+   */
+  const CollisionFilterRegistry *GetCfr() const;
 
   /**
    * @brief Load footprints (Box2D fixtures) into the body
-   * @param[in] footprints_node Node containing the footprints parameters
+   * @param[in] footprints_reader YAML reader for node containing the footprints
+   * parameters
    */
-  void LoadFootprints(const YAML::Node &footprints_node);
-
-  /**
-   * @brief Configures collision properties of footprints
-   * @param[in] footprint_node Node containing the footprint parameters
-   * @param[out] fixture_def Box2D fixture definition
-   */
-  void ConfigFootprintCollision(const YAML::Node &footprint_node,
-                                b2FixtureDef &fixture_def);
+  void LoadFootprints(YamlReader &footprints_reader);
 
   /**
    * @brief Configures the common properties of footprints
-   * @param[in] footprint_node Node containing the footprint parameters
+   * @param[in] footprint_reader YAML reader for node containing the footprint
+   * parameters
    * @param[out] fixture_def Box2D fixture definition
    */
-  void ConfigFootprintCommon(const YAML::Node &footprint_node,
-                             b2FixtureDef &fixture_def);
+  void ConfigFootprintDef(YamlReader &footprint_reader,
+                          b2FixtureDef &fixture_def);
 
   /**
    * @brief Loads a circle footprint
-   * @param[in] footprint_node Node containing the footprint parameters
+   * @param[in] footprint_reader YAML reader for node containing the footprint
+   * parameters
    */
-  void LoadCircleFootprint(const YAML::Node &footprint_node);
+  void LoadCircleFootprint(YamlReader &footprint_reader);
 
   /**
    * @brief Loads a circle footprint
-   * @param[in] footprint_node Node containing the footprint parameters
+   * @param[in] footprint_reader YAML reader for node containing the footprint
+   * parameters
    */
-  void LoadPolygonFootprint(const YAML::Node &footprint_node);
+  void LoadPolygonFootprint(YamlReader &footprint_reader);
 
   /**
    * @brief Factory method to create a model body
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
    * @param[in] model The model this model body belongs to
-   * @param[in] body_node Node containing the body parameters
+   * @param[in] body_node YAML reader for node containing the body parameters
    */
   static ModelBody *MakeBody(b2World *physics_world,
                              CollisionFilterRegistry *cfr, Model *model,
-                             const YAML::Node &body_node);
+                             YamlReader &body_node);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H

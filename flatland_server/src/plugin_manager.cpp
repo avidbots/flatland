@@ -71,45 +71,59 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
   }
 }
 
-void PluginManager::LoadModelPlugin(Model *model,
-                                    const YAML::Node &plugin_node) {
-  const YAML::Node &n = plugin_node;
+void PluginManager::DeleteModelPlugin(Model *model) {
+  model_plugins_.erase(
+      std::remove_if(
+          model_plugins_.begin(), model_plugins_.end(),
+          [&](boost::shared_ptr<ModelPlugin> p) { return p->model_ == model; }),
+      model_plugins_.end());
+  printf("hello\n");
+}
 
-  std::string name;
-  std::string type;
+void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
+  std::string name = plugin_reader.Get<std::string>("name");
+  std::string type = plugin_reader.Get<std::string>("type");
 
-  if (n["name"]) {
-    name = n["name"].as<std::string>();
-  } else {
-    throw YAMLException("Missing plugin name");
+  // ensure no plugin with the same model and name
+  if (std::count_if(model_plugins_.begin(), model_plugins_.end(),
+                    [&](boost::shared_ptr<ModelPlugin> i) {
+                      return i->name_ == name && i->model_ == model;
+                    }) >= 1) {
+    throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
+                        " model, plugin with name " + Q(name) +
+                        " already exists");
   }
 
-  if (n["type"]) {
-    type = n["type"].as<std::string>();
-  } else {
-    throw YAMLException("Missing \"type\" in plugin " + name);
+  // remove the name and type of the YAML Node, the plugin does not need to know
+  // about these parameters, remove method is broken in yaml cpp 5.2, so we
+  // create a new node and add everything
+  YAML::Node yaml_node;
+  for (const auto &k : plugin_reader.Node()) {
+    if (k.first.as<std::string>() != "name" &&
+        k.first.as<std::string>() != "type") {
+      yaml_node[k.first] = k.second;
+    }
   }
 
   boost::shared_ptr<ModelPlugin> model_plugin;
 
+  std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) + " model " +
+                    Q(model->name_);
+
   try {
     model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
-    throw PluginException("ModelPlugin", type, name, e.what());
+    throw PluginException(msg + ": " + std::string(e.what()));
   }
 
   try {
-    model_plugin->Initialize(type, name, model, plugin_node);
+    model_plugin->Initialize(type, name, model, yaml_node);
   } catch (const std::exception &e) {
-    throw PluginException("ModelPlugin", type, name,
-                          "Init Error model=" + model->name_ + " (" +
-                              std::string(e.what()) + ")");
+    throw PluginException(msg + ": " + std::string(e.what()));
   }
   model_plugins_.push_back(model_plugin);
 
-  ROS_INFO_NAMED("PluginManager",
-                 "Model Plugin %s of type %s loaded for model %s", name.c_str(),
-                 type.c_str(), model->name_.c_str());
+  ROS_INFO_NAMED("PluginManager", "%s loaded", msg.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {
