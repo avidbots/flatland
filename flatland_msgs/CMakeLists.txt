@@ -28,6 +28,7 @@ add_message_files(FILES
 
 add_service_files(FILES
   SpawnModel.srv
+  DeleteModel.srv
 )
 
 generate_messages(

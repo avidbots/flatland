@@ -3,18 +3,17 @@
 
 bodies:  # List of named bodies
   - name: base
-    origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
-    type: dynamic  # dynamic | static | kinematic
-    color: [1, 1, 0, 0.25] # r g b a
+    type: dynamic  
+    color: [1, 1, 0, 0.25] 
     linear_damping: 0.1
     angular_damping: 0.125
     footprints:
       - type: circle
-        center: [0, 0]  # relative to body origin
-        radius: 1.777  # m
-        layers: ["all"] # any other layers, default is all
-        is_sensor: false # Box2d Sensor, false is default
-        self_collide: false # collides with other bodies, default is false
+        center: [0, 0] 
+        radius: 1.777 
+        layers: ["all"]
+        sensor: false 
+        density: 0
       - type: polygon
         density: 982.24
         friction: 0.59
@@ -28,7 +27,8 @@ bodies:  # List of named bodies
     footprints:
       - type: polygon
         layers: ["2d"]
-        is_sensor: true
+        sensor: true
+        density: 0
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   - name: right_wheel
@@ -37,6 +37,7 @@ bodies:  # List of named bodies
     color: [0, 1, 0, 0.25] 
     footprints:
       - type: polygon
+        density: 0      
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   - name: tail
@@ -45,6 +46,7 @@ bodies:  # List of named bodies
     color: [0, 0, 0, 0.5] 
     footprints:
       - type: polygon
+        density: 0      
         layers: ["3d"]
         points: [[-0.2, 0], [-0.2, -5], [0.2, -5], [0.2, 0]]
 
@@ -55,8 +57,8 @@ bodies:  # List of named bodies
     footprints:
       - type: circle
         center: [0.01, 0.02]
+        density: 0      
         radius: 0.25
-        self_collide: true
         layers: []
 
 joints:
@@ -65,7 +67,7 @@ joints:
     angle: 1.57079633
     frequency: 10
     damping: 0.5
-    collide_connected: false
+    collide_connected: true
     color: [0.1, 0.2, 0.3, 0.4]
     bodies:
       - name: base
@@ -75,6 +77,7 @@ joints:
 
   - name: right_wheel_weld
     type: weld
+    collide_connected: false    
     bodies:
       - name: base
         anchor: [1, 0]

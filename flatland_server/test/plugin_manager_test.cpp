@@ -359,7 +359,30 @@ TEST_F(PluginManagerTest, invalid_plugin_yaml) {
     delete w;
     FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
-    EXPECT_STREQ(e.what(), "Flatland YAML: Missing plugin name");
+    EXPECT_STREQ(
+        "Flatland YAML: Entry \"name\" does not exist (in model \"turtlebot1\" "
+        "\"plugins\" index=0)",
+        e.what());
+  } catch (const std::exception &e) {
+    ADD_FAILURE() << "Was expecting a YAMLException, another exception was "
+                     "caught instead: "
+                  << e.what();
+  }
+}
+
+TEST_F(PluginManagerTest, duplicate_plugin) {
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/duplicate_plugin/world.yaml");
+
+  try {
+    World *w = World::MakeWorld(world_yaml.string());
+    delete w;
+    FAIL() << "Expected an exception, but none were raised";
+  } catch (const YAMLException &e) {
+    EXPECT_STREQ(
+        "Flatland YAML: Invalid \"plugins\" in \"turtlebot1\" model, plugin "
+        "with name \"dummy_test_plugin\" already exists",
+        e.what());
   } catch (const std::exception &e) {
     ADD_FAILURE() << "Was expecting a YAMLException, another exception was "
                      "caught instead: "

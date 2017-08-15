@@ -49,6 +49,7 @@
 #include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
+#include <flatland_server/types.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <boost/filesystem.hpp>
@@ -70,21 +71,22 @@ class LoadWorldTest : public ::testing::Test {
   // to test that the world instantiation will fail, and the exception
   // message matches the given regex string
   void test_yaml_fail(std::string regex_str) {
+    // do a regex match against error messages
+    std::cmatch match;
+    std::regex regex(regex_str);
+
     try {
       World *w = World::MakeWorld(world_yaml.string());
       delete w;
       ADD_FAILURE() << "Expected an exception, but none were raised";
-    } catch (const YAML::Exception &e) {
-      // do a regex match against error messages
-      std::cmatch match;
-      std::regex regex(regex_str);
+    } catch (const Exception &e) {
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
           << "Exception Message '" + std::string(e.what()) + "'" +
                  " did not match against regex '" + regex_str + "'";
     } catch (const std::exception &e) {
-      ADD_FAILURE()
-          << "Expected YAMLException, another exception was caught instead: "
-          << e.what();
+      ADD_FAILURE() << "Expected flatland_server::Exception, another exception "
+                       "was caught instead: "
+                    << e.what();
     }
   }
 
@@ -140,14 +142,11 @@ class LoadWorldTest : public ::testing::Test {
     }
   }
 
-  bool ColorEq(const std::array<double, 4> &c1,
-               const std::array<double, 4> &c2) {
-    for (int i = 0; i < 4; i++) {
-      if (!float_cmp(c1[i], c2[i])) {
-        printf("Color Actual:[%f,%f,%f,%f] != Expected:[%f,%f,%f,%f]\n", c1[0],
-               c1[1], c1[2], c1[3], c2[0], c2[1], c2[2], c2[3]);
-        return false;
-      }
+  bool ColorEq(const Color &c1, const Color &c2) {
+    if (c1 != c2) {
+      printf("Color Actual:[%f,%f,%f,%f] != Expected:[%f,%f,%f,%f]\n", c1.r,
+             c1.g, c1.b, c1.a, c2.r, c2.g, c2.b, c2.a);
+      return false;
     }
     return true;
   }
@@ -186,7 +185,7 @@ class LoadWorldTest : public ::testing::Test {
       return false;
     }
 
-    if (!ColorEq(body->color_, color)) {
+    if (!ColorEq(body->color_, Color(color))) {
       return false;
     }
 
@@ -512,34 +511,43 @@ TEST_F(LoadWorldTest, simple_test_A) {
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
   World *w = World::MakeWorld(world_yaml.string());
 
-  ASSERT_EQ(w->layers_.size(), 2);
+  EXPECT_EQ(w->physics_velocity_iterations_, 11);
+  EXPECT_EQ(w->physics_position_iterations_, 12);
+
+  ASSERT_EQ(w->layers_.size(), 3);
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");
+  ASSERT_EQ(w->layers_[0]->names_.size(), 1);
+  EXPECT_STREQ(w->layers_[0]->names_[0].c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[0]->body_, "2d", b2_staticBody,
-                     {0.05, -0.05, 1.57}, {0, 1, 0, 0}, 0, 0));
-  EXPECT_FALSE(w->layers_[0]->bitmap_.empty());
-  EXPECT_EQ(w->layers_[0]->bitmap_.rows, 5);
-  EXPECT_EQ(w->layers_[0]->bitmap_.cols, 5);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->resolution_, 0.05);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->occupied_thresh_, 0.65);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
+                     {0.05, -0.05, 1.57}, {0, 1, 0, 0.675}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
+  EXPECT_EQ(w->cfr_.GetCategoryBits(w->layers_[0]->names_), 0b1);
 
   // check that layer 1 settings are loaded correctly
   EXPECT_STREQ(w->layers_[1]->name_.c_str(), "3d");
+  ASSERT_EQ(w->layers_[1]->names_.size(), 3);
+  EXPECT_STREQ(w->layers_[1]->names_[0].c_str(), "3d");
+  EXPECT_STREQ(w->layers_[1]->names_[1].c_str(), "4d");
+  EXPECT_STREQ(w->layers_[1]->names_[2].c_str(), "5d");
   EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0},
                      {1, 1, 1, 1}, 0, 0));
-  EXPECT_FALSE(w->layers_[1]->bitmap_.empty());
-  EXPECT_EQ(w->layers_[1]->bitmap_.rows, 5);
-  EXPECT_EQ(w->layers_[1]->bitmap_.cols, 5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->resolution_, 1.5);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->occupied_thresh_, 0.5153);
-  EXPECT_DOUBLE_EQ(w->layers_[1]->free_thresh_, 0.2234);
-  EXPECT_DOUBLE_EQ(w->layers_[0]->free_thresh_, 0.196);
   EXPECT_EQ(w->cfr_.LookUpLayerId("3d"), 1);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("4d"), 2);
+  EXPECT_EQ(w->cfr_.LookUpLayerId("5d"), 3);
+  EXPECT_EQ(w->cfr_.GetCategoryBits(w->layers_[1]->names_), 0b1110);
+
+  // check that layer 2 settings are loaded correctly
+  EXPECT_STREQ(w->layers_[2]->name_.c_str(), "lines");
+  ASSERT_EQ(w->layers_[2]->names_.size(), 1);
+  EXPECT_STREQ(w->layers_[2]->names_[0].c_str(), "lines");
+  EXPECT_EQ(w->layers_[2]->Type(), Entity::EntityType::LAYER);
+  EXPECT_TRUE(BodyEq(w->layers_[2]->body_, "lines", b2_staticBody,
+                     {-1.20, -5, 1.23}, {1, 1, 1, 1}, 0, 0));
+  EXPECT_EQ(w->cfr_.LookUpLayerId("lines"), 4);
 
   // check that bitmap is transformed correctly. This involves flipping the y
   // coordinates and apply the resolution. Note that the translation and
@@ -566,8 +574,8 @@ TEST_F(LoadWorldTest, simple_test_A) {
     layer0_edges.push_back(e);
 
     // check that collision groups are correctly assigned
-    EXPECT_EQ(f->GetFilterData().categoryBits, 0x1);
-    EXPECT_EQ(f->GetFilterData().maskBits, 0x1);
+    ASSERT_EQ(f->GetFilterData().categoryBits, 0x1);
+    ASSERT_EQ(f->GetFilterData().maskBits, 0x1);
   }
   EXPECT_EQ(layer0_edges.size(), layer0_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer0_edges, layer0_expected_edges));
@@ -599,18 +607,36 @@ TEST_F(LoadWorldTest, simple_test_A) {
     layer1_edges.push_back(e);
 
     // check that collision groups are correctly assigned
-    EXPECT_EQ(f->GetFilterData().categoryBits, 0x2);
-    EXPECT_EQ(f->GetFilterData().maskBits, 0x2);
+    ASSERT_EQ(f->GetFilterData().categoryBits, 0b1110);
+    ASSERT_EQ(f->GetFilterData().maskBits, 0b1110);
   }
   EXPECT_EQ(layer1_edges.size(), layer1_expected_edges.size());
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
+
+  // check layer[2] data
+  std::vector<std::pair<b2Vec2, b2Vec2>> layer2_expected_edges = {
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.1, 0.2), b2Vec2(0.3, 0.4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(-0.1, -0.2), b2Vec2(-0.3, -0.4)),
+      std::pair<b2Vec2, b2Vec2>(b2Vec2(0.01, 0.02), b2Vec2(0.03, 0.04))};
+
+  std::vector<b2EdgeShape> layer2_edges;
+  for (b2Fixture *f = w->layers_[2]->body_->physics_body_->GetFixtureList(); f;
+       f = f->GetNext()) {
+    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+    layer2_edges.push_back(e);
+
+    // check that collision groups are correctly assigned
+    ASSERT_EQ(f->GetFilterData().categoryBits, 0b10000);
+    ASSERT_EQ(f->GetFilterData().maskBits, 0b10000);
+  }
+  EXPECT_EQ(layer2_edges.size(), layer2_expected_edges.size());
+  EXPECT_TRUE(do_edges_exactly_match(layer2_edges, layer2_expected_edges));
 
   // Check loaded model data
   // Check model 0
   Model *m0 = w->models_[0];
   EXPECT_STREQ(m0->name_.c_str(), "turtlebot1");
   EXPECT_STREQ(m0->namespace_.c_str(), "");
-  EXPECT_EQ(m0->no_collide_group_index_, -1);
   ASSERT_EQ(m0->bodies_.size(), 5);
   ASSERT_EQ(m0->joints_.size(), 4);
 
@@ -619,9 +645,9 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 0, 0.25}, 0.1, 0.125));
   auto fs = GetBodyFixtures(m0->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
-  EXPECT_TRUE(FixtureEq(fs[1], false, -1, 0b11, 0b11, 982.24, 0.59, 0.234));
+  EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 982.24, 0.59, 0.234));
   EXPECT_TRUE(
       PolygonEq(fs[1], {{-0.1, 0.1}, {-0.1, -0.1}, {0.1, -0.1}, {0.1, 0.1}}));
 
@@ -630,7 +656,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 0, 0, 0.25}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[1]);
   ASSERT_EQ(fs.size(), 1);
-  EXPECT_TRUE(FixtureEq(fs[0], true, -1, 0b01, 0b01, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], true, 0, 0b01, 0b01, 0, 0, 0));
   EXPECT_TRUE(PolygonEq(
       fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
 
@@ -639,7 +665,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {0, 1, 0, 0.25}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[2]);
   ASSERT_EQ(fs.size(), 1);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(PolygonEq(
       fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
 
@@ -648,7 +674,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {0, 0, 0, 0.5}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[3]);
   ASSERT_EQ(fs.size(), 1);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -1, 0b10, 0b10, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b10, 0b10, 0, 0, 0));
   EXPECT_TRUE(PolygonEq(fs[0], {{-0.2, 0}, {-0.2, -5}, {0.2, -5}, {0.2, 0}}));
 
   // check model 0 body 4
@@ -656,12 +682,12 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {0.2, 0.4, 0.6, 1}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[4]);
   ASSERT_EQ(fs.size(), 1);
-  EXPECT_TRUE(FixtureEq(fs[0], false, 1, 0b0, 0b0, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b0, 0b0, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0.01, 0.02, 0.25));
 
   // Check loaded joint data
   EXPECT_TRUE(JointEq(m0->joints_[0], "left_wheel_weld", {0.1, 0.2, 0.3, 0.4},
-                      m0->bodies_[0], {-1, 0}, m0->bodies_[1], {0, 0}, false));
+                      m0->bodies_[0], {-1, 0}, m0->bodies_[1], {0, 0}, true));
   EXPECT_TRUE(WeldEq(m0->joints_[0], 1.57079633, 10, 0.5));
 
   EXPECT_TRUE(JointEq(m0->joints_[1], "right_wheel_weld", {1, 1, 1, 0.5},
@@ -680,7 +706,6 @@ TEST_F(LoadWorldTest, simple_test_A) {
   Model *m1 = w->models_[1];
   EXPECT_STREQ(m1->name_.c_str(), "turtlebot2");
   EXPECT_STREQ(m1->namespace_.c_str(), "robot2");
-  EXPECT_EQ(m1->no_collide_group_index_, -2);
   ASSERT_EQ(m1->bodies_.size(), 5);
   ASSERT_EQ(m1->joints_.size(), 4);
 
@@ -691,7 +716,6 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // Check model 2 which is the chair
   Model *m2 = w->models_[2];
   EXPECT_STREQ(m2->name_.c_str(), "chair1");
-  EXPECT_EQ(m2->no_collide_group_index_, -3);
   ASSERT_EQ(m2->bodies_.size(), 1);
   ASSERT_EQ(m2->joints_.size(), 0);
 
@@ -700,18 +724,15 @@ TEST_F(LoadWorldTest, simple_test_A) {
                      {1, 1, 1, 0.5}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), 2);
-  EXPECT_TRUE(FixtureEq(fs[0], false, -3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b1100, 0b1100, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1));
 
-  // the groupIndex is 3 since the first two turtlebots has one self collide
-  // fixtures each
-  EXPECT_TRUE(FixtureEq(fs[1], false, 3, 0b11, 0b11, 0, 0, 0));
+  EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[1], 0, 0, 0.2));
 
   // Check model 3 which is the chair
   Model *m3 = w->models_[3];
   EXPECT_STREQ(m3->name_.c_str(), "person1");
-  EXPECT_EQ(m3->no_collide_group_index_, -4);
   ASSERT_EQ(m3->bodies_.size(), 1);
   ASSERT_EQ(m3->joints_.size(), 0);
 
@@ -729,7 +750,9 @@ TEST_F(LoadWorldTest, simple_test_A) {
 TEST_F(LoadWorldTest, wrong_world_path) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
-  test_yaml_fail("Flatland YAML: Error loading.*world.yaml.*bad file");
+  test_yaml_fail(
+      "Flatland YAML: File does not exist, "
+      "path=\".*/load_world_tests/random_path/world.yaml\".*");
 }
 
 /**
@@ -739,7 +762,7 @@ TEST_F(LoadWorldTest, wrong_world_path) {
 TEST_F(LoadWorldTest, world_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid world param \"properties\"");
+  test_yaml_fail("Flatland YAML: Entry \"properties\" does not exist");
 }
 
 /**
@@ -750,8 +773,53 @@ TEST_F(LoadWorldTest, world_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Invalid \"color\" in 2d layer, must be a sequence of "
-      "exactly 4 items");
+      "Flatland YAML: Entry \"color\" must have size of exactly 4 \\(in "
+      "\"layers\" index=0\\)");
+}
+
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_C) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_C/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry index=0 contains unrecognized entry\\(s\\) "
+      "\\{\"random_param_1\", \"random_param_2\", \"random_param_3\"\\} \\(in "
+      "\"layers\"\\)");
+}
+
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_D) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_D/world.yaml");
+  test_yaml_fail("Flatland YAML: Layer with name \"layer\" already exists");
+}
+
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_E) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_E/world.yaml");
+  test_yaml_fail("Flatland YAML: Model with name \"turtlebot\" already exists");
+}
+
+/**
+ * This test tries to loads a invalid world yaml file. It should throw
+ * an exception.
+ */
+TEST_F(LoadWorldTest, world_invalid_F) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/world_invalid_F/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Unable to add 3 additional layer\\(s\\) \\{layer_15, "
+      "layer_16, layer_17\\}, current layers count is 14, max allowed is 16");
 }
 
 /**
@@ -761,28 +829,65 @@ TEST_F(LoadWorldTest, world_invalid_B) {
 TEST_F(LoadWorldTest, map_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in 2d layer");
+  test_yaml_fail(
+      "Flatland YAML: Entry \"origin\" does not exist \\(in layer "
+      "\"2d\"\\)");
 }
 
 /**
- * This test tries to loads valid world yaml file which in turn load a map
- * yaml
+ * This test tries to loads valid world yaml file which in turn load a map yaml
  * file which then inturn tries to load a non-exists map image file. It should
  * throw an exception
  */
 TEST_F(LoadWorldTest, map_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
-  test_yaml_fail("Flatland YAML: Failed to load .*.png");
+  test_yaml_fail("Flatland YAML: Failed to load \".*\\.png\" in layer \"2d\"");
 }
 
 /**
+ * This test tries to load a invalid map configuration, an exception should be
+ * thrown
+ */
+TEST_F(LoadWorldTest, map_invalid_C) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_C/world.yaml");
+  test_yaml_fail(
+      "Flatland File: Failed to load \".*/map_invalid_C/random_file.dat\"");
+}
+
+/**
+ * This test tries to load a invalid map configuration, an exception should be
+ * thrown
+ */
+TEST_F(LoadWorldTest, map_invalid_D) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_D/world.yaml");
+  test_yaml_fail(
+      "Flatland File: Failed to read line segment from line 6, in file "
+      "\"map_lines.dat\"");
+}
+
+/**
+ * This test tries to load a invalid map configuration, an exception should be
+ * thrown
+ */
+TEST_F(LoadWorldTest, map_invalid_E) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/map_invalid_E/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry \"scale\" does not exist \\(in layer \"lines\"\\)");
+}
+
+/**`
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
-  test_yaml_fail("Flatland YAML: Missing/invalid \"origin\" in base body");
+  test_yaml_fail(
+      "Flatland YAML: Entry \"bodies\" must be a list \\(in model "
+      "\"turtlebot\"\\)");
 }
 
 /**
@@ -792,8 +897,8 @@ TEST_F(LoadWorldTest, model_invalid_B) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Missing/invalid polygon footprint \"points\" in base "
-      "body, must be a sequence with at least 3 items");
+      "Flatland YAML: Entry \"points\" must have size >= 3 \\(in model "
+      "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");
 }
 
 /**
@@ -803,8 +908,8 @@ TEST_F(LoadWorldTest, model_invalid_C) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Missing/invalid body \"anchor\" in right_wheel_weld "
-      "joint body index=1, must be a sequence of exactly two numbers");
+      "Flatland YAML: Entry \"anchor\" must have size of exactly 2 \\(in model "
+      "\"turtlebot\" joint \"right_wheel_weld\" \"bodies\" index=1\\)");
 }
 
 /**
@@ -814,8 +919,8 @@ TEST_F(LoadWorldTest, model_invalid_D) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Cannot find body with name left_wheel_123 from joint "
-      "left_wheel_weld");
+      "Flatland YAML: Cannot find body with name \"left_wheel_123\" in model "
+      "\"turtlebot\" joint \"left_wheel_weld\" \"bodies\" index=1");
 }
 
 /**
@@ -825,8 +930,65 @@ TEST_F(LoadWorldTest, model_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
   test_yaml_fail(
-      "Flatland YAML: Invalid footprint \"layer\" in left_wheel body, "
-      "\\{random_layer\\} layer\\(s\\) does not exist");
+      "Flatland YAML: Invalid footprint \"layers\" in model \"turtlebot\" body "
+      "\"left_wheel\" \"footprints\" index=0, \\{random_layer\\} layer\\(s\\) "
+      "does not exist");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_F) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_F/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry index=0 contains unrecognized entry\\(s\\) "
+      "\\{\"random_paramter\"\\} \\(in model \"turtlebot\" body \"base\" "
+      "\"footprints\"\\)");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_G) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_G/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry body \"base\" contains unrecognized entry\\(s\\) "
+      "\\{\"random_paramter\"\\} \\(in model \"turtlebot\"\\)");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_H) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_H/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Invalid \"bodies\" in \"turtlebot\" model, body with "
+      "name \"base\" already exists");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_I) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_I/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Invalid \"joints\" in \"turtlebot\" model, joint with "
+      "name \"wheel_weld\" already exists");
+}
+
+/**
+ * This test tries to load a invalid model yaml file, it should fail
+ */
+TEST_F(LoadWorldTest, model_invalid_J) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/model_invalid_J/world.yaml");
+  test_yaml_fail(
+      "Flatland YAML: Entry \"points\" must have size <= 8 \\(in model "
+      "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");
 }
 
 // Run all the tests that were declared with TEST()

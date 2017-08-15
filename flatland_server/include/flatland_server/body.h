@@ -48,6 +48,7 @@
 #define FLATLAND_BODY_H
 
 #include <flatland_server/entity.h>
+#include <flatland_server/types.h>
 
 namespace flatland_server {
 
@@ -57,10 +58,10 @@ namespace flatland_server {
  */
 class Body {
  public:
-  Entity *entity_;               ///< The entity the body belongs to
-  std::string name_;             ///< name of the body, unique within a model
-  b2Body *physics_body_;         ///< Box2D physics body
-  std::array<double, 4> color_;  ///< color, for visualization
+  Entity *entity_;        ///< The entity the body belongs to
+  std::string name_;      ///< name of the body, unique within a model
+  b2Body *physics_body_;  ///< Box2D physics body
+  Color color_;           ///< color, for visualization
 
   /**
    * @brief constructor for body, takes in all the required parameters
@@ -74,8 +75,41 @@ class Body {
    * @param[in] angular_damping Box2D body angular damping
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
-       const std::array<double, 4> &color, const std::array<double, 3> &origin,
-       b2BodyType body_type, double linear_damping, double angular_damping);
+       const Color &color, const Pose &origin, b2BodyType body_type,
+       double linear_damping = 0, double angular_damping = 0);
+
+  /**
+   * @brief logs the debugging information for the body
+   */
+  void DebugOutput() const;
+
+  /**
+   * @return name of the body
+   */
+  const std::string &GetName() const;
+
+  /**
+   * @brief Get the Box2D body, use this to manipulate the body in physics
+   * through the Box2D methods
+   * @return Pointer to Box2D physics body
+   */
+  b2Body *GetPhysicsBody();
+
+  /**
+   * @brief Count the number of fixtures
+   * @return number of fixtures in the body
+   */
+  int GetFixturesCount() const;
+
+  /**
+   * @return Color of the body
+   */
+  const Color &GetColor() const;
+
+  /**
+   * @brief Set of the color of the body
+   */
+  void SetColor(const Color &color);
 
   /**
    * Destructor for the body

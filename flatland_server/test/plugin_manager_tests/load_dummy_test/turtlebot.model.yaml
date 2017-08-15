@@ -9,7 +9,8 @@ bodies:
       - type: circle
         center: [0, 0]
         radius: 0.4
-        is_sensor: true
+        sensor: true
+        density: 0
 
 plugins:
   - type: DummyModelPlugin

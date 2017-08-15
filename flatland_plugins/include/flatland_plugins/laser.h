@@ -47,6 +47,7 @@
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
+#include <flatland_server/types.h>
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_broadcaster.h>
@@ -66,15 +67,15 @@ namespace flatland_plugins {
  */
 class Laser : public ModelPlugin, public b2RayCastCallback {
  public:
-  std::string topic_;             ///< topic name to publish the laser scan
-  Body *body_;                    ///<  body the laser frame attaches to
-  std::array<double, 3> origin_;  ///< laser frame w.r.t the body
-  double range_;                  ///< laser max range
-  double max_angle_;              /// < laser max angle
-  double min_angle_;              ///< laser min angle
-  double increment_;              ///< laser angle increment
-  double update_rate_;            ///< the rate laser scan will be published
-  std::string frame_id_;          ///< laser frame id name
+  std::string topic_;     ///< topic name to publish the laser scan
+  Body *body_;            ///<  body the laser frame attaches to
+  Pose origin_;           ///< laser frame w.r.t the body
+  double range_;          ///< laser max range
+  double max_angle_;      /// < laser max angle
+  double min_angle_;      ///< laser min angle
+  double increment_;      ///< laser angle increment
+  double update_rate_;    ///< the rate laser scan will be published
+  std::string frame_id_;  ///< laser frame id name
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
 
   Eigen::Matrix3f m_body_to_laser_;       ///< tf from body to laser
@@ -88,10 +89,10 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   bool did_hit_;    ///< Box2D ray trace checking if ray hits anything
   float fraction_;  ///< Box2D ray trace fraction
 
-  ros::Publisher scan_publisher;              ///< ros laser topic publisher
-  tf::TransformBroadcaster tf_broadcaster;    ///< broadcast laser frame
-  geometry_msgs::TransformStamped static_tf;  ///< tf from body to laser frame
-  UpdateTimer update_timer_;                  ///< for controlling update rate
+  ros::Publisher scan_publisher_;              ///< ros laser topic publisher
+  tf::TransformBroadcaster tf_broadcaster_;    ///< broadcast laser frame
+  geometry_msgs::TransformStamped static_tf_;  ///< tf from body to laser frame
+  UpdateTimer update_timer_;                   ///< for controlling update rate
 
   /**
    * @brief Box2D raytrace call back method required for implementing the
@@ -115,6 +116,11 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
    * @param[in] timekeeper Object managing the simulation time
    */
   void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+
+  /**
+   * @brief Method that contains all of the laser range calculations
+   */
+  void ComputeLaserRanges();
 
   /**
    * @brief helper function to extract the paramters from the YAML Node

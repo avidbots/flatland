@@ -48,6 +48,7 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/yaml_reader.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
 #include <boost/algorithm/string/join.hpp>
@@ -62,25 +63,26 @@ void Laser::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
-  scan_publisher = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
+  scan_publisher_ = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
 
   // construct the body to laser transformation matrix once since it never
   // changes
-  double c = cos(origin_[2]);
-  double s = sin(origin_[2]);
-  double x = origin_[0], y = origin_[1];
+  double c = cos(origin_.theta);
+  double s = sin(origin_.theta);
+  double x = origin_.x, y = origin_.y;
   m_body_to_laser_ << c, -s, x, s, c, y, 0, 0, 1;
 
-  num_laser_points_ = std::lround((max_angle_ - min_angle_) / increment_) + 1;
+  int num_laser_points =
+      std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
   // initialize size for the matrix storing the laser points
-  m_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
-  m_world_laser_points_ = Eigen::MatrixXf(3, num_laser_points_);
+  m_laser_points_ = Eigen::MatrixXf(3, num_laser_points);
+  m_world_laser_points_ = Eigen::MatrixXf(3, num_laser_points);
   v_zero_point_ << 0, 0, 1;
 
   // pre-calculate the laser points w.r.t to the laser frame, since this never
   // changes
-  for (int i = 0; i < num_laser_points_; i++) {
+  for (int i = 0; i < num_laser_points; i++) {
     float angle = min_angle_ + i * increment_;
 
     float x = range_ * cos(angle);
@@ -99,26 +101,25 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.scan_time = 0;
   laser_scan_.range_min = 0;
   laser_scan_.range_max = range_;
-  laser_scan_.ranges.resize(num_laser_points_);
+  laser_scan_.ranges.resize(num_laser_points);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id = tf::resolve(model_->namespace_, frame_id_);
+  laser_scan_.header.frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
-  q.setRPY(0, 0, origin_[2]);
+  q.setRPY(0, 0, origin_.theta);
 
-  static_tf.header.frame_id = tf::resolve(model_->namespace_, body_->name_);
-  static_tf.child_frame_id = tf::resolve(model_->namespace_, frame_id_);
-  static_tf.transform.translation.x = origin_[0];
-  static_tf.transform.translation.y = origin_[1];
-  static_tf.transform.translation.z = 0;
-  static_tf.transform.rotation.x = q.x();
-  static_tf.transform.rotation.y = q.y();
-  static_tf.transform.rotation.z = q.z();
-  static_tf.transform.rotation.w = q.w();
-
-  ROS_INFO_NAMED("LaserPlugin", "Laser %s initialized", name_.c_str());
+  static_tf_.header.frame_id =
+      tf::resolve(model_->GetNameSpace(), body_->GetName());
+  static_tf_.child_frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
+  static_tf_.transform.translation.x = origin_.x;
+  static_tf_.transform.translation.y = origin_.y;
+  static_tf_.transform.translation.z = 0;
+  static_tf_.transform.rotation.x = q.x();
+  static_tf_.transform.rotation.y = q.y();
+  static_tf_.transform.rotation.z = q.z();
+  static_tf_.transform.rotation.w = q.w();
 }
 
 void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
@@ -127,10 +128,22 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
     return;
   }
 
+  // only compute and publish when the number of subscribers is not zero
+  if (scan_publisher_.getNumSubscribers() > 0) {
+    ComputeLaserRanges();
+    laser_scan_.header.stamp = ros::Time::now();
+    scan_publisher_.publish(laser_scan_);
+  }
+
+  static_tf_.header.stamp = ros::Time::now();
+  tf_broadcaster_.sendTransform(static_tf_);
+}
+
+void Laser::ComputeLaserRanges() {
   // get the transformation matrix from the world to the body, and get the
   // world to laser frame transformation matrix by multiplying the world to body
   // and body to laser
-  const b2Transform &t = body_->physics_body_->GetTransform();
+  const b2Transform &t = body_->GetPhysicsBody()->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
@@ -145,13 +158,13 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   // loop through the laser points and call the Box2D world raycast
-  for (int i = 0; i < num_laser_points_; ++i) {
+  for (int i = 0; i < laser_scan_.ranges.size(); ++i) {
     laser_point.x = m_world_laser_points_(0, i);
     laser_point.y = m_world_laser_points_(1, i);
 
     did_hit_ = false;
 
-    model_->physics_world_->RayCast(this, laser_origin_point, laser_point);
+    model_->GetPhysicsWorld()->RayCast(this, laser_origin_point, laser_point);
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
@@ -159,12 +172,6 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
       laser_scan_.ranges[i] = fraction_ * range_;
     }
   }
-
-  laser_scan_.header.stamp = ros::Time::now();
-  scan_publisher.publish(laser_scan_);
-
-  static_tf.header.stamp = ros::Time::now();
-  tf_broadcaster.sendTransform(static_tf);
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
@@ -181,100 +188,49 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
 }
 
 void Laser::ParseParameters(const YAML::Node &config) {
-  const YAML::Node &n = config;
-  std::string body_name;
+  YamlReader reader(config);
+  std::string body_name = reader.Get<std::string>("body");
+  topic_ = reader.Get<std::string>("topic", "scan");
+  frame_id_ = reader.Get<std::string>("frame", name_);
+  update_rate_ = reader.Get<double>("update_rate",
+                                    std::numeric_limits<double>::infinity());
+  origin_ = reader.GetPose("origin", Pose(0, 0, 0));
+  range_ = reader.Get<double>("range");
+  std::vector<std::string> layers =
+      reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
-  // default values
-  topic_ = "scan";
-  frame_id_ = name_;
-  update_rate_ = std::numeric_limits<double>::infinity();
-  origin_ = {0, 0, 0};
-  std::vector<std::string> layers = {"all"};
+  YamlReader angle_reader = reader.Subnode("angle", YamlReader::MAP);
+  min_angle_ = angle_reader.Get<double>("min");
+  max_angle_ = angle_reader.Get<double>("max");
+  increment_ = angle_reader.Get<double>("increment");
 
-  if (n["topic"]) {
-    topic_ = n["topic"].as<std::string>();
-  }
-
-  if (n["body"]) {
-    body_name = n["body"].as<std::string>();
-  } else {
-    throw YAMLException("Missing \"body\" param");
-  }
-
-  if (n["frame"]) {
-    frame_id_ = n["frame"].as<std::string>();
-  }
-
-  if (n["update_rate"]) {
-    update_rate_ = n["update_rate"].as<double>();
-  }
-
-  if (n["origin"] && n["origin"].IsSequence() && n["origin"].size() == 3) {
-    origin_[0] = n["origin"][0].as<double>();
-    origin_[1] = n["origin"][1].as<double>();
-    origin_[2] = n["origin"][2].as<double>();
-  } else if (n["origin"]) {
-    throw YAMLException("Missing/invalid \"origin\" param");
-  }
-
-  if (n["range"]) {
-    range_ = n["range"].as<double>();
-  } else {
-    throw YAMLException("Missing \"range\" input");
-  }
-
-  if (n["angle"] && n["angle"].IsMap() && n["angle"]["min"] &&
-      n["angle"]["max"] && n["angle"]["increment"]) {
-    const YAML::Node &angle = n["angle"];
-    min_angle_ = angle["min"].as<double>();
-    max_angle_ = angle["max"].as<double>();
-    increment_ = angle["increment"].as<double>();
-  } else {
-    throw YAMLException(
-        "Missing/invalid \"angle\" param, must be a map with keys \"min\", "
-        "\"max\", and \"increment\"");
-  }
+  angle_reader.EnsureAccessedAllKeys();
+  reader.EnsureAccessedAllKeys();
 
   if (max_angle_ < min_angle_) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
   }
 
-  if (n["layers"] && n["layers"].IsSequence()) {
-    layers.clear();
-    for (int i = 0; i < n["layers"].size(); i++) {
-      layers.push_back(n["layers"][i].as<std::string>());
-    }
-  } else if (n["layers"]) {
-    throw YAMLException("Invalid layers, must be a sequence");
-  }
-
-  if (layers.size() == 1 && layers[0] == "all") {
-    layers.clear();
-    model_->cfr_->ListAllLayers(layers);
-  }
-
   body_ = model_->GetBody(body_name);
-
   if (!body_) {
     throw YAMLException("Cannot find body with name " + body_name);
   }
 
-  std::vector<std::string> failed_layers;
-  layers_bits_ = model_->cfr_->GetCategoryBits(layers, &failed_layers);
-
-  if (!failed_layers.empty()) {
+  std::vector<std::string> invalid_layers;
+  layers_bits_ = model_->GetCfr()->GetCategoryBits(layers, &invalid_layers);
+  if (!invalid_layers.empty()) {
     throw YAMLException("Cannot find layer(s): {" +
-                        boost::algorithm::join(failed_layers, ",") + "}");
+                        boost::algorithm::join(invalid_layers, ",") + "}");
   }
 
-  ROS_INFO_NAMED("LaserPlugin",
-                 "Laser %s params: topic(%s) body(%s %p) origin(%f,%f,%f) "
-                 "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
-                 "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
-                 name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
-                 origin_[0], origin_[1], origin_[2], frame_id_.c_str(),
-                 update_rate_, range_, min_angle_, max_angle_, increment_,
-                 layers_bits_, boost::algorithm::join(layers, ",").c_str());
+  ROS_DEBUG_NAMED("LaserPlugin",
+                  "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) "
+                  "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
+                  "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
+                  name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
+                  origin_.x, origin_.y, origin_.theta, frame_id_.c_str(),
+                  update_rate_, range_, min_angle_, max_angle_, increment_,
+                  layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }
 };
 

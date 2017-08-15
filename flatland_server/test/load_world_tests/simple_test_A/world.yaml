@@ -1,13 +1,16 @@
-properties: {}
+properties: 
+  velocity_iterations: 11
+  position_iterations: 12
 layers:
   - name: "2d"
     map: "map.yaml"
-    color: [0, 1, 0, 0]
-  - name: "3d"
+    color: [0, 1, 0, 0.675]
+  - name: ["3d", "4d", "5d"]
     map: "map3d.yaml"
+  - name: ["lines"]
+    map: "map_lines.yaml"
 models:  
   - name: turtlebot1 
-    pose: [0, 0, 0]
     model: "turtlebot.model.yaml"
   - name: turtlebot2
     pose: [3, 4.5, 3.14159]
