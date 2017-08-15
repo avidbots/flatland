@@ -52,9 +52,9 @@ namespace flatland_server {
 
 ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
                      Model *model, const std::string &name, const Color &color,
-                     const Pose &origin, b2BodyType body_type,
+                     const Pose &pose, b2BodyType body_type,
                      double linear_damping, double angular_damping)
-    : Body(physics_world, model, name, color, origin, body_type, linear_damping,
+    : Body(physics_world, model, name, color, pose, body_type, linear_damping,
            angular_damping),
       cfr_(cfr) {}
 
@@ -66,7 +66,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   std::string name = body_reader.Get<std::string>("name");
   body_reader.SetErrorInfo("model " + Q(model->name_), "body " + Q(name));
 
-  Pose origin = body_reader.GetPose("origin", Pose(0, 0, 0));
+  Pose pose = body_reader.GetPose("pose", Pose(0, 0, 0));
   Color color = body_reader.GetColor("color", Color(1, 1, 1, 0.5));
   std::string type_str = body_reader.Get<std::string>("type");
   double linear_damping = body_reader.Get("linear_damping", 0.0);
@@ -85,7 +85,7 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
                         ", must be one of: static, kinematic, dynamic");
   }
 
-  ModelBody *m = new ModelBody(physics_world, cfr, model, name, color, origin,
+  ModelBody *m = new ModelBody(physics_world, cfr, model, name, color, pose,
                                type, linear_damping, angular_damping);
 
   try {

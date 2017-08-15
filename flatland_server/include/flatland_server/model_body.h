@@ -73,14 +73,14 @@ class ModelBody : public Body {
    * @param[in] model Model the body belongs to
    * @param[in] name Name of the body
    * @param[in] color Color of the body for visualization
-   * @param[in] origin Specifying the origin the coordinate system
+   * @param[in] pose The pose to place the body at
    * @param[in] body_type Type of Box2D body, either dynamic, static, or
    * kinematic
    * @param[in] linear_damping Box2D body linear damping
    * @param[in] angular_damping Box2D body angular damping
    */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
-            const std::string &name, const Color &color, const Pose &origin,
+            const std::string &name, const Color &color, const Pose &pose,
             b2BodyType body_type, double linear_damping,
             double angular_damping);
 

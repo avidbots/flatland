@@ -45,25 +45,32 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
-#include "geometry_msgs/Twist.h"
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
 #define FLATLAND_PLUGINS_DIFFDRIVE_H
+
+using namespace flatland_server;
 
 namespace flatland_plugins {
 
 class DiffDrive : public flatland_server::ModelPlugin {
  public:
-  ros::Subscriber sub;
-  b2Body* robot;
-  b2Vec2 robot_position;
-  double robot_angle;
-  double time_step;
-  double velocity;
-  double omega;
-  double speed_factor = 1.0;
+  ros::Subscriber twist_sub_;
+  ros::Publisher odom_pub_;
+  ros::Publisher ground_truth_pub_;
+  Body* body_;
+  geometry_msgs::Twist twist_msg_;
+  nav_msgs::Odometry odom_msg_;
+  nav_msgs::Odometry ground_truth_msg_;
+  UpdateTimer update_timer_;
+
+  std::default_random_engine rng_;
+  std::array<std::normal_distribution<double>, 6> noise_gen_;
 
   /**
    * @name          OnInitialize
@@ -76,21 +83,13 @@ class DiffDrive : public flatland_server::ModelPlugin {
    * @brief         override the BeforePhysicsStep method
    * @param[in]     config The plugin YAML node
    */
-  void BeforePhysicsStep(
-
-      const flatland_server::Timekeeper& timekeeper) override;
+  void BeforePhysicsStep(const Timekeeper& timekeeper) override;
   /**
    * @name        TwistCallback
    * @brief       callback to apply twist (velocity and omega)
    * @param[in]   timestep how much the physics time will increment
    */
   void TwistCallback(const geometry_msgs::Twist& msg);
-  /**
-   * @name          ApplyVelocity
-   * @brief         apply the twist using the kinematic model
-   * @param[in]     twist ros message (msg.linear and msg.angular)
-   */
-  void ApplyVelocity();
 };
 };
 
