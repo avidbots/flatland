@@ -125,7 +125,7 @@ set(BOX2D_General_HDRS
 
 include_directories(../)
 
-add_library(Box2D_shared SHARED
+add_library(flatland_Box2D SHARED
 	${BOX2D_General_HDRS}
 	${BOX2D_Joints_SRCS}
 	${BOX2D_Joints_HDRS}
@@ -142,12 +142,12 @@ add_library(Box2D_shared SHARED
 	${BOX2D_Rope_SRCS}
 	${BOX2D_Rope_HDRS}
 )
-set_target_properties(Box2D_shared PROPERTIES
+set_target_properties(flatland_Box2D PROPERTIES
 	GIT_COMMIT_HASH f655c603ba9d83f07fc566d38d2654ba35739102
 )
 
 install(TARGETS 
-  Box2D_shared
+  flatland_Box2D
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -51,7 +51,7 @@ endif()
 ###################################
 catkin_package(
   INCLUDE_DIRS include thirdparty
-  LIBRARIES flatland_lib Box2D_shared
+  LIBRARIES flatland_lib flatland_Box2D
   CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 yaml-cpp visualization_msgs tf2_geometry_msgs geometry_msgs
   DEPENDS OpenCV YAML_CPP
 )
@@ -94,7 +94,7 @@ add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  Box2D_shared
+  flatland_Box2D
   yaml-cpp
 )
 
@@ -111,7 +111,7 @@ add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  Box2D_shared
+  flatland_Box2D
   yaml-cpp
   flatland_lib
 )
