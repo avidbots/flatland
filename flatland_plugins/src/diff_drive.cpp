@@ -44,8 +44,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/Box2D/Box2D.h>
 #include <flatland_plugins/diff_drive.h>
+#include <flatland_server/Box2D/Box2D.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
