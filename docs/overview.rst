@@ -42,4 +42,6 @@ following are some of the commonly used terminologies in the Flatland Server.
   physics engine.
 
 * **Joint**: A joint is used to connect two pieces of bodies. It defines additional
-  constraints on how the two bodies must interact with each other. 
+  constraints on how the two bodies must interact with each other. The concept is
+  equivalent to a Joint in Box2D physics engine.
+
