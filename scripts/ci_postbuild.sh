@@ -1,4 +1,4 @@
-
+#!/bin/bash -e
 
 # cd into catkin workspace
 # catkin clean -y
