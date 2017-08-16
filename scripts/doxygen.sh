@@ -10,7 +10,7 @@ fi
 
 # change directory to the doxygen file
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd $DIR
+cd $DIR/../
 
 # run doxygen
 doxygen Doxyfile
