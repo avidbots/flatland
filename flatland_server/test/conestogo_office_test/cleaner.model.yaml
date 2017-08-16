@@ -1,40 +1,17 @@
-# Turtlebot
 
-
-bodies:  # List of named bodies
-  # - name: base
-  #   origin: [0, 0, 0]  # x,y,a relative to robot origin position frame
-  #   type: dynamic  # dynamic | static | kinematic, default dynamic
-  #   color: [1, 1, 0, 0.25] # r g b a
-  #   footprints:
-  #     - type: circle
-  #       center: [0, 0]  # relative to body origin
-  #       radius: 0.75  # m
-  #       layers: ["all"] # any other layers, default is all
-  #       sensor: false # Box2d Sensor, false is default
-  #       self_collide: false # collides with other bodies, default is false]
-  #       density: 500
-
+bodies:
   - name: base
-    origin: [-1, 0, 0] 
     type: dynamic  
-    color: [1, 0, 0, 0.25] 
+    color: [1, 1, 1, 0.75] 
     footprints:
       - type: polygon
-        density: 100000.0
-        friction: 1000000.0
-        sensor: false
-
-
-
-        points: [
-          [-0.337,-1.03],
-          [-0.337, .07983],
-          [-.16111, .30],
-          [.16111, .30],
-          [0.337, .07983],
-          [0.337,-1.03]
-          ]
+        density: 100
+        points: [ [-1.03, -0.337],
+                  [.07983, -0.337],
+                  [.30, -.16111],
+                  [.30, .16111],
+                  [.07983, 0.337],
+                  [-1.03, 0.337] ]
 
       #   points: [
         
@@ -94,65 +71,80 @@ bodies:  # List of named bodies
         
       #   ]
 
+  - name: front_wheel
+    color: [1, 1, 1, 0.75] 
+    footprints:
       - type: polygon
-        sensor: true
-        density: 0.0
-        points: [[-.3155, -.7425], [-.2645, -.7425], [-.2645, -.9175], [-.3155, -.9175]]
+        density: 1.0
+        points: [[ 0.0875, -0.0250],
+                 [ 0.0875,  0.0250],
+                 [-0.0875, 0.0250],
+                 [-0.0875, -0.0250]]
+        # points: [[-.3155, -.7425], [-.2645, -.7425], [-.2645, -.9175], [-.3155, -.9175]]
+
+  - name: rear_left_wheel
+    color: [1, 1, 1, 0.75] 
+    footprints:
       - type: polygon
-        sensor: true
-        density: 0.0
-        points: [[.3155, -.7425], [.2645, -.7425], [.2645, -.9175], [.3155, -.9175]]
+        density: 1.0
+        points: [[ 0.0875, -0.0255],
+                 [ 0.0875,  0.0255],
+                 [-0.0875, 0.0255],
+                 [-0.0875, -0.0255]]
 
-  # - name: left_wheel
-  #   origin: [-1, 0, 0] 
-  #   type: dynamic  
-  #   color: [1, 0, 0, 0.25] 
-  #   footprints:
-  #     - type: polygon
-  #       sensor: true
-  #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+  - name: rear_right_wheel
+    color: [1, 1, 1, 0.75] 
+    footprints:
+      - type: polygon
+        density: 1.0
+        points: [[ 0.0875, -0.0255],
+                 [ 0.0875,  0.0255],
+                 [-0.0875, 0.0255],
+                 [-0.0875, -0.0255]]
 
-  # - name: right_wheel
-  #   origin: [1, 0, 0] 
-  #   type: dynamic  
-  #   color: [0, 1, 0, 0.25] 
-  #   footprints:
-  #     - type: polygon
-  #       points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
+joints:
+  - type: revolute
+    name: front_wheel_revolute
+    bodies: 
+      - name: front_wheel
+        anchor: [0, 0]
+      - name: base
+        anchor: [0, 0]
 
-# joints:
-#   - name: left_wheel_weld
-#     type: weld
-#     angle: 1.57079633
-#     frequency: 10
-#     damping: 0.5
-#     collide_connected: false
-#     bodies:
-#       - name: base
-#         anchor: [0, 0]
-#       - name: left_wheel
-#         anchor: [-1, 0]
+  - type: weld
+    name: rear_right_wheel_weld
+    bodies: 
+      - name: rear_left_wheel
+        anchor: [0, 0]
+      - name: base
+        anchor: [-0.83, 0.29]
 
-#   - name: right_wheel_weld
-#     type: weld
-#     bodies:
-#       - name: base
-#         anchor: [0, 0]
-#       - name: right_wheel
-#         anchor: [1, 0]
-
+  - type: weld
+    name: rear_left_wheel_weld  
+    bodies: 
+      - name: rear_right_wheel
+        anchor: [0, 0]
+      - name: base
+        anchor: [-0.83, -0.29]
 
 plugins:
-  - type: Bicycle # plugin class name
-    name: bicycle # for registering list of plugins
-    body: base
-    origin: [0, 0, 0] # w.r.t body origin, where the twist drive is applied
+  - type: ModelTfPublisher
+    name: tf_publisher
+    publish_tf_world: true
 
-  # - type: Laser
-  #   name: hokuyo_laser # every plugin has a unique name
-  #   topic: scan
-  #   body: base
-  #   origin: [0, 0, 0] # w.r.t body origin
-  #   range: 10 # m
-  #   angle: {min: -1.1, max: 1.1, increment: 0.01}
-  #   layer: "2d"
+  - type: TricycleDrive
+    name: cleaner_drive 
+    body: base
+    front_wheel_joint: front_wheel_revolute
+    rear_left_wheel_joint: rear_left_wheel_weld
+    rear_right_wheel_joint: rear_right_wheel_weld
+    odom_frame_id: map
+
+  - type: Laser
+    name: laser_test
+    topic: scan
+    body: base
+    origin: [0.25, 0, 0]
+    range: 20
+    angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.004363323129985824}
+    update_rate: 40

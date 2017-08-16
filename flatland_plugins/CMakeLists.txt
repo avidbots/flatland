@@ -68,7 +68,7 @@ include_directories(
 # Declare a C++ library
 add_library(flatland_plugins_lib
   src/laser.cpp
-  src/bicycle.cpp
+  src/tricycle_drive.cpp
   src/diff_drive.cpp
   src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp
@@ -135,9 +135,9 @@ if(CATKIN_ENABLE_TESTING)
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
 
-  add_rostest_gtest(bicycle_test test/bicycle_test.test
-                    test/bicycle_test.cpp)
-  target_link_libraries(bicycle_test flatland_plugins_lib flatland_lib)
+  add_rostest_gtest(tricycle_drive_test test/tricycle_drive_test.test
+                    test/tricycle_drive_test.cpp)
+  target_link_libraries(tricycle_drive_test flatland_plugins_lib flatland_lib)
   add_rostest_gtest(bumper_test test/bumper_test.test
                     test/bumper_test.cpp)
   target_link_libraries(bumper_test flatland_plugins_lib flatland_lib)

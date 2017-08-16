@@ -51,6 +51,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/type_index.hpp>
 #include <set>
@@ -189,6 +190,14 @@ class YamlReader {
   std::vector<T> AsList(int min_size, int max_size);
 
   /**
+   * @brief Convert the current node to a array of given type, throws exception
+   * on failure
+   * @return Array of given type
+   */
+  template <typename T, int N>
+  std::array<T, N> AsArray();
+
+  /**
    * @brief Get subnode with a given key and converted to the given type, throws
    * on failure
    * @param[in] key Key to access the subnode
@@ -232,6 +241,27 @@ class YamlReader {
   std::vector<T> GetList(const std::string &key,
                          const std::vector<T> default_val, int min_size,
                          int max_size);
+
+  /**
+   * @brief Get subnode with a given key and converted to array of the given
+   * type, throws on failure
+   * @param[in] key Key to access the subnode
+   * @return Value of the converted subnode
+   */
+  template <typename T, int N>
+  std::array<T, N> GetArray(const std::string &key);
+
+  /**
+   * @brief Optionally get subnode with a given key and converted to array of
+   * a given type, throws on failure
+   * @param[in] key Key to access the subnode
+   * @param[in] default_val Default value
+   * @return Value of the converted subnode
+   */
+  template <typename T, int N>
+  std::array<T, N> GetArray(const std::string &key,
+                            const std::array<T, N> default_val);
+
   /**
    * @return A Vec2 accessed by a given key
    */
@@ -309,6 +339,17 @@ std::vector<T> YamlReader::AsList(int min_size, int max_size) {
   return list;
 }
 
+template <typename T, int N>
+std::array<T, N> YamlReader::AsArray() {
+  std::vector<T> list_ret = AsList<T>(N, N);
+  std::array<T, N> array_ret;
+
+  for (int i = 0; i < N; i++) {
+    array_ret[i] = list_ret[i];
+  }
+  return array_ret;
+}
+
 template <typename T>
 T YamlReader::Get(const std::string &key) {
   return Subnode(key, NO_CHECK).As<T>();
@@ -339,6 +380,22 @@ std::vector<T> YamlReader::GetList(const std::string &key,
   }
 
   return GetList<T>(key, min_size, max_size);
+}
+
+template <typename T, int N>
+std::array<T, N> YamlReader::GetArray(const std::string &key) {
+  return Subnode(key, LIST).AsArray<T, N>();
+}
+
+template <typename T, int N>
+std::array<T, N> YamlReader::GetArray(const std::string &key,
+                                      const std::array<T, N> default_val) {
+  if (!node_[key]) {
+    accessed_keys_.insert(key);
+    return default_val;
+  }
+
+  return GetArray<T, N>(key);
 }
 }
 

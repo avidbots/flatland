@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  bicycle_test.cpp
- * @brief test bicycle plugin
+ * @name  tricycle_drive_test.cpp
+ * @brief test tricycle drive plugin
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,7 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/bicycle.h>
+#include <flatland_plugins/tricycle_drive.h>
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
@@ -53,13 +53,13 @@
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
-TEST(FlatlandPluginsBicycleTest, pluginlib_load_test) {
+TEST(FlatlandPluginsTricycleDriveTest, pluginlib_load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::ModelPlugin> bicycle =
-        loader.createInstance("flatland_plugins::Bicycle");
+    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
+        loader.createInstance("flatland_plugins::TricycleDrive");
 
     flatland_server::CollisionFilterRegistry cfr;
     b2Vec2 gravity_(0, 0);
@@ -70,16 +70,14 @@ TEST(FlatlandPluginsBicycleTest, pluginlib_load_test) {
         ros::package::getPath("flatland_server") +
             "/test/conestogo_office_test/cleaner.model.yaml",
         "", "test");
-
-    bicycle->Initialize("Bicycle", "BicycleTest", model, YAML::Node());
   } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Bicycle plugin. " << e.what();
+    FAIL() << "Failed to load Tricycle Drive plugin. " << e.what();
   }
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "bicycle_test");
+  ros::init(argc, argv, "tricycle_test");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

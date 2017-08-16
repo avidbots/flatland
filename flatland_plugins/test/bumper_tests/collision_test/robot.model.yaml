@@ -3,7 +3,7 @@
 
 bodies:  # List of named bodies
   - name: base_link_1
-    origin: [0, 0, 0] 
+    pose: [0, 0, 0] 
     type: dynamic
     color: [1, 1, 1, 0.5]
     footprints:
@@ -14,7 +14,7 @@ bodies:  # List of named bodies
         sensor: true
 
   - name: base_link_2
-    origin: [0, 0, 0]
+    pose: [0, 0, 0]
     type: dynamic
     color: [1, 1, 1, 0.5]
     footprints:

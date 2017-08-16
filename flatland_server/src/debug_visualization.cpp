@@ -145,11 +145,16 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
       case b2Shape::e_circle: {
         b2CircleShape* circle = (b2CircleShape*)fixture->GetShape();
 
-        marker.type = marker.CYLINDER;
-        marker.scale.x = marker.scale.y = circle->m_radius * 2.0;  // diameter
-        marker.scale.z = 0.01;                                     // height
-        marker.pose.position.x += circle->m_p.x;
-        marker.pose.position.y += circle->m_p.y;
+        marker.type = marker.SPHERE_LIST;
+        float diameter = circle->m_radius * 2.0;
+        marker.scale.z = 0.01;
+        marker.scale.x = diameter;
+        marker.scale.y = diameter;
+
+        geometry_msgs::Point p;
+        p.x = circle->m_p.x;
+        p.y = circle->m_p.y;
+        marker.points.push_back(p);
 
       } break;
 

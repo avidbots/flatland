@@ -69,13 +69,13 @@ class Body {
    * @param[in] entity Entity the body is tied to
    * @param[in] name Name for the body
    * @param[in] color Color in r, g, b, a
-   * @param[in] origin Origin of body's coordinate system in x, y, yaw
+   * @param[in] pose Pose to place the body at
    * @param[in] body_type Box2D body type either dynamic, kinematic, or static
    * @param[in] linear_damping Box2D body linear damping
    * @param[in] angular_damping Box2D body angular damping
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
-       const Color &color, const Pose &origin, b2BodyType body_type,
+       const Color &color, const Pose &pose, b2BodyType body_type,
        double linear_damping = 0, double angular_damping = 0);
 
   /**

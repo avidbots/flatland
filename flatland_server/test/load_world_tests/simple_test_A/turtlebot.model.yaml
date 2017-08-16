@@ -3,7 +3,6 @@
 
 bodies:  # List of named bodies
   - name: base
-    type: dynamic  
     color: [1, 1, 0, 0.25] 
     linear_damping: 0.1
     angular_damping: 0.125
@@ -21,7 +20,7 @@ bodies:  # List of named bodies
         points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
 
   - name: left_wheel
-    origin: [-1, 0, 0] 
+    pose: [-1, 0, 0] 
     type: dynamic  
     color: [1, 0, 0, 0.25] 
     footprints:
@@ -32,7 +31,7 @@ bodies:  # List of named bodies
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   - name: right_wheel
-    origin: [1, 0, 0] 
+    pose: [1, 0, 0] 
     type: dynamic  
     color: [0, 1, 0, 0.25] 
     footprints:
@@ -41,7 +40,7 @@ bodies:  # List of named bodies
         points: [[-.2, 0.75], [-.2, -.75], [.2, -.75], [.2, .75]]
 
   - name: tail
-    origin: [0, 0, 0.52] 
+    pose: [0, 0, 0.52] 
     type: dynamic  
     color: [0, 0, 0, 0.5] 
     footprints:
@@ -51,7 +50,7 @@ bodies:  # List of named bodies
         points: [[-0.2, 0], [-0.2, -5], [0.2, -5], [0.2, 0]]
 
   - name: antenna
-    origin: [0, 0.5, 0] 
+    pose: [0, 0.5, 0] 
     type: dynamic  
     color: [0.2, 0.4, 0.6, 1] 
     footprints:
