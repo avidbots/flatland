@@ -9,7 +9,7 @@ cd $DIR/../
 # check files are correctly formatted
 git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -i && git diff --exit-code || { git reset --hard; false; } 
 
-cd into catkin workspace
+# cd into catkin workspace
 cd /root/catkin_ws
 catkin config --install
 catkin clean -y
