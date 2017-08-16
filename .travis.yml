@@ -6,6 +6,8 @@ compiler:
 env:
   global:
     - CCACHE_DIR=$HOME/.ccache
+    - ROS_PARALLEL_JOBS=-j4
+    - ROS_PARALLEL_TEST_JOBS=-j1
   matrix:
     - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu CATKIN_CONFIG='--no-install' BEFORE_SCRIPT='./scripts/ci_prebuild.sh' AFTER_SCRIPT='./scripts/ci_postbuild.sh'
 install:
