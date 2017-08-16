@@ -45,3 +45,7 @@ following are some of the commonly used terminologies in the Flatland Server.
   constraints on how the two bodies must interact with each other. The concept is
   equivalent to a Joint in Box2D physics engine.
 
+* **Pose**: Pose is always the x, y, and angle of an object
+
+* **Origin**: Origin is the location of (0, 0) in 
+
