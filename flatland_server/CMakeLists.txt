@@ -143,12 +143,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
 )
 
-# Mark cpp header files for installation
-install(DIRECTORY thirdparty/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY thirdparty/Box2D
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}/Box2D/
   FILES_MATCHING PATTERN "*.h"
 )
-
 
 # Install launchfiles
 install(DIRECTORY launch
