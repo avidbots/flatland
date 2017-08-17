@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-sudo apt-get install sudo clang-format-3.8 clang-3.8 clang-tidy-3.8 lcov -y 
+sudo apt-get install sudo clang-format-3.8 -y 
 
 # change to the file's directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

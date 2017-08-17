@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+sudo apt-get install sudo clang-tidy-3.8 -y 
+
 # cd into catkin workspace
 cd /root/catkin_ws
 
