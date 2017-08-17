@@ -196,7 +196,7 @@ if(CATKIN_ENABLE_TESTING)
                     test/dummy_model_plugin_test.test 
                     test/dummy_model_plugin_test.cpp) 
   target_link_libraries(dummy_model_plugin_test
-                        flatland_plugins_lib) 
+                        flatland_lib) 
 
 
 endif()

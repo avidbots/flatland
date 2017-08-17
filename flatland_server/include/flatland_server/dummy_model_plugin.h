@@ -45,7 +45,6 @@
  */
 
 #include <Box2D/Box2D.h>
-#include <flatland_plugins/update_timer.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
@@ -62,25 +61,17 @@ namespace flatland_plugins {
  * This is a dummy plugin of type model plugin, used completely for testing
  * purposes
  */
-class DummyModelPlugin : public flatland_server::ModelPlugin {
+class DummyModelPlugin : public ModelPlugin {
  public:
   int dummy_param_int_;             ///< Iteger variable for testing
   std::string dummy_param_string_;  ///< String variable for testing
   double dummy_param_float_;        ///< float variable for testing
-  UpdateTimer update_timer_;        ///< Update timer for testing
-  int update_counter_;  ///< Count the number of times update occured
 
   /**
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
    */
   void OnInitialize(const YAML::Node &config) override;
-
-  /**
-   * @brief Called when just before physics update
-   * @param[in] timekeeper Object keep simulation time
-   */
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
 };
 };
 
