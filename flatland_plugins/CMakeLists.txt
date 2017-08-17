@@ -70,7 +70,6 @@ add_library(flatland_plugins_lib
   src/laser.cpp
   src/tricycle_drive.cpp
   src/diff_drive.cpp
-  src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp
   src/update_timer.cpp
   src/bumper.cpp
@@ -143,9 +142,5 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(update_timer_test test/update_timer_test.test
                     test/update_timer_test.cpp)
   target_link_libraries(update_timer_test flatland_plugins_lib)
-
-  add_rostest_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.test
-                    test/dummy_model_plugin_test.cpp)
-  target_link_libraries(dummy_model_plugin_test flatland_plugins_lib)
 
 endif()

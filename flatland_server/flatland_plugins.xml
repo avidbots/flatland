@@ -1,0 +1,5 @@
+<library path="lib/libflatland_lib">
+  <class type="flatland_server::DummyModelPlugin" base_class_type="flatland_server::ModelPlugin">
+    <description>Flatland Dummy Model Plugin, used for testing</description>
+  </class>
+</library>
