@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+function print_er {
+    if [ -n "$1" ]; then
+        echo -e "\e[31m$1\e[0m" # print error in red
+    fi
+}
+
+
 sudo apt-get install clang-3.8 clang-format-3.8 clang-tidy-3.8 -y 
 
 # change to the file's directory
@@ -14,13 +21,20 @@ git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-for
 if [ $? -ne 1 ]
 then 
     printf "\n\n"
-    echo "Clang Format Relacements:"
-    git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -output-replacements-xml | grep "<replacement "
+
+    print_er "clang-format was operated on following files:"
+    git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" 
+
     printf "\n"
-    
-    echo "ERROR!"
+
+    print_er "the files processed by clang-format need following replacements"
+    git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -output-replacements-xml
+
+    printf "\n^^^^ See above for clang format output ^^^^\n"    
+
+    print_er "Clang Format Error!"
     echo 'File not formatted correctly, please execute the command below in flatland repo to see what needs to be changed'
-    echo 'git ls-files | grep -E "\.[ch](pp)?$"" | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -i && git diff'
+    echo 'git ls-files | grep -E "\.[ch](pp)?$" | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -i && git diff --exit-code'
     exit 1;
 fi
 

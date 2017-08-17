@@ -75,7 +75,6 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
         "dummy_param_float must be dummy_test_123456, instead it was \"" +
         dummy_param_string_ + "\"");
   }
-
 }
 };
 
