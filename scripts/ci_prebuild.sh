@@ -13,6 +13,12 @@ git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-for
 
 if [ $? -ne 1 ]
 then 
+    printf "\n\n"
+    echo "Clang Format Relacements:"
+    git ls-files | grep -E '\.[ch](pp)?$' | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -output-replacements-xml | grep "<replacement "
+    printf "\n"
+    
+    echo "ERROR!"
     echo 'File not formatted correctly, please execute the command below in flatland repo to see what needs to be changed'
     echo 'git ls-files | grep -E "\.[ch](pp)?$"" | grep -v "thirdparty/" |  xargs clang-format-3.8 --style=file -i && git diff'
     exit 1;
