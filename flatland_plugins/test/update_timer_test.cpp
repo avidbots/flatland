@@ -44,16 +44,35 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/dummy_model_plugin.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
+#include <flatland_plugins/update_timer.h>
 #include <gtest/gtest.h>
 #include <regex>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
+
+class TestPlugin : public ModelPlugin {
+ public:
+  UpdateTimer update_timer_;
+  int update_counter_;
+
+  void OnInitialize(const YAML::Node& config) override {
+    update_timer_.SetRate(0);
+    update_counter_ = 0;
+  }
+
+  void BeforePhysicsStep(const Timekeeper& timekeeper) override {
+    // keeps this function updating at a specific rate
+    if (!update_timer_.CheckUpdate(timekeeper)) {
+      return;
+    }
+    update_counter_++;
+  }
+};
 
 class UpdateTimerTest : public ::testing::Test {
  public:
@@ -74,8 +93,11 @@ class UpdateTimerTest : public ::testing::Test {
     Timekeeper timekeeper;
     World* w = World::MakeWorld(world_yaml.string());
 
-    DummyModelPlugin* p = dynamic_cast<DummyModelPlugin*>(
-        w->plugin_manager_.model_plugins_[0].get());
+    // artificially load a plugin
+    boost::shared_ptr<TestPlugin> p(new TestPlugin());
+    p->Initialize("TestPlugin", "test_plugin", w->models_[0], YAML::Node());
+    w->plugin_manager_.model_plugins_.push_back(p);
+
     p->update_timer_.SetRate(set_rate);
 
     timekeeper.SetMaxStepSize(step_size);

@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	  dummy_model_plugin.h
+ * @name	  dummy_model_plugin.cpp
  * @brief   Dummy model plugin
  * @author  Chunshang Li
  *
@@ -44,44 +44,40 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Box2D/Box2D.h>
-#include <flatland_plugins/update_timer.h>
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
+#include <flatland_server/dummy_model_plugin.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
-#include <flatland_server/timekeeper.h>
-#include <yaml-cpp/yaml.h>
-
-#ifndef FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
-#define FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
+#include <pluginlib/class_list_macros.h>
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
-/**
- * This is a dummy plugin of type model plugin, used completely for testing
- * purposes
- */
-class DummyModelPlugin : public flatland_server::ModelPlugin {
- public:
-  int dummy_param_int_;             ///< Iteger variable for testing
-  std::string dummy_param_string_;  ///< String variable for testing
-  double dummy_param_float_;        ///< float variable for testing
-  UpdateTimer update_timer_;        ///< Update timer for testing
-  int update_counter_;  ///< Count the number of times update occured
 
-  /**
-   * @brief Initialization for the plugin
-   * @param[in] config Plugin YAML Node
-   */
-  void OnInitialize(const YAML::Node &config) override;
+void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
+  dummy_param_float_ = config["dummy_param_float"].as<double>();
+  dummy_param_string_ = config["dummy_param_string"].as<std::string>();
+  dummy_param_int_ = config["dummy_param_int"].as<int>();
 
-  /**
-   * @brief Called when just before physics update
-   * @param[in] timekeeper Object keep simulation time
-   */
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+  // Dummy plugin has the these values enforced for testing
+  if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
+    throw YAMLException(
+        "dummy_param_float must be 0.1253456, instead it was \"" +
+        std::to_string(dummy_param_float_) + "\"");
+  }
+
+  if (dummy_param_int_ != 123456) {
+    throw YAMLException("dummy_param_int must be 1253456, instead it was \"" +
+                        std::to_string(dummy_param_int_) + "\"");
+  }
+
+  if (dummy_param_string_ != "dummy_test_123456") {
+    throw YAMLException(
+        "dummy_param_float must be dummy_test_123456, instead it was \"" +
+        dummy_param_string_ + "\"");
+  }
+
+}
 };
-};
 
-#endif
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,
+                       flatland_server::ModelPlugin)

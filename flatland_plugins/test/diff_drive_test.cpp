@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	  dummy_model_plugin.cpp
- * @brief   Dummy model plugin
- * @author  Chunshang Li
+ * @name  diff_drive_test.cpp
+ * @brief test diff drive plugin
+ * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,50 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/dummy_model_plugin.h>
-#include <flatland_server/exceptions.h>
+#include <flatland_plugins/diff_drive.h>
 #include <flatland_server/model_plugin.h>
-#include <pluginlib/class_list_macros.h>
+#include <gtest/gtest.h>
+#include <pluginlib/class_loader.h>
+#include <ros/ros.h>
 
-using namespace flatland_server;
+TEST(DiffDrivePluginTest, load_test) {
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
+      "flatland_server", "flatland_server::ModelPlugin");
 
-namespace flatland_plugins {
-
-void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
-  dummy_param_float_ = config["dummy_param_float"].as<double>();
-  dummy_param_string_ = config["dummy_param_string"].as<std::string>();
-  dummy_param_int_ = config["dummy_param_int"].as<int>();
-
-  // Dummy plugin has the these values enforced for testing
-  if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
-    throw YAMLException(
-        "dummy_param_float must be 0.1253456, instead it was \"" +
-        std::to_string(dummy_param_float_) + "\"");
+  try {
+    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
+        loader.createInstance("flatland_plugins::DiffDrive");
+  } catch (pluginlib::PluginlibException& e) {
+    FAIL() << "Failed to load diff drive Drive plugin. " << e.what();
   }
-
-  if (dummy_param_int_ != 123456) {
-    throw YAMLException("dummy_param_int must be 1253456, instead it was \"" +
-                        std::to_string(dummy_param_int_) + "\"");
-  }
-
-  if (dummy_param_string_ != "dummy_test_123456") {
-    throw YAMLException(
-        "dummy_param_float must be dummy_test_123456, instead it was \"" +
-        dummy_param_string_ + "\"");
-  }
-
-  update_timer_.SetRate(0);
-  update_counter_ = 0;
 }
 
-void DummyModelPlugin::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  // keeps this function updating at a specific rate
-  if (!update_timer_.CheckUpdate(timekeeper)) {
-    return;
-  }
-  update_counter_++;
+// Run all the tests that were declared with TEST()
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "diff_drive_test");
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
-};
-
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,
-                       flatland_server::ModelPlugin)

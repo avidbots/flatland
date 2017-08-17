@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  tricycle_drive_test.cpp
- * @brief test tricycle drive plugin
+ * @name  laser_test.cpp
+ * @brief test laser plugin
  * @author Chunshang Li
  *
  * Software License Agreement (BSD License)
@@ -44,27 +44,43 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/tricycle_drive.h>
+#include <flatland_server/dummy_model_plugin.h>
+#include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
 
-TEST(TricycleDrivePluginTest, load_test) {
+/**
+ * Test the pluginlib is configured correctly so that the model can be
+ * discovered
+ */
+TEST(DummyModelPluginTest, pluginlib_load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
     boost::shared_ptr<flatland_server::ModelPlugin> plugin =
-        loader.createInstance("flatland_plugins::TricycleDrive");
+        loader.createInstance("flatland_plugins::DummyModelPlugin");
+
+    YAML::Node n = YAML::Node();
+    n["dummy_param_float"] = 0.123456;
+    n["dummy_param_string"] = "dummy_test_123456";
+    n["dummy_param_int"] = 123456;
+
+    flatland_server::CollisionFilterRegistry cfr;
+    flatland_server::Model model(nullptr, &cfr, "", "");
+
+    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", &model, n);
   } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Tricycle Drive plugin. " << e.what();
+    FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "tricycle_test");
+  ros::init(argc, argv, "dummy_model_plugin_test");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
