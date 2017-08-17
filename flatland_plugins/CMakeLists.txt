@@ -109,6 +109,11 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
 )
 
+# Install plugins file
+install(FILES flatland_plugins.xml
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 #############
 ## Testing ##
 #############
@@ -131,6 +136,11 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(tricycle_drive_test test/tricycle_drive_test.test
                     test/tricycle_drive_test.cpp)
   target_link_libraries(tricycle_drive_test flatland_plugins_lib)
+
+  add_rostest_gtest(diff_drive_test test/diff_drive_test.test
+                    test/diff_drive_test.cpp)
+  target_link_libraries(diff_drive_test flatland_plugins_lib)
+
   add_rostest_gtest(bumper_test test/bumper_test.test
                     test/bumper_test.cpp)
   target_link_libraries(bumper_test flatland_plugins_lib)

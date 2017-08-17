@@ -22,6 +22,6 @@
   <depend>flatland_msgs</depend>
 
   <export>
-    <flatland_server plugin="${prefix}/plugins.xml" />
+    <flatland_server plugin="${prefix}/flatland_plugins.xml" />
   </export>
 </package>
