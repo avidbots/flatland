@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  laser_test.cpp
- * @brief test laser plugin
- * @author Chunshang Li
+ * @name	  dummy_model_plugin.h
+ * @brief   Dummy model plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,43 +44,35 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/dummy_model_plugin.h>
+#include <Box2D/Box2D.h>
+#include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
-#include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
-#include <ros/ros.h>
+#include <flatland_server/timekeeper.h>
 #include <yaml-cpp/yaml.h>
 
+#ifndef FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
+#define FLATLAND_PLUGINS_DUMMY_MODEL_PLUGIN_H
+
+using namespace flatland_server;
+
+namespace flatland_plugins {
 /**
- * Test the pluginlib is configured correctly so that the model can be
- * discovered
+ * This is a dummy plugin of type model plugin, used completely for testing
+ * purposes
  */
-TEST(DummyModelPluginTest, pluginlib_load_test) {
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
-      "flatland_server", "flatland_server::ModelPlugin");
+class DummyModelPlugin : public ModelPlugin {
+ public:
+  int dummy_param_int_;             ///< Iteger variable for testing
+  std::string dummy_param_string_;  ///< String variable for testing
+  double dummy_param_float_;        ///< float variable for testing
 
-  try {
-    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
-        loader.createInstance("flatland_plugins::DummyModelPlugin");
+  /**
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
+   */
+  void OnInitialize(const YAML::Node &config) override;
+};
+};
 
-    YAML::Node n = YAML::Node();
-    n["dummy_param_float"] = 0.123456;
-    n["dummy_param_string"] = "dummy_test_123456";
-    n["dummy_param_int"] = 123456;
-
-    flatland_server::CollisionFilterRegistry cfr;
-    flatland_server::Model model(nullptr, &cfr, "", "");
-
-    plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", &model, n);
-  } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
-  }
-}
-
-// Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
-  ros::init(argc, argv, "dummy_model_plugin_test");
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+#endif
