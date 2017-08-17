@@ -49,7 +49,7 @@ def main():
 
         exit(1)
     else:
-        print("\nNo problems caught!")
+        print("\nNo problems caught!\n\n\n")
         exit(0)
 
 if __name__ == "__main__":
