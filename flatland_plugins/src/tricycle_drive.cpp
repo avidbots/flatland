@@ -290,6 +290,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
         b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
     float angular_vel = b2body->GetAngularVelocity();
 
+    ground_truth_msg_.header.stamp = ros::Time::now();
     ground_truth_msg_.pose.pose.position.x = position.x;
     ground_truth_msg_.pose.pose.position.y = position.y;
     ground_truth_msg_.pose.pose.position.z = 0;
@@ -303,6 +304,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     ground_truth_msg_.twist.twist.angular.z = angular_vel;
 
     // add the noise to odom messages
+    odom_msg_.header.stamp = ros::Time::now();
     odom_msg_.pose.pose = ground_truth_msg_.pose.pose;
     odom_msg_.twist.twist = ground_truth_msg_.twist.twist;
     odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
