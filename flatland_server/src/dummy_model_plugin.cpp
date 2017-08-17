@@ -44,7 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/dummy_model_plugin.h>
+#include <flatland_server/dummy_model_plugin.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
@@ -76,16 +76,6 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
         dummy_param_string_ + "\"");
   }
 
-  update_timer_.SetRate(0);
-  update_counter_ = 0;
-}
-
-void DummyModelPlugin::BeforePhysicsStep(const Timekeeper &timekeeper) {
-  // keeps this function updating at a specific rate
-  if (!update_timer_.CheckUpdate(timekeeper)) {
-    return;
-  }
-  update_counter_++;
 }
 };
 
