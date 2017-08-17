@@ -60,7 +60,6 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 void Laser::OnInitialize(const YAML::Node &config) {
-
   float i;
   double b = cos(i);
 
