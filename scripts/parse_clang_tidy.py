@@ -19,11 +19,12 @@ def main():
     ignores = yaml.load(ignore_file)
 
     clang_tidy_lines = sys.stdin.readlines()
+    print("".join(clang_tidy_lines));
+
     caught_problems = []
 
     for line in clang_tidy_lines:
         line = line.strip()
-        print(line)
 
         line_pattern = re.compile("/.*:\d+:\d+: (warning|error):.*\[.*\]")
         if not line_pattern.match(line):
