@@ -4,7 +4,7 @@
 # to use it, you must install "lcov" (`sudo apt-get install lcov`)
 #
 # Run from catkin workspace to generate coverage stats
-PROJECT_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_HOME="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
 
 rm -f $PROJECT_HOME/lcov.info
 catkin_make -DCMAKE_BUILD_TYPE=Debug -DCOVERAGE=ON -j1

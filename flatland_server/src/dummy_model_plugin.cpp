@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  tricycle_drive_test.cpp
- * @brief test tricycle drive plugin
- * @author Chunshang Li
+ * @name	  dummy_model_plugin.cpp
+ * @brief   Dummy model plugin
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,27 +44,39 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/tricycle_drive.h>
+#include <flatland_server/dummy_model_plugin.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
-#include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
-#include <ros/ros.h>
+#include <pluginlib/class_list_macros.h>
 
-TEST(TricycleDrivePluginTest, load_test) {
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
-      "flatland_server", "flatland_server::ModelPlugin");
+using namespace flatland_server;
 
-  try {
-    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
-        loader.createInstance("flatland_plugins::TricycleDrive");
-  } catch (pluginlib::PluginlibException& e) {
-    FAIL() << "Failed to load Tricycle Drive plugin. " << e.what();
+namespace flatland_plugins {
+
+void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
+  dummy_param_float_ = config["dummy_param_float"].as<double>();
+  dummy_param_string_ = config["dummy_param_string"].as<std::string>();
+  dummy_param_int_ = config["dummy_param_int"].as<int>();
+
+  // Dummy plugin has the these values enforced for testing
+  if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
+    throw YAMLException(
+        "dummy_param_float must be 0.1253456, instead it was \"" +
+        std::to_string(dummy_param_float_) + "\"");
+  }
+
+  if (dummy_param_int_ != 123456) {
+    throw YAMLException("dummy_param_int must be 1253456, instead it was \"" +
+                        std::to_string(dummy_param_int_) + "\"");
+  }
+
+  if (dummy_param_string_ != "dummy_test_123456") {
+    throw YAMLException(
+        "dummy_param_float must be dummy_test_123456, instead it was \"" +
+        dummy_param_string_ + "\"");
   }
 }
+};
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
-  ros::init(argc, argv, "tricycle_test");
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,
+                       flatland_server::ModelPlugin)
