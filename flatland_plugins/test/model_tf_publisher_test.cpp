@@ -63,9 +63,17 @@ class ModelTfPublisherTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
+  World* w;
 
-  ModelTfPublisherTest() {
+  void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
   }
 
   static bool fltcmp(const double& n1, const double& n2) {
@@ -117,7 +125,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  World* w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -179,8 +187,6 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   EXPECT_TRUE(TfEq(tf_world_to_antenna, 8, 6, -0.575958653));
   EXPECT_TRUE(TfEq(tf_base_to_left_wheel, -0.25, 1, 0));
   EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
-
-  delete w;
 }
 
 /**
@@ -193,7 +199,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  World* w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -243,8 +249,6 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   EXPECT_TRUE(TfEq(tf_base_to_right_wheel, -0.25, -1, 0));
   EXPECT_TRUE(TfEq(tf_base_to_front_bumper, 2, 0, 0));
   EXPECT_TRUE(TfEq(tf_base_to_rear_bumper, -2, 0, 0));
-
-  delete w;
 }
 
 /**
@@ -256,8 +260,8 @@ TEST_F(ModelTfPublisherTest, invalid_A) {
       this_file_dir / fs::path("model_tf_publisher_tests/invalid_A/world.yaml");
 
   try {
-    World* w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
+
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
@@ -282,8 +286,8 @@ TEST_F(ModelTfPublisherTest, invalid_B) {
       this_file_dir / fs::path("model_tf_publisher_tests/invalid_B/world.yaml");
 
   try {
-    World* w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
+
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;

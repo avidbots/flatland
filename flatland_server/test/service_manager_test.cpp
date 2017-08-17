@@ -71,6 +71,13 @@ class ServiceManagerTest : public ::testing::Test {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
     stop_thread = false;
     timekeeper.SetMaxStepSize(1.0);
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
   }
 
   void StartSimulationThread() {
@@ -136,8 +143,6 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
                   w->models_[4]->bodies_[0]->physics_body_->GetPosition().y);
   EXPECT_FLOAT_EQ(0.23, w->models_[4]->bodies_[0]->physics_body_->GetAngle());
   EXPECT_EQ(1, w->models_[4]->bodies_.size());
-
-  delete w;
 }
 
 /**
@@ -176,8 +181,6 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
   EXPECT_TRUE(std::regex_match(srv.response.message.c_str(), match, regex))
       << "Error Message '" + srv.response.message + "'" +
              " did not match against regex '" + regex_str + "'";
-
-  delete w;
 }
 
 /**
@@ -211,8 +214,6 @@ TEST_F(ServiceManagerTest, delete_model) {
   count = std::count_if(w->models_.begin(), w->models_.end(),
                         [](Model* m) { return m->name_ == "turtlebot1"; });
   ASSERT_EQ(count, 0);
-
-  delete w;
 }
 
 /**
@@ -238,8 +239,6 @@ TEST_F(ServiceManagerTest, delete_nonexistent_model) {
       "Flatland World: failed to delete model, model with name "
       "\"random_model\" does not exist",
       srv.response.message.c_str());
-
-  delete w;
 }
 
 // Run all the tests that were declared with TEST()
