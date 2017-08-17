@@ -67,7 +67,7 @@ class ServiceManagerTest : public ::testing::Test {
   bool stop_thread;
   World* w;
 
-  void SetUp() {
+  void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
     stop_thread = false;
     timekeeper.SetMaxStepSize(1.0);
