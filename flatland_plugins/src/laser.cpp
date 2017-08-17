@@ -60,6 +60,10 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 void Laser::OnInitialize(const YAML::Node &config) {
+
+  float i;
+  double b = cos(i);
+
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
