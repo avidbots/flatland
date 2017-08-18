@@ -76,16 +76,20 @@ Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
 
   Model *m = new Model(physics_world, cfr, ns, name);
 
-  m->plugins_reader_ = reader.SubnodeOpt("plugins", YamlReader::LIST);
-
   try {
     YamlReader bodies_reader = reader.Subnode("bodies", YamlReader::LIST);
     YamlReader joints_reader = reader.SubnodeOpt("joints", YamlReader::LIST);
+    YamlReader plugins_reader = reader.SubnodeOpt("plugins", YamlReader::LIST);
     reader.EnsureAccessedAllKeys();
 
     m->LoadBodies(bodies_reader);
     m->LoadJoints(joints_reader);
+    m->LoadPlugins(joints_reader);
+
   } catch (const YAMLException &e) {
+    delete m;
+    throw e;
+  } catch (const PluginException &e) {
     delete m;
     throw e;
   }
@@ -130,6 +134,58 @@ void Model::LoadJoints(YamlReader &joints_reader) {
                             " already exists");
       }
     }
+  }
+}
+
+/**
+ * @brief Load model plugins
+ * @param[in] plugin_reader The YAML reader with node containing the plugins
+ */
+void LoadPlugins(YamlReader &plugins_reader) {
+  for (int i = 0; i < m->plugins_reader.NodeSize(); i++) {
+    YamlReader reader = m->plugins_reader.Subnode(i, YamlReader::MAP);
+    std::string name = reader.Get<std::string>("name");
+    std::string type = reader.Get<std::string>("type");
+
+    // ensure no plugin with the same model and name
+    if (std::count_if(plugins_.begin(), plugins_.end(),
+                      [&](boost::shared_ptr<ModelPlugin> i) {
+                        return i->name_ == name;
+                      }) >= 1) {
+      throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
+                          " model, plugin with name " + Q(name) +
+                          " already exists");
+    }
+
+    // remove the name and type of the YAML Node, the plugin does not need to
+    // know about these parameters, remove method is broken in yaml cpp 5.2, so
+    // we create a new node and add everything
+    YAML::Node yaml_node;
+    for (const auto &k : plugin_reader.Node()) {
+      if (k.first.as<std::string>() != "name" &&
+          k.first.as<std::string>() != "type") {
+        yaml_node[k.first] = k.second;
+      }
+    }
+
+    boost::shared_ptr<ModelPlugin> plugin;
+
+    std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) +
+                      " model " + Q(model->name_);
+    try {
+      plugin = plugin_loader_->createInstance("flatland_plugins::" + type);
+    } catch (pluginlib::PluginlibException &e) {
+      throw PluginException(msg + ": " + std::string(e.what()));
+    }
+
+    try {
+      model_plugin->Initialize(type, name, model, yaml_node);
+    } catch (const std::exception &e) {
+      throw PluginException(msg + ": " + std::string(e.what()));
+    }
+    plugins_.push_back(model_plugin);
+
+    ROS_INFO_NAMED("Model", "%s loaded", msg.c_str());
   }
 }
 
