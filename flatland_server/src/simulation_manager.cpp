@@ -57,17 +57,18 @@
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     float initial_rate, bool show_viz,
-                                     float viz_pub_rate)
+                                     double update_rate, double step_size,
+                                     bool show_viz, double viz_pub_rate)
     : world_(nullptr),
-      initial_rate_(initial_rate),
+      update_rate_(update_rate),
+      step_size_(step_size),
       world_yaml_file_(world_yaml_file),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate) {
   ROS_INFO_NAMED("SimMan",
-                 "Simulation params: world_yaml_file(%s) initial_rate(%f), "
-                 "show_viz(%s), viz_pub_rate(%f)",
-                 world_yaml_file_.c_str(), initial_rate_,
+                 "Simulation params: world_yaml_file(%s) update_rate(%f), "
+                 "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
+                 world_yaml_file_.c_str(), update_rate_, step_size_,
                  show_viz_ ? "true" : "false", viz_pub_rate_);
 }
 
@@ -85,7 +86,7 @@ void SimulationManager::Main() {
 
   if (show_viz_) world_->DebugVisualize();
 
-  timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
+  timekeeper_.SetMaxStepSize(step_size_);
 
   double filtered_cycle_utilization = 0;
   double viz_update_period = 1.0f / viz_pub_rate_;
@@ -93,7 +94,7 @@ void SimulationManager::Main() {
 
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
-  ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
+  ros::WallRate rate(update_rate_);
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
   while (ros::ok() && run_simulator_) {
@@ -125,14 +126,14 @@ void SimulationManager::Main() {
         rate.expectedCycleTime().toSec() * 1000.0, 100.0 * cycle_utilization,
         100.0 * filtered_cycle_utilization);
   }
-
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
+
+  delete world_;
 }
 
 void SimulationManager::Shutdown() {
   ROS_INFO_NAMED("SimMan", "Shutdown called");
   run_simulator_ = false;
-  if (world_ != nullptr) delete world_;
 }
 
 };  // namespace flatland_server

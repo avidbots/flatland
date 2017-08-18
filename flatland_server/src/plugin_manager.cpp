@@ -84,7 +84,6 @@ void PluginManager::DeleteModelPlugin(Model *model) {
           model_plugins_.begin(), model_plugins_.end(),
           [&](boost::shared_ptr<ModelPlugin> p) { return p->model_ == model; }),
       model_plugins_.end());
-  printf("hello\n");
 }
 
 void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
