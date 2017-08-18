@@ -5,7 +5,8 @@
     roslaunch flatland_Server server.launch world_path:="/some/world.yaml" initial_rate:="30.0"
   -->
   <arg name="world_path"   default="$(find flatland_server)/test/conestogo_office_test/world.yaml"/>
-  <arg name="initial_rate" default="60.0"/>
+  <arg name="update_rate" default="200.0"/>
+  <arg name="step_size" default="0.005"/>
   <arg name="show_viz" default="true"/>
   <arg name="viz_pub_rate" default="30.0"/>
   <arg name="use_rviz" default="false"/>  
@@ -18,9 +19,11 @@
   <node name="flatland_server" pkg="flatland_server" type="flatland_server" output="screen">  
     <!-- Use the arguments passed into the launchfile for this node -->
     <param name="world_path" value="$(arg world_path)" />
-    <param name="initial_rate" value="$(arg initial_rate)" />
+    <param name="update_rate" value="$(arg update_rate)" />
+    <param name="step_size" value="$(arg step_size)" />
     <param name="show_viz" value="$(arg show_viz)" />
     <param name="viz_pub_rate" value="$(arg viz_pub_rate)" />
+    
   </node>
 
 <group if="$(arg show_viz)">

@@ -68,17 +68,19 @@ class ServiceManagerTest : public ::testing::Test {
   std::thread simulation_thread;
 
   void SetUp() override {
+    sim_man = nullptr;
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
     timekeeper.SetMaxStepSize(1.0);
   }
 
   void TearDown() override {
     StopSimulationThread();
-    delete sim_man;
+    if (sim_man) delete sim_man;
   }
 
   void StartSimulationThread() {
-    sim_man = new SimulationManager(world_yaml.string(), 60, false, 0);
+    sim_man =
+        new SimulationManager(world_yaml.string(), 1000, 1 / 1000.0, false, 0);
     simulation_thread = std::thread(&ServiceManagerTest::SimulationThread,
                                     dynamic_cast<ServiceManagerTest*>(this));
   }

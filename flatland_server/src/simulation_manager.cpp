@@ -52,22 +52,24 @@
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <exception>
+#include <limits>
 #include <string>
 
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     float initial_rate, bool show_viz,
-                                     float viz_pub_rate)
+                                     double update_rate, double step_size,
+                                     bool show_viz, double viz_pub_rate)
     : world_(nullptr),
-      initial_rate_(initial_rate),
+      update_rate_(update_rate),
+      step_size_(step_size),
       world_yaml_file_(world_yaml_file),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate) {
   ROS_INFO_NAMED("SimMan",
-                 "Simulation params: world_yaml_file(%s) initial_rate(%f), "
-                 "show_viz(%s), viz_pub_rate(%f)",
-                 world_yaml_file_.c_str(), initial_rate_,
+                 "Simulation params: world_yaml_file(%s) update_rate(%f), "
+                 "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
+                 world_yaml_file_.c_str(), update_rate_, step_size_,
                  show_viz_ ? "true" : "false", viz_pub_rate_);
 }
 
@@ -85,15 +87,16 @@ void SimulationManager::Main() {
 
   if (show_viz_) world_->DebugVisualize();
 
-  timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
-
-  double filtered_cycle_utilization = 0;
+  int iterations = 0;
+  double filtered_cycle_util = 0;
+  double min_cycle_util = std::numeric_limits<double>::infinity();
+  double max_cycle_util = 0;
   double viz_update_period = 1.0f / viz_pub_rate_;
   ServiceManager service_manager(this, world_);
+  Timekeeper timekeeper;
 
-  // TODO (Chunshang): Not sure how to do time so the faster than realtime
-  // simulation can be done properly
-  ros::WallRate rate(1.0 / timekeeper_.GetStepSize());
+  ros::WallRate rate(update_rate_);
+  timekeeper.SetMaxStepSize(step_size_);
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
   while (ros::ok() && run_simulator_) {
@@ -104,7 +107,7 @@ void SimulationManager::Main() {
         viz_update_period);
     bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
 
-    world_->Update(timekeeper_);  // Step physics by ros cycle time
+    world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);        // no need to update layer
@@ -112,27 +115,31 @@ void SimulationManager::Main() {
     }
 
     ros::spinOnce();
-
     rate.sleep();
 
-    double cycle_utilization =
-        rate.cycleTime().toSec() / rate.expectedCycleTime().toSec();
-    filtered_cycle_utilization =
-        0.99 * filtered_cycle_utilization + 0.01 * cycle_utilization;
-    ROS_INFO_THROTTLE_NAMED(
-        1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%, %.1f%% average)",
-        rate.cycleTime().toSec() * 1000,
-        rate.expectedCycleTime().toSec() * 1000.0, 100.0 * cycle_utilization,
-        100.0 * filtered_cycle_utilization);
-  }
+    iterations++;
 
+    double cycle_time = rate.cycleTime().toSec() * 1000;
+    double expected_cycle_time = rate.expectedCycleTime().toSec() * 1000;
+    double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
+    double factor = timekeeper.GetStepSize() * 1000 / expected_cycle_time;
+    min_cycle_util = std::min(cycle_util, min_cycle_util);
+    if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
+    filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
+
+    ROS_INFO_THROTTLE_NAMED(
+        1, "SimMan",
+        "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
+        min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
+  }
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
+
+  delete world_;
 }
 
 void SimulationManager::Shutdown() {
   ROS_INFO_NAMED("SimMan", "Shutdown called");
   run_simulator_ = false;
-  if (world_ != nullptr) delete world_;
 }
 
 };  // namespace flatland_server
