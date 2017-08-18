@@ -87,10 +87,10 @@ int main(int argc, char **argv) {
   }
 
   float update_rate = 200.0;  // The physics update rate (Hz)
-  node_handle.getParam("sim_update_rate", update_rate);
+  node_handle.getParam("update_rate", update_rate);
 
   float step_size = 1 / 200.0;
-  node_handle.getParam("sim_step_size", step_size);
+  node_handle.getParam("step_size", step_size);
 
   bool show_viz = false;
   node_handle.getParam("show_viz", show_viz);
