@@ -58,7 +58,7 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0), service_manager_(ServiceManager(this)) {
+World::World() : gravity_(0, 0) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
