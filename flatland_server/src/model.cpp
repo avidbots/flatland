@@ -53,7 +53,10 @@ namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &ns, const std::string &name)
-    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {}
+    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {
+  plugin_loader_ = new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
+      "flatland_server", "flatland_server::ModelPlugin");
+}
 
 Model::~Model() {
   for (int i = 0; i < joints_.size(); i++) {
@@ -66,6 +69,12 @@ Model::~Model() {
 
   // No need to destroy joints since destruction of model will destroy the
   // joint, the creation of a joint must always have bodies attached to it
+
+  for (int i = 0; i < plugins_.size(); i++) {
+    plugins_[i].reset();  // deletes a shared pointer
+  }
+
+  delete plugin_loader_;
 }
 
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
@@ -141,9 +150,9 @@ void Model::LoadJoints(YamlReader &joints_reader) {
  * @brief Load model plugins
  * @param[in] plugin_reader The YAML reader with node containing the plugins
  */
-void LoadPlugins(YamlReader &plugins_reader) {
-  for (int i = 0; i < m->plugins_reader.NodeSize(); i++) {
-    YamlReader reader = m->plugins_reader.Subnode(i, YamlReader::MAP);
+void Model::LoadPlugins(YamlReader &plugins_reader) {
+  for (int i = 0; i < plugins_reader.NodeSize(); i++) {
+    YamlReader reader = plugins_reader.Subnode(i, YamlReader::MAP);
     std::string name = reader.Get<std::string>("name");
     std::string type = reader.Get<std::string>("type");
 
@@ -152,7 +161,7 @@ void LoadPlugins(YamlReader &plugins_reader) {
                       [&](boost::shared_ptr<ModelPlugin> i) {
                         return i->name_ == name;
                       }) >= 1) {
-      throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
+      throw YAMLException("Invalid \"plugins\" in " + Q(name_) +
                           " model, plugin with name " + Q(name) +
                           " already exists");
     }
@@ -161,7 +170,7 @@ void LoadPlugins(YamlReader &plugins_reader) {
     // know about these parameters, remove method is broken in yaml cpp 5.2, so
     // we create a new node and add everything
     YAML::Node yaml_node;
-    for (const auto &k : plugin_reader.Node()) {
+    for (const auto &k : reader.Node()) {
       if (k.first.as<std::string>() != "name" &&
           k.first.as<std::string>() != "type") {
         yaml_node[k.first] = k.second;
@@ -170,8 +179,8 @@ void LoadPlugins(YamlReader &plugins_reader) {
 
     boost::shared_ptr<ModelPlugin> plugin;
 
-    std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) +
-                      " model " + Q(model->name_);
+    std::string msg =
+        "Model Plugin " + Q(name) + " type " + Q(type) + " model " + Q(name_);
     try {
       plugin = plugin_loader_->createInstance("flatland_plugins::" + type);
     } catch (pluginlib::PluginlibException &e) {
@@ -179,11 +188,11 @@ void LoadPlugins(YamlReader &plugins_reader) {
     }
 
     try {
-      model_plugin->Initialize(type, name, model, yaml_node);
+      plugin->Initialize(type, name, this, yaml_node);
     } catch (const std::exception &e) {
       throw PluginException(msg + ": " + std::string(e.what()));
     }
-    plugins_.push_back(model_plugin);
+    plugins_.push_back(plugin);
 
     ROS_INFO_NAMED("Model", "%s loaded", msg.c_str());
   }

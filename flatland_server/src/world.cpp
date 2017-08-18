@@ -94,27 +94,41 @@ World::~World() {
 }
 
 void World::Update(Timekeeper &timekeeper) {
-  plugin_manager_.BeforePhysicsStep(timekeeper);
+  for (auto *model : models_) {
+    model->BeforePhysicsStep(timekeeper)
+  };
+
   physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
                        physics_position_iterations_);
   timekeeper.StepTime();
-  plugin_manager_.AfterPhysicsStep(timekeeper);
+
+  for (auto *model : models_) {
+    model->AfterPhysicsStep(timekeeper)
+  };
 }
 
 void World::BeginContact(b2Contact *contact) {
-  plugin_manager_.BeginContact(contact);
+  for (auto *model : models_) {
+    model->BeginContact(timekeeper);
+  }
 }
 
 void World::EndContact(b2Contact *contact) {
-  plugin_manager_.EndContact(contact);
+  for (auto *model : models_) {
+    model->EndContact(timekeeper);
+  }
 }
 
 void World::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
-  plugin_manager_.PreSolve(contact, oldManifold);
+  for (auto *model : models_) {
+    model->PreSolve(contact, oldManifold);
+  }
 }
 
 void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
-  plugin_manager_.PostSolve(contact, impulse);
+  for (auto *model : models_) {
+    model->PreSolve(contact, impulse);
+  }
 }
 
 World *World::MakeWorld(const std::string &yaml_path) {
@@ -238,11 +252,6 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   m->TransformAll(pose);
   models_.push_back(m);
 
-  for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
-    YamlReader plugin_reader = m->plugins_reader_.Subnode(i, YamlReader::MAP);
-    plugin_manager_.LoadModelPlugin(m, plugin_reader);
-  }
-
   ROS_INFO_NAMED("World", "Model \"%s\" loaded", m->name_.c_str());
   m->DebugOutput();
 }
@@ -254,7 +263,6 @@ void World::DeleteModel(const std::string &name) {
     // name is unique, so there will only be one object with this name
     if (models_[i]->GetName() == name) {
       // delete the plugins associated with the model
-      plugin_manager_.DeleteModelPlugin(models_[i]);
       models_.erase(models_.begin() + i);
       found = true;
       break;

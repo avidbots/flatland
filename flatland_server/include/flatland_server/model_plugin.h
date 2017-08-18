@@ -55,6 +55,8 @@
 
 namespace flatland_server {
 
+class Model;
+
 /**
  * This class defines a model plugin. All implemented model plugins will inherit
  * from it A model plugin is a plugin that is directly tied to a single model in
@@ -67,8 +69,19 @@ class ModelPlugin {
   ros::NodeHandle nh_;  ///< ROS node handle
   Model *model_;        ///< model this plugin is tied to
 
+  /**
+   * @brief Get name of of the model plugin
+   */
   const std::string &GetName() const;
+
+  /*
+   * @brief Get type of of the model plugin
+   */
   const std::string &GetType() const;
+
+  /**
+   * @brief Get the Model
+   */
   Model *GetModel();
 
   /**

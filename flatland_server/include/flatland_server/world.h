@@ -51,7 +51,6 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
-#include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
 #include <string>
 #include <vector>
@@ -71,7 +70,6 @@ class World : public b2ContactListener {
   std::vector<Layer *> layers_;   ///< list of layers
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
-  PluginManager plugin_manager_;  ///< for loading and updating plugins
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
 
