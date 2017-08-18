@@ -69,8 +69,10 @@ class Model : public Entity {
   std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
   std::vector<Joint *> joints_;      ///< list of joints in the model
-  YamlReader plugins_reader_;        ///< for storing plugins when paring YAML
   CollisionFilterRegistry *cfr_;     ///< Collision filter registry
+
+  std::vector<boost::shared_ptr<ModelPlugin>> plugins_; ///< list of plugins
+  pluginlib::ClassLoader<ModelPlugin> *plugin_loader_;
 
   /**
    * @brief Constructor for the model
@@ -103,6 +105,12 @@ class Model : public Entity {
    * @param[in] joints_reader YAML reader for node containing the list of joints
    */
   void LoadJoints(YamlReader &joints_reader);
+
+  /**
+   * @brief Load model plugins
+   * @param[in] plugin_reader The YAML reader with node containing the plugins
+   */
+  void LoadPlugins(YamlReader &plugins_reader);
 
   /**
    * @brief Get a body in the model using its name
