@@ -1,0 +1,19 @@
+# A cylindar that walks back and forth
+bodies:
+  - name: base
+    pose: [0, 0, 0] 
+    type: dynamic  
+    color: [1, 1, 1, 0.75] 
+    footprints:
+      - type: circle
+        radius: 0.5
+        center: [-1, 0.0]
+        density: 1
+plugins:
+  - type: Tween
+    name: Tween 
+    body: base
+    delta: [5, 3, 3.141592]
+    duration: 2.0
+    mode: yoyo
+    easing: quadraticInOut

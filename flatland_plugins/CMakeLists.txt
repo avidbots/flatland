@@ -60,6 +60,7 @@ catkin_package(
 
 include_directories(
   include
+  include/thirdparty/tweeny
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
@@ -73,6 +74,7 @@ add_library(flatland_plugins_lib
   src/model_tf_publisher.cpp
   src/update_timer.cpp
   src/bumper.cpp
+  src/tween.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
