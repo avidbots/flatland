@@ -494,9 +494,8 @@ TEST(DebugVizTest, testPublishMarkers) {
                                                        0.0, 0.0, 1.0);
   flatland_server::DebugVisualization::Get().Publish();
 
-  EXPECT_TRUE(helper.waitForMessageCount(3)); 
-  EXPECT_EQ(2, helper.markers_.markers.size()); 
-
+  EXPECT_TRUE(helper.waitForMessageCount(3));
+  EXPECT_EQ(2, helper.markers_.markers.size());
 }
 
 // Run all the tests that were declared with TEST()
