@@ -48,16 +48,16 @@
 #define FLATLAND_SERVER_SIMULATION_MANAGER_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
+#include <flatland_server/timekeeper.h>
+#include <flatland_server/world.h>
 #include <string>
-#include "flatland_server/debug_visualization.h"
-#include "flatland_server/timekeeper.h"
-#include "flatland_server/world.h"
 
 namespace flatland_server {
 
 class SimulationManager {
  public:
-  bool run_simulator_ = true;    ///<  While true, keep running the sim loop
+  bool run_simulator_;           ///<  While true, keep running the sim loop
   World *world_;                 ///< Simulation world
   float initial_rate_;           ///< initial sim loop rate
   bool show_viz_;                ///< flag to determine if to show visualization

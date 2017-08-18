@@ -45,25 +45,25 @@
  */
 
 #include "flatland_server/simulation_manager.h"
+#include <flatland_server/debug_visualization.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
+#include <flatland_server/service_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <exception>
 #include <string>
-#include "flatland_server/debug_visualization.h"
 
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
                                      float initial_rate, bool show_viz,
                                      float viz_pub_rate)
-    : initial_rate_(initial_rate),
+    : world_(nullptr),
+      initial_rate_(initial_rate),
       world_yaml_file_(world_yaml_file),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate) {
-  // Todo: Initialize SimTime class here once written
-
   ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) initial_rate(%f), "
                  "show_viz(%s), viz_pub_rate(%f)",
@@ -73,25 +73,23 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
 
 void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Initializing...");
+  run_simulator_ = true;
 
   try {
     world_ = World::MakeWorld(world_yaml_file_);
+    ROS_INFO_NAMED("SimMan", "World loaded");
   } catch (const std::exception &e) {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
   }
 
-  ROS_INFO_NAMED("SimMan", "World loaded");
-
-  if (show_viz_) {
-    world_->DebugVisualize();
-  }
+  if (show_viz_) world_->DebugVisualize();
 
   timekeeper_.SetMaxStepSize(1.0 / initial_rate_);
 
   double filtered_cycle_utilization = 0;
-
   double viz_update_period = 1.0f / viz_pub_rate_;
+  ServiceManager service_manager(this, world_);
 
   // TODO (Chunshang): Not sure how to do time so the faster than realtime
   // simulation can be done properly
@@ -99,31 +97,28 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
   while (ros::ok() && run_simulator_) {
-    // for updating visualization at a given rate, see
-    // flatland_plugins/update_timer.cpp for this formula
+    // for updating visualization at a given rate
+    // see flatland_plugins/update_timer.cpp for this formula
     double f = fmod(
         ros::WallTime::now().toSec() + (rate.expectedCycleTime().toSec() / 2.0),
         viz_update_period);
     bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
 
-    // Step physics by ros cycle time
-    world_->Update(timekeeper_);
+    world_->Update(timekeeper_);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
-      // don't update layers because they don't change
-      world_->DebugVisualize(false);        //
+      world_->DebugVisualize(false);        // no need to update layer
       DebugVisualization::Get().Publish();  // publish debug visualization
     }
 
-    ros::spinOnce();  // Normal ROS event loop
+    ros::spinOnce();
+
     rate.sleep();
 
     double cycle_utilization =
         rate.cycleTime().toSec() / rate.expectedCycleTime().toSec();
-
     filtered_cycle_utilization =
         0.99 * filtered_cycle_utilization + 0.01 * cycle_utilization;
-
     ROS_INFO_THROTTLE_NAMED(
         1.0, "SimMan", "cycle time %.2f/%.2fms (%.1f%%, %.1f%% average)",
         rate.cycleTime().toSec() * 1000,
@@ -136,7 +131,8 @@ void SimulationManager::Main() {
 
 void SimulationManager::Shutdown() {
   ROS_INFO_NAMED("SimMan", "Shutdown called");
-  delete world_;
+  run_simulator_ = false;
+  if (world_ != nullptr) delete world_;
 }
 
 };  // namespace flatland_server

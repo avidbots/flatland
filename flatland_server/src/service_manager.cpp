@@ -50,7 +50,8 @@
 
 namespace flatland_server {
 
-ServiceManager::ServiceManager(World *world) : world_(world) {
+ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
+    : sim_man_(sim_man), world_(world) {
   ros::NodeHandle nh;
 
   spawn_model_service_ =
@@ -100,6 +101,8 @@ bool ServiceManager::DeleteModel(
   ROS_DEBUG_NAMED("ServiceManager", "Model delete requested with name(\"%s\")",
                   request.name.c_str());
 
+  ROS_ERROR("HELLO1");
+
   try {
     world_->DeleteModel(request.name);
     response.success = true;
@@ -108,6 +111,8 @@ bool ServiceManager::DeleteModel(
     response.success = false;
     response.message = std::string(e.what());
   }
+
+  ROS_ERROR("HELLO2");
 
   return true;
 }

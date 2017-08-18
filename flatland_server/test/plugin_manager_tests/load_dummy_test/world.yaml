@@ -7,6 +7,3 @@ models:
   - name: turtlebot1 
     pose: [0, 0, 0]
     model: "turtlebot.model.yaml"
-  - name: person1
-    pose: [-2, 1, 0]
-    model: "person.model.yaml"
