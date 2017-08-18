@@ -84,7 +84,6 @@ add_library(flatland_lib
   src/model_body.cpp
   src/collision_filter_registry.cpp
   src/model_plugin.cpp
-  src/plugin_manager.cpp
   src/timekeeper.cpp
   src/service_manager.cpp
   src/yaml_reader.cpp
