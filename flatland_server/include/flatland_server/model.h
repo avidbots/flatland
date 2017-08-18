@@ -71,6 +71,7 @@ class Model : public Entity {
   std::vector<Joint *> joints_;      ///< list of joints in the model
   YamlReader plugins_reader_;        ///< for storing plugins when paring YAML
   CollisionFilterRegistry *cfr_;     ///< Collision filter registry
+  std::string viz_name_;             ///< used for visualization
 
   /**
    * @brief Constructor for the model
