@@ -57,14 +57,14 @@ namespace flatland_server {
 
 class SimulationManager {
  public:
-  bool run_simulator_;    ///<  While true, keep running the sim loop
+  bool run_simulator_;           ///<  While true, keep running the sim loop
   World *world_;                 ///< Simulation world
   float initial_rate_;           ///< initial sim loop rate
   bool show_viz_;                ///< flag to determine if to show visualization
   float viz_pub_rate_;           ///< rate to publish visualization
   std::string world_yaml_file_;  ///< path to the world file
   Timekeeper timekeeper_;        ///< for managing time
-  
+
   /**
    * @name  Simulation Manager constructor
    * @param[in] world_file   The path to the world.yaml file we wish to load

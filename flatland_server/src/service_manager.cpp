@@ -44,8 +44,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/types.h>
 #include <flatland_server/service_manager.h>
+#include <flatland_server/types.h>
 #include <exception>
 
 namespace flatland_server {
@@ -113,7 +113,6 @@ bool ServiceManager::DeleteModel(
   }
 
   ROS_ERROR("HELLO2");
-  
 
   return true;
 }
