@@ -53,11 +53,18 @@
 namespace flatland_server {
 
 PluginManager::PluginManager() {
-  class_loader_ = new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
-      "flatland_server", "flatland_server::ModelPlugin");
+  model_plugin_loader_ =
+      new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
+          "flatland_server", "flatland_server::ModelPlugin");
 }
 
-PluginManager::~PluginManager() { delete class_loader_; }
+PluginManager::~PluginManager() {
+  for (int i = 0; i < model_plugins_.size(); i++) {
+    model_plugins_[i].reset();  // deletes a shared pointer
+  }
+
+  delete model_plugin_loader_;
+}
 
 void PluginManager::BeforePhysicsStep(const Timekeeper &timekeeper_) {
   for (const auto &model_plugin : model_plugins_) {
@@ -111,7 +118,8 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
                     Q(model->name_);
 
   try {
-    model_plugin = class_loader_->createInstance("flatland_plugins::" + type);
+    model_plugin =
+        model_plugin_loader_->createInstance("flatland_plugins::" + type);
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }

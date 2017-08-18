@@ -71,12 +71,17 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   Body *body_;            ///<  body the laser frame attaches to
   Pose origin_;           ///< laser frame w.r.t the body
   double range_;          ///< laser max range
+  double noise_std_dev_;  ///< noise std deviation
   double max_angle_;      /// < laser max angle
   double min_angle_;      ///< laser min angle
   double increment_;      ///< laser angle increment
   double update_rate_;    ///< the rate laser scan will be published
   std::string frame_id_;  ///< laser frame id name
+  bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
+
+  std::default_random_engine rng_;              ///< random generator
+  std::normal_distribution<double> noise_gen_;  ///< gaussian noise generator
 
   Eigen::Matrix3f m_body_to_laser_;       ///< tf from body to laser
   Eigen::Matrix3f m_world_to_body_;       ///< tf  from world to body
@@ -89,10 +94,10 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   bool did_hit_;    ///< Box2D ray trace checking if ray hits anything
   float fraction_;  ///< Box2D ray trace fraction
 
-  ros::Publisher scan_publisher_;              ///< ros laser topic publisher
-  tf::TransformBroadcaster tf_broadcaster_;    ///< broadcast laser frame
-  geometry_msgs::TransformStamped static_tf_;  ///< tf from body to laser frame
-  UpdateTimer update_timer_;                   ///< for controlling update rate
+  ros::Publisher scan_publisher_;             ///< ros laser topic publisher
+  tf::TransformBroadcaster tf_broadcaster_;   ///< broadcast laser frame
+  geometry_msgs::TransformStamped laser_tf_;  ///< tf from body to laser frame
+  UpdateTimer update_timer_;                  ///< for controlling update rate
 
   /**
    * @brief Box2D raytrace call back method required for implementing the
