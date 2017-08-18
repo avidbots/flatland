@@ -220,12 +220,29 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
 
 void DebugVisualization::Publish() {
   // Iterate over the topics_ map as pair(name, topic)
+
+  std::vector<std::string> to_delete;
+
   for (auto& topic : topics_) {
     if (!topic.second.needs_publishing) {
       continue;
     }
-    topic.second.publisher.publish(topic.second.markers);
-    topic.second.needs_publishing = false;
+
+    // since if empty markers are published rviz will continue to publish
+    // using the old data, delete the topic list
+    if (topic.second.markers.markers.size() == 0) {
+      to_delete.push_back(topic.first);
+    } else {
+      topic.second.publisher.publish(topic.second.markers);
+      topic.second.needs_publishing = false;
+    }
+  }
+
+  if (to_delete.size() > 0) {
+    for (const auto& topic : to_delete) {
+      topics_.erase(topic);
+    }
+    PublishTopicList();
   }
 }
 
@@ -258,12 +275,14 @@ void DebugVisualization::AddTopicIfNotExist(const std::string& name) {
         visualization_msgs::MarkerArray()};
 
     ROS_INFO_ONCE_NAMED("DebugVis", "Visualizing %s", name.c_str());
-
-    flatland_msgs::DebugTopicList topic_list;
-    for (auto const& topic_pair : topics_)
-      topic_list.topics.push_back(topic_pair.first);
-    topic_list_publisher_.publish(topic_list);
+    PublishTopicList();
   }
 }
 
+void DebugVisualization::PublishTopicList() {
+  flatland_msgs::DebugTopicList topic_list;
+  for (auto const& topic_pair : topics_)
+    topic_list.topics.push_back(topic_pair.first);
+  topic_list_publisher_.publish(topic_list);
+}
 };  // namespace flatland_server
