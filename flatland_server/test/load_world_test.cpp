@@ -63,9 +63,17 @@ class LoadWorldTest : public ::testing::Test {
  protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
+  World *w;
 
-  LoadWorldTest() {
+  void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
   }
 
   // to test that the world instantiation will fail, and the exception
@@ -76,8 +84,7 @@ class LoadWorldTest : public ::testing::Test {
     std::regex regex(regex_str);
 
     try {
-      World *w = World::MakeWorld(world_yaml.string());
-      delete w;
+      w = World::MakeWorld(world_yaml.string());
       ADD_FAILURE() << "Expected an exception, but none were raised";
     } catch (const Exception &e) {
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
@@ -509,7 +516,7 @@ class LoadWorldTest : public ::testing::Test {
 TEST_F(LoadWorldTest, simple_test_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
-  World *w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
 
   EXPECT_EQ(w->physics_velocity_iterations_, 11);
   EXPECT_EQ(w->physics_position_iterations_, 12);
@@ -739,8 +746,6 @@ TEST_F(LoadWorldTest, simple_test_A) {
   // check the body only
   EXPECT_TRUE(BodyEq(m3->bodies_[0], "body", b2_kinematicBody, {0, 1, 2},
                      {0, 0.75, 0.75, 0.25}, 0, 0));
-
-  delete w;
 }
 
 /**
