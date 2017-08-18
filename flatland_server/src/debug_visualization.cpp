@@ -226,8 +226,6 @@ void DebugVisualization::Publish() {
     }
     topic.second.publisher.publish(topic.second.markers);
     topic.second.needs_publishing = false;
-    ROS_INFO_THROTTLE_NAMED(1.0, "DebugVis", "Publishing %s",
-                            topic.first.c_str());
   }
 }
 
@@ -258,6 +256,8 @@ void DebugVisualization::AddTopicIfNotExist(const std::string& name) {
     topics_[name] = {
         node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
         visualization_msgs::MarkerArray()};
+
+    ROS_INFO_ONCE_NAMED("DebugVis", "Visualizing %s", name.c_str());
 
     flatland_msgs::DebugTopicList topic_list;
     for (auto const& topic_pair : topics_)

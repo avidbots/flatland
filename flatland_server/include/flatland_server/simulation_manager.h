@@ -64,7 +64,6 @@ class SimulationManager {
   bool show_viz_;                ///< flag to determine if to show visualization
   double viz_pub_rate_;          ///< rate to publish visualization
   std::string world_yaml_file_;  ///< path to the world file
-  Timekeeper timekeeper_;        ///< for managing time
 
   /**
    * @name  Simulation Manager constructor
