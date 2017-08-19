@@ -11,7 +11,7 @@ bodies:
         density: 1
 plugins:
   - type: Tween
-    name: Tween 
+    name: Tween
     body: base
     delta: [5, 3, 3.141592]
     duration: 2.0

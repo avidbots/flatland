@@ -152,6 +152,12 @@ class ModelPlugin {
   virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}
 
   /**
+   * @brief A method called by other plugins or on the model
+   * @param[in] An arbitrary string representing some event
+   */
+  virtual void Trigger(const std::string &type) {}
+
+  /**
    * @brief Model plugin destructor
    */
   virtual ~ModelPlugin() = default;
