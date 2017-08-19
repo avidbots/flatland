@@ -1,0 +1,9 @@
+
+<library path="flatland_viz_plugins">
+  <class name="flatland_viz/Sprite" type="flatland_viz::SpriteDisplay" base_class_type="rviz::Display">
+    <description>
+      Renders a SpriteArray
+    </description>
+    <message_type>nav_msgs/GridCells</message_type>
+  </class>
+</library>

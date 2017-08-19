@@ -91,6 +91,18 @@ target_link_libraries(flatland_viz
   ${catkin_LIBRARIES}
 )
 
+add_library(flatland_viz_plugins
+  include/flatland_viz/sprite_display.h
+  src/sprite_display.cpp
+)
+
+add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(flatland_viz_plugins
+  ${QT_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
+
 #############
 ## Install ##
 #############
