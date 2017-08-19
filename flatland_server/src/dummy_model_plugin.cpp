@@ -48,12 +48,13 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_loader.h>
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
 
-void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
+void DummyModelPlugin::OnInitialize(const YAML::Node& config) {
   dummy_param_float_ = config["dummy_param_float"].as<double>();
   dummy_param_string_ = config["dummy_param_string"].as<std::string>();
   dummy_param_int_ = config["dummy_param_int"].as<int>();
@@ -74,6 +75,14 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
     throw YAMLException(
         "dummy_param_float must be dummy_test_123456, instead it was \"" +
         dummy_param_string_ + "\"");
+  }
+}
+
+void DummyModelPlugin::Trigger(const std::string& type) {
+  if (type == "exception") {
+    throw pluginlib::PluginlibException("triggered!");
+  } else {
+    throw pluginlib::PluginlibException("unknown type!");
   }
 }
 };
