@@ -58,6 +58,7 @@
 namespace flatland_server {
 
 class ModelBody;
+class ModelPlugin;
 class Joint;
 
 /**
@@ -68,9 +69,11 @@ class Model : public Entity {
  public:
   std::string namespace_;            ///< namespace of the model
   std::vector<ModelBody *> bodies_;  ///< list of bodies in the model
-  std::vector<Joint *> joints_;      ///< list of joints in the model
-  YamlReader plugins_reader_;        ///< for storing plugins when paring YAML
-  CollisionFilterRegistry *cfr_;     ///< Collision filter registry
+  std::vector<boost::shared_ptr<ModelPlugin>>
+      plugins_;                   ///< list of plugins for this model
+  std::vector<Joint *> joints_;   ///< list of joints in the model
+  YamlReader plugins_reader_;     ///< for storing plugins when paring YAML
+  CollisionFilterRegistry *cfr_;  ///< Collision filter registry
 
   /**
    * @brief Constructor for the model
@@ -163,6 +166,12 @@ class Model : public Entity {
    * @param[in] pose_delta dx, dy, dyaw
    */
   void TransformAll(const Pose &pose_delta);
+
+  /**
+   * @brief A method called by other plugins or on the model
+   * @param[in] An arbitrary string representing some event
+   */
+  virtual void Trigger(const std::string &type);
 
   /**
    * @brief Create a model, throws exceptions upon failure

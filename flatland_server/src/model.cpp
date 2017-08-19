@@ -48,6 +48,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
+#include <flatland_server/model_plugin.h>
 
 namespace flatland_server {
 
@@ -213,6 +214,12 @@ void Model::DebugOutput() const {
 
   for (const auto &joint : joints_) {
     joint->DebugOutput();
+  }
+}
+
+void Model::Trigger(const std::string &type) {
+  for (auto &model_plugin : plugins_) {
+    model_plugin->Trigger(type);
   }
 }
 

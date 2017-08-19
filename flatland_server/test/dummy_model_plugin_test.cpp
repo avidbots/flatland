@@ -73,6 +73,14 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
     flatland_server::Model model(nullptr, &cfr, "", "");
 
     plugin->Initialize("DummyModelPlugin", "DummyModelPluginTest", &model, n);
+
+    // Trigger the plugin directly
+    try {
+      plugin->Trigger("exception");
+      FAIL() << "Failed to trigger dummy plugin exception";
+    } catch (pluginlib::PluginlibException& e) {
+      ASSERT_EQ(std::string(e.what()), "triggered!");
+    }
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }

@@ -71,7 +71,13 @@ class DummyModelPlugin : public ModelPlugin {
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
    */
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node& config) override;
+
+  /**
+   * @brief Respond to a trigger of type "exception" with an exception
+   * @param[in] the trigger name
+   */
+  void Trigger(const std::string& type) override;
 };
 };
 

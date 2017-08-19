@@ -310,6 +310,21 @@ TEST_F(PluginManagerTest, load_dummy_test) {
   EXPECT_STREQ(p->name_.c_str(), "dummy_test_plugin");
 }
 
+TEST_F(PluginManagerTest, trigger_dummy_test) {
+  world_yaml = this_file_dir /
+               fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+
+  w = World::MakeWorld(world_yaml.string());
+
+  // Test triggering through the model/plugin manager
+  try {
+    w->models_[0]->Trigger("exception");
+    FAIL() << "Failed to trigger dummy plugin exception";
+  } catch (pluginlib::PluginlibException &e) {
+    ASSERT_EQ(std::string(e.what()), "triggered!");
+  }
+}
+
 TEST_F(PluginManagerTest, plugin_throws_exception) {
   world_yaml =
       this_file_dir /
