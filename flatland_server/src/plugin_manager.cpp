@@ -129,6 +129,7 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
   model_plugins_.push_back(model_plugin);
+  model->plugins_.push_back(model_plugin);
 
   ROS_INFO_NAMED("PluginManager", "%s loaded", msg.c_str());
 }

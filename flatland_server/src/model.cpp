@@ -216,6 +216,12 @@ void Model::DebugOutput() const {
   }
 }
 
+void Model::Trigger(std::string type) {
+  for (auto &model_plugin : plugins_) {
+    model_plugin->Trigger(type);
+  }
+}
+
 void Model::DumpBox2D() const {
   for (const auto &body : bodies_) {
     b2Log("BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", body,
