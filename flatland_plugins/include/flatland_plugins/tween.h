@@ -62,13 +62,19 @@ namespace flatland_plugins {
 
 class Tween : public flatland_server::ModelPlugin {
  public:
-  Body* body_;
-  Pose start_;
-  Pose delta_;
-  float duration_;
-  tweeny::tween<double, double, double> tween_;
+  Body* body_;      // The body this plugin is attached to
+  Pose start_;      // The start pose of the model
+  Pose delta_;      // The maximum change
+  float duration_;  // Seconds to enact change over
 
-  enum class ModeType_ { YOYO, LOOP, ONCE };
+  tweeny::tween<double, double, double> tween_;  // The tween object (x,y,theta)
+
+  // The three different operating modes
+  enum class ModeType_ {
+    YOYO,  // tween up to delta_, then down again, and repeat
+    LOOP,  // tween up to delta_, then teleport back to start_
+    ONCE   // tween up to delta_ then stay there
+  };
   ModeType_ mode_;
   static const std::map<std::string, Tween::ModeType_> mode_strings_;
 
