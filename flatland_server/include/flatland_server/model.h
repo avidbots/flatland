@@ -171,7 +171,7 @@ class Model : public Entity {
    * @brief A method called by other plugins or on the model
    * @param[in] An arbitrary string representing some event
    */
-  virtual void Trigger(std::string type);
+  virtual void Trigger(const std::string &type);
 
   /**
    * @brief Create a model, throws exceptions upon failure
