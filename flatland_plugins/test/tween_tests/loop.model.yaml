@@ -1,0 +1,19 @@
+# Turtlebot
+
+bodies:  # List of named bodies
+  - name: base
+    pose: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 0, 1]
+    footprints:
+      - type: polygon
+        density: 1
+        points: [[1.5, 0], [0.9, 0.7], [-0.9, 0.7], [-0.9, -0.7], [0.9, -0.7]]
+plugins:
+  - type: Tween
+    name: Tween0
+    body: base
+    delta: [10, 10, 1]
+    duration: 2.0
+    mode: loop
+    easing: linear
