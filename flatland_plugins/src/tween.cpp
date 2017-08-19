@@ -187,24 +187,24 @@ void Tween::OnInitialize(const YAML::Node& config) {
   // Make sure there are no unused keys
   reader.EnsureAccessedAllKeys();
 
-  ROS_INFO_NAMED("Tween",
-                 "Initialized with params body(%p %s) "
-                 "start ({%f,%f,%f}) "
-                 "end ({%f,%f,%f}) "
-                 "duration %f "
-                 "mode: %s [%d] "
-                 "easing: %s\n",
-                 body_, body_->name_.c_str(), start_.x, start_.y, start_.theta,
-                 delta_.x, delta_.y, delta_.theta, duration_, mode.c_str(),
-                 (int)mode_, easing.c_str());
+  ROS_DEBUG_NAMED("Tween",
+                  "Initialized with params body(%p %s) "
+                  "start ({%f,%f,%f}) "
+                  "end ({%f,%f,%f}) "
+                  "duration %f "
+                  "mode: %s [%d] "
+                  "easing: %s\n",
+                  body_, body_->name_.c_str(), start_.x, start_.y, start_.theta,
+                  delta_.x, delta_.y, delta_.theta, duration_, mode.c_str(),
+                  (int)mode_, easing.c_str());
 }
 
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   std::array<double, 3> v =
       tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
-  ROS_INFO_THROTTLE_NAMED(1.0, "Tween", "value %f,%f,%f step %f progress %f",
-                          v[0], v[1], v[2], timekeeper.GetStepSize(),
-                          tween_.progress());
+  ROS_DEBUG_THROTTLE_NAMED(1.0, "Tween", "value %f,%f,%f step %f progress %f",
+                           v[0], v[1], v[2], timekeeper.GetStepSize(),
+                           tween_.progress());
   body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]),
                                      start_.theta + v[2]);
 
@@ -212,7 +212,6 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   if (mode_ == Tween::ModeType_::YOYO) {
     if (tween_.progress() >= 1.0f) {
       tween_.backward();
-      ROS_INFO("REVERSE!");
     } else if (tween_.progress() <= 0.001f) {
       tween_.forward();
     }

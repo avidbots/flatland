@@ -155,4 +155,8 @@ if(CATKIN_ENABLE_TESTING)
                     test/update_timer_test.cpp)
   target_link_libraries(update_timer_test flatland_plugins_lib)
 
+  add_rostest_gtest(tween_test test/tween_test.test
+                    test/tween_test.cpp)
+  target_link_libraries(tween_test flatland_plugins_lib)
+
 endif()
