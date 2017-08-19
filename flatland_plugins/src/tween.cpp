@@ -9,7 +9,7 @@
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	Tween.cpp
  * @brief   Tween plugin
- * @author  Mike Brousseau
+ * @author  Joseph Duchesne
  *
  * Software License Agreement (BSD License)
  *
@@ -64,14 +64,12 @@ void Tween::OnInitialize(const YAML::Node& config) {
 
   delta_ = reader.GetPose("delta", Pose(0, 0, 0));
 
-  
-
   body_ = model_->GetBody(body_name);
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
   }
   start_ = Pose(body_->physics_body_->GetPosition().x,
-                body_->physics_body_->GetPosition().y, 
+                body_->physics_body_->GetPosition().y,
                 body_->physics_body_->GetAngle());
 
   // Validate the mode selection
@@ -79,10 +77,10 @@ void Tween::OnInitialize(const YAML::Node& config) {
     throw YAMLException("Mode " + mode + " does not exist");
   }
   mode_ = Tween::mode_strings_.at(mode);
-  
+
   tween_ = tweeny::from(0.0, 0.0, 0.0)
-                  .to(delta_.x, delta_.y, delta_.theta)
-                  .during((uint32)(duration_*1000.0));
+               .to(delta_.x, delta_.y, delta_.theta)
+               .during((uint32)(duration_ * 1000.0));
 
   Tween::EasingType_ easing_type;
   std::string easing = reader.Get<std::string>("easing", "linear");
@@ -91,9 +89,10 @@ void Tween::OnInitialize(const YAML::Node& config) {
   }
   easing_type = Tween::easing_strings_.at(easing);
 
-  // This is clumsy but because tweeny used structs for each tweening rather than subclasses
+  // This is clumsy but because tweeny used structs for each tweening rather
+  // than subclasses
   // I believe that this is the best way to do this
-  switch(easing_type){
+  switch (easing_type) {
     case Tween::EasingType_::linear:
       tween_ = tween_.via(tweeny::easing::linear);
       break;
@@ -189,27 +188,25 @@ void Tween::OnInitialize(const YAML::Node& config) {
   reader.EnsureAccessedAllKeys();
 
   ROS_INFO_NAMED("Tween",
-                  "Initialized with params body(%p %s) "
-                  "start ({%f,%f,%f}) "
-                  "end ({%f,%f,%f}) "
-                  "duration %f "
-                  "mode: %s [%d] "
-                  "easing: %s\n",
-                  body_, body_->name_.c_str(),
-                  start_.x, start_.y, start_.theta,
-                  delta_.x, delta_.y, delta_.theta,
-                  duration_,
-                  mode.c_str(),
-                  (int)mode_,
-                  easing.c_str()
-                  );
+                 "Initialized with params body(%p %s) "
+                 "start ({%f,%f,%f}) "
+                 "end ({%f,%f,%f}) "
+                 "duration %f "
+                 "mode: %s [%d] "
+                 "easing: %s\n",
+                 body_, body_->name_.c_str(), start_.x, start_.y, start_.theta,
+                 delta_.x, delta_.y, delta_.theta, duration_, mode.c_str(),
+                 (int)mode_, easing.c_str());
 }
 
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
-  std::array<double, 3> v = tween_.step((uint32)(timekeeper.GetStepSize()*1000.0));
+  std::array<double, 3> v =
+      tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
   ROS_INFO_THROTTLE_NAMED(1.0, "Tween", "value %f,%f,%f step %f progress %f",
-                          v[0], v[1], v[2], timekeeper.GetStepSize(), tween_.progress());
-  body_->physics_body_->SetTransform(b2Vec2(start_.x+v[0], start_.y+v[1]), start_.theta+v[2]);
+                          v[0], v[1], v[2], timekeeper.GetStepSize(),
+                          tween_.progress());
+  body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]),
+                                     start_.theta + v[2]);
 
   // Yoyo back and forth
   if (mode_ == Tween::ModeType_::YOYO) {
@@ -228,8 +225,6 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
     }
   }
 }
-
 }
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::Tween,
-                       flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::Tween, flatland_server::ModelPlugin)
