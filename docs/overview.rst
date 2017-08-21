@@ -1,12 +1,12 @@
 Flatland Simulator Overview
 ===========================
 
-This document provides a high level overview of the flatland simulator.
+This document provides an overview of the flatland simulator.
 
 Flatland simulator is a light weight, performance centric 2D robot simulator. It
 is built to integrate directly with ROS and uses Box2D for physics simulation.
-This project is divided into three ROS packages: flatland_server, flatland_plugins,
-and flatland_viz. 
+This project is divided into four ROS packages: flatland_server, flatland_plugins,
+and flatland_viz, and flatland messages.
 
 Flatland Server
 ---------------
@@ -17,10 +17,10 @@ following are some of the commonly used terminologies in the Flatland Server.
 
 * **Simulation Manager**: Simulation manager is responsible for managing the
   state of the simulator. It manages how the world progresses through time,
-  ROS Services, and plugins.
+  as well ROS Services to interact with the world.
 
-* **World**: World is everything that lives in the simulation. Including the 
-  layers, models, time, and other physical properties.
+* **World**: World is everything that lives in the simulation, including the 
+  layers, models, time, and other physical properties. It also manages the plugins.
 
 * **Layer**: Layer represents the static environment features in the simulation
   such as walls in a building. It allows large scale static features to be loaded
@@ -47,5 +47,24 @@ following are some of the commonly used terminologies in the Flatland Server.
 
 * **Pose**: Pose is always the x, y, and angle of an object
 
-* **Origin**: Origin is the location of (0, 0) in 
+* **Origin**: Origin is the position and orientation of the coordinate system
 
+Flatland Plugins
+----------------
+Flatland plugins contains the useful plugins that is developed with the flatland
+2D simulator. 
+
+Flatland Visualization
+----------------------
+Flatland plugins contains the visualization portion of 2D simulator. Visualization
+in flatland is completely ROS based. Once visualization option is turned on,
+the 2D simulator would convert the models and layers to ROS markers messages and
+publish them through ROS topics. Thus, flatland visualization can also be view
+directly on rviz, however the user needs to manually subtribe to topics, whereas
+flatland_viz is written to automatically show visualization for models and layers
+in the simulation.
+
+Flatland Messages
+-----------------
+The package flatland_msgs defines ROS messages and services used by the flatland
+simulator.
