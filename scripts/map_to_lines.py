@@ -1,5 +1,16 @@
 #!/usr/bin/env python2
 
+'''
+This program converts ROS map server data to line segments. This is because
+the performance of Box2D (mainly Raycasts for lasers) is dependent on the number
+of line segments. Maps generated from laser data tends to be noisy and contains
+a large number tiny line segments when extracted by flatland, up to hundreds of
+thousands for a large map. This program uses OpenCV image processing to extract
+line segments while sacrificing some accuracy.
+
+run with --help to see more options
+'''
+
 import numpy as np
 import argparse
 import cv2
@@ -8,12 +19,16 @@ import os
 
 def main():
     # get all the arguments
-    arg_parser = argparse.ArgumentParser(description="Generate line segment data file from image")
+    arg_parser = argparse.ArgumentParser(description="Generate line segment data file from ROS map server data")
     arg_parser.add_argument("map_yaml_path", help="path to the map server yaml file")
-    arg_parser.add_argument("output_path", help="path of the directory to output the line segment map files (.yaml and .dat files)")
-    arg_parser.add_argument("-f", "--filename", dest="filename", default="map_lines", help="name of the line segment map files (extensions .yaml and .dat will be added automatically)")
-    arg_parser.add_argument("-i", "--output-image", dest="output_image", action='store_true', help="Output image with line segments drawn on top of the map image")
-    arg_parser.add_argument("-d", "--definition", dest="definition", choices=["low", "med", "high"], default="low", help="how detailed you want the linesegments to represent the map")    
+    arg_parser.add_argument("output_path", 
+        help="path of the directory to output the line segment map files (.yaml and .dat files)")
+    arg_parser.add_argument("-f", "--filename", dest="filename", default="map_lines", 
+        help="name of the line segment map files (extensions .yaml and .dat will be added automatically)")
+    arg_parser.add_argument("-i", "--output-image", dest="output_image", action='store_true', 
+        help="Output image with line segments drawn on top of the map image")
+    arg_parser.add_argument("-d", "--definition", dest="definition", choices=["low", "med", "high"], default="low", 
+        help="how detailed you want the linesegments to represent the map")    
     args = arg_parser.parse_args()
 
     map_yaml_path = os.path.abspath(args.map_yaml_path)
@@ -68,11 +83,14 @@ def main():
     # _n_bins (default = ?)
     
     if definition == "low":
-        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD, 1.05, 1, 1, 22.5, 1, 0.8)
+        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD, 
+            1.05, 1, 1, 22.5, 1, 0.8)
     elif definition == "med":
-        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD, 1.5, 1, 1, 22.5, 1, 0.8)
+        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD, 
+            1.5, 1, 1, 22.5, 1, 0.8)
     elif definition == "high":
-        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD, 2, 1, 1, 22.5, 1, 0.8)
+        lsd = cv2.createLineSegmentDetector(cv2.LSD_REFINE_STD, 
+            2, 1, 1, 22.5, 1, 0.8)
     
     lines = lsd.detect(img)[0]
     
@@ -83,7 +101,8 @@ def main():
     rows = np.size(img, 0)
     for line in lines:
         line = line[0]
-        output_lines_file.write("%25.15f %25.15f %25.15f %25.15f\n" % (line[0], rows - line[1], line[2], rows - line[3]))
+        output_lines_file.write("%25.15f %25.15f %25.15f %25.15f\n" % 
+            (line[0], rows - line[1], line[2], rows - line[3]))
     
     output_lines_file.close()
 
