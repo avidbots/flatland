@@ -29,8 +29,8 @@ An example of the yaml file is shown below. Note that the "negate" and
 
 An example of map image is shown below.
 
-  .. image:: ../_static/conestogo_office.png
-    :target: ../_static/conestogo_office.png
+.. image:: ../_static/conestogo_office.png
+  :target: ../_static/conestogo_office.png
 
 Directly from Line Segments
 ---------------------------
