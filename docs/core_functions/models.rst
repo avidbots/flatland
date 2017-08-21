@@ -97,22 +97,101 @@ shown here.
           points: [[-.125, -0.05], [-.125, 0.05], [.125, 0.05], [.125, -0.05]]
           density: 1
   
-  # optional, list of model joints
-  joints:
-    - type: revolute
-      name: rear wheel
-      
 
   
+  # optional, list of model joints
+  joints:
+
+      # required, type of the joint, available options are revolute or weld,
+      # corresponds to Box2D joint types, applies to all joint types
+    - type: revolute
+
+      # required, name of the joint, unique within the body, applies to all 
+      # joint types
+      name: rear_wheel_revolute
+
+      # optional, default to false, specifies whether two bodies connected a 
+      # this joint should collide with each other, applies to all joint types
+      collide_connected: false
+      
+      # optional, in the format of [lower limit, upper limit], if specified
+      # confines the rotation of the joint within the limits, or rotate 360
+      # degrees otherwise, applies only to revolute joints
+      limits = [0, 0]
+
+      # required, specifies the anchor point on each body, applies to all joint 
+      # types
+      bodies: 
+
+          # required, name of a body from this body
+        - name: rear_wheel
+
+          # required, a anchor point w.r.t. the origin of the body
+          anchor: [0, 0]
+        
+          # required, name of another body in the model 
+        - name: base
+
+          # required, a anchor point w.r.t. the origin of the body        
+          anchor: [-0.83, -0.29]
+
+
+      # now specifying a weld joint, note that weld joint is not 100% fixed due
+      # to how the physics is numerically solved, i.e. if an infinite force is
+      # applied to immoveable object or a high impact collision, then the joint
+      # will deform. Maximum rigidity can be achieved by setting zero to frequency
+      # and damping, and increase velocity and position iterations in world
+      # properties. For 100% zero deformation, use a single body with multiple
+      # fixtures 
+    - type: weld
+      name: left_wheel_weld
+
+      # optional, defaults to 0, specifies the angle of the weld, applies only 
+      # to revolute joints
+      angle: 0
+
+      # optional, defaults to 0, specifies the frequency of the weld joint in
+      # Box2D, unit is in Hz, applies only to weld joints
+      frequency: 0
+
+      # optional, defaults to 0, specifies the damping ratio of the weld joint
+      # in Box2D, applies only to weld joints
+      damping: 0
+      bodies: 
+        - name: left_wheel
+          anchor: [0, 0]
+        - name: base        
+          anchor: [-0.83, -0.29]
+
+
+    - type: weld
+      name: right_wheel_weld
+      bodies: 
+        - name: left_wheel
+          anchor: [0, 0]
+        - name: base        
+          anchor: [-0.83, -0.29]
+
+
+
+  # optional, list of plugins for the model
   plugins:
-    - type: DiffDrive 
-      name: turtlebot_drive 
-      body: base
-  
+
+      # required, type of the plugin to load. Note the plugin must be configured
+      # property to be discovered. See the Writing Model Plugins page
     - type: Laser
+
+      # required, name of the plugin to load, must be unique in a model
       name: kinect
+
+      # the rest of the parameters are extracted by the corresponding model plugins
       body: base_link
       range: 20
       angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.004363323129985824}
       noise_std_dev: 0.01
       update_rate: 10
+
+
+    - type: DiffDrive 
+      name: turtlebot_drive 
+      body: base
