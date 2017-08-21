@@ -12,7 +12,7 @@ Run this following command to launch the simulator using default parameters
 
 Here are the full list of parameters with the default values 
 
-.. code-block:: bash
+.. code-block:: shell
 
   $ roslaunch flatland_server server.launch world_path:=/path/to/world.yaml \
                                             update_rate:=200.0 \
