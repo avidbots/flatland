@@ -97,10 +97,11 @@ shown here.
           points: [[-.125, -0.05], [-.125, 0.05], [.125, 0.05], [.125, -0.05]]
           density: 1
   
-  # optional, list of joints in the model that constrains bodies
+  # optional, list of model joints
   joints:
     - type: revolute
       name: rear wheel
+      
 
   
   plugins:
