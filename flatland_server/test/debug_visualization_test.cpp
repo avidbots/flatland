@@ -472,6 +472,7 @@ TEST(DebugVizTest, testPublishMarkers) {
                                                        0.0, 0.0, 1.0);
   flatland_server::DebugVisualization::Get().Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
+  // inserts two markers
   flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
                                                        0.0, 0.0, 1.0);
   flatland_server::DebugVisualization::Get().Publish();
@@ -480,13 +481,21 @@ TEST(DebugVizTest, testPublishMarkers) {
   EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
   EXPECT_EQ(5, helper.markers_.markers.size());  // 5 markers in latest msg
 
-  // Reset marker list
+  // Reset marker list, this empties the markers array, and topics having
+  // empty markers are automatically deleted
   flatland_server::DebugVisualization::Get().Reset("example");
   flatland_server::DebugVisualization::Get().Publish();
 
   // Verify that message was published
-  EXPECT_TRUE(helper.waitForMessageCount(3));    // Published three times
-  EXPECT_EQ(0, helper.markers_.markers.size());  // 0 markers in latest msg
+  EXPECT_TRUE(helper.waitForMessageCount(2));  // Published two times
+
+  // publish again with some contents, and the topic is created again
+  flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
+                                                       0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::Get().Publish();
+
+  EXPECT_TRUE(helper.waitForMessageCount(3));
+  EXPECT_EQ(2, helper.markers_.markers.size());
 }
 
 // Run all the tests that were declared with TEST()

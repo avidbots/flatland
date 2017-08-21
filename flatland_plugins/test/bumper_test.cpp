@@ -64,9 +64,17 @@ class BumperPluginTest : public ::testing::Test {
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
   flatland_msgs::Collisions msg1, msg2;
+  World* w;
 
-  BumperPluginTest() {
+  void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
   }
 
   static bool fltcmp(const float& n1, const float& n2, float epsilon = 1e-5) {
@@ -157,17 +165,9 @@ class BumperPluginTest : public ::testing::Test {
     return true;
   }
 
-  void CollisionCb_A(const flatland_msgs::Collisions& msg) {
-    // printf("hello1\n");
-    msg1 = msg;
-  }
+  void CollisionCb_A(const flatland_msgs::Collisions& msg) { msg1 = msg; }
 
-  void CollisionCb_B(const flatland_msgs::Collisions& msg) {
-    // printf("hello2\n");
-    msg2 = msg;
-  }
-
-  void StepWorld(Timekeeper& tk, World* w, float hz, int iterations) {}
+  void CollisionCb_B(const flatland_msgs::Collisions& msg) { msg2 = msg; }
 
   void SpinRos(float hz, int iterations) {
     ros::WallRate rate(hz);
@@ -187,7 +187,7 @@ TEST_F(BumperPluginTest, collision_test) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.01);
-  World* w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -278,7 +278,6 @@ TEST_F(BumperPluginTest, collision_test) {
   // w->DebugVisualize();
   // DebugVisualization::Get().Publish();
   // ros::spin();
-  delete w;
 }
 
 /**
@@ -288,8 +287,7 @@ TEST_F(BumperPluginTest, invalid_A) {
   world_yaml = this_file_dir / fs::path("bumper_tests/invalid_A/world.yaml");
 
   try {
-    World* w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;

@@ -50,7 +50,8 @@
 
 namespace flatland_server {
 
-ServiceManager::ServiceManager(World *world) : world_(world) {
+ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
+    : sim_man_(sim_man), world_(world) {
   ros::NodeHandle nh;
 
   spawn_model_service_ =

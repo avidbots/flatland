@@ -140,6 +140,11 @@ class DebugVisualization {
    * @param[in] name Name of the topic
    */
   void AddTopicIfNotExist(const std::string& name);
+
+  /**
+   * @brief Publish topics list
+   */
+  void PublishTopicList();
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

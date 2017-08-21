@@ -46,6 +46,7 @@
 
 #include <flatland_msgs/DeleteModel.h>
 #include <flatland_msgs/SpawnModel.h>
+#include <flatland_server/simulation_manager.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
@@ -57,6 +58,7 @@ using namespace flatland_server;
 
 class ServiceManagerTest : public ::testing::Test {
  protected:
+  SimulationManager* sim_man;
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
   boost::filesystem::path robot_yaml;
@@ -64,34 +66,31 @@ class ServiceManagerTest : public ::testing::Test {
   ros::NodeHandle nh;
   ros::ServiceClient client;
   std::thread simulation_thread;
-  bool stop_thread;
-  World* w;
 
-  void SetUp() {
+  void SetUp() override {
+    sim_man = nullptr;
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
-    stop_thread = false;
     timekeeper.SetMaxStepSize(1.0);
   }
 
+  void TearDown() override {
+    StopSimulationThread();
+    if (sim_man) delete sim_man;
+  }
+
   void StartSimulationThread() {
+    sim_man =
+        new SimulationManager(world_yaml.string(), 1000, 1 / 1000.0, false, 0);
     simulation_thread = std::thread(&ServiceManagerTest::SimulationThread,
                                     dynamic_cast<ServiceManagerTest*>(this));
   }
 
   void StopSimulationThread() {
-    stop_thread = true;
+    sim_man->Shutdown();
     simulation_thread.join();
   }
 
-  void SimulationThread() {
-    ros::WallRate rate(30);
-
-    while (!stop_thread) {
-      w->Update(timekeeper);
-      ros::spinOnce();
-      rate.sleep();
-    }
-  }
+  void SimulationThread() { sim_man->Main(); }
 };
 
 /**
@@ -103,8 +102,6 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
 
   robot_yaml = this_file_dir /
                fs::path("load_world_tests/simple_test_A/person.model.yaml");
-
-  w = World::MakeWorld(world_yaml.string());
 
   flatland_msgs::SpawnModel srv;
 
@@ -120,13 +117,13 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   // Threading is required since client.call blocks executing until return
   StartSimulationThread();
 
+  ros::service::waitForService("spawn_model", 1000);
   ASSERT_TRUE(client.call(srv));
-
-  StopSimulationThread();
 
   ASSERT_TRUE(srv.response.success);
   ASSERT_STREQ("", srv.response.message.c_str());
 
+  World* w = sim_man->world_;
   ASSERT_EQ(5, w->models_.size());
   EXPECT_STREQ("service_manager_test_robot", w->models_[4]->name_.c_str());
   EXPECT_STREQ("robot123", w->models_[4]->namespace_.c_str());
@@ -136,8 +133,6 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
                   w->models_[4]->bodies_[0]->physics_body_->GetPosition().y);
   EXPECT_FLOAT_EQ(0.23, w->models_[4]->bodies_[0]->physics_body_->GetAngle());
   EXPECT_EQ(1, w->models_[4]->bodies_.size());
-
-  delete w;
 }
 
 /**
@@ -148,8 +143,6 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
 
   robot_yaml = this_file_dir / fs::path("random_path/turtlebot.model.yaml");
-
-  w = World::MakeWorld(world_yaml.string());
 
   flatland_msgs::SpawnModel srv;
 
@@ -162,9 +155,9 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
 
   StartSimulationThread();
-  ASSERT_TRUE(client.call(srv));
 
-  StopSimulationThread();
+  ros::service::waitForService("spawn_model", 1000);
+  ASSERT_TRUE(client.call(srv));
 
   ASSERT_FALSE(srv.response.success);
 
@@ -176,8 +169,6 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
   EXPECT_TRUE(std::regex_match(srv.response.message.c_str(), match, regex))
       << "Error Message '" + srv.response.message + "'" +
              " did not match against regex '" + regex_str + "'";
-
-  delete w;
 }
 
 /**
@@ -187,32 +178,24 @@ TEST_F(ServiceManagerTest, delete_model) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-  w = World::MakeWorld(world_yaml.string());
-
-  int models_size = w->models_.size();
-  int plugins_size = w->plugin_manager_.model_plugins_.size();
-  int count = std::count_if(w->models_.begin(), w->models_.end(),
-                            [](Model* m) { return m->name_ == "turtlebot1"; });
-  ASSERT_EQ(count, 1);
-
   flatland_msgs::DeleteModel srv;
   srv.request.name = "turtlebot1";
 
   client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
 
   StartSimulationThread();
+
+  ros::service::waitForService("delete_model", 1000);
   ASSERT_TRUE(client.call(srv));
-  StopSimulationThread();
 
   ASSERT_TRUE(srv.response.success);
+  World* w = sim_man->world_;
   // after deleting a mode, there should be one less model, and one less plugin
-  ASSERT_EQ(w->models_.size(), models_size - 1);
-  ASSERT_EQ(w->plugin_manager_.model_plugins_.size(), plugins_size - 1);
-  count = std::count_if(w->models_.begin(), w->models_.end(),
-                        [](Model* m) { return m->name_ == "turtlebot1"; });
+  ASSERT_EQ(w->models_.size(), 0);
+  ASSERT_EQ(w->plugin_manager_.model_plugins_.size(), 0);
+  int count = std::count_if(w->models_.begin(), w->models_.end(),
+                            [](Model* m) { return m->name_ == "turtlebot1"; });
   ASSERT_EQ(count, 0);
-
-  delete w;
 }
 
 /**
@@ -222,24 +205,21 @@ TEST_F(ServiceManagerTest, delete_nonexistent_model) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-  w = World::MakeWorld(world_yaml.string());
-
   flatland_msgs::DeleteModel srv;
   srv.request.name = "random_model";
 
   client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
 
   StartSimulationThread();
+
+  ros::service::waitForService("delete_model", 1000);
   ASSERT_TRUE(client.call(srv));
-  StopSimulationThread();
 
   ASSERT_FALSE(srv.response.success);
   EXPECT_STREQ(
       "Flatland World: failed to delete model, model with name "
       "\"random_model\" does not exist",
       srv.response.message.c_str());
-
-  delete w;
 }
 
 // Run all the tests that were declared with TEST()

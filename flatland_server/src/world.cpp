@@ -58,7 +58,7 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0), service_manager_(ServiceManager(this)) {
+World::World() : gravity_(0, 0) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -236,12 +236,23 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   Model *m =
       Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
   m->TransformAll(pose);
-  models_.push_back(m);
 
-  for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
-    YamlReader plugin_reader = m->plugins_reader_.Subnode(i, YamlReader::MAP);
-    plugin_manager_.LoadModelPlugin(m, plugin_reader);
+  try {
+    for (int i = 0; i < m->plugins_reader_.NodeSize(); i++) {
+      YamlReader plugin_reader = m->plugins_reader_.Subnode(i, YamlReader::MAP);
+      plugin_manager_.LoadModelPlugin(m, plugin_reader);
+    }
+  } catch (const YAMLException &e) {
+    plugin_manager_.DeleteModelPlugin(m);
+    delete m;
+    throw e;
+  } catch (const PluginException &e) {
+    plugin_manager_.DeleteModelPlugin(m);
+    delete m;
+    throw e;
   }
+
+  models_.push_back(m);
 
   ROS_INFO_NAMED("World", "Model \"%s\" loaded", m->name_.c_str());
   m->DebugOutput();
@@ -255,6 +266,7 @@ void World::DeleteModel(const std::string &name) {
     if (models_[i]->GetName() == name) {
       // delete the plugins associated with the model
       plugin_manager_.DeleteModelPlugin(models_[i]);
+      delete models_[i];
       models_.erase(models_.begin() + i);
       found = true;
       break;
@@ -269,12 +281,12 @@ void World::DeleteModel(const std::string &name) {
 
 void World::DebugVisualize(bool update_layers) {
   if (update_layers) {
-    for (auto &layer : layers_) {
+    for (const auto &layer : layers_) {
       layer->DebugVisualize();
     }
   }
 
-  for (auto &model : models_) {
+  for (const auto &model : models_) {
     model->DebugVisualize();
   }
 }
