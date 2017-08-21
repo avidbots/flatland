@@ -62,9 +62,17 @@ class LaserPluginTest : public ::testing::Test {
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
   sensor_msgs::LaserScan scan_front, scan_center, scan_back;
+  World* w;
 
-  LaserPluginTest() {
+  void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
   }
 
   static bool fltcmp(const double& n1, const double& n2) {
@@ -162,7 +170,7 @@ TEST_F(LaserPluginTest, range_test) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  World* w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -199,8 +207,6 @@ TEST_F(LaserPluginTest, range_test) {
                      0.0, 4, {NAN, 3.2, 3.5, NAN, NAN}, {}));
   EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
-
-  delete w;
 }
 
 /**
@@ -211,8 +217,8 @@ TEST_F(LaserPluginTest, invalid_A) {
   world_yaml = this_file_dir / fs::path("laser_tests/invalid_A/world.yaml");
 
   try {
-    World* w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
+
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
@@ -236,8 +242,8 @@ TEST_F(LaserPluginTest, invalid_B) {
   world_yaml = this_file_dir / fs::path("laser_tests/invalid_B/world.yaml");
 
   try {
-    World* w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
+
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;

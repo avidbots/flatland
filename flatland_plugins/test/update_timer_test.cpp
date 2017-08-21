@@ -84,14 +84,22 @@ class UpdateTimerTest : public ::testing::Test {
   double wall_rate;
   double step_size;
   double sim_test_time;
+  World* w;
 
-  UpdateTimerTest() {
+  void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
   }
 
   void ExecuteRateTest() {
     Timekeeper timekeeper;
-    World* w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml.string());
 
     // artificially load a plugin
     boost::shared_ptr<TestPlugin> p(new TestPlugin());
@@ -111,7 +119,6 @@ class UpdateTimerTest : public ::testing::Test {
     }
 
     actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
-    delete w;
 
     printf("Actual Rate: %f, Expected Rate: %f\n", actual_rate, expected_rate);
   }

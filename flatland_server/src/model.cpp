@@ -53,7 +53,10 @@ namespace flatland_server {
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &ns, const std::string &name)
-    : Entity(physics_world, name), namespace_(ns), cfr_(cfr) {}
+    : Entity(physics_world, name),
+      namespace_(ns),
+      cfr_(cfr),
+      viz_name_("model/" + name_) {}
 
 Model::~Model() {
   for (int i = 0; i < joints_.size(); i++) {
@@ -66,6 +69,9 @@ Model::~Model() {
 
   // No need to destroy joints since destruction of model will destroy the
   // joint, the creation of a joint must always have bodies attached to it
+
+  // clear visualization
+  DebugVisualization::Get().Reset(viz_name_);
 }
 
 Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
@@ -184,17 +190,16 @@ void Model::TransformAll(const Pose &pose_delta) {
 }
 
 void Model::DebugVisualize() const {
-  std::string name = "model/" + name_;
-  DebugVisualization::Get().Reset(name);
+  DebugVisualization::Get().Reset(viz_name_);
 
-  for (auto &body : bodies_) {
-    DebugVisualization::Get().Visualize(name, body->physics_body_,
+  for (const auto &body : bodies_) {
+    DebugVisualization::Get().Visualize(viz_name_, body->physics_body_,
                                         body->color_.r, body->color_.g,
                                         body->color_.b, body->color_.a);
   }
 
-  for (auto &joint : joints_) {
-    DebugVisualization::Get().Visualize(name, joint->physics_joint_,
+  for (const auto &joint : joints_) {
+    DebugVisualization::Get().Visualize(viz_name_, joint->physics_joint_,
                                         joint->color_.r, joint->color_.g,
                                         joint->color_.b, joint->color_.a);
   }
