@@ -53,7 +53,7 @@ required.
   origin: [-1.20, -5, 1.23]  # same use as origin in map server yaml
 
 A Line segment data file is simply a file with each line containing a line
-segment. There are four columns.: x1, y1, x2, y2. (x1, y1) is the start point
+segment. There are four columns: x1, y1, x2, y2. (x1, y1) is the start point
 of a line segment, (x2, y2) is the end point of a line segment. For example,
 a line segment file with just two line segments, one from (0, 0) to (1, 1), and 
 the other from (2, 3) to (-1, 2) will be as follows.
