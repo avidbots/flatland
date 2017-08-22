@@ -167,7 +167,8 @@ void Laser::ComputeLaserRanges() {
 
     did_hit_ = false;
 
-    GetModel()->GetPhysicsWorld()->RayCast(this, laser_origin_point, laser_point);
+    GetModel()->GetPhysicsWorld()->RayCast(this, laser_origin_point,
+                                           laser_point);
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
