@@ -2,7 +2,7 @@ Configuring Models
 ==================
 In Flatland, a model is a collection of bodies, and it can be used to represent
 any physical things. A example of a model file for a turtlebot (not exactly) is
-shown here.
+shown here. Examples can be found in flatland_server/tests.
 
 .. code-block:: yaml
 
