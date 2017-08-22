@@ -1,7 +1,7 @@
 Configuring World
 =================
 
-The simulation world is defined by a yaml file as shown below. Examples can
+The simulation world is defined by a YAML file as shown below. Examples can
 be found in flatland_server/tests.
 
 .. code-block:: yaml
@@ -35,11 +35,11 @@ be found in flatland_server/tests.
       color: [1, 1, 1, 1] 
 
       # you can also specify a list of names. These names will point to the same
-      # entity in the physics engine. This introduces a efficient way of organize
-      # entities into the same layer without loading the same map more than once.
-      # Only the first name in this list is used to identify this entity, such as
-      # in visualizations or collision handling. The number of layers here also
-      # counts towards the maximum number of 16 layers. 
+      # entity in the physics engine. This introduces an efficient way of organizing
+      # entities into the same physical layer without loading the same map more 
+      # than once. Only the first name in this list is used to identify this entity,
+      # such as in visualizations or collision handling. The number of layers here
+      # also counts towards the maximum number of 16 layers. 
     - name: ["layer_2", "layer_3", "layer_4"]
       map: "/absolute/path/layer_2.yaml"
   
@@ -54,11 +54,11 @@ be found in flatland_server/tests.
     - name: turtlebot1
 
       # optional, defaults to "", specifies the namespace of the robot. Used
-      # for situations where multiple models of the same type is specified, in
-      # order to avid conflicts in TF transforms and ROS topic names used to 
-      # initialize the namespace of the node handle of model plugins under this
-      # model. Not enforced to be unique when set, but it should be unique for
-      # all practical purposes
+      # for situations where multiple models of the same type are instantiated,
+      # in order to avoid conflicts in TF transforms and ROS topic names. It is
+      # used to initialize the namespace of the node handle of model plugins
+      # under this model. Not enforced to be unique when set, but it should be
+      # unique for all practical purposes
       namespace: ""
 
       # optional, defaults to [0, 0, 0], pose to put the model, in the format

@@ -2,7 +2,7 @@ Bumper
 ======
 
 The bumper plugins publishes the state of Collisions of bodies in the model. The
-Collision and Collisions message is defined in flatland_msgs. It publishes 
+Collision and Collisions message are defined in flatland_msgs. It publishes 
 empty collisions if there are nothing colliding. Note that the force values 
 published by the bumper is a ball park approximation of impact strength.
 
@@ -52,11 +52,11 @@ The descriptions of parameters are shown below.
 
       # optional, default to inf (publishes every time step), the rate in Hz to
       # publish the Collisions messages
-      update_rate: inf
+      update_rate: .inf
 
       # optional, default to true, this works together with update_rate. Collision 
       # states may change in between updates with a given update_rate. It might 
-      # appear disappear between when the messages are published. This option
+      # appear and disappear between when the messages published. This option
       # forces the bumper plugin to always publish if there are non-zero number
       # collisions regardless of update_rate. If there are no collisions, it publishes
       # empty list of collisions at update_rate
