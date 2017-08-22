@@ -168,4 +168,7 @@ texinfo_documents = [
 ]
 
 
+import subprocess
+subprocess.call('cd ../../ ; doxygen Doxyfile', shell=True)
 
+ html_extra_path = ['../html/']
