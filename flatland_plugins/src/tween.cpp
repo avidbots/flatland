@@ -64,7 +64,7 @@ void Tween::OnInitialize(const YAML::Node& config) {
 
   delta_ = reader.GetPose("delta", Pose(0, 0, 0));
 
-  body_ = model_->GetBody(body_name);
+  body_ = GetModel()->GetBody(body_name);
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
   }

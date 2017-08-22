@@ -306,8 +306,8 @@ TEST_F(PluginManagerTest, load_dummy_test) {
 
   ModelPlugin *p = w->plugin_manager_.model_plugins_[0].get();
 
-  EXPECT_STREQ(p->type_.c_str(), "DummyModelPlugin");
-  EXPECT_STREQ(p->name_.c_str(), "dummy_test_plugin");
+  EXPECT_STREQ(p->GetType().c_str(), "DummyModelPlugin");
+  EXPECT_STREQ(p->GetName().c_str(), "dummy_test_plugin");
 }
 
 TEST_F(PluginManagerTest, plugin_throws_exception) {

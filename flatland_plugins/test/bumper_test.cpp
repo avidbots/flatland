@@ -198,8 +198,8 @@ TEST_F(BumperPluginTest, collision_test) {
 
   Bumper* p = dynamic_cast<Bumper*>(w->plugin_manager_.model_plugins_[0].get());
 
-  Body* b0 = p->model_->bodies_[0];
-  Body* b1 = p->model_->bodies_[1];
+  Body* b0 = p->GetModel()->bodies_[0];
+  Body* b1 = p->GetModel()->bodies_[1];
 
   // check that there are no collision at the begining
   for (int i = 0; i < 100; i++) {
