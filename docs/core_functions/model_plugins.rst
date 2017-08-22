@@ -85,13 +85,13 @@ to determine if an entity is a model or layer. This is shown as below.
 .. code-block:: Cpp
 
   // Get the body
-  flatland_server::Body *b1 = (Body*) contact->GetFixtureA()->GetBody()->GetUserData();
-  flatland_server::Body *b2 = (Body*) contact->GetFixtureB()->GetBody()->GetUserData();
+  flatland_server::Body *b1 = (flatland_server::Body*) contact->GetFixtureA()->GetBody()->GetUserData();
+  flatland_server::Body *b2 = (flatland_server::Body*) contact->GetFixtureB()->GetBody()->GetUserData();
 
   flatland_server::Entity *e = b1->GetEntity();
-  if (e->Type() == EntityType::LAYER) {
+  if (e->Type() == flatland_server::Entity::EntityType::LAYER) {
     // entity is Layer
-  } else if (e->Type() == EntityType::MODEL) {
+  } else if (e->Type() == flatland_server::Entity::EntityType::MODEL) {
     // entity is Model
   }
 
@@ -114,6 +114,7 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
     #include <Box2D/Box2D.h>
     #include <flatland_server/model_plugin.h>
     #include <flatland_server/timekeeper.h>
+    #include <flatland_server/body.h>
     #include <yaml-cpp/yaml.h>
 
     #ifndef FLATLAND_PLUGINS_CONST_VELOCITY
@@ -126,13 +127,13 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
     public:
 
       double vel_x, vel_y, omega;
-      Body *body;
+      flatland_server::Body *body;
 
       void OnInitialize(const YAML::Node &config) override;
 
       void BeforePhysicsStep(const flatland_server::Timekeeper &timekeeper) override;
 
-    }
+    };
     }
 
     #endif
@@ -143,39 +144,39 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
 
   .. code-block:: Cpp
 
-    // src/const_velocity_plugin.cpp  
+    // src/const_velocity_plugin.cpp
 
-    #include <my_plugins/const_velocity_plugin.h>
+    #include <flatland_plugins/laser.h>
     #include <pluginlib/class_list_macros.h>
     #include <flatland_server/yaml_reader.h>
     #include <flatland_server/exceptions.h>
 
-    namespace flatland_plugins {    
+    namespace flatland_plugins {
 
     void ConstVelocity::OnInitialize(const YAML::Node &config) {
-      YamlReader reader(config);
+      flatland_server::YamlReader reader(config);
 
       vel_x = reader.Get<double>("vel_x");
       vel_y = reader.Get<double>("vel_y");
       omega = reader.Get<double>("omega");
-      
+
       body = GetModel()->GetBody(reader.Get<std::string>("body"));
 
       // check a valid body is given
       if (body == nullptr) {
-        throw YAMLException("Body with with the given name does not exist");
+        throw flatland_server::YAMLException("Body with with the given name does not exist");
       }
     }
 
     void ConstVelocity::BeforePhysicsStep(const flatland_server::Timekeeper &timekeeper) {
-      body->GetPhysicsBody()->SetLinearVelocity(b2Vec2(vel_x));
-      body->GetPhysicsBody()->SetAngularVelocity(omega)
+      body->GetPhysicsBody()->SetLinearVelocity(b2Vec2(vel_x, vel_y));
+      body->GetPhysicsBody()->SetAngularVelocity(omega);
     }
 
     }
 
     PLUGINLIB_EXPORT_CLASS(flatland_plugins::ConstVelocity,
-                           flatland_server::ModelPlugin)
+                          flatland_server::ModelPlugin)
 
 2. Add pluginlib and flatland_server as dependencies in package.xml and 
    CMakeLists.txt. We also need to add the source of the plugin to compile as 
@@ -213,7 +214,7 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
    export. Add as many <class> tags as required for the plugins that needs to 
    be exported. The description of parameter are as follows.
 
-   * **type**: The fully qualified type of the plugin, which is flatland_plugins::ConstVelocity we just created
+   * **type**: The fully qualified type of the plugin, which is my_plugins::ConstVelocity we just created
    * **base_class**: The fully qualified base class type for the plugin, which will always be flatland_server::ModelPlugin.
    * **description**: A description of what the plugin does
 
@@ -222,7 +223,7 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
   .. code-block:: xml
 
     <library path="lib/libmy_plugins_lib">
-      <class type="flatland_plugins::ConstVelocity" base_class_type="flatland_server::ModelPlugin">
+      <class type="my_plugins::ConstVelocity" base_class_type="flatland_server::ModelPlugin">
         <description>Constant velocity plugin</description>
       </class>
     </library>
