@@ -104,15 +104,16 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.ranges.resize(num_laser_points);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
+  laser_scan_.header.frame_id =
+      tf::resolve(GetModel()->GetNameSpace(), frame_id_);
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
   laser_tf_.header.frame_id =
-      tf::resolve(model_->GetNameSpace(), body_->GetName());
-  laser_tf_.child_frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
+      tf::resolve(GetModel()->GetNameSpace(), body_->GetName());
+  laser_tf_.child_frame_id = tf::resolve(GetModel()->GetNameSpace(), frame_id_);
   laser_tf_.transform.translation.x = origin_.x;
   laser_tf_.transform.translation.y = origin_.y;
   laser_tf_.transform.translation.z = 0;
@@ -166,7 +167,7 @@ void Laser::ComputeLaserRanges() {
 
     did_hit_ = false;
 
-    model_->GetPhysicsWorld()->RayCast(this, laser_origin_point, laser_point);
+    GetModel()->GetPhysicsWorld()->RayCast(this, laser_origin_point, laser_point);
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
@@ -193,7 +194,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   YamlReader reader(config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "scan");
-  frame_id_ = reader.Get<std::string>("frame", name_);
+  frame_id_ = reader.Get<std::string>("frame", GetName());
   broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
@@ -216,13 +217,13 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
   }
 
-  body_ = model_->GetBody(body_name);
+  body_ = GetModel()->GetBody(body_name);
   if (!body_) {
     throw YAMLException("Cannot find body with name " + body_name);
   }
 
   std::vector<std::string> invalid_layers;
-  layers_bits_ = model_->GetCfr()->GetCategoryBits(layers, &invalid_layers);
+  layers_bits_ = GetModel()->GetCfr()->GetCategoryBits(layers, &invalid_layers);
   if (!invalid_layers.empty()) {
     throw YAMLException("Cannot find layer(s): {" +
                         boost::algorithm::join(invalid_layers, ",") + "}");
@@ -238,7 +239,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
                   "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
                   "noise_std_dev(%f) angle_min(%f) angle_max(%f) "
                   "angle_increment(%f) layers(0x%u {%s})",
-                  name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
+                  GetName().c_str(), topic_.c_str(), body_name.c_str(), body_,
                   origin_.x, origin_.y, origin_.theta, frame_id_.c_str(),
                   broadcast_tf_, update_rate_, range_, noise_std_dev_,
                   min_angle_, max_angle_, increment_, layers_bits_,

@@ -83,7 +83,7 @@ void Bumper::OnInitialize(const YAML::Node &config) {
   reader.EnsureAccessedAllKeys();
 
   for (int i = 0; i < excluded_body_names.size(); i++) {
-    Body *body = model_->GetBody(excluded_body_names[i]);
+    Body *body = GetModel()->GetBody(excluded_body_names[i]);
 
     if (body == nullptr) {
       throw YAMLException("Body with name \"" + excluded_body_names[i] +
@@ -138,7 +138,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
     b2Contact *c = it->first;
     ContactState *s = &it->second;
     flatland_msgs::Collision collision;
-    collision.entity_A = model_->GetName();
+    collision.entity_A = GetModel()->GetName();
     collision.entity_B = s->entity_B->name_;
 
     collision.body_A = s->body_A->name_;

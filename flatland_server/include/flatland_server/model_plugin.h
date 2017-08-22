@@ -61,14 +61,27 @@ namespace flatland_server {
  * the world
  */
 class ModelPlugin {
- public:
+ private:
   std::string type_;    ///< type of the plugin
   std::string name_;    ///< name of the plugin
-  ros::NodeHandle nh_;  ///< ROS node handle
   Model *model_;        ///< model this plugin is tied to
 
+ public:
+  ros::NodeHandle nh_;  ///< ROS node handle
+
+  /**
+   * @brief Get plugin name
+   */
   const std::string &GetName() const;
+
+  /**
+   * @brief Get type of plugin
+   */
   const std::string &GetType() const;
+
+  /**
+   * @brief Get model
+   */
   Model *GetModel();
 
   /**

@@ -80,9 +80,10 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
 
 void PluginManager::DeleteModelPlugin(Model *model) {
   model_plugins_.erase(
-      std::remove_if(
-          model_plugins_.begin(), model_plugins_.end(),
-          [&](boost::shared_ptr<ModelPlugin> p) { return p->model_ == model; }),
+      std::remove_if(model_plugins_.begin(), model_plugins_.end(),
+                     [&](boost::shared_ptr<ModelPlugin> p) {
+                       return p->GetModel() == model;
+                     }),
       model_plugins_.end());
 }
 
@@ -93,7 +94,7 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   // ensure no plugin with the same model and name
   if (std::count_if(model_plugins_.begin(), model_plugins_.end(),
                     [&](boost::shared_ptr<ModelPlugin> i) {
-                      return i->name_ == name && i->model_ == model;
+                      return i->GetName() == name && i->GetModel() == model;
                     }) >= 1) {
     throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
                         " model, plugin with name " + Q(name) +
