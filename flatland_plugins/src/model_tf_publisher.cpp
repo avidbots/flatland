@@ -65,14 +65,14 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
-  tf_prefix_ = model_->GetNameSpace();
+  tf_prefix_ = GetModel()->GetNameSpace();
   std::string ref_body_name = reader.Get<std::string>("reference", "");
   std::vector<std::string> excluded_body_names =
       reader.GetList<std::string>("exclude", {}, -1, -1);
   reader.EnsureAccessedAllKeys();
 
   if (ref_body_name.size() != 0) {
-    reference_body_ = model_->GetBody(ref_body_name);
+    reference_body_ = GetModel()->GetBody(ref_body_name);
 
     if (reference_body_ == nullptr) {
       throw YAMLException("Body with name \"" + ref_body_name +
@@ -81,11 +81,11 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   } else {
     // defaults to the first body, the reference body has no effect on the
     // final result, but it changes how the TF would look
-    reference_body_ = model_->bodies_[0];
+    reference_body_ = GetModel()->bodies_[0];
   }
 
   for (int i = 0; i < excluded_body_names.size(); i++) {
-    Body *body = model_->GetBody(excluded_body_names[i]);
+    Body *body = GetModel()->GetBody(excluded_body_names[i]);
 
     if (body == nullptr) {
       throw YAMLException("Body with name \"" + excluded_body_names[i] +
@@ -122,8 +122,8 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
   tf_stamped.header.stamp = ros::Time::now();
 
   // loop through the bodies to calculate TF, and ignores excluded bodies
-  for (int i = 0; i < model_->bodies_.size(); i++) {
-    Body *body = model_->bodies_[i];
+  for (int i = 0; i < GetModel()->bodies_.size(); i++) {
+    Body *body = GetModel()->bodies_[i];
     bool is_excluded = false;
 
     for (int j = 0; j < excluded_bodies_.size(); j++) {
