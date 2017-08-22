@@ -69,11 +69,11 @@ files.
 
           - type: polygon
             points: [[-.125, .4], [-.125, .3], [.125, .3], [.125, .4]]
-            
-  plugins:
-    - type: DiffDrive 
-      name: turtlebot_drive 
-      body: base
+              
+    plugins:
+      - type: DiffDrive 
+        name: turtlebot_drive 
+        body: base
 
 4. Finally, after having the Flatland packages installed. Run the launch file
    with the path to the world.yaml. You should be able to see the flatland_viz
