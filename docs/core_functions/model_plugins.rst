@@ -278,13 +278,65 @@ x, y and yaw rate. This will reside in a package called my_plugins.
 
 Model Namespacing
 -----------------
+Models have a optional namespace parameter. When it is not set, it defaults to
+"", and it is equivalent to having no namespace. Namespace allows the simulation
+to load multiple of the same model, without worrying about the topic names
+and TF frames conflicting between the models. The node handle of model plugins
+are initialized with the model's namespace, and the namespace will be automatically
+added to all topic names subscribed and advertised. This is shown below.
+
+.. code-block:: Cpp
+
+  nh_ = ros::NodeHandle(model_->namespace_);
+
+To avid conflicts in TF frame IDs, if the plugins choose to publish TF, use
+tf::resolve() function as shown below.
+
+.. code-block:: Cpp
+
+  tf::resolve(GetModel()->GetNameSpace(), frame_id);
 
 YAML Reader
 -----------
+Flatland server provides YAML Reader to simplify the process of extracting
+data from YAML files. It provides methods to extract scalars, lists, and array
+as well as providing error checking, checks for invalid/unused keys, and it 
+throws exceptions with messages telling the user where the error come from in 
+the YAML file. Check YamlReader documentation, and examples throughout 
+flatland_server and flatland_plugins for more details. 
 
 Simulation Time
 ---------------
+Using the launch file provided, ROS will be configured to use simulation time.
+One can use ros::Time::now() to get the current time. Simulation time can be
+obtained from the timekeeper object, as well as other time related information
+such as step size.
+
 
 Update Timer
 ------------
+It is often desireable to perform updates at a slower rate than what the
+simulation is running at. For example, the simulation might be executing in
+real time speed at 200Hz, and you wish to publish laser data at 10Hz. This can be
+done through the UpdateTimer class from flatland plugins. The following code
+snippet shows how it is used, and more information and examples can be from
+the UpdateTimer documentation as well as examples in flatland_plugins.
 
+.. code-block:: Cpp
+
+  #include <flatland_plugins/update_timer.h>
+
+  UpdateTimer update_timer;
+  update_timer.SetRate(10);  // set rate in Hz
+
+.. code-block:: Cpp
+
+  void YourPlugin::BeforePhysicsStep(const Timekeeper &timekeeper) {
+
+    // check if an update is REQUIRED
+    if (!update_timer.CheckUpdate(timekeeper)) {
+      return;
+    }
+
+    // the code here will be run at 10Hz
+  }
