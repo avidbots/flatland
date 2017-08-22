@@ -84,6 +84,11 @@ class Body {
   void DebugOutput() const;
 
   /**
+   * @return entity associated with the body
+   */
+  Entity *GetEntity();
+
+  /**
    * @return name of the body
    */
   const std::string &GetName() const;
