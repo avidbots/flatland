@@ -1,6 +1,6 @@
 lcov.info
 docs/doxygen/*
-!docs/doxygen/doxy_conf.py
+!docs/doxygen/conf.py
 !docs/doxygen/index.rst
 docs/_build/*
 docs/_templates/*
