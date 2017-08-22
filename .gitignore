@@ -1,5 +1,6 @@
 lcov.info
 docs/doxygen/*
+!docs/doxygen/conf.py
 docs/_build/*
 docs/_templates/*
 .vscode/*
