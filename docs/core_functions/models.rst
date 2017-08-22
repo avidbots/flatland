@@ -7,7 +7,7 @@ shown here. Examples can be found in flatland_server/tests.
 .. code-block:: yaml
 
   # required, list of bodies of the model, must have at least one body
-  bodies: 
+  bodies:
 
       # required, name of the body, must be unique within the model
     - name: base_link
@@ -15,7 +15,7 @@ shown here. Examples can be found in flatland_server/tests.
       # optional, defaults to [0, 0, 0], in the form of [x, y, theta] w.r.t the
       # model pose specified in world yaml. Pose is simply the initial pose
       # of the body, it does not add additional constrains in any way
-      pose: [0, 0, 0] 
+      pose: [0, 0, 0]
 
       # optional, default to dynamic, must be one of dynamic, static, kinematic,
       # these are consistent with Box2D's body types
@@ -23,7 +23,7 @@ shown here. Examples can be found in flatland_server/tests.
 
       # optional, default to [1 ,1, 1, 0.5], in the form of [r, g, b, alpha],
       # for visualization
-      color: [1, 1, 1, 0.5] 
+      color: [1, 1, 1, 0.5]
 
       # optional, defaults to 0.0, specifies the Box2D body linear damping
       linear_damping: 0
@@ -44,11 +44,11 @@ shown here. Examples can be found in flatland_server/tests.
           # optional, defaults to [0, 0], in the form of [x, y] w.r.t the origin
           # of the body, only used for circle type
           center: [0.0, 0.0]
-          
+
           # optional, defaults to ["all"], a list of layers specifying which
           # layer the footprint belongs to, collisions/contacts only occurs
           # between objects in the same layer, used for all footprint types
-          layers = ["all"]
+          layers: ["all"]
 
           # required, the density of footprint in kg/m^2 in Box2D, used for all
           # footprint types
@@ -75,7 +75,7 @@ shown here. Examples can be found in flatland_server/tests.
           # an example for polygon type
         - type: polygon
 
-          # required, vertices for polygon, 3 <= length <= 8 (limited by Box2D), 
+          # required, vertices for polygon, 3 <= length <= 8 (limited by Box2D),
           # in the form of [x, y] coordinates w.r.t body origin, only used for
           # polygon type
           points: [[-0.05, -0.05], [-0.05, 0.05], [0.05, 0.05], [0.05, -0.05]]
@@ -96,9 +96,9 @@ shown here. Examples can be found in flatland_server/tests.
         - type: polygon
           points: [[-.125, -0.05], [-.125, 0.05], [.125, 0.05], [.125, -0.05]]
           density: 1
-  
 
-  
+
+
   # optional, list of model joints
   joints:
 
@@ -106,33 +106,33 @@ shown here. Examples can be found in flatland_server/tests.
       # corresponds to Box2D joint types, applies to all joint types
     - type: revolute
 
-      # required, name of the joint, unique within the body, applies to all 
+      # required, name of the joint, unique within the body, applies to all
       # joint types
       name: rear_wheel_revolute
 
-      # optional, default to false, specifies whether two bodies connected a 
+      # optional, default to false, specifies whether two bodies connected a
       # this joint should collide with each other, applies to all joint types
       collide_connected: false
-      
-      # optional, in the format of [lower limit, upper limit], if specified
-      # confines the rotation of the joint within the limits, or it is free to 
-      # rotate 360 degrees otherwise, applies only to revolute joints
-      limits = [0, 0]
 
-      # required, specifies the anchor point on each body, applies to all joint 
+      # optional, in the format of [lower limit, upper limit], if specified
+      # confines the rotation of the joint within the limits, or it is free to
+      # rotate 360 degrees otherwise, applies only to revolute joints
+      limits: [0, 0]
+
+      # required, specifies the anchor point on each body, applies to all joint
       # types
-      bodies: 
+      bodies:
 
           # required, name of a body from this body
         - name: rear_wheel
 
           # required, an anchor point w.r.t. the origin of the body
           anchor: [0, 0]
-        
-          # required, name of another body in the model 
-        - name: base
 
-          # required, an anchor point w.r.t. the origin of the body        
+          # required, name of another body in the model
+        - name: base_link
+
+          # required, an anchor point w.r.t. the origin of the body
           anchor: [-0.83, -0.29]
 
 
@@ -142,11 +142,11 @@ shown here. Examples can be found in flatland_server/tests.
       # will deform. Maximum rigidity can be achieved by setting zero to frequency
       # and damping, and increase velocity and position iterations in world
       # properties. For 100% zero deformation, use a single body with multiple
-      # fixtures 
+      # fixtures
     - type: weld
       name: left_wheel_weld
 
-      # optional, defaults to 0, specifies the angle of the weld, applies only 
+      # optional, defaults to 0, specifies the angle of the weld, applies only
       # to revolute joints
       angle: 0
 
@@ -157,19 +157,19 @@ shown here. Examples can be found in flatland_server/tests.
       # optional, defaults to 0, specifies the damping ratio of the weld joint
       # in Box2D, applies only to weld joints
       damping: 0
-      bodies: 
+      bodies:
         - name: left_wheel
           anchor: [0, 0]
-        - name: base        
+        - name: base_link
           anchor: [-0.83, -0.29]
 
 
     - type: weld
       name: right_wheel_weld
-      bodies: 
+      bodies:
         - name: left_wheel
           anchor: [0, 0]
-        - name: base        
+        - name: base_link
           anchor: [-0.83, -0.29]
 
 
@@ -192,6 +192,6 @@ shown here. Examples can be found in flatland_server/tests.
       update_rate: 10
 
 
-    - type: DiffDrive 
-      name: turtlebot_drive 
-      body: base
+    - type: DiffDrive
+      name: turtlebot_drive
+      body: base_link

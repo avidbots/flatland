@@ -52,7 +52,7 @@ The descriptions of parameters are shown below.
 
       # optional, default to inf (publishes every time step), the rate in Hz to
       # publish the Collisions messages
-      update_rate: inf
+      update_rate: .inf
 
       # optional, default to true, this works together with update_rate. Collision 
       # states may change in between updates with a given update_rate. It might 
