@@ -1,7 +1,7 @@
 Configuring Models
 ==================
 In Flatland, a model is a collection of bodies, and it can be used to represent
-any physical things. A example of a model file for a turtlebot (not exactly) is
+any physical things. An example of a model file for a turtlebot (not exactly) is
 shown here. Examples can be found in flatland_server/tests.
 
 .. code-block:: yaml
@@ -12,7 +12,7 @@ shown here. Examples can be found in flatland_server/tests.
       # required, name of the body, must be unique within the model
     - name: base_link
 
-      # optional, default to [0, 0, 0], in the form of [x, y, theta] w.r.t the
+      # optional, defaults to [0, 0, 0], in the form of [x, y, theta] w.r.t the
       # model pose specified in world yaml. Pose is simply the initial pose
       # of the body, it does not add additional constrains in any way
       pose: [0, 0, 0] 
@@ -115,8 +115,8 @@ shown here. Examples can be found in flatland_server/tests.
       collide_connected: false
       
       # optional, in the format of [lower limit, upper limit], if specified
-      # confines the rotation of the joint within the limits, or rotate 360
-      # degrees otherwise, applies only to revolute joints
+      # confines the rotation of the joint within the limits, or it is free to 
+      # rotate 360 degrees otherwise, applies only to revolute joints
       limits = [0, 0]
 
       # required, specifies the anchor point on each body, applies to all joint 
@@ -126,13 +126,13 @@ shown here. Examples can be found in flatland_server/tests.
           # required, name of a body from this body
         - name: rear_wheel
 
-          # required, a anchor point w.r.t. the origin of the body
+          # required, an anchor point w.r.t. the origin of the body
           anchor: [0, 0]
         
           # required, name of another body in the model 
         - name: base
 
-          # required, a anchor point w.r.t. the origin of the body        
+          # required, an anchor point w.r.t. the origin of the body        
           anchor: [-0.83, -0.29]
 
 
