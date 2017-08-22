@@ -27,7 +27,7 @@ velocities and odometries are w.r.t. the robot origin
       odom_frame_id: odom
 
       # optional, defaults to inf, rate to publish odometry at, in Hz
-      pub_rate: inf
+      pub_rate: .inf
 
       # optional, defaults to "cmd_vel", the topic to subscribe for velocity
       # commands
@@ -56,11 +56,11 @@ velocities and odometries are w.r.t. the robot origin
       # represents a 6x6 covariance matrix for x, y, z, roll, pitch, yaw. 
       # This does not involve in any of the noise calculation, it is simply 
       # the output values of odometry pose covariance
-      odom_pose_covariance: [0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
+      odom_pose_covariance: [0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0]
 
       # optional, defaults to the diagonal [x velocity, y velocity, yaw rate] 
@@ -68,7 +68,7 @@ velocities and odometries are w.r.t. the robot origin
       # must have length of 36, represents a 6x6 covariance matrix for rates x, 
       # y, z, roll, pitch, yaw. This does not involve in any of the noise 
       # calculation, it is simply the output values of odometry twist covariance
-      odom_pose_covariance: [0, 0, 0, 0, 0, 0
+      odom_twist_covariance: [0, 0, 0, 0, 0, 0
                              0, 0, 0, 0, 0, 0
                              0, 0, 0, 0, 0, 0
                              0, 0, 0, 0, 0, 0

@@ -16,6 +16,7 @@ files.
     layers:
       - name: "map" 
         map: "conestogo_office.yaml"
+        color: [0.4, 0.4, 0.4, 1]
     models:  
       - name: turtlebot 
         model: "turtlebot.model.yaml"
@@ -52,7 +53,7 @@ files.
       - name: base
         pose: [0, 0, 0] 
         type: dynamic  
-        color: [1, 1, 1, 0.75] 
+        color: [1, 1, 1, 0.4] 
 
         footprints:
           - type: circle
@@ -69,6 +70,7 @@ files.
 
           - type: polygon
             points: [[-.125, .4], [-.125, .3], [.125, .3], [.125, .4]]
+            density: 1            
               
     plugins:
       - type: DiffDrive 
