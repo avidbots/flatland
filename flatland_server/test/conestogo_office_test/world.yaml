@@ -10,6 +10,9 @@ models:
   - name: cleaner1 
     pose: [12, 0, 0]
     model: "cleaner.model.yaml"
+  - name: walker1
+    pose: [0, 0, 0]
+    model: "walker.model.yaml"
   # - name: turtlebot1 
   #   pose: [12, 0, 0]
   #   model: "turtlebot.model.yaml"

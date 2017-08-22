@@ -60,6 +60,7 @@ catkin_package(
 
 include_directories(
   include
+  include/thirdparty/tweeny
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
@@ -73,6 +74,7 @@ add_library(flatland_plugins_lib
   src/model_tf_publisher.cpp
   src/update_timer.cpp
   src/bumper.cpp
+  src/tween.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -152,5 +154,9 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(update_timer_test test/update_timer_test.test
                     test/update_timer_test.cpp)
   target_link_libraries(update_timer_test flatland_plugins_lib)
+
+  add_rostest_gtest(tween_test test/tween_test.test
+                    test/tween_test.cpp)
+  target_link_libraries(tween_test flatland_plugins_lib)
 
 endif()
