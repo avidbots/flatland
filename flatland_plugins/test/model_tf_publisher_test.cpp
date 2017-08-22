@@ -143,7 +143,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
 
   // let it spin for 10 times to make sure the message gets through
   ros::WallRate rate(500);
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 100; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
     rate.sleep();
@@ -216,8 +216,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   geometry_msgs::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
-  ros::WallRate rate(50);
-  for (int i = 0; i < 10; i++) {
+  ros::WallRate rate(500);
+  for (int i = 0; i < 100; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
     rate.sleep();
