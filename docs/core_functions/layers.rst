@@ -4,7 +4,7 @@ In Flatland, a layer is the static environment in the simulation, they are
 defined by map yaml files and implemented as line segments (Box2D edge shapes). 
 Layers can be loaded in two ways, either using data obtained from 
 `ROS map_server <http://wiki.ros.org/map_server>`_ (an image), or directly from
-a list of line segments.
+a list of line segments. Examples can be found in flatland_server/tests.
 
 From Map Server Data
 --------------------

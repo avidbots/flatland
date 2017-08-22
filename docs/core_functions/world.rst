@@ -1,7 +1,8 @@
 Configuring World
 =================
 
-The simulation world is defined by a yaml file as shown below.
+The simulation world is defined by a yaml file as shown below. Examples can
+be found in flatland_server/tests.
 
 .. code-block:: yaml
 
