@@ -1,13 +1,13 @@
 Quick Start
 ====================================
-Here is a quick setup guide for setting up 2D simulator.
+Here is a quick guide for setting up 2D simulator.
 
-Flatland uses YAML files to setup the simulator, much like how Gazebo uses URDF
+Flatland uses YAML files to setup the simulation, much like how Gazebo uses URDF
 files.
 
-1. Create a yaml file called world.yaml with the following content
+1. Create a YAML file called world.yaml with the following content
 
-   Here we define a world with one layer "map" and one model "turtlebot". See 
+   Here we define a world with a layer called "map" and one model "turtlebot". See 
    :doc:`core_functions/world` for more details.
 
   .. code-block:: yaml
@@ -16,6 +16,7 @@ files.
     layers:
       - name: "map" 
         map: "conestogo_office.yaml"
+        color: [0.4, 0.4, 0.4, 1]
     models:  
       - name: turtlebot 
         model: "turtlebot.model.yaml"
@@ -52,7 +53,7 @@ files.
       - name: base
         pose: [0, 0, 0] 
         type: dynamic  
-        color: [1, 1, 1, 0.75] 
+        color: [1, 1, 1, 0.4] 
 
         footprints:
           - type: circle
@@ -69,6 +70,7 @@ files.
 
           - type: polygon
             points: [[-.125, .4], [-.125, .3], [.125, .3], [.125, .4]]
+            density: 1            
               
     plugins:
       - type: DiffDrive 

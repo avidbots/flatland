@@ -44,7 +44,7 @@ messages.
       angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.004363323129985824}
 
       # optional, default to inf (as fast as possible), rate to publish laser scan messages
-      update_rate: inf
+      update_rate: .inf
 
       # optional, default to ["all"], the layers to operate the laser at, 
       # lasers only detects objects in the specified layers

@@ -6,7 +6,7 @@ This plugin provides features for a specific implementation of tricycle robots.
   messages. Note the yaw rate is the angle of the front wheel instead of actual
   yaw rate. 
 
-* Publishes to two topics with `nav_msgs/Odometry <http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html>`_
+* Publishes to two topics of `nav_msgs/Odometry <http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html>`_
   messages, one for robot odometry which has noise, the other the ground truth
   odometry
 
@@ -98,9 +98,9 @@ has no effect on the actual motion of the robot.
       # must have length of 36, represents a 6x6 covariance matrix for rates x, 
       # y, z, roll, pitch, yaw. This does not involve in any of the noise 
       # calculation, it is simply the output values of odometry twist covariance
-      odom_pose_covariance: [0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
+      odom_twist_covariance: [0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0]

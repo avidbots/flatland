@@ -9,13 +9,13 @@ w.r.t. the specifies reference body, and broadcast the TF.
   plugins:
 
       # required, specify model tf publisher plugin to load this plugin
-    - type: Laser
+    - type: ModelTfPublisher
 
       # required, name of the model tf publisher plugin, must be unique
       name: state_publisher
 
       # optional, defaults to inf (broadcast every iteration)
-      update_rate: inf
+      update_rate: .inf
 
       # optional, defaults to false, whether to broadcast TF w.r.t. to a frame frame
       publish_tf_world: false      

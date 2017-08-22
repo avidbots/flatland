@@ -21,7 +21,7 @@ Response:
 
 .. code-block:: bash
 
-  bool success    # if the operation is successful
+  bool success    # to check if the operation is successful
   string message  # error message if unsuccessful
 
 
@@ -38,7 +38,7 @@ Response:
 
 .. code-block:: bash
 
-  bool success    # if the operation is successful
+  bool success    # check if the operation is successful
   string message  # error message if unsuccessful
 
 
