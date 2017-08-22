@@ -1,5 +1,5 @@
-ROS Launch Flatland Server Node
-====================================
+Launching Flatland Server Node
+==============================
 Flatland Server provides a launch file to start the 2D simulator. The parameters
 for the launch file is specified below.
 
