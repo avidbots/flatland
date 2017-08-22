@@ -1,35 +1,34 @@
 Flatland Simulator Overview
 ===========================
 
-This document provides an overview of the flatland simulator.
+This document provides an overview of Flatland Simulator.
 
-Flatland simulator is a light weight, performance centric 2D robot simulator. It
+Flatland Simulator is a light weight, performance centric 2D robot simulator. It
 is built to integrate directly with ROS and uses Box2D for physics simulation.
 This project is divided into four ROS packages: flatland_server, flatland_plugins,
 and flatland_viz, and flatland messages.
 
 Flatland Server
 ---------------
-Flatland server contains the core functionalities of the flatland simulator
+Flatland server contains the core functionalities of Flatland Simulator
 including simulation environment, objects, plugin interfaces, and ROS services.
 All of flatland server runs in a single ROS node, in a single thread. The 
 following are some of the commonly used terminologies in the Flatland Server.
 
 * **Simulation Manager**: Simulation manager is responsible for managing the
   state of the simulator. It manages how the world progresses through time,
-  as well ROS Services to interact with the world.
+  as well ROS Services to interact with the simulation.
 
 * **World**: World is everything that lives in the simulation, including the 
   layers, models, time, and other physical properties. It also manages the plugins.
 
 * **Layer**: Layer represents the static environment features in the simulation
   such as walls in a building. It allows large scale static features to be loaded
-  and represented in a efficient manner. Flatland allows a powerful feature where
-  multiple layers can be used to represent a effectively 2.5D world. 
+  and represented in an efficient manner. Flatland allows a powerful feature where
+  multiple layers can be used to represent what is effectively a 2.5D world. 
 
-* **Model**: Models are collection of bodies. It can be any other physical 
-  entities in the world. It can be made to represent robots, people, automatic
-  doors, or anything else.
+* **Model**: Models are collection of bodies. It can be used to represent any 
+  physical entities, such as robots, people, automatic doors, or chairs.
 
 * **Body**: A body is a indeformable and inseparable piece of entity. A body does
   not need to contiguous, the actual physical outlines are defined by a collection
@@ -51,20 +50,20 @@ following are some of the commonly used terminologies in the Flatland Server.
 
 Flatland Plugins
 ----------------
-Flatland plugins contains the useful plugins that is developed with the flatland
+Flatland Plugins contains the useful plugins that is developed with the flatland
 2D simulator. 
 
 Flatland Visualization
 ----------------------
-Flatland plugins contains the visualization portion of 2D simulator. Visualization
-in flatland is completely ROS based. Once visualization option is turned on,
+Flatland Visualization contains the visualization portion of 2D simulator. Visualization
+in flatland is completely ROS based. Once the visualization option is turned on,
 the 2D simulator would convert the models and layers to ROS markers messages and
-publish them through ROS topics. Thus, flatland visualization can also be view
-directly on rviz, however the user needs to manually subtribe to topics, whereas
+publish them through ROS topics. Thus, flatland visualization can also be viewed
+directly on rviz, however the user needs to manually subscribe to topics, whereas
 flatland_viz is written to automatically show visualization for models and layers
 in the simulation.
 
 Flatland Messages
 -----------------
-The package flatland_msgs defines ROS messages and services used by the flatland
-simulator.
+The package flatland_msgs defines ROS messages and services used by the Flatland
+Simulator.

@@ -1,9 +1,10 @@
 Writing Model Plugins
 =====================
 Flatland is designed with extensibility in mind. Users can write their own Plugins
-to tailor the simulator for their specific purposes. A Model Plugin is a plugin
+to tailor the simulator for their specific needs. A Model Plugin is a plugin
 that is attached to a specific model and perform specific functions for
-that model. 
+that model. You can check flatland_plugins for existing examples of plugins.
+
 
 ModelPlugin Base Class Overview
 -------------------------------
@@ -13,8 +14,8 @@ All model plugins must implement the base class ModelPlugin with the critical
 class members listed below. When the model plugin initializes, the YAML Node
 containing the parameters for the plugin is passed in. It is up to the plugin to
 extract data from the YAML Nodes and throw exceptions if any errors occur. Any
-exceptions derived from std::exception will be caught and handled gracefully.
-See flatland_plugins for existing examples.
+exceptions derived from std::exception will be caught and handled gracefully. 
+However, we recommend throwing exceptions from flatland_server/exceptions.h.
 
 .. code-block:: Cpp
 
@@ -36,8 +37,8 @@ See flatland_plugins for existing examples.
 
 
     // These two functions are called before and after the physics step, the
-    // time data contained in timekeeper and ROS simulation from from
-    // ros::Time::Now() has been set correctly
+    // time data contained in timekeeper and ROS simulation time from
+    // ros::Time::Now() have been set correctly
     virtual void BeforePhysicsStep(const Timekeeper &timekeeper) {} // time t
     virtual void AfterPhysicsStep(const Timekeeper &timekeeper) {}  // time t + dt
 
@@ -56,8 +57,8 @@ See flatland_plugins for existing examples.
     // Box2D collision callbacks use the FilterContact method to check if the this 
     // plugin's model is involved in the collision, See Box2D documentation for 
     // complete information about these callbacks. These call backs are always
-    // called between the BeforePhysicsStep() and AfterPhysicsStep. The simulation
-    // time is always equal to the time of BeforePhysicsStep().
+    // called between the BeforePhysicsStep() and AfterPhysicsStep(). The simulation
+    // time is always equal to the time at BeforePhysicsStep().
 
     // Called when two fixtures starts to contact
     virtual void BeginContact(b2Contact *contact) {}  // time t
@@ -65,21 +66,21 @@ See flatland_plugins for existing examples.
     // called when two fixtures stops contact
     virtual void EndContact(b2Contact *contact) {}  // time t
     
-    // called before solving collision, may be called multiple times
+    // called before solving collision, may be called multiple times in a time step
     virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {}  // time t
 
-    // called after solving collision, may be called multiple times    
+    // called after solving collision, may be called multiple times in a time step
     virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}  // time t
   }
 
-Box2D contact object is generated when two Box2D fixtures collides, it contains
-all information about the collision. Box2D fixtures are the underlying physics 
+Box2D contact object is generated when two Box2D fixtures collide, it contains
+all the information about the collision. Box2D fixtures are the underlying physics 
 implementation of footprints in the simulation. From b2Contacts, you can obtain
 which two fixtures have collided. From b2Fixtures, we can get the b2Body that the 
 fixture belongs to, which also has a one to one relationship to the Flatland's 
-Bodies. Each b2Body contain  a pointer to a Flatland Body, and each Flatland Body 
+Bodies. Each b2Body contain a pointer to a Flatland Body, and each Flatland Body 
 has pointer to a entity that is either a layer or a model. Use the Type() method 
-to determine if  an entity is a model or layer. This is shown as below. 
+to determine if an entity is a model or layer. This is shown as below. 
 
 .. code-block:: Cpp
 
@@ -97,11 +98,11 @@ to determine if  an entity is a model or layer. This is shown as below.
 Creating the Plugin
 -------------------
 
-Say you would want to make a plugin to make a body in the model move at given
-x, y and yaw rate. This will reside in a package called my_plugins.
+Say you would want to make a plugin to have a body in the model move at given
+constant x, y and yaw rates. This will reside in a package called my_plugins.
 
-1. Create a subclass from ModelPlugin. Note that the name space must be
-   flatland_plugins.We must implement the OnInitialize() abstract method, 
+1. Create a subclass of ModelPlugin. Note that the name space must be
+   flatland_plugins. We must implement the OnInitialize() abstract method, 
    and we need to override the BeforePhysicsStep() to apply the velocity. 
    The velocities are stored in the vel_x, vel_y, and omega members. We also
    need to keep a pointer to the body we are going to apply the velocity to.
@@ -138,7 +139,7 @@ x, y and yaw rate. This will reside in a package called my_plugins.
 
   We then write the implementation for the ConstVelocity class, the
   PLUGINLIB_EXPORT_CLASS macro is used to register the class within the plugin
-  system. YamlReader class is used to help extracting data from YAML Node.
+  system. YamlReader class is used to help extracting data from the YAML Node.
 
   .. code-block:: Cpp
 
@@ -251,7 +252,7 @@ x, y and yaw rate. This will reside in a package called my_plugins.
 
    To use a model plugin, simply add a plugin entry under plugins as shown in 
    the example model yaml file below. After adding the model to the world, the 
-   model should travel at specified velocities.
+   model should travel at the specified velocities.
 
   .. code-block:: yaml
 
@@ -272,7 +273,7 @@ x, y and yaw rate. This will reside in a package called my_plugins.
 
 
 7. If there are issues, check that PLUGINLIB_EXPORT_CLASS is used to export
-   the plugin class, check spellings of classes, library files, plugin.xml XML 
+   the plugin class, check the spelling of classes, library files, plugin.xml XML 
    tags, and file names to make everything is hooked up correctly.
 
 
@@ -281,7 +282,7 @@ Model Namespacing
 Models have a optional namespace parameter. When it is not set, it defaults to
 "", and it is equivalent to having no namespace. Namespace allows the simulation
 to load multiple of the same model, without worrying about the topic names
-and TF frames conflicting between the models. The node handle of model plugins
+and TF frames conflicting between these models. The node handle of model plugins
 are initialized with the model's namespace, and the namespace will be automatically
 added to all topic names subscribed and advertised. This is shown below.
 
@@ -290,7 +291,7 @@ added to all topic names subscribed and advertised. This is shown below.
   nh_ = ros::NodeHandle(model_->namespace_);
 
 To avid conflicts in TF frame IDs, if the plugins choose to publish TF, use
-tf::resolve() function as shown below.
+tf::resolve() function to add prefix to **frames on the model** as shown below.
 
 .. code-block:: Cpp
 
@@ -301,9 +302,9 @@ YAML Reader
 Flatland server provides YAML Reader to simplify the process of extracting
 data from YAML files. It provides methods to extract scalars, lists, and array
 as well as providing error checking, checks for invalid/unused keys, and it 
-throws exceptions with messages telling the user where the error come from in 
-the YAML file. Check YamlReader documentation, and examples throughout 
-flatland_server and flatland_plugins for more details. 
+throws exceptions with messages telling the user what and where the error is. 
+Check YamlReader from API documentation, and examples throughout flatland_server
+and  flatland_plugins for more details. 
 
 Simulation Time
 ---------------
@@ -318,9 +319,9 @@ Update Timer
 It is often desireable to perform updates at a slower rate than what the
 simulation is running at. For example, the simulation might be executing in
 real time speed at 200Hz, and you wish to publish laser data at 10Hz. This can be
-done through the UpdateTimer class from flatland plugins. The following code
-snippet shows how it is used, and more information and examples can be from
-the UpdateTimer documentation as well as examples in flatland_plugins.
+done through the flatland_plugins/UpdateTimer class. The following code
+snippet shows how it can be used, and more information and examples can be
+obtained from API documentation as well as examples in flatland_plugins.
 
 .. code-block:: Cpp
 

@@ -12,7 +12,7 @@ Run this following command to launch the simulator using default parameters
 
 Here are the full list of parameters with the default values 
 
-.. code-block:: shell
+.. code-block:: bash
 
   $ roslaunch flatland_server server.launch world_path:=/path/to/world.yaml \
                                             update_rate:=200.0 \
@@ -26,5 +26,5 @@ Here are the full list of parameters with the default values
 * **step_size**: amount of time to step each loop in seconds
 * **show_viz**: show visualization, pops the flatland_viz window and publishes 
   visualization messages, either true or false
-* **viz_pub_rate**: rate to publish visualization in Hz, works only when show_viz=true, in Hz
+* **viz_pub_rate**: rate to publish visualization in Hz, works only when show_viz=true
 * **use_rviz**:  works only when show_viz=true, set this to disable flatland_viz popup
