@@ -35,6 +35,10 @@ link_directories(${YAML_CPP_LIBRARY_DIRS})
 # OpenCV
 find_package(OpenCV REQUIRED)
 
+# Boost
+find_package(Boost REQUIRED COMPONENTS date_time system thread)
+find_package(Threads)
+
 ##############
 ## coverage ##
 ##############
@@ -95,6 +99,7 @@ add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARIES}
   flatland_Box2D
   yaml-cpp
 )
@@ -112,6 +117,7 @@ add_dependencies(flatland_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARIES}
   flatland_Box2D
   yaml-cpp
   flatland_lib
