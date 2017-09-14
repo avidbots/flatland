@@ -10,7 +10,6 @@
  * @name   flatland_window.cpp
  * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
- * @author Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -45,26 +44,77 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+// namespace rviz;
+
 #include <ros/ros.h>
 #include <QLabel>
 #include <QMainWindow>
+#include <QPushButton>
 #include <QWidget>
 #include "flatland_viz/flatland_viz.h"
-#include "flatland_viz/model_dialog.h"
+
+//#include "rviz/display_context.h"
+//#include "rviz/tool.h"
+//#include "rviz/tool_manager.h"
+// class ToolManager;
+// namespace rviz {
+// class ToolManager;
+// }
+#include "rviz/display.h"
+#include "rviz/display_context.h"
+#include "rviz/displays_panel.h"
+#include "rviz/env_config.h"
+#include "rviz/failed_panel.h"
+#include "rviz/help_panel.h"
+#include "rviz/load_resource.h"
+#include "rviz/loading_dialog.h"
+#include "rviz/new_object_dialog.h"
+#include "rviz/panel_dock_widget.h"
+#include "rviz/panel_factory.h"
+#include "rviz/properties/status_property.h"
+#include "rviz/render_panel.h"
+#include "rviz/screenshot_dialog.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/selection_panel.h"
+#include "rviz/splash_screen.h"
+#include "rviz/time_panel.h"
+#include "rviz/tool.h"
+#include "rviz/tool_manager.h"
+#include "rviz/tool_properties_panel.h"
+#include "rviz/view_manager.h"
+#include "rviz/views_panel.h"
+#include "rviz/visualization_frame.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/widget_geometry_change_detector.h"
+#include "rviz/yaml_config_reader.h"
+#include "rviz/yaml_config_writer.h"
 
 class FlatlandWindow : public QMainWindow {
   Q_OBJECT
  public:
   FlatlandWindow(QWidget* parent = 0);
-  QLabel* fps_label_;
-  ModelDialog* model_dialog_;
+  // rviz::ToolManager* tool_manager_;
+  // here
+  // rviz::VisualizationFrame* vFrame_;
+  rviz::VisualizationManager* visualization_manager_;
+  rviz::RenderPanel* render_panel_;
+  // QToolBar* toolbar_;
 
- public Q_SLOTS:
+  rviz::VisualizationManager* getManager();
+
+  QLabel* fps_label_;
+
+ protected Q_SLOTS:
+
+  void openNewToolDialog();
+
   void UpdateFps();
   void CreateModelDialog();
+  // void FlatlandWindow::initToolbars();
 
  private:
   FlatlandViz* viz_;
+
   int frame_count_;
   ros::WallTime last_fps_calc_time_;
 };

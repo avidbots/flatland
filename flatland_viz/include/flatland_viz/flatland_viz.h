@@ -48,27 +48,57 @@
 #define FLATLAND_VIZ_FLATLAND_VIZ_H
 
 #include <ros/ros.h>
+#include <QAction>
+#include <QActionGroup>
+#include <QList>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QToolBar>
+#include <QToolButton>
 #include <QWidget>
+
 #include <set>
 #include "flatland_msgs/DebugTopicList.h"
+#include "rviz/config.h"
+#include "rviz/panel.h"
+#include "rviz/properties/property_tree_widget.h"
+#include "rviz/tool.h"
+#include "rviz/tool_manager.h"
+#include "rviz/window_manager_interface.h"
+
+class QSplashScreen;
+class QAction;
+class QActionGroup;
+class QTimer;
+class QDockWidget;
+class QLabel;
+class QToolButton;
 
 namespace rviz {
+class PanelFactory;
+class Tool;
 class Display;
 class RenderPanel;
 class VisualizationManager;
+class WidgetGeometryChangeDetector;
 }
 
 class FlatlandWindow;
 
+// class VisualizationFrame : public QMainWindow, public WindowManagerInterface
+// class FlatlandViz : public QMainWindow {
+
+// class FlatlandViz : public QMainWindow, public WindowManagerInterface
+//{
 class FlatlandViz : public QWidget {
-  Q_OBJECT
- public:
-  /**
-   * @brief Construct FlatlandViz and subscribe to debug topic list
-   *
-   * @param parent The parent widget
-   */
-  FlatlandViz(FlatlandWindow* parent = 0);
+  Q_OBJECT public :
+      /**
+        * @brief Construct FlatlandViz and subscribe to debug topic list
+        *
+        * @param parent The parent widget
+        */
+      FlatlandViz(FlatlandWindow* parent = 0);
 
   /**
    * @brief Recieve a new DebugTopicList msg and add any new displays required
@@ -86,9 +116,49 @@ class FlatlandViz : public QWidget {
 
  private:
   rviz::RenderPanel* render_panel_;
+
   rviz::Display* grid_;
   std::set<std::string> debug_topics_;
   ros::Subscriber debug_topic_subscriber_;
+  rviz::PropertyTreeWidget* tree_widget_;
+  FlatlandWindow* parent_;
+
+  QMenu* file_menu_;
+  QMenu* recent_configs_menu_;
+  QMenu* view_menu_;
+  QMenu* delete_view_menu_;
+  QMenu* plugins_menu_;
+
+  QToolBar* toolbar_;
+
+  QActionGroup* toolbar_actions_;
+  std::map<QAction*, rviz::Tool*> action_to_tool_map_;
+  std::map<rviz::Tool*, QAction*> tool_to_action_map_;
+  bool show_choose_new_master_option_;
+
+  QAction* add_tool_action_;
+  QMenu* remove_tool_menu_;
+
+  /// Indicates if the toolbar should be visible outside of fullscreen mode.
+  bool toolbar_visible_;
+
+  // protected Q_SLOTS:
+  void fullScreenChange(bool hidden);
+
+  /** @brief Hide or show the hide-dock buttons. */
+  void setHideButtonVisibility(bool visible);
+
+  void setDisplayConfigModified();
+  void addTool(rviz::Tool*);
+  void removeTool(rviz::Tool*);
+  void refreshTool(rviz::Tool*);
+  void indicateToolIsCurrent(rviz::Tool*);
+  void onToolbarActionTriggered(QAction* action);
+  void onToolbarRemoveTool(QAction* remove_tool_menu_action);
+  void initToolbars();
+  void initMenus();
+  void openNewToolDialog();
+  void setFullScreen(bool full_screen);
 };
 
 #endif  // FLATLAND_VIZ_FLATLAND_VIZ_H
