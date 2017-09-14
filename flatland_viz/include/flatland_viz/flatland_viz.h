@@ -57,8 +57,9 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QWidget>
-
 #include <set>
+#include <map>
+
 #include "flatland_msgs/DebugTopicList.h"
 #include "rviz/config.h"
 #include "rviz/panel.h"
@@ -105,7 +106,7 @@ class FlatlandViz : public QWidget {
    *
    * @param msg The DebugTopicList message
    */
-  void RecieveDebugTopics(const flatland_msgs::DebugTopicList::ConstPtr& msg);
+  void RecieveDebugTopics(const flatland_msgs::DebugTopicList& msg);
 
   /**
    * @brief Destruct
@@ -118,7 +119,7 @@ class FlatlandViz : public QWidget {
   rviz::RenderPanel* render_panel_;
 
   rviz::Display* grid_;
-  std::set<std::string> debug_topics_;
+  std::map<std::string, rviz::Display*> debug_displays_;
   ros::Subscriber debug_topic_subscriber_;
   rviz::PropertyTreeWidget* tree_widget_;
   FlatlandWindow* parent_;

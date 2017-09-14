@@ -45,31 +45,18 @@
  */
 
 #include <flatland_plugins/tricycle_drive.h>
-#include <flatland_server/collision_filter_registry.h>
-#include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
-#include <yaml-cpp/yaml.h>
 
-TEST(FlatlandPluginsTricycleDriveTest, pluginlib_load_test) {
+TEST(TricycleDrivePluginTest, load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
     boost::shared_ptr<flatland_server::ModelPlugin> plugin =
         loader.createInstance("flatland_plugins::TricycleDrive");
-
-    flatland_server::CollisionFilterRegistry cfr;
-    b2Vec2 gravity_(0, 0);
-    b2World physics_world_(gravity_);
-
-    flatland_server::Model* model = flatland_server::Model::MakeModel(
-        &physics_world_, &cfr,
-        ros::package::getPath("flatland_server") +
-            "/test/conestogo_office_test/cleaner.model.yaml",
-        "", "test");
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Tricycle Drive plugin. " << e.what();
   }

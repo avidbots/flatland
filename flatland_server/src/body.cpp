@@ -79,6 +79,8 @@ int Body::GetFixturesCount() const {
   return count;
 }
 
+Entity *Body::GetEntity() { return entity_; }
+
 const std::string &Body::GetName() const { return name_; }
 
 b2Body *Body::GetPhysicsBody() { return physics_body_; }

@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<package>
+  <name>flatland</name>
+  <version>1.0.0</version>
+  <description>
+    This is the metapackage for flatland.
+  </description>
+  <maintainer email="joseph@avidbots.com">Joseph Duchesne</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend version_eq="1.0.0">flatland_msgs</run_depend>
+  <run_depend version_eq="1.0.0">flatland_plugins</run_depend>
+  <run_depend version_eq="1.0.0">flatland_server</run_depend>
+  <run_depend version_eq="1.0.0">flatland_viz</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
+

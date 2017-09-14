@@ -1,7 +1,4 @@
 <library path="lib/libflatland_plugins_lib">
-  <class type="flatland_plugins::DummyModelPlugin" base_class_type="flatland_server::ModelPlugin">
-    <description>Flatland Dummy Model Plugin, used for testing</description>
-  </class>
   <class type="flatland_plugins::Laser" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland laser plugin</description>
   </class>
@@ -16,5 +13,8 @@
   </class>
   <class type="flatland_plugins::Bumper" base_class_type="flatland_server::ModelPlugin">
     <description>Contact sensor for a robot</description>
+  </class>
+  <class type="flatland_plugins::Tween" base_class_type="flatland_server::ModelPlugin">
+    <description>Tween a model between two positions</description>
   </class>
 </library>

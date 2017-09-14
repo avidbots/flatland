@@ -65,6 +65,7 @@ namespace flatland_server {
 class Layer : public Entity {
  public:
   std::vector<std::string> names_;  ///< list of layer names
+  std::string viz_name_;            ///< for visualization
   CollisionFilterRegistry *cfr_;    ///< collision filter registry
   Body *body_;
 

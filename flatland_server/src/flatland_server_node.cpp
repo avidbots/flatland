@@ -86,8 +86,11 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  float initial_rate = 60.0;  // The physics update rate (Hz)
-  node_handle.getParam("initial_rate", initial_rate);
+  float update_rate = 200.0;  // The physics update rate (Hz)
+  node_handle.getParam("update_rate", update_rate);
+
+  float step_size = 1 / 200.0;
+  node_handle.getParam("step_size", step_size);
 
   bool show_viz = false;
   node_handle.getParam("show_viz", show_viz);
@@ -97,7 +100,7 @@ int main(int argc, char **argv) {
 
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
-      world_path, initial_rate, show_viz, viz_pub_rate);
+      world_path, update_rate, step_size, show_viz, viz_pub_rate);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
