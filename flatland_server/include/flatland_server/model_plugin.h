@@ -61,14 +61,27 @@ namespace flatland_server {
  * the world
  */
 class ModelPlugin {
- public:
-  std::string type_;    ///< type of the plugin
-  std::string name_;    ///< name of the plugin
-  ros::NodeHandle nh_;  ///< ROS node handle
-  Model *model_;        ///< model this plugin is tied to
+ private:
+  std::string type_;  ///< type of the plugin
+  std::string name_;  ///< name of the plugin
+  Model *model_;      ///< model this plugin is tied to
 
+ public:
+  ros::NodeHandle nh_;  ///< ROS node handle
+
+  /**
+   * @brief Get plugin name
+   */
   const std::string &GetName() const;
+
+  /**
+   * @brief Get type of plugin
+   */
   const std::string &GetType() const;
+
+  /**
+   * @brief Get model
+   */
   Model *GetModel();
 
   /**
@@ -93,8 +106,7 @@ class ModelPlugin {
    * collision
    * @return True or false depending on if this model is involved. If false
    * is returned, none of the entity, this_fixture, other_fixture pointers will
-   * be
-   * populated
+   * be populated
    */
   bool FilterContact(b2Contact *contact, Entity *&entity,
                      b2Fixture *&this_fixture, b2Fixture *&other_fixture);

@@ -46,6 +46,7 @@
 
 #include <flatland_msgs/DeleteModel.h>
 #include <flatland_msgs/SpawnModel.h>
+#include <flatland_server/simulation_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 
@@ -54,7 +55,7 @@
 
 namespace flatland_server {
 
-class World;
+class SimulationManager;
 
 /**
  * This class contains a collection of ROS services that the user may use
@@ -62,15 +63,18 @@ class World;
  */
 class ServiceManager {
  public:
-  World *world_;  ///< an handle to the simulation world
+  World *world_;                ///< aaa handle to the simulation world
+  SimulationManager *sim_man_;  ///< a handle to the simulation manager
+
   ros::ServiceServer spawn_model_service_;   ///< service for spawning models
   ros::ServiceServer delete_model_service_;  ///< service for deleting models
 
   /**
    * @brief Service manager constructor
+   * @param[in] sim_man A handle to the simulation manager
    * @param[in] world A handle to the simulation world
    */
-  ServiceManager(World *world);
+  ServiceManager(SimulationManager *sim_man, World *world);
 
   /**
    * @brief Callback for the spawn model service

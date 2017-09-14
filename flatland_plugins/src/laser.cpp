@@ -104,22 +104,23 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.ranges.resize(num_laser_points);
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
+  laser_scan_.header.frame_id =
+      tf::resolve(GetModel()->GetNameSpace(), frame_id_);
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
-  static_tf_.header.frame_id =
-      tf::resolve(model_->GetNameSpace(), body_->GetName());
-  static_tf_.child_frame_id = tf::resolve(model_->GetNameSpace(), frame_id_);
-  static_tf_.transform.translation.x = origin_.x;
-  static_tf_.transform.translation.y = origin_.y;
-  static_tf_.transform.translation.z = 0;
-  static_tf_.transform.rotation.x = q.x();
-  static_tf_.transform.rotation.y = q.y();
-  static_tf_.transform.rotation.z = q.z();
-  static_tf_.transform.rotation.w = q.w();
+  laser_tf_.header.frame_id =
+      tf::resolve(GetModel()->GetNameSpace(), body_->GetName());
+  laser_tf_.child_frame_id = tf::resolve(GetModel()->GetNameSpace(), frame_id_);
+  laser_tf_.transform.translation.x = origin_.x;
+  laser_tf_.transform.translation.y = origin_.y;
+  laser_tf_.transform.translation.z = 0;
+  laser_tf_.transform.rotation.x = q.x();
+  laser_tf_.transform.rotation.y = q.y();
+  laser_tf_.transform.rotation.z = q.z();
+  laser_tf_.transform.rotation.w = q.w();
 }
 
 void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
@@ -135,8 +136,10 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
     scan_publisher_.publish(laser_scan_);
   }
 
-  static_tf_.header.stamp = ros::Time::now();
-  tf_broadcaster_.sendTransform(static_tf_);
+  if (broadcast_tf_) {
+    laser_tf_.header.stamp = ros::Time::now();
+    tf_broadcaster_.sendTransform(laser_tf_);
+  }
 }
 
 void Laser::ComputeLaserRanges() {
@@ -164,12 +167,13 @@ void Laser::ComputeLaserRanges() {
 
     did_hit_ = false;
 
-    model_->GetPhysicsWorld()->RayCast(this, laser_origin_point, laser_point);
+    GetModel()->GetPhysicsWorld()->RayCast(this, laser_origin_point,
+                                           laser_point);
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
     } else {
-      laser_scan_.ranges[i] = fraction_ * range_;
+      laser_scan_.ranges[i] = fraction_ * range_ + noise_gen_(rng_);
     }
   }
 }
@@ -191,11 +195,14 @@ void Laser::ParseParameters(const YAML::Node &config) {
   YamlReader reader(config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "scan");
-  frame_id_ = reader.Get<std::string>("frame", name_);
+  frame_id_ = reader.Get<std::string>("frame", GetName());
+  broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
   origin_ = reader.GetPose("origin", Pose(0, 0, 0));
   range_ = reader.Get<double>("range");
+  noise_std_dev_ = reader.Get<double>("noise_std_dev", 0);
+
   std::vector<std::string> layers =
       reader.GetList<std::string>("layers", {"all"}, -1, -1);
 
@@ -211,26 +218,33 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Invalid \"angle\" params, must have max > min");
   }
 
-  body_ = model_->GetBody(body_name);
+  body_ = GetModel()->GetBody(body_name);
   if (!body_) {
     throw YAMLException("Cannot find body with name " + body_name);
   }
 
   std::vector<std::string> invalid_layers;
-  layers_bits_ = model_->GetCfr()->GetCategoryBits(layers, &invalid_layers);
+  layers_bits_ = GetModel()->GetCfr()->GetCategoryBits(layers, &invalid_layers);
   if (!invalid_layers.empty()) {
     throw YAMLException("Cannot find layer(s): {" +
                         boost::algorithm::join(invalid_layers, ",") + "}");
   }
 
+  // init the random number generators
+  std::random_device rd;
+  rng_ = std::default_random_engine(rd());
+  noise_gen_ = std::normal_distribution<double>(0.0, noise_std_dev_);
+
   ROS_DEBUG_NAMED("LaserPlugin",
                   "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) "
-                  "frame_id(%s) update_rate(%f) range(%f) angle_min(%f) "
-                  "angle_max(%f) angle_increment(%f) layers(0x%u {%s})",
-                  name_.c_str(), topic_.c_str(), body_name.c_str(), body_,
+                  "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
+                  "noise_std_dev(%f) angle_min(%f) angle_max(%f) "
+                  "angle_increment(%f) layers(0x%u {%s})",
+                  GetName().c_str(), topic_.c_str(), body_name.c_str(), body_,
                   origin_.x, origin_.y, origin_.theta, frame_id_.c_str(),
-                  update_rate_, range_, min_angle_, max_angle_, increment_,
-                  layers_bits_, boost::algorithm::join(layers, ",").c_str());
+                  broadcast_tf_, update_rate_, range_, noise_std_dev_,
+                  min_angle_, max_angle_, increment_, layers_bits_,
+                  boost::algorithm::join(layers, ",").c_str());
 }
 };
 

@@ -60,6 +60,7 @@ catkin_package(
 
 include_directories(
   include
+  include/thirdparty/tweeny
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
@@ -70,10 +71,10 @@ add_library(flatland_plugins_lib
   src/laser.cpp
   src/tricycle_drive.cpp
   src/diff_drive.cpp
-  src/dummy_model_plugin.cpp
   src/model_tf_publisher.cpp
   src/update_timer.cpp
   src/bumper.cpp
+  src/tween.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -110,11 +111,10 @@ install(DIRECTORY include/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
 )
 
-# Install launchfiles
-install(DIRECTORY launch
+# Install plugins file
+install(FILES flatland_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
 
 #############
 ## Testing ##
@@ -133,25 +133,30 @@ if(CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
-  target_link_libraries(laser_test flatland_plugins_lib flatland_lib)
+  target_link_libraries(laser_test flatland_plugins_lib)
 
   add_rostest_gtest(tricycle_drive_test test/tricycle_drive_test.test
                     test/tricycle_drive_test.cpp)
-  target_link_libraries(tricycle_drive_test flatland_plugins_lib flatland_lib)
+  target_link_libraries(tricycle_drive_test flatland_plugins_lib)
+
+  add_rostest_gtest(diff_drive_test test/diff_drive_test.test
+                    test/diff_drive_test.cpp)
+  target_link_libraries(diff_drive_test flatland_plugins_lib)
+
   add_rostest_gtest(bumper_test test/bumper_test.test
                     test/bumper_test.cpp)
-  target_link_libraries(bumper_test flatland_plugins_lib flatland_lib)
+  target_link_libraries(bumper_test flatland_plugins_lib)
 
   add_rostest_gtest(model_tf_publisher_test test/model_tf_publisher_test.test
                     test/model_tf_publisher_test.cpp)
-  target_link_libraries(model_tf_publisher_test flatland_plugins_lib flatland_lib)
+  target_link_libraries(model_tf_publisher_test flatland_plugins_lib)
 
   add_rostest_gtest(update_timer_test test/update_timer_test.test
                     test/update_timer_test.cpp)
-  target_link_libraries(update_timer_test flatland_plugins_lib flatland_lib)
+  target_link_libraries(update_timer_test flatland_plugins_lib)
 
-  add_rostest_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.test
-                    test/dummy_model_plugin_test.cpp)
-  target_link_libraries(dummy_model_plugin_test flatland_plugins_lib flatland_lib)
+  add_rostest_gtest(tween_test test/tween_test.test
+                    test/tween_test.cpp)
+  target_link_libraries(tween_test flatland_plugins_lib)
 
 endif()

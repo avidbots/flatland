@@ -64,7 +64,10 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
              double resolution)
-    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
+    : Entity(physics_world, names[0]),
+      names_(names),
+      cfr_(cfr),
+      viz_name_("layer/" + name_) {
   body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
 
   LoadFromBitmap(bitmap, occupied_thresh, resolution);
@@ -283,10 +286,8 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 }
 
 void Layer::DebugVisualize() const {
-  std::string viz_name = "layer/" + name_;
-
-  DebugVisualization::Get().Reset(viz_name);
-  DebugVisualization::Get().Visualize(viz_name, body_->physics_body_,
+  DebugVisualization::Get().Reset(viz_name_);
+  DebugVisualization::Get().Visualize(viz_name_, body_->physics_body_,
                                       body_->color_.r, body_->color_.g,
                                       body_->color_.b, body_->color_.a);
 }

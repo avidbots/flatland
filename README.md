@@ -7,16 +7,19 @@
 
 ### How do I get set up? ###
 
-* Git clone flatland into your catkin workspace's src folder, and catkin_make.
+* Git clone flatland into your catkin workspace's src folder, and catkin build.
 
 ### Contribution guidelines ###
 
 * code should be unit tested using gtest/rosunit when practical.
 * code must be formatted as per clang-format-3.8 --style=file
-* code must pass scan-build's static analysis. To run, clean your build directory and run:
-  
-  scan-build-3.8 --status-bugs catkin_make -j1
+* code must pass clang-tidy-3.8 
 
 ### Who do I talk to? ###
 
 * Please direct any questions to @josephduchesne
+
+### Documentation ###
+
+* How to use: http://flatland-simulator.readthedocs.io
+* Doxygen: http://flatland-simulator-api.readthedocs.io

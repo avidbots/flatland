@@ -373,23 +373,30 @@ void FlatlandViz::setFullScreen(bool full_screen) {
   show();
 }
 
-void FlatlandViz::RecieveDebugTopics(
-    const flatland_msgs::DebugTopicList::ConstPtr& msg) {
-  for (const auto& name : msg->topics) {
-    if (debug_topics_.count(name) == 0) {
-      // Insert the name into the topics set to mark that it's loaded
-      debug_topics_.insert(name);
+void FlatlandViz::RecieveDebugTopics(const flatland_msgs::DebugTopicList& msg) {
+  std::vector<std::string> topics = msg.topics;
 
+  // check for deleted topics
+  for (auto& topic : debug_displays_) {
+    if (std::count(topics.begin(), topics.end(), topic.first) == 0) {
+      delete debug_displays_[topic.first];
+      debug_displays_.erase(topic.first);
+    }
+  }
+
+  // check for new topics
+  for (const auto& topic : topics) {
+    if (debug_displays_.count(topic) == 0) {
       // Create the marker display and set its topic
-      auto markers = manager_->createDisplay(
-          "rviz/MarkerArray", QString::fromLocal8Bit(name.c_str()), true);
-      if (markers == nullptr) {
-        ROS_FATAL("NarkerArray failed to instantiate");
+      debug_displays_[topic] = manager_->createDisplay(
+          "rviz/MarkerArray", QString::fromLocal8Bit(topic.c_str()), true);
+      if (debug_displays_[topic] == nullptr) {
+        ROS_FATAL("MarkerArray failed to instantiate");
         exit(1);
       }
-      QString topic = QString::fromLocal8Bit(
-          (std::string("/flatland_server/debug/") + name).c_str());
-      markers->subProp("Marker Topic")->setValue(topic);
+      QString topic_qt = QString::fromLocal8Bit(
+          (std::string("/flatland_server/debug/") + topic).c_str());
+      debug_displays_[topic]->subProp("Marker Topic")->setValue(topic_qt);
     }
   }
 }

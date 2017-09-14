@@ -70,8 +70,8 @@ bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
   b2Fixture *f_B = contact->GetFixtureB();
   Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
   Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
-  Entity *e_A = b_A->entity_;
-  Entity *e_B = b_B->entity_;
+  Entity *e_A = b_A->GetEntity();
+  Entity *e_B = b_B->GetEntity();
 
   if (e_A == model_) {
     entity = e_B;

@@ -120,6 +120,18 @@ class PluginManagerTest : public ::testing::Test {
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
   Timekeeper timekeeper;
+  World *w;
+
+  void SetUp() override {
+    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
+  }
 
   PluginManagerTest() {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
@@ -169,7 +181,7 @@ TEST_F(PluginManagerTest, collision_test) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/collision_test/world.yaml");
   timekeeper.SetMaxStepSize(1.0);
-  World *w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
   Layer *l = w->layers_[0];
   Model *m0 = w->models_[0];
   Model *m1 = w->models_[1];
@@ -284,20 +296,18 @@ TEST_F(PluginManagerTest, collision_test) {
   // w->DebugVisualize();
   // DebugVisualization::Get().Publish();
   // ros::spin();
-
-  delete w;
 }
 
 TEST_F(PluginManagerTest, load_dummy_test) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-  World *w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml.string());
 
   ModelPlugin *p = w->plugin_manager_.model_plugins_[0].get();
 
-  EXPECT_STREQ(p->type_.c_str(), "DummyModelPlugin");
-  EXPECT_STREQ(p->name_.c_str(), "dummy_test_plugin");
+  EXPECT_STREQ(p->GetType().c_str(), "DummyModelPlugin");
+  EXPECT_STREQ(p->GetName().c_str(), "dummy_test_plugin");
 }
 
 TEST_F(PluginManagerTest, plugin_throws_exception) {
@@ -306,8 +316,7 @@ TEST_F(PluginManagerTest, plugin_throws_exception) {
       fs::path("plugin_manager_tests/plugin_throws_exception/world.yaml");
 
   try {
-    World *w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException &e) {
     // do a regex match against error message
@@ -331,8 +340,7 @@ TEST_F(PluginManagerTest, nonexistent_plugin) {
                fs::path("plugin_manager_tests/nonexistent_plugin/world.yaml");
 
   try {
-    World *w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException &e) {
     std::cmatch match;
@@ -355,8 +363,7 @@ TEST_F(PluginManagerTest, invalid_plugin_yaml) {
                fs::path("plugin_manager_tests/invalid_plugin_yaml/world.yaml");
 
   try {
-    World *w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(
@@ -375,8 +382,7 @@ TEST_F(PluginManagerTest, duplicate_plugin) {
                fs::path("plugin_manager_tests/duplicate_plugin/world.yaml");
 
   try {
-    World *w = World::MakeWorld(world_yaml.string());
-    delete w;
+    w = World::MakeWorld(world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(
