@@ -1,5 +1,11 @@
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
 Launching Flatland Server Node
 ==============================
+
 Flatland Server provides a launch file to start the 2D simulator. The parameters
 for the launch file is specified below.
 
