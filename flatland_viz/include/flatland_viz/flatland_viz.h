@@ -57,8 +57,8 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QWidget>
-#include <set>
 #include <map>
+#include <set>
 
 #include "flatland_msgs/DebugTopicList.h"
 #include "rviz/config.h"
