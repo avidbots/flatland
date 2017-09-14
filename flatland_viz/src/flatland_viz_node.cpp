@@ -47,7 +47,6 @@
 #include <ros/ros.h>
 #include <signal.h>
 #include <QApplication>
-#include "flatland_viz/flatland_visualization_frame.h"
 #include "flatland_viz/flatland_window.h"
 
 // #include "flatland_viz/flatland_visualization_frame.h"
