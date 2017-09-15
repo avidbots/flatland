@@ -131,7 +131,7 @@ Create a new file called simple.cpp in the **flatland_plugins/src** directory.
     PLUGINLIB_EXPORT_CLASS(flatland_tutorials::Simple, flatland_server::ModelPlugin)
 
 5. Compiling the Plugin
-=======================
+-----------------------
 
 You may need to add to the include path. Refer to the documentation for the 
 specific SDK/editor you are using. 
@@ -160,7 +160,7 @@ add the following followed by a blank line.
     name: simple
     
 6. Running the Flatland simulator with installed plugin
-=======================================================
+-------------------------------------------------------
 
 Run the Flatland simulator:
 
