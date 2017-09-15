@@ -1,5 +1,11 @@
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
 Model TF Publisher
 ==================
+
 Model TF publisher broadcasts TF of bodies in the model. It obtains world position
 and orientation of bodies from the simulation, calculates relative transformation
 w.r.t. the specifies reference body, and broadcast the TF.

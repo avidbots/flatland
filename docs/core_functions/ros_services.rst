@@ -1,5 +1,11 @@
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
 Flatland ROS Services
 =====================
+
 Flatland offers means for manipulating the simulation through ROS services. 
 The following are the services offered by the simulator. 
 

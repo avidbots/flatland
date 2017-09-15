@@ -1,3 +1,8 @@
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
 Configuring Models
 ==================
 In Flatland, a model is a collection of bodies, and it can be used to represent
