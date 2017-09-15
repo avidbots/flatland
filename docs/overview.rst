@@ -1,3 +1,8 @@
+.. image:: _static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: _static/flatland_logo2.png
+
 Flatland Simulator Overview
 ===========================
 
@@ -50,7 +55,7 @@ following are some of the commonly used terminologies in the Flatland Server.
 
 Flatland Plugins
 ----------------
-Flatland Plugins contains the useful plugins that is developed with the flatland
+Flatland Plugins contains the useful plugins that were developed for use with the flatland
 2D simulator. 
 
 Flatland Visualization
@@ -67,3 +72,21 @@ Flatland Messages
 -----------------
 The package flatland_msgs defines ROS messages and services used by the Flatland
 Simulator.
+
+Software Architecture
+---------------------
+
+
+The following figure shows the top level software architecture. The architecture 
+closely resembles the Rviz top level software architecture.
+
+.. image:: _static/top_level.png
+    :width: 450px
+    :align: center 
+    :target: _static/top_level.png
+
+Build
+-----
+
+The software uses CMakeFiles and a catkin workspace. To build: cd to the root of the 
+catkin workspace and type catkin_make.
