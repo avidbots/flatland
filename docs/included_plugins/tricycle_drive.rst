@@ -1,5 +1,11 @@
-Diff Drive
-==========
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
+Tricycle Drive
+==============
+
 This plugin provides features for a specific implementation of tricycle robots.
 
 * Subscribes to a topic publishing `geometry_msgs/Twist <http://docs.ros.org/api/geometry_msgs/html/msg/Twist.html>`_
