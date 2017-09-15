@@ -10,10 +10,10 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend version_eq="1.0.0">flatland_msgs</run_depend>
-  <run_depend version_eq="1.0.0">flatland_plugins</run_depend>
-  <run_depend version_eq="1.0.0">flatland_server</run_depend>
-  <run_depend version_eq="1.0.0">flatland_viz</run_depend>
+  <run_depend>flatland_msgs</run_depend>
+  <run_depend>flatland_plugins</run_depend>
+  <run_depend>flatland_server</run_depend>
+  <run_depend>flatland_viz</run_depend>
 
   <export>
     <metapackage/>
