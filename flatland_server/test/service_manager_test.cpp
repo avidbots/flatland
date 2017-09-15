@@ -108,8 +108,8 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   srv.request.name = "service_manager_test_robot";
   srv.request.ns = "robot123";
   srv.request.yaml_path = robot_yaml.string();
-  srv.request.pose.x = 0.0;
-  srv.request.pose.y = 0.0;
+  srv.request.pose.x = 101.1;
+  srv.request.pose.y = 102.1;
   srv.request.pose.theta = 0.23;
 
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
