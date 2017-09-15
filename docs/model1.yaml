@@ -1,0 +1,13 @@
+bodies:
+- name: base
+    type: dynamic  
+    color: [1, 1, 1, 1] 
+    footprints:
+    - type: polygon
+        density: 100
+        points: [ [-1.03, -0.337],
+                [.07983, -0.337],
+                [.30, -.16111],
+                [.30, .16111],
+                [.07983, 0.337],
+                [-1.03, 0.337] ]
