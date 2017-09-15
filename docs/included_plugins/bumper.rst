@@ -1,3 +1,8 @@
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
 Bumper
 ======
 

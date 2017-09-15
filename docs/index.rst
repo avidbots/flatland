@@ -21,6 +21,15 @@ Class APIs are documented `here <http://flatland-simulator-api.readthedocs.io/>`
 
 .. toctree::
    :maxdepth: 2
+   :caption: Flatland Tutorials
+
+   flatland_tutorials/create_plugin.rst
+   flatland_tutorials/create_model.rst
+   flatland_tutorials/spawn_model.rst
+   flatland_tutorials/custom_robot.rst
+   
+.. toctree::
+   :maxdepth: 2
    :caption: Core Functionalities
 
    core_functions/ros_launch
@@ -29,6 +38,7 @@ Class APIs are documented `here <http://flatland-simulator-api.readthedocs.io/>`
    core_functions/models
    core_functions/ros_services
    core_functions/model_plugins
+   core_functions/joystick
 
 
 .. toctree::

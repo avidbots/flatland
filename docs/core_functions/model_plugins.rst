@@ -1,8 +1,13 @@
+.. image:: ../_static/flatland_logo2.png
+    :width: 250px
+    :align: right
+    :target: ../_static/flatland_logo2.png
+
 Writing Model Plugins
 =====================
 Flatland is designed with extensibility in mind. Users can write their own Plugins
 to tailor the simulator for their specific needs. A Model Plugin is a plugin
-that is attached to a specific model and perform specific functions for
+that is attached to a given model and perform specific functions for
 that model. You can check flatland_plugins for existing examples of plugins.
 
 
