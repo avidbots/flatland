@@ -50,6 +50,7 @@
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <tf/transform_broadcaster.h>
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
 #define FLATLAND_PLUGINS_DIFFDRIVE_H
@@ -68,6 +69,7 @@ class DiffDrive : public flatland_server::ModelPlugin {
   nav_msgs::Odometry odom_msg_;
   nav_msgs::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;
+  tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
 
   std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 6> noise_gen_;
