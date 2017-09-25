@@ -15,7 +15,7 @@ a robot from scratch for use in the flatland simulator.
 **Tutorial Level:** BEGINNER
 
 1. Prerequisites
-================
+----------------
 
 The following tutorials provide a good foundation for understanding the flatland 
 simulator architecture:
@@ -27,7 +27,7 @@ create_plugin_, create_model_
 .. _create_model: file:///home/mikeb/Dev/flatland_github/src/flatland/docs/_build/html/flatland_tutorials/create_model.html
 
 2.  Create the model Yaml file
-==============================
+------------------------------
 
 Create a new Yaml file, or make a copy of an existing Yaml file as a starting place.
 The Yaml files can be located anywhere, however, the usual location is within the 
@@ -47,7 +47,7 @@ This model has one body, of type dynamic and color white. It defines a polygonal
 footprint with a density of 100. The shape is a box with corners trimmed. 
 
 3. Configure Flatland to load your model
-========================================
+----------------------------------------
 
 There are two ways to load a model into the Flatland simulator. You can load 
 your model ineractively using the Spawn Model Tool |smpic| or you can configure the 
