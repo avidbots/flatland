@@ -17,7 +17,7 @@ This tutorial provides step by step instruction on how to create your own
 model and get it working inside the flatland simulator.
    
 1. Prerequisites
-================
+----------------
 
 The following tutorials provide a good foundation for understanding the flatland 
 simulator architecture:
@@ -27,7 +27,7 @@ create_plugin_.
 .. _create_plugin: file:///home/mikeb/Dev/flatland_github/src/flatland/docs/_build/html/flatland_tutorials/create_plugin.html
 
 2. Getting Started
-==================
+------------------
 
 .. note:: Flatland includes the Box2d physics engine library. 
 
@@ -45,7 +45,7 @@ designed for this type of simulation. Flatland provides Box2d with the informati
 setup the 2D simulation including initial position and model properties
 
 3. Box2d Core Concepts
-======================
+----------------------
 
 .. _b2d_docs: http://box2d.org/manual.pdf
 
@@ -82,7 +82,7 @@ so it can be displayed inside the Flatland world.
 
 
 3. Yaml Model File Format
-=========================
+-------------------------
 
 .. code-block:: Yaml
 
