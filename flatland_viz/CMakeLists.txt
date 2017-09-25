@@ -83,10 +83,27 @@ add_executable(flatland_viz
   include/flatland_viz/flatland_viz.h
   src/flatland_window.cpp
   include/flatland_viz/flatland_window.h
+  src/load_model_dialog.cpp
+  include/flatland_viz/load_model_dialog.h
+  src/spawn_model_tool.cpp
+  include/flatland_viz/spawn_model_tool.h
 )
 add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(flatland_viz
+  ${QT_LIBRARIES}
+  ${catkin_LIBRARIES}
+)
+
+add_library(flatland_viz_plugins
+  src/load_model_dialog.cpp
+  include/flatland_viz/load_model_dialog.h
+  src/spawn_model_tool.cpp
+  include/flatland_viz/spawn_model_tool.h)
+
+add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(flatland_viz_plugins
   ${QT_LIBRARIES}
   ${catkin_LIBRARIES}
 )
@@ -101,6 +118,9 @@ install(TARGETS flatland_viz
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(DIRECTORY media/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/media)
 
 #############
 ## Testing ##

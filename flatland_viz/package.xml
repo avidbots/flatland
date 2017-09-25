@@ -27,5 +27,7 @@
 
   <export>
     <!-- Other tools can request additional information be placed here -->
+      <rviz plugin="${prefix}/plugin_description.xml"/>
+      <flatland_viz plugin="${prefix}/plugin_description.xml"/>
   </export>
 </package>

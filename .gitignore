@@ -5,4 +5,4 @@ docs/doxygen/*
 docs/_build/*
 docs/_templates/*
 .vscode/*
-docs/.vscode
+*/.vscode

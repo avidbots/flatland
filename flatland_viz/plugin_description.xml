@@ -1,0 +1,9 @@
+<library path="lib/libflatland_viz_plugins">
+  <class name="flatland_viz/SpawnModel"
+         type="flatland_viz::SpawnModelTool"
+         base_class_type="rviz::Tool">
+    <description>
+      Tool for spwaning models on the ground plane in flatland.
+    </description>
+  </class>
+</library>
