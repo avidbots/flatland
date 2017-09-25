@@ -222,38 +222,3 @@ void ModelDialog::SpawnModelClient() {
 
   client.call(srv);
 }
-
-/**
- * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
- * @param[in]   sig: signal itself
- */
-// void SigintHandler(int sig) {
-//   // void ModelDialog::SigintHandler(int sig) {
-//   ROS_WARN_NAMED("Node", "*** Shutting down... ***");
-
-//   // if (simulation_manager != nullptr) {
-//   //   simulation_manager->Shutdown();
-//   //   delete simulation_manager;
-//   //   simulation_manager = nullptr;
-//   // }
-//   // ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-//   // ros::shutdown();
-// }
-
-/**
- * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
- * @param[in]   sig: signal itself
- */
-// void SigintHandler(int sig) {
-//   ROS_WARN_NAMED("Node", "*** Shutting down... ***");
-
-//   if (simulation_manager != nullptr) {
-//     simulation_manager->Shutdown();
-//     delete simulation_manager;
-//     simulation_manager = nullptr;
-//   }
-//   ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-//   ros::shutdown();
-// }
