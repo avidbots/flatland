@@ -10,12 +10,6 @@
 * Git clone flatland into your catkin workspace's src folder, and catkin build.
 * Optionally check out [turtlebot_flatland](https://github.com/avidbots/turtlebot_flatland) and run the turtlebot nav stack
 
-### Contribution guidelines ###
-
-* code should be unit tested using gtest/rosunit when practical.
-* code must be formatted as per clang-format-3.8 --style=file
-* code must pass clang-tidy-3.8 
-
 ### Who do I talk to? ###
 
 * Please direct any questions to @josephduchesne
