@@ -96,74 +96,13 @@
 void FlatlandWindow::openNewToolDialog() {
   QString class_id;
   QStringList empty;
-  // rviz::ToolManager *tool_man = manager_->rviz::getToolManager();
-
-  // NewObjectDialog *dialog =
-  //     new NewObjectDialog(tool_man->getFactory(), "Tool", empty,
-  //                         tool_man->getToolClasses(), &class_id);
-  // manager_->stopUpdate();
-  // if (dialog->exec() == QDialog::Accepted) {
-  //   tool_man->addTool(class_id);
-  // }
-  // manager_->startUpdate();
-  // activateWindow();  // Force keyboard focus back on main window.
 }
 
 rviz::VisualizationManager *FlatlandWindow::getManager() {
   return visualization_manager_;
 }
 
-void FlatlandWindow::CreateModelDialog() {
-  ROS_ERROR_STREAM("Create Model");
-  //  spawn_model_tool_ = new SpawnModelTool();
-  // model_dialog_ = new LoadModelDialog(NULL, spawn_model_tool_);
-  // model_dialog_->setModal(true);
-  // model_dialog_->show();
-  // model_dialog_ = new LoadModelDialog(NULL, spawn_model_tool_);
-  // model_dialog_->setModal(true);
-  // model_dialog_->show();
-}
-
-// void FlatlandWindow::initToolbars() {
-// QFont font;
-// font.setPointSize(font.pointSizeF() * 0.9);
-
-// // make toolbar with plugin tools
-
-// toolbar_ = addToolBar("Tools");
-// toolbar_->setFont(font);
-// toolbar_->setContentsMargins(0, 0, 0, 0);
-// toolbar_->setObjectName("Tools");
-// toolbar_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-// toolbar_actions_ = new QActionGroup(this);
-// connect(toolbar_actions_, SIGNAL(triggered(QAction *)), this,
-//         SLOT(onToolbarActionTriggered(QAction *)));
-// view_menu_->addAction(toolbar_->toggleViewAction());
-
-// add_tool_action_ = new QAction("", toolbar_actions_);
-// add_tool_action_->setToolTip("Add a new tool");
-// add_tool_action_->setIcon(loadPixmap("package://rviz/icons/plus.png"));
-// toolbar_->addAction(add_tool_action_);
-// connect(add_tool_action_, SIGNAL(triggered()), this,
-//         SLOT(openNewToolDialog()));
-
-// remove_tool_menu_ = new QMenu();
-// QToolButton *remove_tool_button = new QToolButton();
-// remove_tool_button->setMenu(remove_tool_menu_);
-// remove_tool_button->setPopupMode(QToolButton::InstantPopup);
-// remove_tool_button->setToolTip("Remove a tool from the toolbar");
-// remove_tool_button->setIcon(loadPixmap("package://rviz/icons/minus.png"));
-// toolbar_->addWidget(remove_tool_button);
-// connect(remove_tool_menu_, SIGNAL(triggered(QAction *)), this,
-//         SLOT(onToolbarRemoveTool(QAction *)));
-//}
-
 FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
-  // vFrame_ = new rviz::VisualizationFrame();
-  // vFrame_->setApp(parent->getApp());
-  // render_panel_ = new rviz::RenderPanel();
-  // visualization_manager_ = new rviz::VisualizationManager(render_panel_);
-
   // Create the main viewport
   viz_ = new FlatlandViz(this);
   setCentralWidget(viz_);
@@ -180,22 +119,6 @@ FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
   QFont font;
   font.setPointSize(font.pointSizeF() * 0.9);
 
-  // Create and arm the create model button
-  // QPushButton *mod_button = new QPushButton("");
-  // QHBoxLayout *mod_button_layout = new QHBoxLayout;
-  // mod_button_layout->addWidget(mod_button);
-  // QVBoxLayout *mod_lay = new QVBoxLayout;
-  // mod_lay->setContentsMargins(0, 0, 0, 2);
-  // // add_tool_action_->setIcon( loadPixmap( "package://rviz/icons/plus.png" )
-  // );
-  // // QPixmap plus("/opt/ros/kinetic/share/rviz/icons/plus.png");
-  // QPixmap plus("package://rviz/icons/plus.png");
-  // mod_button->setIcon(plus);
-  // toolbar_->addWidget(mod_button);
-
-  // Register for updates
-  // connect(mod_button, SIGNAL(clicked(bool)), this,
-  // SLOT(CreateModelDialog()));
   connect(viz_->manager_, &rviz::VisualizationManager::preUpdate, this,
           &FlatlandWindow::UpdateFps);
 }

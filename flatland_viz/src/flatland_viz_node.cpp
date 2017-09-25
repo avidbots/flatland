@@ -49,19 +49,7 @@
 #include <QApplication>
 #include "flatland_viz/flatland_window.h"
 
-// #include "flatland_viz/flatland_visualization_frame.h"
-
-// #define BFVF 1
-
 FlatlandWindow* window = nullptr;
-
-#ifdef BFVF
-flatland_viz::FlatlandVisualizationFrame* fvf = nullptr;
-#endif
-
-#ifndef BFVF
-rviz::VisualizationFrame* fvf = nullptr;
-#endif
 
 /**
  * @name        SigintHandler
@@ -88,17 +76,6 @@ int main(int argc, char** argv) {
 
   window = new FlatlandWindow();
   window->show();
-
-  // #ifdef BFVF
-  //   fvf = new flatland_viz::FlatlandVisualizationFrame();
-  // #endif
-  // #ifndef BFVF
-  //   fvf = new rviz::VisualizationFrame();
-  // #endif
-  //   fvf->show();
-
-  //   fvf->setApp(&app);
-  // fvf->initialize();
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
