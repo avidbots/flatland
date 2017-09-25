@@ -7,9 +7,10 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name   flatland_window.cpp
+ * @name   model_dialog.h
  * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
+ * @author Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -44,64 +45,89 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-// namespace rviz;
+#ifndef MODEL_DIALOG_H
+#define MODEL_DIALOG_H
 
-#include <ros/ros.h>
-#include <QLabel>
-#include <QMainWindow>
+#include <QDialog>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QWidget>
-#include "flatland_viz/flatland_viz.h"
 
-#include "rviz/display.h"
-#include "rviz/display_context.h"
-#include "rviz/displays_panel.h"
-#include "rviz/env_config.h"
-#include "rviz/failed_panel.h"
-#include "rviz/help_panel.h"
-#include "rviz/load_resource.h"
-#include "rviz/loading_dialog.h"
-#include "rviz/new_object_dialog.h"
-#include "rviz/panel_dock_widget.h"
-#include "rviz/panel_factory.h"
-#include "rviz/properties/status_property.h"
-#include "rviz/render_panel.h"
-#include "rviz/screenshot_dialog.h"
-#include "rviz/selection/selection_manager.h"
-#include "rviz/selection_panel.h"
-#include "rviz/splash_screen.h"
-#include "rviz/time_panel.h"
-#include "rviz/tool.h"
-#include "rviz/tool_manager.h"
-#include "rviz/tool_properties_panel.h"
-#include "rviz/view_manager.h"
-#include "rviz/views_panel.h"
-#include "rviz/visualization_frame.h"
-#include "rviz/visualization_manager.h"
-#include "rviz/widget_geometry_change_detector.h"
-#include "rviz/yaml_config_reader.h"
-#include "rviz/yaml_config_writer.h"
+#include <flatland_msgs/SpawnModel.h>
+#include <flatland_server/timekeeper.h>
+#include <flatland_server/world.h>
+#include <gtest/gtest.h>
+#include <ros/ros.h>
+#include <boost/filesystem.hpp>
+#include <iostream>
+#include <regex>
+//#include <thread>
+#include <flatland_viz/model_dialog.h>
+#include <signal.h>
 
-class FlatlandWindow : public QMainWindow {
+class QCheckBox;
+class QLabel;
+class QErrorMessage;
+
+class DialogOptionsWidget;
+
+namespace fs = boost::filesystem;
+using namespace flatland_server;
+
+class ModelDialog : public QDialog {
   Q_OBJECT
+
  public:
-  FlatlandWindow(QWidget* parent = 0);
-  rviz::VisualizationManager* visualization_manager_;
-  rviz::RenderPanel* render_panel_;
+  static QColor saved_color_;
 
-  rviz::VisualizationManager* getManager();
+  ModelDialog(QWidget* parent = 0);
 
-  QLabel* fps_label_;
+ private Q_SLOTS:
+  /**
+   * @name        SetColor
+   * @brief       Callback to pop up a ColorDialog
+   */
+  void SetColor();
+  /**
+   * @name        CancelButtonClicked
+   * @brief       Callback to dismiss the model dialog (cancel was clicked)
+   */
+  void CancelButtonClicked();
+  /**
+   * @name        OkButtonClicked
+   * @brief       Callback to create the model (ok was clicked)
+   */
+  void OkButtonClicked();
+  /**
+   * @name        SelectFile
+   * @brief       Callback to choose model
+   */
+  QString SelectFile();
+  /**
+   * @name        SetButtonColor
+   * @brief       Changes a button's color
+   * @param[in]   QColor, color to set button to (incl alpha)
+   * @param[in]   QPushButton, button to set color on
+   */
+  void SetButtonColor(const QColor* c, QPushButton* b);
+  /**
+   * @name        SpawnModelClient
+   * @brief       Makes a call to spawn model ros service
+   */
 
- protected Q_SLOTS:
-
-  void openNewToolDialog();
-
-  void UpdateFps();
+  void SpawnModelClient();
 
  private:
-  FlatlandViz* viz_;
+  QPushButton* color_button;
+  QString path_to_model_file;
+  QLineEdit *x_edit, *y_edit, *a_edit, *n_edit;
 
-  int frame_count_;
-  ros::WallTime last_fps_calc_time_;
+ protected:
+  boost::filesystem::path this_file_dir;
+  ros::NodeHandle nh;
+  ros::ServiceClient client;
+  flatland_msgs::SpawnModel srv;
+  World* w;
 };
+
+#endif

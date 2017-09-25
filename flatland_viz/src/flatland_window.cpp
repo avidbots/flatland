@@ -10,6 +10,7 @@
  * @name   flatland_window.cpp
  * @brief  Main window and toolbars for flatland_viz
  * @author Joseph Duchesne
+ * @author Mike Brousseau
  *
  * Software License Agreement (BSD License)
  *
@@ -45,20 +46,67 @@
  */
 
 #include "flatland_viz/flatland_window.h"
-#include <QDesktopWidget>
-#include <QLabel>
-#include <QStatusBar>
-#include <QToolButton>
-#include <QWidget>
-#include "rviz/visualization_manager.h"
 
-FlatlandWindow::FlatlandWindow(QWidget* parent) : QMainWindow(parent) {
+#include <QAction>
+#include <QActionGroup>
+#include <QDesktopWidget>
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QMessageBox>
+#include <QStatusBar>
+#include <QToolBar>
+#include <QToolButton>
+#include <QVBoxLayout>
+#include <QWidget>
+
+#include "rviz/display.h"
+#include "rviz/display_context.h"
+#include "rviz/displays_panel.h"
+#include "rviz/env_config.h"
+#include "rviz/failed_panel.h"
+#include "rviz/help_panel.h"
+#include "rviz/load_resource.h"
+#include "rviz/loading_dialog.h"
+#include "rviz/new_object_dialog.h"
+#include "rviz/panel_dock_widget.h"
+#include "rviz/panel_factory.h"
+#include "rviz/properties/status_property.h"
+#include "rviz/render_panel.h"
+#include "rviz/screenshot_dialog.h"
+#include "rviz/selection/selection_manager.h"
+#include "rviz/selection_panel.h"
+#include "rviz/splash_screen.h"
+#include "rviz/time_panel.h"
+#include "rviz/tool.h"
+#include "rviz/tool_manager.h"
+#include "rviz/tool_properties_panel.h"
+#include "rviz/view_manager.h"
+#include "rviz/views_panel.h"
+#include "rviz/visualization_frame.h"
+#include "rviz/visualization_manager.h"
+#include "rviz/widget_geometry_change_detector.h"
+#include "rviz/yaml_config_reader.h"
+#include "rviz/yaml_config_writer.h"
+
+#include <OgreMeshManager.h>
+#include <OgreRenderWindow.h>
+//#include <ogre_helpers/initialization.h>
+
+void FlatlandWindow::openNewToolDialog() {
+  QString class_id;
+  QStringList empty;
+}
+
+rviz::VisualizationManager *FlatlandWindow::getManager() {
+  return visualization_manager_;
+}
+
+FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
   // Create the main viewport
   viz_ = new FlatlandViz(this);
   setCentralWidget(viz_);
   resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
-
-  // Todo: configure the toolbar
 
   // Configure the status bar
   fps_label_ = new QLabel("");
@@ -66,10 +114,11 @@ FlatlandWindow::FlatlandWindow(QWidget* parent) : QMainWindow(parent) {
   fps_label_->setAlignment(Qt::AlignRight);
   statusBar()->addPermanentWidget(fps_label_, 0);
 
-  // Set the title
+  // Set the main window properties
   setWindowTitle("Flatland Viz");
+  QFont font;
+  font.setPointSize(font.pointSizeF() * 0.9);
 
-  // Register for updates
   connect(viz_->manager_, &rviz::VisualizationManager::preUpdate, this,
           &FlatlandWindow::UpdateFps);
 }
