@@ -19,7 +19,7 @@ This tutorial provides step by step instruction on how to write your own
 plugin and get it working inside the flatland simulator.
    
 1. Prerequisites
-================
+----------------
 
 The following tutorials provide a good foundation for understanding the flatland 
 simulator architecture:
@@ -29,7 +29,7 @@ create_model_.
 .. _create_model: file:///home/mikeb/Dev/flatland_github/src/flatland/docs/_build/html/flatland_tutorials/create_model.html
 
 2. Getting Started
-==================
+------------------
 
 We will be creating a very simple plugin. The plugin will do one thing: print 
 "Hello world" to the ROS_ERROR_STREAM. Even though the plugin itself is quite
@@ -37,7 +37,7 @@ simple, the process for getting it to function inside Flatland simulator has
 many steps.
 
 3. Install ROS
-==============
+--------------
 
 Go to the location on your harddrive you wish to install the Flatland stack. 
 Create the top level of the cakin workspace:
@@ -86,7 +86,7 @@ You should see a Flatland window appear:
 
 
 4. Create a Flatland Plugin
-===========================
+---------------------------
 
 Go to model_plugin_ for detailed instructions on how to write a plugin.
 
@@ -131,7 +131,7 @@ Create a new file called simple.cpp in the **flatland_plugins/src** directory.
     PLUGINLIB_EXPORT_CLASS(flatland_tutorials::Simple, flatland_server::ModelPlugin)
 
 5. Compiling the Plugin
-=======================
+-----------------------
 
 You may need to add to the include path. Refer to the documentation for the 
 specific SDK/editor you are using. 
@@ -160,7 +160,7 @@ add the following followed by a blank line.
     name: simple
     
 6. Running the Flatland simulator with installed plugin
-=======================================================
+-------------------------------------------------------
 
 Run the Flatland simulator:
 

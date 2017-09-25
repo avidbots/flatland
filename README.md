@@ -8,6 +8,7 @@
 ### How do I get set up? ###
 
 * Git clone flatland into your catkin workspace's src folder, and catkin build.
+* Optionally check out [turtlebot_flatland](https://github.com/avidbots/turtlebot_flatland) and run the turtlebot nav stack
 
 ### Contribution guidelines ###
 
@@ -23,3 +24,4 @@
 
 * How to use: http://flatland-simulator.readthedocs.io
 * Doxygen: http://flatland-simulator-api.readthedocs.io
+* For a quick start use: https://github.com/avidbots/turtlebot_flatland

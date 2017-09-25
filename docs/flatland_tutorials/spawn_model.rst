@@ -18,7 +18,7 @@ This tutorial provides step by step instruction on how to spawn a model using th
 .. note:: Flatland and Rviz tools can be used interchangeably in either the Flatland or Rviz software.
 
 1. Prerequisites
-================
+----------------
 
 The following tutorials provide a good foundation for understanding the flatland 
 simulator architecture:
@@ -30,7 +30,7 @@ create_plugin_, create_model_
 .. _create_model: file:///home/mikeb/Dev/flatland_github/src/flatland/docs/_build/html/flatland_tutorials/create_model.html
 
 2. Installation
-===============
+---------------
 
 
 To use the Spawn Model Tool, first it must be installed. The following animated gif shows the installation process.
@@ -44,7 +44,7 @@ Finally, click the ok button to confirm your selection. A new button |smpic| app
 .. warning:: If the Flatland window is too small, some of the tools might not be visible.
 
 3. Usage
-========
+--------
 
 To spawn a model begin by clicking the spawn model tool button |smpic| in the toolbar at the top of 
 the Flatland window. The spawn model popup dialog appears. The spawn model tool must be provided
@@ -60,7 +60,7 @@ with a valid Flatland model file in Yaml format.
     :target: ../_static/run_spawn_model_tool.gif
 
 4. Number checkbox
-==================
+------------------
 
 The number checkbox enables automatically appending the model name with a number 
 that increases by one each time. This ensures each model name will always be unique.
@@ -72,7 +72,7 @@ of the same model.
     :target: ../_static/checkbox6.gif
 
 5. Name text field
-==================
+------------------
 
 The name text field recieves the file name of the file chosen using 
 the file selection dialog (with the path removed). You can choose to override
@@ -84,7 +84,7 @@ this name with a name of your choosing.
 
 
 6. Placing and rotating model
-=============================
+-----------------------------
 
 There are three sequential phases to spawning a model. 
 The menu, translation and the rotation. When you click on the spawn model button |smpic|
