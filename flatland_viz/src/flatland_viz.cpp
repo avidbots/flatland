@@ -92,14 +92,11 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   // Construct and lay out render panel.
   render_panel_ = new rviz::RenderPanel();
   QVBoxLayout* main_layout = new QVBoxLayout;
-  // main_layout->setSpacing(0);
   main_layout->setMargin(0);
   main_layout->addWidget(render_panel_);
 
   // Set the top-level layout for this FlatlandViz widget.
   setLayout(main_layout);
-
-  //&FlatlandViz::onToolbarRemoveTool);
 
   // Next we initialize the main RViz classes.
   //
@@ -129,12 +126,6 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
 
   manager_->startUpdate();
 
-  // Q_EMIT toolAdded( tool );
-  // addTool( "rviz/Interact" );
-  // addTool( "rviz/Select" );
-  // addTool( "rviz/SetInitialPose" );
-  // addTool( "rviz/SetGoal" );
-
   // Set view controller to top down
   manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
   render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
@@ -163,12 +154,6 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
 FlatlandViz::~FlatlandViz() {
   delete render_panel_;
   delete manager_;
-
-  // for (int i = 0; i < custom_panels_.size(); i++) {
-  //   delete custom_panels_[i].dock;
-  // }
-
-  // delete panel_factory_;
 }
 
 void FlatlandViz::indicateToolIsCurrent(rviz::Tool* tool) {
@@ -180,9 +165,6 @@ void FlatlandViz::indicateToolIsCurrent(rviz::Tool* tool) {
 
 void FlatlandViz::setDisplayConfigModified() {
   ROS_ERROR("setDisplayConfigModified called");
-  // if (!loading_) {
-  //   setWindowModified(true);
-  // }
 }
 
 void FlatlandViz::addTool(rviz::Tool* tool) {
@@ -223,7 +205,6 @@ void FlatlandViz::removeTool(rviz::Tool* tool) {
     QAction* removal_action = remove_tool_actions.at(i);
     if (removal_action->text() == tool_name) {
       remove_tool_menu_->removeAction(removal_action);
-      // manager_->getToolManager()->toolRefreshed(tool);
       break;
     }
   }
@@ -296,8 +277,6 @@ void FlatlandViz::initToolbars() {
   add_tool_action_->setIcon(rviz::loadPixmap("package://rviz/icons/plus.png"));
   toolbar_->addAction(add_tool_action_);
 
-  // connect(add_tool_action_, SIGNAL(triggered()), this,
-  //        SLOT(openNewToolDialog()));
   connect(add_tool_action_, &QAction::triggered, this,
           &FlatlandViz::openNewToolDialog);
 
@@ -309,8 +288,7 @@ void FlatlandViz::initToolbars() {
   remove_tool_button->setIcon(
       rviz::loadPixmap("package://rviz/icons/minus.png"));
   toolbar_->addWidget(remove_tool_button);
-  // connect(remove_tool_menu_, SIGNAL(triggered()), this,
-  //        SLOT(onToolbarRemoveTool(QAction*)));
+
   connect(remove_tool_menu_, &QMenu::triggered, this,
           &FlatlandViz::onToolbarRemoveTool);
 }
@@ -330,11 +308,6 @@ void FlatlandViz::openNewToolDialog() {
   }
   manager_->startUpdate();
   activateWindow();  // Force keyboard focus back on main window.
-}
-
-void FlatlandViz::setHideButtonVisibility(bool visible) {
-  //   hide_left_dock_button_->setVisible(visible);
-  //   hide_right_dock_button_->setVisible(visible);
 }
 
 void FlatlandViz::onToolbarRemoveTool(QAction* remove_tool_menu_action) {
@@ -364,7 +337,6 @@ void FlatlandViz::setFullScreen(bool full_screen) {
   parent_->menuBar()->setVisible(!full_screen);
   toolbar_->setVisible(!full_screen && toolbar_visible_);
   parent_->statusBar()->setVisible(!full_screen);
-  // setHideButtonVisibility(!full_screen);
 
   if (full_screen)
     setWindowState(windowState() | Qt::WindowFullScreen);

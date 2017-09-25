@@ -53,13 +53,6 @@
 #include <QWidget>
 #include "flatland_viz/flatland_viz.h"
 
-//#include "rviz/display_context.h"
-//#include "rviz/tool.h"
-//#include "rviz/tool_manager.h"
-// class ToolManager;
-// namespace rviz {
-// class ToolManager;
-// }
 #include "rviz/display.h"
 #include "rviz/display_context.h"
 #include "rviz/displays_panel.h"
@@ -93,12 +86,8 @@ class FlatlandWindow : public QMainWindow {
   Q_OBJECT
  public:
   FlatlandWindow(QWidget* parent = 0);
-  // rviz::ToolManager* tool_manager_;
-  // here
-  // rviz::VisualizationFrame* vFrame_;
   rviz::VisualizationManager* visualization_manager_;
   rviz::RenderPanel* render_panel_;
-  // QToolBar* toolbar_;
 
   rviz::VisualizationManager* getManager();
 
@@ -109,8 +98,6 @@ class FlatlandWindow : public QMainWindow {
   void openNewToolDialog();
 
   void UpdateFps();
-  void CreateModelDialog();
-  // void FlatlandWindow::initToolbars();
 
  private:
   FlatlandViz* viz_;

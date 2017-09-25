@@ -87,11 +87,6 @@ class WidgetGeometryChangeDetector;
 
 class FlatlandWindow;
 
-// class VisualizationFrame : public QMainWindow, public WindowManagerInterface
-// class FlatlandViz : public QMainWindow {
-
-// class FlatlandViz : public QMainWindow, public WindowManagerInterface
-//{
 class FlatlandViz : public QWidget {
   Q_OBJECT public :
       /**
@@ -145,9 +140,6 @@ class FlatlandViz : public QWidget {
 
   // protected Q_SLOTS:
   void fullScreenChange(bool hidden);
-
-  /** @brief Hide or show the hide-dock buttons. */
-  void setHideButtonVisibility(bool visible);
 
   void setDisplayConfigModified();
   void addTool(rviz::Tool*);
