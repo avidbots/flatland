@@ -102,7 +102,10 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.range_min = 0;
   laser_scan_.range_max = range_;
   laser_scan_.ranges.resize(num_laser_points);
-  laser_scan_.intensities.resize(0);
+  if (reflectance_layers_bits_)
+    laser_scan_.intensities.resize(num_laser_points);
+  else
+    laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
   laser_scan_.header.frame_id =
       tf::resolve(GetModel()->GetNameSpace(), frame_id_);
@@ -166,25 +169,36 @@ void Laser::ComputeLaserRanges() {
     laser_point.y = m_world_laser_points_(1, i);
 
     did_hit_ = false;
+    intensity_ = 0.0;
 
     GetModel()->GetPhysicsWorld()->RayCast(this, laser_origin_point,
                                            laser_point);
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
+      if (reflectance_layers_bits_)
+        laser_scan_.intensities[i] = 0;
     } else {
       laser_scan_.ranges[i] = fraction_ * range_ + noise_gen_(rng_);
+      if (reflectance_layers_bits_)
+        laser_scan_.intensities[i] = intensity_;
     }
   }
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                            const b2Vec2 &normal, float fraction) {
+  
+  uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers
-  if (!(fixture->GetFilterData().categoryBits & layers_bits_)) {
+  if (!(category_bits & layers_bits_)) {
     return -1.0f;  // return -1 to ignore this hit
   }
 
+  if (category_bits & reflectance_layers_bits_) {
+    intensity_ = 255.0;
+  }
+  
   did_hit_ = true;
   fraction_ = fraction;
 
@@ -229,6 +243,10 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Cannot find layer(s): {" +
                         boost::algorithm::join(invalid_layers, ",") + "}");
   }
+ 
+  std::vector<std::string> reflectance_layer = {"reflectance"}; 
+  reflectance_layers_bits_ = GetModel()->GetCfr()->GetCategoryBits(reflectance_layer, &invalid_layers);
+
 
   // init the random number generators
   std::random_device rd;
