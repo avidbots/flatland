@@ -176,19 +176,16 @@ void Laser::ComputeLaserRanges() {
 
     if (!did_hit_) {
       laser_scan_.ranges[i] = NAN;
-      if (reflectance_layers_bits_)
-        laser_scan_.intensities[i] = 0;
+      if (reflectance_layers_bits_) laser_scan_.intensities[i] = 0;
     } else {
       laser_scan_.ranges[i] = fraction_ * range_ + noise_gen_(rng_);
-      if (reflectance_layers_bits_)
-        laser_scan_.intensities[i] = intensity_;
+      if (reflectance_layers_bits_) laser_scan_.intensities[i] = intensity_;
     }
   }
 }
 
 float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                            const b2Vec2 &normal, float fraction) {
-  
   uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers
   if (!(category_bits & layers_bits_)) {
@@ -198,7 +195,7 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
   if (category_bits & reflectance_layers_bits_) {
     intensity_ = 255.0;
   }
-  
+
   did_hit_ = true;
   fraction_ = fraction;
 
@@ -243,10 +240,10 @@ void Laser::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Cannot find layer(s): {" +
                         boost::algorithm::join(invalid_layers, ",") + "}");
   }
- 
-  std::vector<std::string> reflectance_layer = {"reflectance"}; 
-  reflectance_layers_bits_ = GetModel()->GetCfr()->GetCategoryBits(reflectance_layer, &invalid_layers);
 
+  std::vector<std::string> reflectance_layer = {"reflectance"};
+  reflectance_layers_bits_ =
+      GetModel()->GetCfr()->GetCategoryBits(reflectance_layer, &invalid_layers);
 
   // init the random number generators
   std::random_device rd;

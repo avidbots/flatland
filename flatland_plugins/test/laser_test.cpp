@@ -212,7 +212,8 @@ TEST_F(LaserPluginTest, range_test) {
  * Test the laser plugin for intensity configuration
  */
 TEST_F(LaserPluginTest, intensity_test) {
-  world_yaml = this_file_dir / fs::path("laser_tests/intensity_test/world.yaml");
+  world_yaml =
+      this_file_dir / fs::path("laser_tests/intensity_test/world.yaml");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
@@ -244,9 +245,9 @@ TEST_F(LaserPluginTest, intensity_test) {
       << "Actual: " << p1->update_rate_;
   EXPECT_EQ(p1->body_, w->models_[0]->bodies_[0]);
 
-  
   EXPECT_TRUE(ScanEq(scan_center, "r/center_laser", 0, 2 * M_PI, M_PI / 2, 0.0,
-                     0.0, 0.0, 5.0, {4.8, 4.7, 4.6, 4.9, 4.8}, {0,255,0,0,0}));
+                     0.0, 0.0, 5.0, {4.8, 4.7, 4.6, 4.9, 4.8},
+                     {0, 255, 0, 0, 0}));
   EXPECT_TRUE(fltcmp(p2->update_rate_, 5000)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p2->body_, w->models_[0]->bodies_[0]);
 
