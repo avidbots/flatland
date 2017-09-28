@@ -98,9 +98,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color)
-    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
-  uint16_t category_bits = cfr_->GetCategoryBits(names_);
-}
+    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {}
 
 Layer::~Layer() { delete body_; }
 
