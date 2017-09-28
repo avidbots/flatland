@@ -96,6 +96,10 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
   }
 }
 
+Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+             const std::vector<std::string> &names, const Color &color)
+    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {}
+
 Layer::~Layer() { delete body_; }
 
 const std::vector<std::string> &Layer::GetNames() const { return names_; }
@@ -107,54 +111,59 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &map_path,
                         const std::vector<std::string> &names,
                         const Color &color) {
-  YamlReader reader(map_path);
-  reader.SetErrorInfo("layer " + Q(names[0]));
+  if (map_path.length() > 0) {  // If there is a map in this layer
+    YamlReader reader(map_path);
+    reader.SetErrorInfo("layer " + Q(names[0]));
 
-  std::string type = reader.Get<std::string>("type", "");
+    std::string type = reader.Get<std::string>("type", "");
 
-  if (type == "line_segments") {
-    double scale = reader.Get<double>("scale");
-    Pose origin = reader.GetPose("origin");
-    boost::filesystem::path data_path(reader.Get<std::string>("data"));
-    if (data_path.string().front() != '/') {
-      data_path = boost::filesystem::path(map_path).parent_path() / data_path;
+    if (type == "line_segments") {
+      double scale = reader.Get<double>("scale");
+      Pose origin = reader.GetPose("origin");
+      boost::filesystem::path data_path(reader.Get<std::string>("data"));
+      if (data_path.string().front() != '/') {
+        data_path = boost::filesystem::path(map_path).parent_path() / data_path;
+      }
+
+      ROS_INFO_NAMED("Layer",
+                     "layer \"%s\" loading line segments from path=\"%s\"",
+                     names[0].c_str(), data_path.string().c_str());
+
+      std::vector<LineSegment> line_segments;
+
+      ReadLineSegmentsFile(data_path.string(), line_segments);
+
+      return new Layer(physics_world, cfr, names, color, origin, line_segments,
+                       scale);
+
+    } else {
+      double resolution = reader.Get<double>("resolution");
+      double occupied_thresh = reader.Get<double>("occupied_thresh");
+      Pose origin = reader.GetPose("origin");
+
+      boost::filesystem::path image_path(reader.Get<std::string>("image"));
+      if (image_path.string().front() != '/') {
+        image_path =
+            boost::filesystem::path(map_path).parent_path() / image_path;
+      }
+
+      ROS_INFO_NAMED("Layer", "layer \"%s\" loading image from path=\"%s\"",
+                     names[0].c_str(), image_path.string().c_str());
+
+      cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+      if (map.empty()) {
+        throw YAMLException("Failed to load " + Q(image_path.string()) +
+                            " in layer " + Q(names[0]));
+      }
+
+      cv::Mat bitmap;
+      map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
+
+      return new Layer(physics_world, cfr, names, color, origin, bitmap,
+                       occupied_thresh, resolution);
     }
-
-    ROS_INFO_NAMED("Layer",
-                   "layer \"%s\" loading line segments from path=\"%s\"",
-                   names[0].c_str(), data_path.string().c_str());
-
-    std::vector<LineSegment> line_segments;
-
-    ReadLineSegmentsFile(data_path.string(), line_segments);
-
-    return new Layer(physics_world, cfr, names, color, origin, line_segments,
-                     scale);
-
-  } else {
-    double resolution = reader.Get<double>("resolution");
-    double occupied_thresh = reader.Get<double>("occupied_thresh");
-    Pose origin = reader.GetPose("origin");
-
-    boost::filesystem::path image_path(reader.Get<std::string>("image"));
-    if (image_path.string().front() != '/') {
-      image_path = boost::filesystem::path(map_path).parent_path() / image_path;
-    }
-
-    ROS_INFO_NAMED("Layer", "layer \"%s\" loading image from path=\"%s\"",
-                   names[0].c_str(), image_path.string().c_str());
-
-    cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
-    if (map.empty()) {
-      throw YAMLException("Failed to load " + Q(image_path.string()) +
-                          " in layer " + Q(names[0]));
-    }
-
-    cv::Mat bitmap;
-    map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
-
-    return new Layer(physics_world, cfr, names, color, origin, bitmap,
-                     occupied_thresh, resolution);
+  } else {  // If the layer has no static obstacles
+    return new Layer(physics_world, cfr, names, color);
   }
 }
 
@@ -287,9 +296,11 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 
 void Layer::DebugVisualize() const {
   DebugVisualization::Get().Reset(viz_name_);
-  DebugVisualization::Get().Visualize(viz_name_, body_->physics_body_,
-                                      body_->color_.r, body_->color_.g,
-                                      body_->color_.b, body_->color_.a);
+  if (body_ != nullptr) {
+    DebugVisualization::Get().Visualize(viz_name_, body_->physics_body_,
+                                        body_->color_.r, body_->color_.g,
+                                        body_->color_.b, body_->color_.a);
+  }
 }
 
 void Layer::DebugOutput() const {
@@ -302,7 +313,9 @@ void Layer::DebugOutput() const {
                   this, physics_world_, name_.c_str(), names.c_str(),
                   category_bits);
 
-  body_->DebugOutput();
+  if (body_ != nullptr) {
+    body_->DebugOutput();
+  }
 }
 
 };  // namespace flatland_server
