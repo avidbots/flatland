@@ -76,7 +76,9 @@ World::~World() {
   // them since the AABB tree gets restructured everytime a fixture is removed
   // The memory will later be freed by deleting the world
   for (int i = 0; i < layers_.size(); i++) {
-    layers_[i]->body_->physics_body_ = nullptr;
+    if (layers_[i]->body_ != nullptr) {
+      layers_[i]->body_->physics_body_ = nullptr;
+    }
     delete layers_[i];
   }
 
@@ -176,7 +178,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
           ", max allowed is " + std::to_string(cfr_.MAX_LAYERS));
     }
 
-    boost::filesystem::path map_path(reader.Get<std::string>("map"));
+    boost::filesystem::path map_path(reader.Get<std::string>("map", ""));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
     reader.EnsureAccessedAllKeys();
 
@@ -186,7 +188,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
       }
     }
 
-    if (map_path.string().front() != '/') {
+    if (map_path.string().front() != '/' && map_path.string().length() > 0) {
       map_path = world_yaml_dir_ / map_path;
     }
 
