@@ -58,6 +58,8 @@ ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
       nh.advertiseService("spawn_model", &ServiceManager::SpawnModel, this);
   delete_model_service_ =
       nh.advertiseService("delete_model", &ServiceManager::DeleteModel, this);
+  move_model_service_ =
+      nh.advertiseService("move_model", &ServiceManager::MoveModel, this);
 
   if (spawn_model_service_) {
     ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
@@ -69,6 +71,12 @@ ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
     ROS_INFO_NAMED("Service Manager", "Model deleting service ready to go");
   } else {
     ROS_ERROR_NAMED("Service Manager", "Error starting model deleting service");
+  }
+
+  if (move_model_service_) {
+    ROS_INFO_NAMED("Service Manager", "Model moving service ready to go");
+  } else {
+    ROS_ERROR_NAMED("Service Manager", "Error starting model moving service");
   }
 }
 
@@ -103,6 +111,25 @@ bool ServiceManager::DeleteModel(
 
   try {
     world_->DeleteModel(request.name);
+    response.success = true;
+    response.message = "";
+  } catch (const std::exception &e) {
+    response.success = false;
+    response.message = std::string(e.what());
+  }
+
+  return true;
+}
+
+bool ServiceManager::MoveModel(flatland_msgs::MoveModel::Request &request,
+                               flatland_msgs::MoveModel::Response &response) {
+  ROS_DEBUG_NAMED("ServiceManager", "Model move requested with name(\"%s\")",
+                  request.name.c_str());
+
+  Pose pose(request.pose.x, request.pose.y, request.pose.theta);
+
+  try {
+    world_->MoveModel(request.name, pose);
     response.success = true;
     response.message = "";
   } catch (const std::exception &e) {
