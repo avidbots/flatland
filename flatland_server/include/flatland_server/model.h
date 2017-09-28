@@ -166,6 +166,12 @@ class Model : public Entity {
   void TransformAll(const Pose &pose_delta);
 
   /**
+   * @brief Explicitly set the model pose in world coordinates
+   * @param[in] pose world x, world y, world yaw
+   */
+  void SetPose(const Pose &pose);
+
+  /**
    * @brief Create a model, throws exceptions upon failure
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry

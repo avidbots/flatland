@@ -78,6 +78,14 @@ class Geometry {
    * @return Transformed point
    */
   static b2Vec2 Transform(const b2Vec2& in, const RotateTranslate& rt);
+
+  /**
+   * @brief Inverse transform a point for given transformation
+   * @param[in] in A point to transform
+   * @param[in] rt Defined transformation
+   * @return Inverse transformed point
+   */
+  static b2Vec2 InverseTransform(const b2Vec2& in, const RotateTranslate& rt);
 };
 
 };      // namespace flatland_server
