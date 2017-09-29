@@ -92,6 +92,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
     fixture_def.shape = &edge;
     fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
+    // todo: add material information
     body_->physics_body_->CreateFixture(&fixture_def);
   }
 }

@@ -163,6 +163,16 @@ const std::vector<Joint *> &Model::GetJoints() { return joints_; }
 
 const std::string &Model::GetNameSpace() const { return namespace_; }
 
+std::string Model::NameSpaceTF(const std::string &frame_id) const {
+  // case: "global" namespace: don't prefix, strip leading slash
+  if (frame_id.substr(0, 1) == "/") {
+    return std::string(frame_id, 1,
+                       std::string::npos);  // Strip the leading '/'
+  } else {  // case: "local" namespace: prepend namespace
+    return std::string(namespace_) + "_" + frame_id;
+  }
+}
+
 const std::string &Model::GetName() const { return name_; }
 
 const CollisionFilterRegistry *Model::GetCfr() const { return cfr_; }

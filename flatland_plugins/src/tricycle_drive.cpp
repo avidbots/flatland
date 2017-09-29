@@ -137,7 +137,8 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
   ground_truth_msg_.child_frame_id =
-      tf::resolve(GetModel()->GetNameSpace(), body_->name_);
+      tf::resolve("", GetModel()->NameSpaceTF(body_->name_));
+
   ground_truth_msg_.twist.covariance.fill(0);
   ground_truth_msg_.pose.covariance.fill(0);
   odom_msg_ = ground_truth_msg_;

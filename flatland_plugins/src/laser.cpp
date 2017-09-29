@@ -105,15 +105,16 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
   laser_scan_.header.frame_id =
-      tf::resolve(GetModel()->GetNameSpace(), frame_id_);
+      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
-  laser_tf_.header.frame_id =
-      tf::resolve(GetModel()->GetNameSpace(), body_->GetName());
-  laser_tf_.child_frame_id = tf::resolve(GetModel()->GetNameSpace(), frame_id_);
+  laser_tf_.header.frame_id = tf::resolve(
+      "", GetModel()->NameSpaceTF(body_->GetName()));  // Todo: parent_tf param
+  laser_tf_.child_frame_id =
+      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
   laser_tf_.transform.translation.x = origin_.x;
   laser_tf_.transform.translation.y = origin_.y;
   laser_tf_.transform.translation.z = 0;
