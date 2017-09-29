@@ -9,7 +9,7 @@
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	tricycle_drive.cpp
  * @brief   tricycle plugin
- * @author  Mike Brousseau
+ * @author  Mike Brousseau, Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
