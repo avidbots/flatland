@@ -177,6 +177,20 @@ std::string Model::NameSpaceTF(const std::string &frame_id) const {
   }
 }
 
+std::string Model::NameSpaceTopic(const std::string &topic) const {
+  // We don't actually want the topic to be "global" in case flatland is itself
+  // namespaced, so strip leading slash
+  if (topic.substr(0, 1) == "/") {
+    return std::string(topic, 1, std::string::npos);  // Strip the leading '/'
+  } else {  // case: "local" namespace: prepend namespace/
+    if (namespace_.length() > 0) {
+      return namespace_ + "/" + topic;
+    } else {
+      return topic;
+    }
+  }
+}
+
 const std::string &Model::GetName() const { return name_; }
 
 const CollisionFilterRegistry *Model::GetCfr() const { return cfr_; }

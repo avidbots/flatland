@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_test.cpp
- * @brief	Test model methods and functionality
- * @author Joseph Duchesne
+ * @name	  bool_sensor.h
+ * @brief   Boolean Sensor plugin - publishes true if body is in collision
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,49 +44,57 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/model.h"
-#include <gtest/gtest.h>
+#include <flatland_plugins/update_timer.h>
+#include <flatland_server/model_plugin.h>
 #include <ros/ros.h>
-#include <string>
-#include "flatland_server/collision_filter_registry.h"
+#include <std_msgs/Bool.h>
 
-// Test the NameSpaceTF method
-TEST(TestSuite, testNameSpaceTF) {
-  flatland_server::Model has_ns(nullptr, nullptr, std::string("foo"),
-                                std::string("has_ns"));
-  // namespace "foo" onto tf "bar" => foo_bar
-  EXPECT_EQ(has_ns.NameSpaceTF("bar"), "foo_bar");
-  // namespace "foo" onto tf "/bar" => bar
-  EXPECT_EQ(has_ns.NameSpaceTF("/bar"), "bar");
+#ifndef FLATLAND_PLUGINS_BOOL_SENSOR_H
+#define FLATLAND_PLUGINS_BOOL_SENSOR_H
 
-  flatland_server::Model no_ns(nullptr, nullptr, std::string(""),
-                               std::string("no_ns"));
-  // namespace "" onto tf "bar" => bar
-  EXPECT_EQ(no_ns.NameSpaceTF("bar"), "bar");
-  // namespace "" onto tf "/bar" => bar
-  EXPECT_EQ(no_ns.NameSpaceTF("/bar"), "bar");
-}
+using namespace flatland_server;
 
-// Test the NameSpaceTopic method
-TEST(TestSuite, testNameSpaceTopic) {
-  flatland_server::Model has_ns(nullptr, nullptr, std::string("foo"),
-                                std::string("has_ns"));
-  // namespace "foo" onto tf "bar" => foo_bar
-  EXPECT_EQ(has_ns.NameSpaceTopic("bar"), "foo/bar");
-  // namespace "foo" onto tf "/bar" => bar
-  EXPECT_EQ(has_ns.NameSpaceTopic("/bar"), "bar");
+namespace flatland_plugins {
 
-  flatland_server::Model no_ns(nullptr, nullptr, std::string(""),
-                               std::string("no_ns"));
-  // namespace "" onto tf "bar" => bar
-  EXPECT_EQ(no_ns.NameSpaceTopic("bar"), "bar");
-  // namespace "" onto tf "/bar" => bar
-  EXPECT_EQ(no_ns.NameSpaceTopic("/bar"), "bar");
-}
+/**
+ * This class defines a bumper plugin that is used to publish the collisions
+ * states of bodies in the model
+ */
+class BoolSensor : public ModelPlugin {
+ public:
+  Body *body_;          ///< The body to check collisions with
+  double update_rate_;  ///< rate to publish message at
 
-// Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
-  ros::init(argc, argv, "model_test");
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
+  UpdateTimer update_timer_;    ///< for managing update rate
+  int collisions_ = 0;          ///< Current number of collisions
+  bool hit_something_ = false;  ///< "latch" var to ensure all hits published
+
+  ros::Publisher publisher_;  ///< For publishing the collisions
+
+  /**
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
+   */
+  void OnInitialize(const YAML::Node &config) override;
+
+  /**
+   * @brief Called when just after physics update to publish state
+   * @param[in] timekeeper Object managing the simulation time
+   */
+  void AfterPhysicsStep(const Timekeeper &timekeeper) override;
+
+  /**
+   * @brief A method that is called for all Box2D begin contacts
+   * @param[in] contact Box2D contact
+   */
+  void BeginContact(b2Contact *contact) override;
+
+  /**
+   * @brief A method that is called for all Box2D end contacts
+   * @param[in] contact Box2D contact
+   */
+  void EndContact(b2Contact *contact) override;
+};
+};
+
+#endif

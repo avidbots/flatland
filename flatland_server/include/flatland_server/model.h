@@ -140,6 +140,11 @@ class Model : public Entity {
   std::string NameSpaceTF(const std::string &frame_id) const;
 
   /**
+   * @return prepend the topic with namespace/
+   */
+  std::string NameSpaceTopic(const std::string &topic) const;
+
+  /**
    * @return The name of the model
    */
   const std::string &GetName() const;

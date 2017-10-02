@@ -17,4 +17,7 @@
   <class type="flatland_plugins::Tween" base_class_type="flatland_server::ModelPlugin">
     <description>Tween a model between two positions</description>
   </class>
+  <class type="flatland_plugins::BoolSensor" base_class_type="flatland_server::ModelPlugin">
+    <description>Publish a boolean topic on collision</description>
+  </class>
 </library>
