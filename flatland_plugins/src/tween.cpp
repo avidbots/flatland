@@ -207,6 +207,8 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
                            tween_.progress());
   body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]),
                                      start_.theta + v[2]);
+  // Tell Box2D to update the AABB and check for collisions for this object
+  body_->physics_body_->SetAwake(true);
 
   // Yoyo back and forth
   if (mode_ == Tween::ModeType_::YOYO) {
