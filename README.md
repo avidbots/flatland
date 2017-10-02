@@ -3,6 +3,7 @@
 ### What is this repository for? ###
 
 * Flatland is a performance centric 2d robot simulator
+* [Roadmap on trello](https://trello.com/b/s9poP2Jg/flatland-2d-simulator)
 * Release Version: None
 
 ### How do I get set up? ###
