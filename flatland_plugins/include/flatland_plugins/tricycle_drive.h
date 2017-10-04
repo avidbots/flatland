@@ -69,7 +69,10 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double wheelbase_;      ///< distance between the front and rear wheel
   b2Vec2 rear_center_;    ///< middle point between the two rear wheels
   bool invert_steering_angle_;  ///< whether to invert steering angle
-
+  double max_angular_velocity_; ///< The max angular velocity
+  double target_wheel_angle_;   ///< The current target wheel angle
+  double theta_f_;              ///< The current angular offset of the front wheel
+  
   geometry_msgs::Twist twist_msg_;
   nav_msgs::Odometry odom_msg_;
   nav_msgs::Odometry ground_truth_msg_;

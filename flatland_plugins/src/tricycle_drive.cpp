@@ -87,6 +87,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   odom_pose_covar_default[0] = odom_pose_noise[0];
   odom_pose_covar_default[7] = odom_pose_noise[1];
   odom_pose_covar_default[35] = odom_pose_noise[2];
+  
 
   array<double, 36> odom_twist_covar_default = {0};
   odom_twist_covar_default[0] = odom_twist_noise[0];
@@ -97,6 +98,11 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
       r.GetArray<double, 36>("odom_twist_covariance", odom_twist_covar_default);
   auto odom_pose_covar =
       r.GetArray<double, 36>("odom_pose_covariance", odom_pose_covar_default);
+
+  // Default max_angular_velocity=0 means "unbounded"
+  max_angular_velocity_ = r.Get<double>("max_angular_velocity", 0.0);
+  target_wheel_angle_ = 0.0;
+  theta_f_ = 0.0;
 
   r.EnsureAccessedAllKeys();
 
@@ -323,8 +329,22 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
   // twist message contains the speed and angle of the front wheel
   double v_f = twist_msg_.linear.x;       // velocity at front wheel
-  double theta_f = twist_msg_.angular.z;  // front wheel steering angle
+  target_wheel_angle_ = twist_msg_.angular.z;  // front wheel steering angle
   double theta = angle;                   // angle of the robot
+
+  if (max_angular_velocity_ == 0.0) {  // Infinite angular velocity
+      theta_f_ = target_wheel_angle_;
+    } else {  // If angular velocity is bounded, bound it
+      double max_angle_step = max_angular_velocity_*timekeeper.GetStepSize();
+      
+      if (target_wheel_angle_ > theta_f_) {
+        ROS_INFO("max angle step: %f v. %f for %f -> %f", max_angle_step, target_wheel_angle_-theta_f_, theta_f_, target_wheel_angle_);
+        theta_f_ += std::min<double>(max_angle_step, target_wheel_angle_-theta_f_);
+      } else {
+        ROS_INFO("max angle step: %f v. %f for %f -> %f", max_angle_step, theta_f_-target_wheel_angle_, theta_f_, target_wheel_angle_);
+        theta_f_ -= std::min<double>(max_angle_step, theta_f_-target_wheel_angle_);
+      }
+    }
 
   // change angle of the front wheel for visualization
 
@@ -332,17 +352,17 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
       dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
   j->EnableLimit(true);
   if (invert_steering_angle_) {
-    j->SetLimits(-theta_f, -theta_f);
+    j->SetLimits(-theta_f_, -theta_f_);
   } else {
-    j->SetLimits(theta_f, theta_f);
+    j->SetLimits(theta_f_, theta_f_);
   }
 
   // calculate the desired velocity using the bicycle model in the world frame
   // looking at the rear center, formulas obtained from avidbots robot systems
   // confluence page
-  double v_x = v_f * cos(theta_f) * cos(theta);  // x velocity in world
-  double v_y = v_f * cos(theta_f) * sin(theta);  // y velocity in world
-  double w = v_f * sin(theta_f) / wheelbase_;    // angular velocity
+  double v_x = v_f * cos(theta_f_) * cos(theta);  // x velocity in world
+  double v_y = v_f * cos(theta_f_) * sin(theta);  // y velocity in world
+  double w = v_f * sin(theta_f_) / wheelbase_;    // angular velocity
 
   // Now we would like the rear center to move at v_x, v_y, and w, since Box2D
   // applies velocities at center of mass, we must use rigid body kinematics
