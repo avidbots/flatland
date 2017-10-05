@@ -521,7 +521,7 @@ TEST_F(LoadWorldTest, simple_test_A) {
   EXPECT_EQ(w->physics_velocity_iterations_, 11);
   EXPECT_EQ(w->physics_position_iterations_, 12);
 
-  ASSERT_EQ(w->layers_.size(), 3);
+  ASSERT_EQ(w->layers_.size(), 4);
 
   // check that layer 0 settings are loaded correctly
   EXPECT_STREQ(w->layers_[0]->name_.c_str(), "2d");

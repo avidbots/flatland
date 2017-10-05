@@ -9,6 +9,7 @@ layers:
     map: "map3d.yaml"
   - name: ["lines"]
     map: "map_lines.yaml"
+  - name: "robot"
 models:  
   - name: turtlebot1 
     model: "turtlebot.model.yaml"

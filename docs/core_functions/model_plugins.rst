@@ -297,11 +297,13 @@ added to all topic names subscribed and advertised. This is shown below.
   nh_ = ros::NodeHandle(model_->namespace_);
 
 To avid conflicts in TF frame IDs, if the plugins choose to publish TF, use
-tf::resolve() function to add prefix to **frames on the model** as shown below.
+tf::resolve() function to prepend the namespace to **frames on the model** as shown below.
 
 .. code-block:: Cpp
 
-  tf::resolve(GetModel()->GetNameSpace(), frame_id);
+  tf::resolve(GetModel()->NameSpaceTF(frame_id));
+
+NameSpaceTF will not prepend to frame_id's beginning with "/". It will instead strip the leading "/". 
 
 YAML Reader
 -----------
