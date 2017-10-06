@@ -120,9 +120,9 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   try {
     if (type.find("::") != std::string::npos) {
       model_plugin = model_plugin_loader_->createInstance(type);
-    } else { 
+    } else {
       model_plugin =
-        model_plugin_loader_->createInstance("flatland_plugins::" + type);
+          model_plugin_loader_->createInstance("flatland_plugins::" + type);
     }
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException(msg + ": " + std::string(e.what()));

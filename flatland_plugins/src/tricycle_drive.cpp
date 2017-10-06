@@ -87,7 +87,6 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   odom_pose_covar_default[0] = odom_pose_noise[0];
   odom_pose_covar_default[7] = odom_pose_noise[1];
   odom_pose_covar_default[35] = odom_pose_noise[2];
-  
 
   array<double, 36> odom_twist_covar_default = {0};
   odom_twist_covar_default[0] = odom_twist_noise[0];
@@ -328,21 +327,23 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   }
 
   // twist message contains the speed and angle of the front wheel
-  double v_f = twist_msg_.linear.x;       // velocity at front wheel
+  double v_f = twist_msg_.linear.x;            // velocity at front wheel
   target_wheel_angle_ = twist_msg_.angular.z;  // front wheel steering angle
-  double theta = angle;                   // angle of the robot
+  double theta = angle;                        // angle of the robot
 
   if (max_angular_velocity_ == 0.0) {  // Infinite angular velocity
-      theta_f_ = target_wheel_angle_;
-    } else {  // If angular velocity is bounded, bound it
-      double max_angle_step = max_angular_velocity_*timekeeper.GetStepSize();
-      
-      if (target_wheel_angle_ > theta_f_) {
-        theta_f_ += std::min<double>(max_angle_step, target_wheel_angle_-theta_f_);
-      } else {
-        theta_f_ -= std::min<double>(max_angle_step, theta_f_-target_wheel_angle_);
-      }
+    theta_f_ = target_wheel_angle_;
+  } else {  // If angular velocity is bounded, bound it
+    double max_angle_step = max_angular_velocity_ * timekeeper.GetStepSize();
+
+    if (target_wheel_angle_ > theta_f_) {
+      theta_f_ +=
+          std::min<double>(max_angle_step, target_wheel_angle_ - theta_f_);
+    } else {
+      theta_f_ -=
+          std::min<double>(max_angle_step, theta_f_ - target_wheel_angle_);
     }
+  }
 
   // change angle of the front wheel for visualization
 
