@@ -90,6 +90,7 @@ bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
   } catch (const std::exception &e) {
     response.success = false;
     response.message = std::string(e.what());
+    ROS_ERROR_NAMED("ServiceManager", "Failed to load model! Exception: %s", e.what());
   }
 
   return true;
