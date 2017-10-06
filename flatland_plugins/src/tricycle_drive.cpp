@@ -338,10 +338,8 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
       double max_angle_step = max_angular_velocity_*timekeeper.GetStepSize();
       
       if (target_wheel_angle_ > theta_f_) {
-        ROS_INFO("max angle step: %f v. %f for %f -> %f", max_angle_step, target_wheel_angle_-theta_f_, theta_f_, target_wheel_angle_);
         theta_f_ += std::min<double>(max_angle_step, target_wheel_angle_-theta_f_);
       } else {
-        ROS_INFO("max angle step: %f v. %f for %f -> %f", max_angle_step, theta_f_-target_wheel_angle_, theta_f_, target_wheel_angle_);
         theta_f_ -= std::min<double>(max_angle_step, theta_f_-target_wheel_angle_);
       }
     }
