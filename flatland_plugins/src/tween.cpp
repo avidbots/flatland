@@ -208,7 +208,6 @@ void Tween::OnInitialize(const YAML::Node& config) {
 
 void Tween::TriggerCallback(const std_msgs::Bool& msg) {
   triggered_ = msg.data;
-  ROS_INFO_THROTTLE_NAMED(1.0, "Tween", "Got %d", (int)msg.data);
 }
 
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
