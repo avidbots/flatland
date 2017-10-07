@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   tf
   flatland_msgs
+  std_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -51,7 +52,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
-  CATKIN_DEPENDS pluginlib roscpp flatland_server
+  CATKIN_DEPENDS pluginlib roscpp flatland_server std_msgs
 )
 
 ###########

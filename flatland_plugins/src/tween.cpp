@@ -64,6 +64,13 @@ void Tween::OnInitialize(const YAML::Node& config) {
 
   delta_ = reader.GetPose("delta", Pose(0, 0, 0));
 
+  // Boolean play pause topic
+  std::string trigger_topic = reader.Get<std::string>("trigger_topic", "");
+  if (trigger_topic != "") {
+    trigger_sub_ =
+        nh_.subscribe(trigger_topic, 1, &Tween::TriggerCallback, this);
+  }
+
   body_ = GetModel()->GetBody(body_name);
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
@@ -199,6 +206,11 @@ void Tween::OnInitialize(const YAML::Node& config) {
                   (int)mode_, easing.c_str());
 }
 
+void Tween::TriggerCallback(const std_msgs::Bool& msg) {
+  triggered_ = msg.data;
+  ROS_INFO_THROTTLE_NAMED(1.0, "Tween", "Got %d", (int)msg.data);
+}
+
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   std::array<double, 3> v =
       tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
@@ -223,6 +235,15 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   if (mode_ == Tween::ModeType_::LOOP) {
     if (tween_.progress() >= 1.0f) {
       tween_.seek(0);
+    }
+  }
+
+  // Handle external trigger
+  if (mode_ == Tween::ModeType_::TRIGGER) {
+    if (triggered_) {
+      tween_.forward();
+    } else {
+      tween_.backward();
     }
   }
 }
