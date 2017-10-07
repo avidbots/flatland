@@ -208,6 +208,54 @@ TEST_F(LaserPluginTest, range_test) {
   EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
 }
+/**
+ * Test the laser plugin for intensity configuration
+ */
+TEST_F(LaserPluginTest, intensity_test) {
+  world_yaml =
+      this_file_dir / fs::path("laser_tests/intensity_test/world.yaml");
+
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(1.0);
+  w = World::MakeWorld(world_yaml.string());
+
+  ros::NodeHandle nh;
+  ros::Subscriber sub_1, sub_2, sub_3;
+  LaserPluginTest* obj = dynamic_cast<LaserPluginTest*>(this);
+  sub_1 = nh.subscribe("r/scan", 1, &LaserPluginTest::ScanFrontCb, obj);
+  sub_2 = nh.subscribe("scan_center", 1, &LaserPluginTest::ScanCenterCb, obj);
+  sub_3 = nh.subscribe("r/scan_back", 1, &LaserPluginTest::ScanBackCb, obj);
+
+  Laser* p1 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[0].get());
+  Laser* p2 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[1].get());
+  Laser* p3 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[2].get());
+
+  // let it spin for 10 times to make sure the message gets through
+  ros::WallRate rate(500);
+  for (int i = 0; i < 10; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+    rate.sleep();
+  }
+
+  // check scan returns
+  EXPECT_TRUE(ScanEq(scan_front, "r/laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
+                     0.0, 0.0, 0.0, 5.0, {4.5, 4.4, 4.3}, {0, 0, 0}));
+  EXPECT_TRUE(fltcmp(p1->update_rate_, std::numeric_limits<float>::infinity()))
+      << "Actual: " << p1->update_rate_;
+  EXPECT_EQ(p1->body_, w->models_[0]->bodies_[0]);
+
+  EXPECT_TRUE(ScanEq(scan_center, "r/center_laser", 0, 2 * M_PI, M_PI / 2, 0.0,
+                     0.0, 0.0, 5.0, {4.8, 4.7, 4.6, 4.9, 4.8},
+                     {0, 255, 0, 0, 0}));
+  EXPECT_TRUE(fltcmp(p2->update_rate_, 5000)) << "Actual: " << p2->update_rate_;
+  EXPECT_EQ(p2->body_, w->models_[0]->bodies_[0]);
+
+  EXPECT_TRUE(ScanEq(scan_back, "r/laser_back", 0, 2 * M_PI, M_PI / 2, 0.0, 0.0,
+                     0.0, 4, {NAN, 3.2, 3.5, NAN, NAN}, {0, 0, 0, 0, 0}));
+  EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
+  EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
+}
 
 /**
  * Checks the laser plugin will throw correct exception for invalid

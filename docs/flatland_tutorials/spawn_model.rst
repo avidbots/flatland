@@ -54,7 +54,6 @@ with a valid Flatland model file in Yaml format.
 .. |smpic| image:: ../_static/spawn_model_button.png
     :width: 15%
 
-
 .. image:: https://media.giphy.com/media/3o7aD9ZDpsmoZDfq5a/giphy.gif
     :width: 650px
     :target: https://media.giphy.com/media/3o7aD9ZDpsmoZDfq5a/giphy.gif
