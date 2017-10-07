@@ -75,6 +75,7 @@ add_library(flatland_plugins_lib
   src/update_timer.cpp
   src/bumper.cpp
   src/tween.cpp
+  src/bool_sensor.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
