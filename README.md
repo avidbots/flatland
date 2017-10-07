@@ -1,5 +1,8 @@
 # README #
 
+![ci test result](https://travis-ci.org/avidbots/flatland.svg?branch=master "CI Test Result")
+
+
 ### What is this repository for? ###
 
 * Flatland is a performance centric 2d robot simulator
