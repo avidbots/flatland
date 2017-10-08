@@ -186,6 +186,9 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
     return -1.0f;  // return -1 to ignore this hit
   }
 
+  // Don't return on hitting sensors... they're not real
+  if (fixture->IsSensor()) return -1.0f;
+
   did_hit_ = true;
   fraction_ = fraction;
 

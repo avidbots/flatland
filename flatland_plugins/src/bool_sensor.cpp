@@ -114,12 +114,24 @@ void BoolSensor::AfterPhysicsStep(const Timekeeper &timekeeper) {
 
 void BoolSensor::BeginContact(b2Contact *contact) {
   if (!FilterContact(contact)) return;
+
+  // Skip collisions with other fixtures on this body
+  if (contact->GetFixtureA()->GetBody() == contact->GetFixtureB()->GetBody()) {
+    return;
+  }
+
   collisions_++;
   hit_something_ = true;
 }
 
 void BoolSensor::EndContact(b2Contact *contact) {
   if (!FilterContact(contact)) return;
+
+  // Skip collisions with other fixtures on this body
+  if (contact->GetFixtureA()->GetBody() == contact->GetFixtureB()->GetBody()) {
+    return;
+  }
+
   collisions_--;
 }
 }  // End flatland_plugins namespace

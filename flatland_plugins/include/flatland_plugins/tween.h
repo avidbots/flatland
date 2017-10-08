@@ -51,6 +51,7 @@
 #include <flatland_server/types.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <std_msgs/Bool.h>
 #include "tweeny.h"
 
 #ifndef FLATLAND_PLUGINS_TWEEN_H
@@ -67,13 +68,17 @@ class Tween : public flatland_server::ModelPlugin {
   Pose delta_;      // The maximum change
   float duration_;  // Seconds to enact change over
 
+  ros::Subscriber trigger_sub_;  // Handle forward/reverse trigger
+  bool triggered_ = false;  // If true,animate forwards, otherwise backwards
+
   tweeny::tween<double, double, double> tween_;  // The tween object (x,y,theta)
 
   // The three different operating modes
   enum class ModeType_ {
-    YOYO,  // tween up to delta_, then down again, and repeat
-    LOOP,  // tween up to delta_, then teleport back to start_
-    ONCE   // tween up to delta_ then stay there
+    YOYO,    // tween up to delta_, then down again, and repeat
+    LOOP,    // tween up to delta_, then teleport back to start_
+    ONCE,    // tween up to delta_ then stay there
+    TRIGGER  // tween forwards on "true", backward on "false"
   };
   ModeType_ mode_;
   static const std::map<std::string, Tween::ModeType_> mode_strings_;
@@ -123,12 +128,20 @@ class Tween : public flatland_server::ModelPlugin {
    * @param[in]     config The plugin YAML node
    */
   void BeforePhysicsStep(const Timekeeper& timekeeper) override;
+
+  /**
+   * @name      TriggerCallback
+   * @brief     Handles external tween triggers for mode "trigger"
+   * @param[in] The boolean message
+   */
+  void TriggerCallback(const std_msgs::Bool& msg);
 };
 
 const std::map<std::string, Tween::ModeType_> Tween::mode_strings_ = {
     {"yoyo", Tween::ModeType_::YOYO},
     {"loop", Tween::ModeType_::LOOP},
-    {"once", Tween::ModeType_::ONCE}};
+    {"once", Tween::ModeType_::ONCE},
+    {"trigger", Tween::ModeType_::TRIGGER}};
 
 const std::map<std::string, Tween::EasingType_> Tween::easing_strings_ = {
     {"linear", Tween::EasingType_::linear},
