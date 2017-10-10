@@ -60,8 +60,8 @@
 #include <boost/type_index.hpp>
 #define TYPESTRING(T) (boost::typeindex::type_id<T>().pretty_name())
 #else
-#include <typeinfo>
 #include <typeindex>
+#include <typeinfo>
 #define TYPESTRING(T) (typeid(T).name())
 #endif
 
