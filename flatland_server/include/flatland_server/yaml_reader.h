@@ -53,7 +53,18 @@
 #include <yaml-cpp/yaml.h>
 #include <array>
 #include <boost/algorithm/string.hpp>
+#include <boost/version.hpp>
+
+// If we have a version of boost with type_index
+#if BOOST_VERSION / 100 % 1000 >= 56
 #include <boost/type_index.hpp>
+#define TYPESTRING(T) (boost::typeindex::type_id<T>().pretty_name())
+#else
+#include <typeindex>
+#include <typeinfo>
+#define TYPESTRING(T) (typeid(T).name())
+#endif
+
 #include <set>
 #include <string>
 #include <vector>
@@ -304,7 +315,7 @@ T YamlReader::As() {
     ret = node_.as<T>();
   } catch (const YAML::RepresentationException &e) {
     throw YAMLException("Error converting entry" + fmt_name_ + " to " +
-                        boost::typeindex::type_id<T>().pretty_name() + fmt_in_);
+                        TYPESTRING(T) + fmt_in_);
   } catch (const YAML::Exception &e) {
     throw YAMLException("Error reading entry" + fmt_name_ + fmt_in_);
   }
