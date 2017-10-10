@@ -194,7 +194,7 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
   }
 
   // Don't return on hitting sensors... they're not real
-  //if (fixture->IsSensor()) return -1.0f;
+  if (fixture->IsSensor()) return -1.0f;
 
   if (category_bits & reflectance_layers_bits_) {
     intensity_ = 255.0;
