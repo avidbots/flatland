@@ -78,4 +78,11 @@ b2Vec2 Geometry::Transform(const b2Vec2& in, const RotateTranslate& rt) {
   out.y = in.x * rt.sin + in.y * rt.cos + rt.dy;
   return out;
 }
+
+b2Vec2 Geometry::InverseTransform(const b2Vec2& in, const RotateTranslate& rt) {
+  b2Vec2 out;
+  out.x = (in.x - rt.dx) * rt.cos + (in.y - rt.dy) * rt.sin;
+  out.y = -(in.x - rt.dx) * rt.sin + (in.y - rt.dy) * rt.cos;
+  return out;
+}
 };

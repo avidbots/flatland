@@ -281,6 +281,25 @@ void World::DeleteModel(const std::string &name) {
   }
 }
 
+void World::MoveModel(const std::string &name, const Pose &pose) {
+  // Find desired model
+  bool found = false;
+
+  for (int i = 0; i < models_.size(); i++) {
+    if (models_[i]->GetName() == name) {
+      // move the model
+      models_[i]->SetPose(pose);
+      found = true;
+      break;
+    }
+  }
+
+  if (!found) {
+    throw Exception("Flatland World: failed to move model, model with name " +
+                    Q(name) + " does not exist");
+  }
+}
+
 void World::DebugVisualize(bool update_layers) {
   if (update_layers) {
     for (const auto &layer : layers_) {

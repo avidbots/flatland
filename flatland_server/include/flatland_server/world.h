@@ -147,6 +147,13 @@ class World : public b2ContactListener {
   void DeleteModel(const std::string &name);
 
   /**
+   * @brief move model with a given name
+   * @param[in] name The name of the model to move
+   * @param[in] pose The desired new pose of the model
+   */
+  void MoveModel(const std::string &name, const Pose &pose);
+
+  /**
    * @brief factory method to create a instance of the world class. Cleans all
    * the inputs before instantiation of the class. TThrows YAMLException.
    * @param[in] yaml_path Path to the world yaml file
