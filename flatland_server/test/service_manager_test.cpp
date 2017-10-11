@@ -199,7 +199,7 @@ TEST_F(ServiceManagerTest, move_model) {
               1e-4);
   EXPECT_NEAR(9.9, w->models_[0]->bodies_[0]->physics_body_->GetPosition().y,
               1e-4);
-  EXPECT_NEAR(0.77, w->models_[0]->bodies_[0]->physics_body_->GetAngle(), 1e-4);
+  EXPECT_NEAR(0.77, w->models_[0]->bodies_[0]->physics_body_->GetAngle(), 1e-2);
 }
 
 /**
