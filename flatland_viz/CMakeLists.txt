@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(flatland_viz)
 
+# Get the LSB release name (14.04 or 16.04) string into variable ${LSB_RELEASE_VALUE}
+FIND_PROGRAM(LSB_RELEASE_EXECUTABLE lsb_release)
+EXECUTE_PROCESS(COMMAND ${LSB_RELEASE_EXECUTABLE} -s -r
+          OUTPUT_VARIABLE LSB_RELEASE_VALUE
+          OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(${LSB_RELEASE_VALUE} STREQUAL "14.04")
+message("Skipping flatland_viz because it is incompatible with 14.04")
+return()
+endif()
+
 # Ensure we're using c++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 

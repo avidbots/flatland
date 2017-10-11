@@ -19,6 +19,7 @@
   <depend>yaml-cpp</depend>
   <depend>cmake_modules</depend>
   <depend>tf</depend>
+  <depend>std_msgs</depend>
   <depend>flatland_msgs</depend>
 
   <export>

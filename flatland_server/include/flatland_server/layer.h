@@ -67,7 +67,7 @@ class Layer : public Entity {
   std::vector<std::string> names_;  ///< list of layer names
   std::string viz_name_;            ///< for visualization
   CollisionFilterRegistry *cfr_;    ///< collision filter registry
-  Body *body_;
+  Body *body_ = nullptr;
 
   /**
    * @brief Constructor for the Layer class for initialization using a image
@@ -106,6 +106,17 @@ class Layer : public Entity {
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const std::vector<LineSegment> &line_segments,
         double scale);
+
+  /**
+  * @brief Constructor for the Layer class for initialization with no static
+  * map in it
+  * @param[in] physics_world Pointer to the box2d physics world
+  * @param[in] cfr Collision filter registry
+  * @param[in] names A list of names for the layer, the first name is used
+  * for the name of the body
+  */
+  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+        const std::vector<std::string> &names, const Color &color);
 
   /**
    * @brief Destructor for the layer class

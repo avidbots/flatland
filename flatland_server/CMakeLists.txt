@@ -69,6 +69,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   thirdparty
 )
 
@@ -178,6 +179,8 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(load_world_test
     flatland_lib)
 
+  add_rostest_gtest(model_test test/model_test.test test/model_test.cpp)
+  target_link_libraries(model_test flatland_lib)
 
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test

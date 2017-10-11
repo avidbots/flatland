@@ -1,0 +1,18 @@
+# A cylindar that walks back and forth
+bodies:
+  - name: detector
+    pose: [0, 0, 0] 
+    type: dynamic  
+    color: [0.2, 0.2, 1, 0.9] 
+    footprints:
+    - type: polygon
+      sensor: true
+      points: [[-.5, -.5], [-.5, 0.5], [0.5, 0.5], [0.5, -0.5]]
+      layers: ["all"]
+      density: 1
+plugins:
+  - type: BoolSensor
+    name: detector0
+    topic: detector_out
+    update_rate: 10
+    body: detector

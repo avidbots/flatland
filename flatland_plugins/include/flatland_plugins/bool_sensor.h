@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	tricycle.h
- * @brief   Tricycle plugin
- * @author  Mike Brousseau
+ * @name	  bool_sensor.h
+ * @brief   Boolean Sensor plugin - publishes true if body is in collision
+ * @author  Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
@@ -44,74 +44,57 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
-#include <flatland_server/timekeeper.h>
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
+#include <ros/ros.h>
+#include <std_msgs/Bool.h>
 
-#ifndef FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
-#define FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
+#ifndef FLATLAND_PLUGINS_BOOL_SENSOR_H
+#define FLATLAND_PLUGINS_BOOL_SENSOR_H
 
 using namespace flatland_server;
-using namespace std;
 
 namespace flatland_plugins {
 
-class TricycleDrive : public flatland_server::ModelPlugin {
+/**
+ * This class defines a bumper plugin that is used to publish the collisions
+ * states of bodies in the model
+ */
+class BoolSensor : public ModelPlugin {
  public:
-  Body* body_;
-  Joint* front_wj_;       ///<  front wheel joint
-  Joint* rear_left_wj_;   ///< rear left wheel joint
-  Joint* rear_right_wj_;  ///< rear right wheel joint
-  double axel_track_;     ///< normal distrance between the rear two wheels
-  double wheelbase_;      ///< distance between the front and rear wheel
-  b2Vec2 rear_center_;    ///< middle point between the two rear wheels
-  bool invert_steering_angle_;   ///< whether to invert steering angle
-  double max_angular_velocity_;  ///< The max angular velocity
-  double target_wheel_angle_;    ///< The current target wheel angle
-  double theta_f_;  ///< The current angular offset of the front wheel
+  Body *body_;          ///< The body to check collisions with
+  double update_rate_;  ///< rate to publish message at
 
-  geometry_msgs::Twist twist_msg_;
-  nav_msgs::Odometry odom_msg_;
-  nav_msgs::Odometry ground_truth_msg_;
-  ros::Subscriber twist_sub_;
-  ros::Publisher odom_pub_;
-  ros::Publisher ground_truth_pub_;
+  UpdateTimer update_timer_;    ///< for managing update rate
+  int collisions_ = 0;          ///< Current number of collisions
+  bool hit_something_ = false;  ///< "latch" var to ensure all hits published
 
-  UpdateTimer update_timer_;
-
-  default_random_engine rng_;
-  array<normal_distribution<double>, 6> noise_gen_;
+  ros::Publisher publisher_;  ///< For publishing the collisions
 
   /**
-   * @name                OnInitialize
-   * @brief               initialize the bicycle plugin
-   * @param world_file    The path to the world.yaml file
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
    */
-  void OnInitialize(const YAML::Node& config) override;
+  void OnInitialize(const YAML::Node &config) override;
 
   /**
-   * @brief This is a helper function that is used to valid and extract
-   * parameters from  joints
+   * @brief Called when just after physics update to publish state
+   * @param[in] timekeeper Object managing the simulation time
    */
-  void ComputeJoints();
+  void AfterPhysicsStep(const Timekeeper &timekeeper) override;
 
   /**
-  * @name          BeforePhysicsStep
-  * @brief         override the BeforePhysicsStep method
-  * @param[in]     config The plugin YAML node
-  */
-  void BeforePhysicsStep(const Timekeeper& timekeeper) override;
+   * @brief A method that is called for all Box2D begin contacts
+   * @param[in] contact Box2D contact
+   */
+  void BeginContact(b2Contact *contact) override;
 
   /**
-  * @name          TwistCallback
-  * @brief         callback to apply twist (velocity and omega)
-  * @param[in]     timestep how much the physics time will increment
-  */
-  void TwistCallback(const geometry_msgs::Twist& msg);
+   * @brief A method that is called for all Box2D end contacts
+   * @param[in] contact Box2D contact
+   */
+  void EndContact(b2Contact *contact) override;
 };
-}
+};
 
 #endif

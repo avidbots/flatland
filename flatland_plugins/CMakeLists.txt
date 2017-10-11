@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   cmake_modules
   tf
   flatland_msgs
+  std_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -51,7 +52,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
-  CATKIN_DEPENDS pluginlib roscpp flatland_server
+  CATKIN_DEPENDS pluginlib roscpp flatland_server std_msgs
 )
 
 ###########
@@ -75,6 +76,7 @@ add_library(flatland_plugins_lib
   src/update_timer.cpp
   src/bumper.cpp
   src/tween.cpp
+  src/bool_sensor.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
