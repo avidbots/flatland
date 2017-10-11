@@ -45,6 +45,7 @@
  */
 
 #include <flatland_msgs/DeleteModel.h>
+#include <flatland_msgs/MoveModel.h>
 #include <flatland_msgs/SpawnModel.h>
 #include <flatland_server/simulation_manager.h>
 #include <flatland_server/timekeeper.h>
@@ -172,6 +173,63 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
 }
 
 /**
+ * Testing service for moving a valid model
+ */
+TEST_F(ServiceManagerTest, move_model) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
+
+  flatland_msgs::MoveModel srv;
+  srv.request.name = "turtlebot1";
+  srv.request.pose.x = 5.5;
+  srv.request.pose.y = 9.9;
+  srv.request.pose.theta = 0.77;
+
+  client = nh.serviceClient<flatland_msgs::MoveModel>("move_model");
+
+  StartSimulationThread();
+
+  ros::service::waitForService("move_model", 1000);
+  ASSERT_TRUE(client.call(srv));
+
+  ASSERT_TRUE(srv.response.success);
+
+  World* w = sim_man->world_;
+  EXPECT_NEAR(5.5, w->models_[0]->bodies_[0]->physics_body_->GetPosition().x,
+              1e-4);
+  EXPECT_NEAR(9.9, w->models_[0]->bodies_[0]->physics_body_->GetPosition().y,
+              1e-4);
+  EXPECT_NEAR(0.77, w->models_[0]->bodies_[0]->physics_body_->GetAngle(), 1e-4);
+}
+
+/**
+ * Testing service for moving a nonexistent model
+ */
+TEST_F(ServiceManagerTest, move_nonexistent_model) {
+  world_yaml =
+      this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
+
+  flatland_msgs::MoveModel srv;
+  srv.request.name = "not_a_robot";
+  srv.request.pose.x = 4;
+  srv.request.pose.y = 5;
+  srv.request.pose.theta = 0;
+
+  client = nh.serviceClient<flatland_msgs::MoveModel>("move_model");
+
+  StartSimulationThread();
+
+  ros::service::waitForService("move_model", 1000);
+  ASSERT_TRUE(client.call(srv));
+
+  ASSERT_FALSE(srv.response.success);
+  EXPECT_STREQ(
+      "Flatland World: failed to move model, model with name "
+      "\"not_a_robot\" does not exist",
+      srv.response.message.c_str());
+}
+
+/**
  * Testing service for deleting a model
  */
 TEST_F(ServiceManagerTest, delete_model) {
@@ -199,7 +257,7 @@ TEST_F(ServiceManagerTest, delete_model) {
 }
 
 /**
- * Testing service for deleting a model that does not exist, shoudl fail
+ * Testing service for deleting a model that does not exist, should fail
  */
 TEST_F(ServiceManagerTest, delete_nonexistent_model) {
   world_yaml = this_file_dir /

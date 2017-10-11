@@ -195,6 +195,25 @@ const std::string &Model::GetName() const { return name_; }
 
 const CollisionFilterRegistry *Model::GetCfr() const { return cfr_; }
 
+void Model::SetPose(const Pose &pose) {
+  // Grab first (root?) body transform
+  RotateTranslate root_body_transform =
+      Geometry::CreateTransform(bodies_[0]->physics_body_->GetPosition().x,
+                                bodies_[0]->physics_body_->GetPosition().y,
+                                bodies_[0]->physics_body_->GetAngle());
+
+  // Inverse transform all bodies by this to reset their poses
+  for (int i = 0; i < bodies_.size(); i++) {
+    bodies_[i]->physics_body_->SetTransform(
+        Geometry::InverseTransform(bodies_[i]->physics_body_->GetPosition(),
+                                   root_body_transform),
+        0.0);
+  }
+
+  // Apply new desired pose in world coordinates
+  TransformAll(pose);
+}
+
 void Model::TransformAll(const Pose &pose_delta) {
   //     --                --   --                --
   //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |

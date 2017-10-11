@@ -45,6 +45,7 @@
  */
 
 #include <flatland_msgs/DeleteModel.h>
+#include <flatland_msgs/MoveModel.h>
 #include <flatland_msgs/SpawnModel.h>
 #include <flatland_server/simulation_manager.h>
 #include <flatland_server/world.h>
@@ -68,6 +69,7 @@ class ServiceManager {
 
   ros::ServiceServer spawn_model_service_;   ///< service for spawning models
   ros::ServiceServer delete_model_service_;  ///< service for deleting models
+  ros::ServiceServer move_model_service_;    ///< service for moving models
 
   /**
    * @brief Service manager constructor
@@ -91,6 +93,14 @@ class ServiceManager {
    */
   bool DeleteModel(flatland_msgs::DeleteModel::Request &request,
                    flatland_msgs::DeleteModel::Response &response);
+
+  /**
+   * @brief Callback for the move model service
+   * @param[in] request Contains the request data for the service
+   * @param[in/out] response Contains the response for the service
+   */
+  bool MoveModel(flatland_msgs::MoveModel::Request &request,
+                 flatland_msgs::MoveModel::Response &response);
 };
 };
 #endif
