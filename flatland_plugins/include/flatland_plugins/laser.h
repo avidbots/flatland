@@ -79,9 +79,12 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   std::string frame_id_;  ///< laser frame id name
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
-  uint16_t reflectance_layers_bits_;  ///< for setting reflectance layers. if
-                                      ///laser hits those layers, intensity will
-                                      ///be high
+ 
+  /*
+   * for setting reflectance layers. if the laser hits those layers,
+   * intensity will be high (255)
+   */
+  uint16_t reflectance_layers_bits_;
 
   std::default_random_engine rng_;              ///< random generator
   std::normal_distribution<double> noise_gen_;  ///< gaussian noise generator
