@@ -64,6 +64,13 @@ void Tween::OnInitialize(const YAML::Node& config) {
 
   delta_ = reader.GetPose("delta", Pose(0, 0, 0));
 
+  // Boolean play pause topic
+  std::string trigger_topic = reader.Get<std::string>("trigger_topic", "");
+  if (trigger_topic != "") {
+    trigger_sub_ =
+        nh_.subscribe(trigger_topic, 1, &Tween::TriggerCallback, this);
+  }
+
   body_ = GetModel()->GetBody(body_name);
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
@@ -199,6 +206,10 @@ void Tween::OnInitialize(const YAML::Node& config) {
                   (int)mode_, easing.c_str());
 }
 
+void Tween::TriggerCallback(const std_msgs::Bool& msg) {
+  triggered_ = msg.data;
+}
+
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   std::array<double, 3> v =
       tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
@@ -207,6 +218,8 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
                            tween_.progress());
   body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]),
                                      start_.theta + v[2]);
+  // Tell Box2D to update the AABB and check for collisions for this object
+  body_->physics_body_->SetAwake(true);
 
   // Yoyo back and forth
   if (mode_ == Tween::ModeType_::YOYO) {
@@ -221,6 +234,15 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   if (mode_ == Tween::ModeType_::LOOP) {
     if (tween_.progress() >= 1.0f) {
       tween_.seek(0);
+    }
+  }
+
+  // Handle external trigger
+  if (mode_ == Tween::ModeType_::TRIGGER) {
+    if (triggered_) {
+      tween_.forward();
+    } else {
+      tween_.backward();
     }
   }
 }

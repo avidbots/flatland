@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	geometry_test.cpp
- * @brief	Test geometry
+ * @name	model_test.cpp
+ * @brief	Test model methods and functionality
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
@@ -44,59 +44,49 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/geometry.h"
+#include "flatland_server/model.h"
 #include <gtest/gtest.h>
-#include <cmath>
+#include <ros/ros.h>
+#include <string>
+#include "flatland_server/collision_filter_registry.h"
 
-// Test the CreateTransform method
-TEST(TestSuite, testCreateTransform) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(2.0, 1.0, 1.1);
+// Test the NameSpaceTF method
+TEST(TestSuite, testNameSpaceTF) {
+  flatland_server::Model has_ns(nullptr, nullptr, std::string("foo"),
+                                std::string("has_ns"));
+  // namespace "foo" onto tf "bar" => foo_bar
+  EXPECT_EQ(has_ns.NameSpaceTF("bar"), "foo_bar");
+  // namespace "foo" onto tf "/bar" => bar
+  EXPECT_EQ(has_ns.NameSpaceTF("/bar"), "bar");
 
-  EXPECT_NEAR(rt.dx, 2.0, 1e-5);
-  EXPECT_NEAR(rt.dy, 1.0, 1e-5);
-  EXPECT_NEAR(rt.cos, cosf(1.1), 1e-5);
-  EXPECT_NEAR(rt.sin, sinf(1.1), 1e-5);
+  flatland_server::Model no_ns(nullptr, nullptr, std::string(""),
+                               std::string("no_ns"));
+  // namespace "" onto tf "bar" => bar
+  EXPECT_EQ(no_ns.NameSpaceTF("bar"), "bar");
+  // namespace "" onto tf "/bar" => bar
+  EXPECT_EQ(no_ns.NameSpaceTF("/bar"), "bar");
 }
 
-// Test the Transform method, translation
-TEST(TestSuite, testTransformTranslate) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(2.0, 1.5, 0.0);
+// Test the NameSpaceTopic method
+TEST(TestSuite, testNameSpaceTopic) {
+  flatland_server::Model has_ns(nullptr, nullptr, std::string("foo"),
+                                std::string("has_ns"));
+  // namespace "foo" onto tf "bar" => foo_bar
+  EXPECT_EQ(has_ns.NameSpaceTopic("bar"), "foo/bar");
+  // namespace "foo" onto tf "/bar" => bar
+  EXPECT_EQ(has_ns.NameSpaceTopic("/bar"), "bar");
 
-  b2Vec2 in(1.0, 2.0);
-  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
-
-  EXPECT_NEAR(out.x, 3.0, 1e-5);
-  EXPECT_NEAR(out.y, 3.5, 1e-5);
-}
-
-// Test the Transform method, rotation
-TEST(TestSuite, testTransformRotate) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(0.0, 0.0, M_PI_2);
-
-  b2Vec2 in(1.0, 2.0);
-  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
-
-  EXPECT_NEAR(out.x, -2.0, 1e-5);
-  EXPECT_NEAR(out.y, 1.0, 1e-5);
-}
-
-// Test the Transform method, translation + rotation
-TEST(TestSuite, testTransformTranslateAndRotate) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(1.0, 0.5, -M_PI);
-
-  b2Vec2 in(-1.0, 1.5);
-  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
-
-  EXPECT_NEAR(out.x, 2.0, 1e-5);
-  EXPECT_NEAR(out.y, -1.0, 1e-5);
+  flatland_server::Model no_ns(nullptr, nullptr, std::string(""),
+                               std::string("no_ns"));
+  // namespace "" onto tf "bar" => bar
+  EXPECT_EQ(no_ns.NameSpaceTopic("bar"), "bar");
+  // namespace "" onto tf "/bar" => bar
+  EXPECT_EQ(no_ns.NameSpaceTopic("/bar"), "bar");
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
+  ros::init(argc, argv, "model_test");
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

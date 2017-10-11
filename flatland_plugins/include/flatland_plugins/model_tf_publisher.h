@@ -66,9 +66,8 @@ class ModelTfPublisher : public ModelPlugin {
   std::string world_frame_id_;  ///< name of the world frame id
   bool publish_tf_world_;  ///< if to publish the world position of the bodies
   std::vector<Body *> excluded_bodies_;  ///< list of bodies to ignore
-  Body *reference_body_;   ///< body used as a reference to other bodies
-  double update_rate_;     ///< publish rate
-  std::string tf_prefix_;  ///< tf_prefix for transforms
+  Body *reference_body_;  ///< body used as a reference to other bodies
+  double update_rate_;    ///< publish rate
 
   tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
   UpdateTimer update_timer_;                ///< for managing update rate

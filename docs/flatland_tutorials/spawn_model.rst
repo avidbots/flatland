@@ -37,9 +37,9 @@ To use the Spawn Model Tool, first it must be installed. The following animated 
 First click on the + button to bring up the tool selection dialog. Next choose the Spawn model tool from the available tools.
 Finally, click the ok button to confirm your selection. A new button |smpic| appears on the right side of the toolbar.
 
-.. image:: ../_static/install_spawn_model_tool.gif
+.. image:: https://media.giphy.com/media/3ohhwCy9VBsZ4Q1tYc/giphy.gif
     :width: 650px
-    :target: ../_static/install_spawn_model_tool.gif
+    :target: https://media.giphy.com/media/3ohhwCy9VBsZ4Q1tYc/giphy.gif
 
 .. warning:: If the Flatland window is too small, some of the tools might not be visible.
 
@@ -55,9 +55,9 @@ with a valid Flatland model file in Yaml format.
     :width: 15%
 
 
-.. image:: ../_static/run_spawn_model_tool.gif
+.. image:: https://media.giphy.com/media/3o7aD9ZDpsmoZDfq5a/giphy.gif
     :width: 650px
-    :target: ../_static/run_spawn_model_tool.gif
+    :target: https://media.giphy.com/media/3o7aD9ZDpsmoZDfq5a/giphy.gif
 
 4. Number checkbox
 ------------------
@@ -78,9 +78,9 @@ The name text field recieves the file name of the file chosen using
 the file selection dialog (with the path removed). You can choose to override
 this name with a name of your choosing.
 
-.. image:: ../_static/text.gif
+.. image:: https://media.giphy.com/media/l1J9t3dYwC3IqPiyQ/giphy.gif
     :width: 650px
-    :target: ../_static/text.gif
+    :target: https://media.giphy.com/media/l1J9t3dYwC3IqPiyQ/giphy.gif
 
 
 6. Placing and rotating model
@@ -101,8 +101,8 @@ around your model until it is pointing in the desrired direction. Left click to 
 the spawn model tool. The model will appear in the Flatland world at the desrired
 position and orientation.
 
-.. image:: ../_static/move_rotate_spawn_model_tool.gif
+.. image:: https://media.giphy.com/media/3ohhwBsRwvPcNUZEyI/giphy.gif
     :width: 650px
-    :target: ../_static/move_rotate_spawn_model_tool.gif
+    :target: https://media.giphy.com/media/3ohhwBsRwvPcNUZEyI/giphy.gif
 
 
