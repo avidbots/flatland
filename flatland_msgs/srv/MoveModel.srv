@@ -1,0 +1,5 @@
+string name
+geometry_msgs/Pose2D pose
+---
+bool success
+string message

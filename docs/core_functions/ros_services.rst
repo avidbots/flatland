@@ -47,4 +47,22 @@ Response:
   bool success    # check if the operation is successful
   string message  # error message if unsuccessful
 
+Moving Models
+---------------
+After spawning the model in the world, this service can be used to directly set the
+position and orientation of the vehicle in the global frame.
+
+Request:
+
+.. code-block:: bash
+
+  string name                 # name of the model to move
+  geometry_msgs/Pose2D pose   # desired new global pose
+  
+Response:
+
+.. code-block:: bash
+
+  bool success    # check if the operation is successful
+  string message  # error message if unsuccessful
 
