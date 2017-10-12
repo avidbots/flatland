@@ -80,6 +80,12 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
 
+  /*
+   * for setting reflectance layers. if the laser hits those layers,
+   * intensity will be high (255)
+   */
+  uint16_t reflectance_layers_bits_;
+
   std::default_random_engine rng_;              ///< random generator
   std::normal_distribution<double> noise_gen_;  ///< gaussian noise generator
 
@@ -91,8 +97,9 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   Eigen::Vector3f v_zero_point_;          ///< point representing (0,0)
   Eigen::Vector3f v_world_laser_origin_;  ///< (0,0) in the laser frame
   sensor_msgs::LaserScan laser_scan_;     ///< for publishing laser scan
-  bool did_hit_;    ///< Box2D ray trace checking if ray hits anything
-  float fraction_;  ///< Box2D ray trace fraction
+  bool did_hit_;     ///< Box2D ray trace checking if ray hits anything
+  float fraction_;   ///< Box2D ray trace fraction
+  float intensity_;  ///< Intensity of raytrace collision
 
   ros::Publisher scan_publisher_;             ///< ros laser topic publisher
   tf::TransformBroadcaster tf_broadcaster_;   ///< broadcast laser frame

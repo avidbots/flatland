@@ -1,0 +1,40 @@
+# Turtlebot
+
+bodies:  # List of named bodies
+  - name: base_link
+    pose: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 0, 1]
+    footprints:
+      - type: circle
+        density: 1
+        center: [0, 0]
+        radius: 0.1
+
+plugins:
+  - type: Laser
+    name: laser_front
+    body: base_link
+    range: 5
+    angle: {min: -1.5707963267948966, max: 1.5707963267948966, increment: 1.5707963267948966}
+
+  - type: Laser
+    name: laser_center
+    topic: /scan_center
+    frame: center_laser
+    body: base_link
+    origin: [0, 0, 0]
+    range: 5
+    update_rate: 5000
+    angle: {min: 0, max: 6.283185307179586, increment: 1.5707963267948966}
+    layers: ["layer_1", "reflectance"]
+
+  - type: Laser
+    name: laser_back
+    topic: scan_back
+    body: base_link
+    origin: [-1, -1, 1.5707963267948966]
+    range: 4
+    update_rate: 1
+    angle: {min: 0, max: 6.283185307179586, increment: 1.5707963267948966}
+    layers: ["layer_2", "reflectance"]
