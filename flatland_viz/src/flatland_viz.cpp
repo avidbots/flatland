@@ -144,6 +144,16 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   grid_->subProp("Plane Cell Count")->setValue(100);
   grid_->subProp("Alpha")->setValue(0.1);
 
+  // Create interactive markers display
+  interactive_markers_ =
+      manager_->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
+  if (interactive_markers_ == nullptr) {
+    ROS_FATAL("Interactive markers failed to instantiate");
+    exit(1);
+  }
+  interactive_markers_->subProp("Update Topic")
+      ->setValue("/interactive_model_markers/update");
+
   // Subscribe to debug topics topic
   ros::NodeHandle n;
   debug_topic_subscriber_ = n.subscribe("/flatland_server/debug/topics", 0,
@@ -186,6 +196,14 @@ void FlatlandViz::onToolbarActionTriggered(QAction* action) {
 
   if (tool) {
     manager_->getToolManager()->setCurrentTool(tool);
+  }
+
+  // Show or hide interactive markers depending on whether interact mode is
+  // active
+  if (tool->getClassId().toStdString() == "rviz/Interact") {
+    interactive_markers_->setEnabled(true);
+  } else {
+    interactive_markers_->setEnabled(false);
   }
 }
 

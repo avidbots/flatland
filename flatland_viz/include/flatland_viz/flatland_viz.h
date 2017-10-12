@@ -114,6 +114,7 @@ class FlatlandViz : public QWidget {
   rviz::RenderPanel* render_panel_;
 
   rviz::Display* grid_;
+  rviz::Display* interactive_markers_;
   std::map<std::string, rviz::Display*> debug_displays_;
   ros::Subscriber debug_topic_subscriber_;
   rviz::PropertyTreeWidget* tree_widget_;
