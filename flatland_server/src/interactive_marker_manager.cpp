@@ -31,10 +31,10 @@ void InteractiveMarkerManager::createInteractiveMarker(
   easy_to_click_cube.color.r = 0.0;
   easy_to_click_cube.color.g = 1.0;
   easy_to_click_cube.color.b = 0.0;
-  easy_to_click_cube.color.a = 1.0;
+  easy_to_click_cube.color.a = 0.5;
   easy_to_click_cube.scale.x = 0.5;
   easy_to_click_cube.scale.y = 0.5;
-  easy_to_click_cube.scale.z = 0.5;
+  easy_to_click_cube.scale.z = 0.05;
   easy_to_click_cube.pose.position.x = 0.25;
   control.markers.push_back(easy_to_click_cube);
 
@@ -52,6 +52,11 @@ void InteractiveMarkerManager::createInteractiveMarker(
     transformed_body_marker.pose.position.y =
         -(body_markers.markers[i].pose.position.x - rt.dx) * rt.sin +
         (body_markers.markers[i].pose.position.y - rt.dy) * rt.cos;
+
+    transformed_body_marker.pose.orientation.w = 1.0;
+    transformed_body_marker.pose.orientation.x = 0.0;
+    transformed_body_marker.pose.orientation.y = 0.0;
+    transformed_body_marker.pose.orientation.z = 0.0;
 
     // Make line strips thicker than the original
     if (transformed_body_marker.type ==
