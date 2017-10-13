@@ -58,7 +58,8 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0), int_marker_manager_(&models_) {
+World::World()
+    : gravity_(0, 0), int_marker_manager_(&models_, &plugin_manager_) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -102,7 +103,7 @@ void World::Update(Timekeeper &timekeeper) {
   timekeeper.StepTime();
   plugin_manager_.AfterPhysicsStep(timekeeper);
 
-  int_marker_manager_.update(models_);
+  int_marker_manager_.update();
 }
 
 void World::BeginContact(b2Contact *contact) {
