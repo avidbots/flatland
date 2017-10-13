@@ -196,14 +196,14 @@ void FlatlandViz::onToolbarActionTriggered(QAction* action) {
 
   if (tool) {
     manager_->getToolManager()->setCurrentTool(tool);
-  }
-
-  // Show or hide interactive markers depending on whether interact mode is
-  // active
-  if (tool->getClassId().toStdString() == "rviz/Interact") {
-    interactive_markers_->setEnabled(true);
-  } else {
-    interactive_markers_->setEnabled(false);
+    
+    // Show or hide interactive markers depending on whether interact mode is
+    // active
+    if (tool->getClassId().toStdString() == "rviz/Interact") {
+      interactive_markers_->setEnabled(true);
+    } else {
+      interactive_markers_->setEnabled(false);
+    }
   }
 }
 
