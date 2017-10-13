@@ -50,7 +50,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
   easy_to_click_cube.pose.position.x = 0.25;
   control.markers.push_back(easy_to_click_cube);
 
-  // Also add body markers to visualize model pose while moving its interactive marker
+  // Also add body markers to visualize model pose
+  // while moving its interactive marker
   for (size_t i = 0; i < body_markers.markers.size(); i++) {
     visualization_msgs::Marker transformed_body_marker =
         body_markers.markers[i];
@@ -112,7 +113,9 @@ void InteractiveMarkerManager::createInteractiveMarker(
 
   // Bind feedback callback for the new interactive marker
   interactive_marker_server_->setCallback(
-      model_name, boost::bind(&InteractiveMarkerManager::processInteractiveFeedback, this, _1),
+      model_name,
+      boost::bind(&InteractiveMarkerManager::processInteractiveFeedback, this,
+                  _1),
       visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
 
   // Add context menu to the new interactive marker
@@ -124,7 +127,6 @@ void InteractiveMarkerManager::createInteractiveMarker(
 
 void InteractiveMarkerManager::deleteModelMenuCallback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
-
   // Delete the model just as when the DeleteModel service is called
   for (int i = 0; i < (*models_).size(); i++) {
     if ((*models_)[i]->GetName() == feedback->marker_name) {
@@ -146,7 +148,6 @@ void InteractiveMarkerManager::deleteModelMenuCallback(
 
 void InteractiveMarkerManager::deleteInteractiveMarker(
     const std::string &model_name) {
-
   // Remove target interactive marker by name and
   // update the server
   interactive_marker_server_->erase(model_name);
@@ -177,8 +178,10 @@ void InteractiveMarkerManager::update() {
   // and use it to update the interactive marker pose
   for (size_t i = 0; i < (*models_).size(); i++) {
     geometry_msgs::Pose new_pose;
-    new_pose.position.x = (*models_)[i]->bodies_[0]->physics_body_->GetPosition().x;
-    new_pose.position.y = (*models_)[i]->bodies_[0]->physics_body_->GetPosition().y;
+    new_pose.position.x =
+        (*models_)[i]->bodies_[0]->physics_body_->GetPosition().x;
+    new_pose.position.y =
+        (*models_)[i]->bodies_[0]->physics_body_->GetPosition().y;
     double theta = (*models_)[i]->bodies_[0]->physics_body_->GetAngle();
     new_pose.orientation.w = cos(0.5 * theta);
     new_pose.orientation.z = sin(0.5 * theta);
@@ -187,9 +190,7 @@ void InteractiveMarkerManager::update() {
   }
 }
 
-InteractiveMarkerManager::~InteractiveMarkerManager()
-{
+InteractiveMarkerManager::~InteractiveMarkerManager() {
   interactive_marker_server_.reset();
 }
-
 }

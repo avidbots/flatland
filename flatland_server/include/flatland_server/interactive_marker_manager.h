@@ -13,11 +13,11 @@ namespace flatland_server {
 
 class InteractiveMarkerManager {
  public:
-
   /**
    * @brief Constructor for the interactive marker manager class
    * @param[in] model_list_ptr Pointer to the list of models in the World class
-   * @param[in] plugin_manager_ptr Pointer to the plugin manager in the World class
+   * @param[in] plugin_manager_ptr Pointer to the plugin manager in the World
+   * class
    */
   InteractiveMarkerManager(std::vector<Model*>* model_list_ptr,
                            PluginManager* plugin_manager_ptr);
@@ -51,11 +51,14 @@ class InteractiveMarkerManager {
   void update();
 
  private:
-  interactive_markers::MenuHandler menu_handler_; ///< Handler for the interactive marker context menus
+  interactive_markers::MenuHandler
+      menu_handler_;  ///< Handler for the interactive marker context menus
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer>
-      interactive_marker_server_;                 ///< Interactive marker server
-  std::vector<Model*>* models_;                   ///< Pointer to the model list in the World class
-  PluginManager* plugin_manager_;                 ///< Pointer to the plugin manager in the World class
+      interactive_marker_server_;  ///< Interactive marker server
+  std::vector<Model*>*
+      models_;  ///< Pointer to the model list in the World class
+  PluginManager*
+      plugin_manager_;  ///< Pointer to the plugin manager in the World class
 
   /**
   * @brief Process interactive feedback on a MOUSE_UP event and use it
