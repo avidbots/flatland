@@ -165,7 +165,9 @@ void InteractiveMarkerManager::processInteractiveFeedback(
       new_pose.y = feedback->pose.position.y;
       new_pose.theta = atan2(
           2.0 * feedback->pose.orientation.w * feedback->pose.orientation.z,
-          1.0 - 2.0 * feedback->pose.orientation.z * feedback->pose.orientation.z);
+          1.0 -
+              2.0 * feedback->pose.orientation.z *
+                  feedback->pose.orientation.z);
       (*models_)[i]->SetPose(new_pose);
       break;
     }
