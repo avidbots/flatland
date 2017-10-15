@@ -62,12 +62,12 @@ class InteractiveMarkerManager {
   PluginManager*
       plugin_manager_;  ///< Pointer to the plugin manager in the World class
   bool manipulating_model_;  ///< Boolean flag indicating if the user is
-                             ///manipulating a model with its interactive marker
+  /// manipulating a model with its interactive marker
   ros::WallTime pose_update_stamp_;  ///< Timestamp of the last received pose
-                                     ///update feedback. Used to handle when the
-                                     ///interactive marker server stops
-                                     ///manipulating without triggering a
-                                     ///MOUSE_UP event.
+  /// update feedback. Used to handle when the
+  /// interactive marker server stops
+  /// manipulating without triggering a
+  /// MOUSE_UP event.
 
   /**
   * @brief Process interactive feedback on a MOUSE_UP event and use it
@@ -92,7 +92,7 @@ class InteractiveMarkerManager {
   * @brief Process interactive feedback on a POSE_UPDATE event and record
   * the current wall time to detect a timeout in the update method
   * @param[in] feedback The feedback structure containing the name of the
-  * manipulated model and the current pose. Not used in this method.
+  * manipulated model and the current pose. Not used in this method
   */
   void processPoseUpdateFeedback(
       const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);

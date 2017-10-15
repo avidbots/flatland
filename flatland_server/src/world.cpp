@@ -97,6 +97,8 @@ World::~World() {
 }
 
 void World::Update(Timekeeper &timekeeper) {
+  // Pause simulation if the user is manipulating a model
+  // with an interactive marker by skipping the update steps
   if (!int_marker_manager_.isManipulating()) {
     plugin_manager_.BeforePhysicsStep(timekeeper);
     physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
