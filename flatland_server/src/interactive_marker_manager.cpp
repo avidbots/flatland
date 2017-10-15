@@ -6,6 +6,7 @@ InteractiveMarkerManager::InteractiveMarkerManager(
     std::vector<Model *> *model_list_ptr, PluginManager *plugin_manager_ptr) {
   models_ = model_list_ptr;
   plugin_manager_ = plugin_manager_ptr;
+  manipulating_model_ = false;
 
   // Initialize interactive marker server
   interactive_marker_server_.reset(
@@ -111,12 +112,17 @@ void InteractiveMarkerManager::createInteractiveMarker(
   new_interactive_marker.controls.push_back(no_control);
   interactive_marker_server_->insert(new_interactive_marker);
 
-  // Bind feedback callback for the new interactive marker
+  // Bind feedback callbacks for the new interactive marker
   interactive_marker_server_->setCallback(
       model_name,
-      boost::bind(&InteractiveMarkerManager::processInteractiveFeedback, this,
+      boost::bind(&InteractiveMarkerManager::processMouseUpFeedback, this,
                   _1),
       visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
+  interactive_marker_server_->setCallback(
+      model_name,
+      boost::bind(&InteractiveMarkerManager::processMouseDownFeedback, this,
+                  _1),
+      visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN);
 
   // Add context menu to the new interactive marker
   menu_handler_.apply(*interactive_marker_server_, model_name);
@@ -154,7 +160,7 @@ void InteractiveMarkerManager::deleteInteractiveMarker(
   interactive_marker_server_->applyChanges();
 }
 
-void InteractiveMarkerManager::processInteractiveFeedback(
+void InteractiveMarkerManager::processMouseUpFeedback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
   // Update model that was manipulated the same way
   // as when the MoveModel service is called
@@ -172,7 +178,14 @@ void InteractiveMarkerManager::processInteractiveFeedback(
       break;
     }
   }
+  manipulating_model_ = false;
   interactive_marker_server_->applyChanges();
+}
+
+void InteractiveMarkerManager::processMouseDownFeedback(
+  const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
+{
+  manipulating_model_ = true;
 }
 
 void InteractiveMarkerManager::update() {

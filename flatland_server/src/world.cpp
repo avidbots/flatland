@@ -97,12 +97,13 @@ World::~World() {
 }
 
 void World::Update(Timekeeper &timekeeper) {
-  plugin_manager_.BeforePhysicsStep(timekeeper);
-  physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
-                       physics_position_iterations_);
-  timekeeper.StepTime();
-  plugin_manager_.AfterPhysicsStep(timekeeper);
-
+  if (!int_marker_manager_.isManipulating()){
+    plugin_manager_.BeforePhysicsStep(timekeeper);
+    physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
+                         physics_position_iterations_);
+    timekeeper.StepTime();
+    plugin_manager_.AfterPhysicsStep(timekeeper);
+  }
   int_marker_manager_.update();
 }
 

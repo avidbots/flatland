@@ -50,6 +50,8 @@ class InteractiveMarkerManager {
    */
   void update();
 
+  bool isManipulating(){ return manipulating_model_; }
+
  private:
   interactive_markers::MenuHandler
       menu_handler_;  ///< Handler for the interactive marker context menus
@@ -59,6 +61,7 @@ class InteractiveMarkerManager {
       models_;  ///< Pointer to the model list in the World class
   PluginManager*
       plugin_manager_;  ///< Pointer to the plugin manager in the World class
+  bool manipulating_model_;
 
   /**
   * @brief Process interactive feedback on a MOUSE_UP event and use it
@@ -66,7 +69,10 @@ class InteractiveMarkerManager {
   * @param[in] feedback The feedback structure containing the name of the
   * manipulated model and the new pose
   */
-  void processInteractiveFeedback(
+  void processMouseUpFeedback(
+      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+
+  void processMouseDownFeedback(
       const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
 
   /**
