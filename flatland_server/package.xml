@@ -24,6 +24,7 @@
   <depend>geometry_msgs</depend>
   <depend>yaml-cpp</depend>
   <depend>visualization_msgs</depend>
+  <depend>interactive_markers</depend>
   <depend>flatland_msgs</depend>
 
   <export>

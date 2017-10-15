@@ -58,7 +58,8 @@
 
 namespace flatland_server {
 
-World::World() : gravity_(0, 0) {
+World::World()
+    : gravity_(0, 0), int_marker_manager_(&models_, &plugin_manager_) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -101,6 +102,8 @@ void World::Update(Timekeeper &timekeeper) {
                        physics_position_iterations_);
   timekeeper.StepTime();
   plugin_manager_.AfterPhysicsStep(timekeeper);
+
+  int_marker_manager_.update();
 }
 
 void World::BeginContact(b2Contact *contact) {
@@ -256,6 +259,13 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
 
   models_.push_back(m);
 
+  visualization_msgs::MarkerArray body_markers;
+  for (size_t i = 0; i < m->bodies_.size(); i++) {
+    DebugVisualization::Get().BodyToMarkers(
+        body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
+  }
+  int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
+
   ROS_INFO_NAMED("World", "Model \"%s\" loaded", m->name_.c_str());
   m->DebugOutput();
 }
@@ -270,6 +280,7 @@ void World::DeleteModel(const std::string &name) {
       plugin_manager_.DeleteModelPlugin(models_[i]);
       delete models_[i];
       models_.erase(models_.begin() + i);
+      int_marker_manager_.deleteInteractiveMarker(name);
       found = true;
       break;
     }
