@@ -199,6 +199,9 @@ void FlatlandViz::onToolbarActionTriggered(QAction* action) {
 
   if (tool) {
     manager_->getToolManager()->setCurrentTool(tool);
+
+    // If the simulation pause/resume tool was clicked, automatically and
+    // immediately switch back to the previously active tool
     if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
       manager_->getToolManager()->setCurrentTool(current_tool);
       tool = current_tool;

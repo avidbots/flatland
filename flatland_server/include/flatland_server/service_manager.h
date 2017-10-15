@@ -68,11 +68,11 @@ class ServiceManager {
   World *world_;                ///< aaa handle to the simulation world
   SimulationManager *sim_man_;  ///< a handle to the simulation manager
 
-  ros::ServiceServer spawn_model_service_;    ///< service for spawning models
-  ros::ServiceServer delete_model_service_;   ///< service for deleting models
-  ros::ServiceServer move_model_service_;     ///< service for moving models
-  ros::ServiceServer pause_unpause_service_;  ///< service for toggling the
-                                              ///pause state of the simulation
+  ros::ServiceServer spawn_model_service_;   ///< service for spawning models
+  ros::ServiceServer delete_model_service_;  ///< service for deleting models
+  ros::ServiceServer move_model_service_;    ///< service for moving models
+  ros::ServiceServer pause_toggle_service_;  ///< service for toggling the
+                                             /// pause state of the simulation
 
   /**
    * @brief Service manager constructor

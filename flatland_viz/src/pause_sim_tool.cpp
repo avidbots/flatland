@@ -10,7 +10,7 @@ PauseSimTool::~PauseSimTool() { pause_service_.shutdown(); }
 // When the tool is initially loaded, connect to the pause toggle service
 void PauseSimTool::onInitialize() {
   pause_service_ = nh_.serviceClient<std_srvs::Empty>("pause");
-  setName("Pause/Unpause");
+  setName("Pause/Resume");
 }
 
 // Every time the user presses the tool's Rviz toolbar button, call the pause
