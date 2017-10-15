@@ -196,9 +196,9 @@ TEST_F(ServiceManagerTest, move_model) {
 
   World* w = sim_man->world_;
   EXPECT_NEAR(5.5, w->models_[0]->bodies_[0]->physics_body_->GetPosition().x,
-              1e-4);
+              1e-2);
   EXPECT_NEAR(9.9, w->models_[0]->bodies_[0]->physics_body_->GetPosition().y,
-              1e-4);
+              1e-2);
   EXPECT_NEAR(0.77, w->models_[0]->bodies_[0]->physics_body_->GetAngle(), 1e-2);
 }
 
