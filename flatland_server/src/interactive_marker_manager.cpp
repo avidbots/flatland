@@ -26,19 +26,42 @@ InteractiveMarkerManager::InteractiveMarkerManager(
 void InteractiveMarkerManager::createInteractiveMarker(
     const std::string &model_name, const Pose &pose,
     const visualization_msgs::MarkerArray &body_markers) {
-  // Set up interactive marker control object to allow both translation and
+  // Set up interactive marker control objects to allow both translation and
   // rotation movement
-  visualization_msgs::InteractiveMarkerControl control;
-  control.always_visible = true;
-  control.orientation.w = 1.0;
-  control.orientation.y = 1.0;
-  control.name = "move_xy_yaw";
-  control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE;
+  visualization_msgs::InteractiveMarkerControl plane_control;
+  plane_control.always_visible = true;
+  plane_control.orientation.w = 0.707;
+  plane_control.orientation.y = 0.707;
+  plane_control.name = "move_xy";
+  plane_control.interaction_mode =
+      visualization_msgs::InteractiveMarkerControl::MOVE_PLANE;
+  visualization_msgs::InteractiveMarkerControl rotate_control;
+  rotate_control.always_visible = true;
+  rotate_control.orientation.w = 0.707;
+  rotate_control.orientation.y = 0.707;
+  rotate_control.name = "rotate_z";
+  rotate_control.interaction_mode =
+      visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
 
-  // Add a cube marker a little forward from the origin of the interactive
-  // marker. This guarantees an easy to manipulate target regardless of the body
-  // geometry
+  // Add a non-interactive text marker with the model name
+  visualization_msgs::InteractiveMarkerControl no_control;
+  no_control.always_visible = true;
+  no_control.name = "no_control";
+  no_control.interaction_mode =
+      visualization_msgs::InteractiveMarkerControl::NONE;
+  visualization_msgs::Marker text_marker;
+  text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  text_marker.color.r = 1.0;
+  text_marker.color.g = 1.0;
+  text_marker.color.b = 1.0;
+  text_marker.color.a = 1.0;
+  text_marker.pose.position.x = 0.5;
+  text_marker.pose.position.y = 0.0;
+  text_marker.scale.z = 0.5;
+  text_marker.text = model_name;
+  no_control.markers.push_back(text_marker);
+
+  // Add a cube marker to be an easy-to-manipulate target in Rviz
   visualization_msgs::Marker easy_to_click_cube;
   easy_to_click_cube.type = visualization_msgs::Marker::CUBE;
   easy_to_click_cube.color.r = 0.0;
@@ -48,10 +71,10 @@ void InteractiveMarkerManager::createInteractiveMarker(
   easy_to_click_cube.scale.x = 0.5;
   easy_to_click_cube.scale.y = 0.5;
   easy_to_click_cube.scale.z = 0.05;
-  easy_to_click_cube.pose.position.x = 0.25;
-  control.markers.push_back(easy_to_click_cube);
+  easy_to_click_cube.pose.position.x = 0.0;
+  plane_control.markers.push_back(easy_to_click_cube);
 
-  // Also add body markers to visualize model pose
+  // Also add body markers to the no_control object to visualize model pose
   // while moving its interactive marker
   for (size_t i = 0; i < body_markers.markers.size(); i++) {
     visualization_msgs::Marker transformed_body_marker =
@@ -79,26 +102,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
     }
 
     // Add transformed body marker to interactive marker control object
-    control.markers.push_back(transformed_body_marker);
+    no_control.markers.push_back(transformed_body_marker);
   }
-
-  // Add a non-interactive text marker with the model name
-  visualization_msgs::InteractiveMarkerControl no_control;
-  no_control.always_visible = true;
-  no_control.name = "no_control";
-  no_control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::NONE;
-  visualization_msgs::Marker text_marker;
-  text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-  text_marker.color.r = 1.0;
-  text_marker.color.g = 1.0;
-  text_marker.color.b = 1.0;
-  text_marker.color.a = 1.0;
-  text_marker.pose.position.x = 0.5;
-  text_marker.pose.position.y = 0.0;
-  text_marker.scale.z = 0.5;
-  text_marker.text = model_name;
-  no_control.markers.push_back(text_marker);
 
   // Send new interactive marker to server
   visualization_msgs::InteractiveMarker new_interactive_marker;
@@ -108,7 +113,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
   new_interactive_marker.pose.position.y = pose.y;
   new_interactive_marker.pose.orientation.w = cos(0.5 * pose.theta);
   new_interactive_marker.pose.orientation.z = sin(0.5 * pose.theta);
-  new_interactive_marker.controls.push_back(control);
+  new_interactive_marker.controls.push_back(plane_control);
+  new_interactive_marker.controls.push_back(rotate_control);
   new_interactive_marker.controls.push_back(no_control);
   interactive_marker_server_->insert(new_interactive_marker);
 
