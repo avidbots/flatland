@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_geometry_msgs
   geometry_msgs
   visualization_msgs
+  interactive_markers
   flatland_msgs
 )
 
@@ -90,6 +91,7 @@ add_library(flatland_lib
   src/collision_filter_registry.cpp
   src/model_plugin.cpp
   src/plugin_manager.cpp
+  src/interactive_marker_manager.cpp
   src/timekeeper.cpp
   src/service_manager.cpp
   src/yaml_reader.cpp

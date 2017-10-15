@@ -49,6 +49,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_server/collision_filter_registry.h>
+#include <flatland_server/interactive_marker_manager.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
@@ -72,6 +73,8 @@ class World : public b2ContactListener {
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
   PluginManager plugin_manager_;  ///< for loading and updating plugins
+  InteractiveMarkerManager
+      int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
 
