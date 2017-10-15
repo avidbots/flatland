@@ -50,6 +50,7 @@
 #include <flatland_server/simulation_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
+#include <std_srvs/Empty.h>
 
 #ifndef FLATLAND_PLUGIN_SERVICE_MANAGER_H
 #define FLATLAND_PLUGIN_SERVICE_MANAGER_H
@@ -67,9 +68,11 @@ class ServiceManager {
   World *world_;                ///< aaa handle to the simulation world
   SimulationManager *sim_man_;  ///< a handle to the simulation manager
 
-  ros::ServiceServer spawn_model_service_;   ///< service for spawning models
-  ros::ServiceServer delete_model_service_;  ///< service for deleting models
-  ros::ServiceServer move_model_service_;    ///< service for moving models
+  ros::ServiceServer spawn_model_service_;    ///< service for spawning models
+  ros::ServiceServer delete_model_service_;   ///< service for deleting models
+  ros::ServiceServer move_model_service_;     ///< service for moving models
+  ros::ServiceServer pause_unpause_service_;  ///< service for toggling the
+                                              ///pause state of the simulation
 
   /**
    * @brief Service manager constructor
@@ -101,6 +104,12 @@ class ServiceManager {
    */
   bool MoveModel(flatland_msgs::MoveModel::Request &request,
                  flatland_msgs::MoveModel::Response &response);
+
+  /**
+    * @brief Callback for the std_srvs::Empty pause/unpause service
+    */
+  bool PauseSimulation(std_srvs::Empty::Request &request,
+                       std_srvs::Empty::Response &response);
 };
 };
 #endif
