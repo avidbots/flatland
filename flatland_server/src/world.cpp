@@ -97,7 +97,7 @@ World::~World() {
 }
 
 void World::Update(Timekeeper &timekeeper) {
-  if (!int_marker_manager_.isManipulating()){
+  if (!int_marker_manager_.isManipulating()) {
     plugin_manager_.BeforePhysicsStep(timekeeper);
     physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
                          physics_position_iterations_);

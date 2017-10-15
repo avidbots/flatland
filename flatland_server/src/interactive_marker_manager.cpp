@@ -121,14 +121,18 @@ void InteractiveMarkerManager::createInteractiveMarker(
   // Bind feedback callbacks for the new interactive marker
   interactive_marker_server_->setCallback(
       model_name,
-      boost::bind(&InteractiveMarkerManager::processMouseUpFeedback, this,
-                  _1),
+      boost::bind(&InteractiveMarkerManager::processMouseUpFeedback, this, _1),
       visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
   interactive_marker_server_->setCallback(
       model_name,
       boost::bind(&InteractiveMarkerManager::processMouseDownFeedback, this,
                   _1),
       visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN);
+  interactive_marker_server_->setCallback(
+      model_name,
+      boost::bind(&InteractiveMarkerManager::processPoseUpdateFeedback, this,
+                  _1),
+      visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE);
 
   // Add context menu to the new interactive marker
   menu_handler_.apply(*interactive_marker_server_, model_name);
@@ -189,25 +193,43 @@ void InteractiveMarkerManager::processMouseUpFeedback(
 }
 
 void InteractiveMarkerManager::processMouseDownFeedback(
-  const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
-{
+    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
   manipulating_model_ = true;
+}
+
+void InteractiveMarkerManager::processPoseUpdateFeedback(
+    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+  pose_update_stamp_ = ros::WallTime::now();
 }
 
 void InteractiveMarkerManager::update() {
   // Loop through each model, extract the pose of the root body,
-  // and use it to update the interactive marker pose
-  for (size_t i = 0; i < (*models_).size(); i++) {
-    geometry_msgs::Pose new_pose;
-    new_pose.position.x =
-        (*models_)[i]->bodies_[0]->physics_body_->GetPosition().x;
-    new_pose.position.y =
-        (*models_)[i]->bodies_[0]->physics_body_->GetPosition().y;
-    double theta = (*models_)[i]->bodies_[0]->physics_body_->GetAngle();
-    new_pose.orientation.w = cos(0.5 * theta);
-    new_pose.orientation.z = sin(0.5 * theta);
-    interactive_marker_server_->setPose((*models_)[i]->GetName(), new_pose);
-    interactive_marker_server_->applyChanges();
+  // and use it to update the interactive marker pose. Only
+  // necessary to compute if user is not currently dragging
+  // an interactive marker
+  if (!manipulating_model_) {
+    for (size_t i = 0; i < (*models_).size(); i++) {
+      geometry_msgs::Pose new_pose;
+      new_pose.position.x =
+          (*models_)[i]->bodies_[0]->physics_body_->GetPosition().x;
+      new_pose.position.y =
+          (*models_)[i]->bodies_[0]->physics_body_->GetPosition().y;
+      double theta = (*models_)[i]->bodies_[0]->physics_body_->GetAngle();
+      new_pose.orientation.w = cos(0.5 * theta);
+      new_pose.orientation.z = sin(0.5 * theta);
+      interactive_marker_server_->setPose((*models_)[i]->GetName(), new_pose);
+      interactive_marker_server_->applyChanges();
+    }
+  }
+
+  // Detect when interaction stops without triggering a MOUSE_UP event by
+  // monitoring the time since the last pose update feedback, which comes
+  // in at 33 Hz if the user is dragging the marker.  When the stream of
+  // pose update feedback stops, automatically clear the manipulating_model_
+  // flag to unpause the simulation.
+  double dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
+  if (manipulating_model_ && dt > 0.1 && dt < 1.0) {
+    manipulating_model_ = false;
   }
 }
 
