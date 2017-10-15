@@ -77,6 +77,7 @@ class World : public b2ContactListener {
       int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
+  bool paused_;  ///< indicates if simulation is paused or not
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -155,6 +156,11 @@ class World : public b2ContactListener {
    * @param[in] pose The desired new pose of the model
    */
   void MoveModel(const std::string &name, const Pose &pose);
+
+  /**
+   * @brief toggle the paused state of the simulation
+   */
+  void TogglePaused();
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all

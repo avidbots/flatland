@@ -59,7 +59,9 @@
 namespace flatland_server {
 
 World::World()
-    : gravity_(0, 0), int_marker_manager_(&models_, &plugin_manager_) {
+    : gravity_(0, 0),
+      paused_(false),
+      int_marker_manager_(&models_, &plugin_manager_) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -99,7 +101,7 @@ World::~World() {
 void World::Update(Timekeeper &timekeeper) {
   // Pause simulation if the user is manipulating a model
   // with an interactive marker by skipping the update steps
-  if (!int_marker_manager_.isManipulating()) {
+  if (!int_marker_manager_.isManipulating() && !paused_) {
     plugin_manager_.BeforePhysicsStep(timekeeper);
     physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
                          physics_position_iterations_);
@@ -313,6 +315,8 @@ void World::MoveModel(const std::string &name, const Pose &pose) {
                     Q(name) + " does not exist");
   }
 }
+
+void World::TogglePaused() { paused_ = !paused_; }
 
 void World::DebugVisualize(bool update_layers) {
   if (update_layers) {
