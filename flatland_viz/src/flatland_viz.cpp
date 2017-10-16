@@ -123,6 +123,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow* parent) : QWidget((QWidget*)parent) {
   manager_->initialize();
 
   tool_man->addTool("flatland_viz/SpawnModel");
+  tool_man->addTool("flatland_viz/PauseSim");
 
   manager_->startUpdate();
 
@@ -192,10 +193,21 @@ void FlatlandViz::addTool(rviz::Tool* tool) {
 
 void FlatlandViz::onToolbarActionTriggered(QAction* action) {
   ROS_ERROR("onToolbarActionTriggered called");
+
+  rviz::Tool* current_tool = manager_->getToolManager()->getCurrentTool();
   rviz::Tool* tool = action_to_tool_map_[action];
 
   if (tool) {
     manager_->getToolManager()->setCurrentTool(tool);
+
+    // If the simulation pause/resume tool was clicked, automatically and
+    // immediately switch back to the previously active tool
+    if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
+      manager_->getToolManager()->setCurrentTool(current_tool);
+      tool = current_tool;
+      manager_->getToolManager()->setCurrentTool(tool);
+      indicateToolIsCurrent(tool);
+    }
 
     // Show or hide interactive markers depending on whether interact mode is
     // active

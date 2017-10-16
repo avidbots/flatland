@@ -50,6 +50,8 @@ class InteractiveMarkerManager {
    */
   void update();
 
+  bool isManipulating() { return manipulating_model_; }
+
  private:
   interactive_markers::MenuHandler
       menu_handler_;  ///< Handler for the interactive marker context menus
@@ -59,6 +61,13 @@ class InteractiveMarkerManager {
       models_;  ///< Pointer to the model list in the World class
   PluginManager*
       plugin_manager_;  ///< Pointer to the plugin manager in the World class
+  bool manipulating_model_;  ///< Boolean flag indicating if the user is
+  /// manipulating a model with its interactive marker
+  ros::WallTime pose_update_stamp_;  ///< Timestamp of the last received pose
+  /// update feedback. Used to handle when the
+  /// interactive marker server stops
+  /// manipulating without triggering a
+  /// MOUSE_UP event.
 
   /**
   * @brief Process interactive feedback on a MOUSE_UP event and use it
@@ -66,7 +75,26 @@ class InteractiveMarkerManager {
   * @param[in] feedback The feedback structure containing the name of the
   * manipulated model and the new pose
   */
-  void processInteractiveFeedback(
+  void processMouseUpFeedback(
+      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+
+  /**
+  * @brief Process interactive feedback on a MOUSE_DOWN event and use it
+  * to set a flag indicating that the user is manipulating a model with
+  * its interactive marker
+  * @param[in] feedback The feedback structure containing the name of the
+  * manipulated model and the current pose. Not used in this callback
+  */
+  void processMouseDownFeedback(
+      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+
+  /**
+  * @brief Process interactive feedback on a POSE_UPDATE event and record
+  * the current wall time to detect a timeout in the update method
+  * @param[in] feedback The feedback structure containing the name of the
+  * manipulated model and the current pose. Not used in this method
+  */
+  void processPoseUpdateFeedback(
       const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
 
   /**

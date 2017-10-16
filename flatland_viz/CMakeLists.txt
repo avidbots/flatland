@@ -98,6 +98,8 @@ add_executable(flatland_viz
   include/flatland_viz/load_model_dialog.h
   src/spawn_model_tool.cpp
   include/flatland_viz/spawn_model_tool.h
+  src/pause_sim_tool.cpp
+  include/flatland_viz/pause_sim_tool.h
 )
 add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 
@@ -110,7 +112,9 @@ add_library(flatland_viz_plugins
   src/load_model_dialog.cpp
   include/flatland_viz/load_model_dialog.h
   src/spawn_model_tool.cpp
-  include/flatland_viz/spawn_model_tool.h)
+  include/flatland_viz/spawn_model_tool.h
+  src/pause_sim_tool.cpp
+  include/flatland_viz/pause_sim_tool.h)
 
 add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
 

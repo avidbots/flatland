@@ -59,7 +59,9 @@
 namespace flatland_server {
 
 World::World()
-    : gravity_(0, 0), int_marker_manager_(&models_, &plugin_manager_) {
+    : gravity_(0, 0),
+      service_paused_(false),
+      int_marker_manager_(&models_, &plugin_manager_) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -97,12 +99,13 @@ World::~World() {
 }
 
 void World::Update(Timekeeper &timekeeper) {
-  plugin_manager_.BeforePhysicsStep(timekeeper);
-  physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
-                       physics_position_iterations_);
-  timekeeper.StepTime();
-  plugin_manager_.AfterPhysicsStep(timekeeper);
-
+  if (!IsPaused()) {
+    plugin_manager_.BeforePhysicsStep(timekeeper);
+    physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
+                         physics_position_iterations_);
+    timekeeper.StepTime();
+    plugin_manager_.AfterPhysicsStep(timekeeper);
+  }
   int_marker_manager_.update();
 }
 
@@ -309,6 +312,16 @@ void World::MoveModel(const std::string &name, const Pose &pose) {
     throw Exception("Flatland World: failed to move model, model with name " +
                     Q(name) + " does not exist");
   }
+}
+
+void World::Pause() { service_paused_ = true; }
+
+void World::Resume() { service_paused_ = false; }
+
+void World::TogglePaused() { service_paused_ = !service_paused_; }
+
+bool World::IsPaused() {
+  return service_paused_ || int_marker_manager_.isManipulating();
 }
 
 void World::DebugVisualize(bool update_layers) {
