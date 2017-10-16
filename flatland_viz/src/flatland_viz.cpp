@@ -205,7 +205,6 @@ void FlatlandViz::onToolbarActionTriggered(QAction* action) {
     if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
       manager_->getToolManager()->setCurrentTool(current_tool);
       tool = current_tool;
-      manager_->getToolManager()->setCurrentTool(tool);
       indicateToolIsCurrent(tool);
     }
 
