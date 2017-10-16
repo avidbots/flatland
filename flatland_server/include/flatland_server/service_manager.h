@@ -71,7 +71,9 @@ class ServiceManager {
   ros::ServiceServer spawn_model_service_;   ///< service for spawning models
   ros::ServiceServer delete_model_service_;  ///< service for deleting models
   ros::ServiceServer move_model_service_;    ///< service for moving models
-  ros::ServiceServer pause_toggle_service_;  ///< service for toggling the
+  ros::ServiceServer pause_service_;   ///< service for pausing the simulation
+  ros::ServiceServer resume_service_;  ///< service for resuming the simulation
+  ros::ServiceServer toggle_pause_service_;  ///< service for toggling the
                                              /// pause state of the simulation
 
   /**
@@ -106,10 +108,22 @@ class ServiceManager {
                  flatland_msgs::MoveModel::Response &response);
 
   /**
-    * @brief Callback for the std_srvs::Empty pause/unpause service
-    */
-  bool PauseSimulation(std_srvs::Empty::Request &request,
-                       std_srvs::Empty::Response &response);
+   * @brief Callback for the pause service
+   */
+  bool Pause(std_srvs::Empty::Request &request,
+             std_srvs::Empty::Response &response);
+
+  /**
+   * @brief Callback for the resume service
+   */
+  bool Resume(std_srvs::Empty::Request &request,
+              std_srvs::Empty::Response &response);
+
+  /**
+   * @brief Callback for the pause toggle service
+   */
+  bool TogglePause(std_srvs::Empty::Request &request,
+                   std_srvs::Empty::Response &response);
 };
 };
 #endif

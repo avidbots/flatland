@@ -60,8 +60,11 @@ ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
       nh.advertiseService("delete_model", &ServiceManager::DeleteModel, this);
   move_model_service_ =
       nh.advertiseService("move_model", &ServiceManager::MoveModel, this);
-  pause_toggle_service_ =
-      nh.advertiseService("pause", &ServiceManager::PauseSimulation, this);
+  pause_service_ = nh.advertiseService("pause", &ServiceManager::Pause, this);
+  resume_service_ =
+      nh.advertiseService("resume", &ServiceManager::Resume, this);
+  toggle_pause_service_ =
+      nh.advertiseService("toggle_pause", &ServiceManager::TogglePause, this);
 
   if (spawn_model_service_) {
     ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
@@ -144,8 +147,20 @@ bool ServiceManager::MoveModel(flatland_msgs::MoveModel::Request &request,
   return true;
 }
 
-bool ServiceManager::PauseSimulation(std_srvs::Empty::Request &request,
-                                     std_srvs::Empty::Response &response) {
+bool ServiceManager::Pause(std_srvs::Empty::Request &request,
+                           std_srvs::Empty::Response &response) {
+  world_->Pause();
+  return true;
+}
+
+bool ServiceManager::Resume(std_srvs::Empty::Request &request,
+                            std_srvs::Empty::Response &response) {
+  world_->Resume();
+  return true;
+}
+
+bool ServiceManager::TogglePause(std_srvs::Empty::Request &request,
+                                 std_srvs::Empty::Response &response) {
   world_->TogglePaused();
   return true;
 }

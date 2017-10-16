@@ -9,7 +9,7 @@ PauseSimTool::~PauseSimTool() { pause_service_.shutdown(); }
 
 // When the tool is initially loaded, connect to the pause toggle service
 void PauseSimTool::onInitialize() {
-  pause_service_ = nh_.serviceClient<std_srvs::Empty>("pause");
+  pause_service_ = nh_.serviceClient<std_srvs::Empty>("toggle_pause");
   setName("Pause/Resume");
 }
 
