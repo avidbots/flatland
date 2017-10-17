@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_plugin.h
- * @brief	Interface for ModelPlugin pluginlib plugins
- * @author Joseph Duchesne
+ * @name  world_plugin.h
+ * @brief Interface for WorldPlugin pluginlib plugins
+ * @author Yi Ren
  *
  * Software License Agreement (BSD License)
  *
@@ -44,74 +44,41 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_PLUGIN_H
-#define FLATLAND_SERVER_MODEL_PLUGIN_H
+#ifndef FLATLAND_SERVER_WORLD_PLUGIN_H
+#define FLATLAND_SERVER_WORLD_PLUGIN_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/model.h>
-#include <flatland_server/flatland_plugin.h>
 #include <flatland_server/timekeeper.h>
+#include <flatland_server/flatland_plugin.h>
+#include <flatland_server/yaml_reader.h>
 #include <ros/ros.h>
+#include <string>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
-
-/**
- * This class defines a model plugin. All implemented model plugins will inherit
- * from it A model plugin is a plugin that is directly tied to a single model in
- * the world
- */
-class ModelPlugin : public FlatlandPlugin {
- private:
-  Model *model_;      ///< model this plugin is tied to
-
- public:
-  ros::NodeHandle nh_;  ///< ROS node handle
-
-  /**
-   * @brief Get model
-   */
-  Model *GetModel();
-
-  /**
-   * @brief The method to initialize the ModelPlugin, required since Pluginlib
-   * require the class to have a default constructor
-   * @param[in] type Type of the plugin
-   * @param[in] name Name of the plugin
-   * @param[in] model The model associated with this model plugin
-   * @param[in] config The plugin YAML node
-   */
-  void Initialize(const std::string &type, const std::string &name,
-                  Model *model, const YAML::Node &config);
-
-  /**
-   * @brief Helper function check if this model is part of the contact, and
-   * extracts all the useful information
-   * @param[in] contact Box2D contact
-   * @param[out] entity The entity that collided with this model
-   * @param[out] this_fixture The fixture from this model involved in the
-   * collision
-   * @param[out] other_fixture The fixture from the other entity involved in the
-   * collision
-   * @return True or false depending on if this model is involved. If false
-   * is returned, none of the entity, this_fixture, other_fixture pointers will
-   * be populated
-   */
-  bool FilterContact(b2Contact *contact, Entity *&entity,
-                     b2Fixture *&this_fixture, b2Fixture *&other_fixture);
-
-  /**
-   * @brief Helper function check if this model is part of the contact
-   * @param[in] contact Box2D contact
-   * @return True or false depending on if this model is involved
-   */
-  bool FilterContact(b2Contact *contact);
-
- protected:
-  /**
-   * @brief Model plugin default constructor
-   */
-  ModelPlugin() = default;
+  // forward declaration
+  class World;
+  class WorldPlugin : public FlatlandPlugin {
+    World *world_;
+    std::string name_;
+    std::string type_;
+    YamlReader world_config_;
+    public:
+      /*
+      * @brief WorldPlugin default constructor
+      */
+      WorldPlugin() = default;
+      
+      /*
+      * @brief initialize the plugin
+      * @param[in] world, the World the plugin is attached to
+      * @param[in] name, name of the plugin
+      * @param[in] type, type of the plugin
+      * @param[in] plugin_reader, the YAML node contain the plugin's config
+      * @param[in] world_config, the yaml reader of world.yaml
+      */
+      void Initialize(World *world, std::string name, std::string type, YAML::Node &plugin_reader, YamlReader &world_config);
+  };
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_MODEL_PLUGIN_H
+
+#endif // FLATLAND_SERVER_WORLD_PLUGIN_H

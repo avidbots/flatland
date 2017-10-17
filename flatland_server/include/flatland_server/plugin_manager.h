@@ -52,16 +52,24 @@
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
+#include <flatland_server/world_plugin.h>
 #include <pluginlib/class_loader.h>
 #include <yaml-cpp/yaml.h>
 
+
+
 namespace flatland_server {
+
+// forward declaration
+class World;
 
 class PluginManager {
  public:
   std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
   pluginlib::ClassLoader<flatland_server::ModelPlugin> *model_plugin_loader_;
-
+  
+  std::vector<boost::shared_ptr<WorldPlugin>> world_plugins_;
+  pluginlib::ClassLoader<flatland_server::WorldPlugin> *world_plugin_loader_;
   /**
    * @brief Plugin manager constructor
    */
@@ -97,6 +105,14 @@ class PluginManager {
    * parameter
    */
   void LoadModelPlugin(Model *model, YamlReader &plugin_reader);
+
+  /*
+   * @brief load world plugins
+   * @param[in] world, the world that thsi plugin is tied to
+   * @param[in] plugin_reader, the YAML reader with node containing the plugin
+   * @param[in] world_config, the yaml reader of world.yaml
+  */
+  void LoadWorldPlugin(World *world, YamlReader &plugin_reader, YamlReader &world_config);
 
   /**
    * @brief Method called for a box2D begin contact

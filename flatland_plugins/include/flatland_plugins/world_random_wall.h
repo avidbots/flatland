@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_plugin.cpp
- * @brief	Implementation for ModelPlugin pluginlib plugins
- * @author Chunshang Li
+ * @name  world_random_wall.h
+ * @brief   a simple plugin that add random walls on the field
+ * @author  Yi Ren
  *
  * Software License Agreement (BSD License)
  *
@@ -44,50 +44,23 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_plugin.h>
+#include <flatland_server/world_plugin.h>
+#include <flatland_server/types.h>
+#include <ros/ros.h>
+#include <Box2D/Box2D.h>
+#include <string>
 
-namespace flatland_server {
+#ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+#define FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
 
-Model *ModelPlugin::GetModel() { return model_; }
+using namespace flatland_server;
 
-void ModelPlugin::Initialize(const std::string &type, const std::string &name,
-                             Model *model, const YAML::Node &config) {
-  type_ = type;
-  name_ = name;
-  model_ = model;
-  plugin_type_ = PluginType::Model;
-  nh_ = ros::NodeHandle(model_->namespace_);
-  OnInitialize(config);
-}
-
-bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
-                                b2Fixture *&this_fixture,
-                                b2Fixture *&other_fixture) {
-  b2Fixture *f_A = contact->GetFixtureA();
-  b2Fixture *f_B = contact->GetFixtureB();
-  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
-  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
-  Entity *e_A = b_A->GetEntity();
-  Entity *e_B = b_B->GetEntity();
-
-  if (e_A == model_) {
-    entity = e_B;
-    this_fixture = f_A;
-    other_fixture = f_B;
-  } else if (e_B == model_) {
-    entity = e_A;
-    this_fixture = f_B;
-    other_fixture = f_A;
-  } else {
-    return false;
+namespace flatland_plugins {
+  // forward declaration
+  struct WorldModifier;
+  class RandomWall : public WorldPlugin {
+    void OnInitialize(const YAML::Node &config) override;
   }
-  return true;
 }
 
-bool ModelPlugin::FilterContact(b2Contact *contact) {
-  b2Fixture *f1, *f2;
-  Entity *e;
-  return FilterContact(contact, e, f1, f2);
-}
-
-};  // namespace flatland_server
+#endif // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H

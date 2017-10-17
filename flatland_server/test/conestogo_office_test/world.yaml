@@ -16,6 +16,16 @@ models:
   - name: sensor
     pose: [2, 0, 0]
     model: "sensor.model.yaml"
+plugins:
+  - name: test1
+    type: Random
+    layer: "2d"
+    num_of_walls: 10
+    wall_wall_dist: 1
+    double_wall: true
+    robot_name: cleaner1
+
+
   # - name: turtlebot1 
   #   pose: [12, 0, 0]
   #   model: "turtlebot.model.yaml"

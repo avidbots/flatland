@@ -47,7 +47,9 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/world_plugin.h>
 #include <flatland_server/plugin_manager.h>
+#include <flatland_server/world.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -70,11 +72,17 @@ void PluginManager::BeforePhysicsStep(const Timekeeper &timekeeper_) {
   for (const auto &model_plugin : model_plugins_) {
     model_plugin->BeforePhysicsStep(timekeeper_);
   }
+  for (const auto &world_plugin : world_plugins_) {
+    world_plugin->BeforePhysicsStep(timekeeper_);
+  }
 }
 
 void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
   for (const auto &model_plugin : model_plugins_) {
     model_plugin->AfterPhysicsStep(timekeeper_);
+  }
+  for (const auto &world_plugin : world_plugins_) {
+    world_plugin->AfterPhysicsStep(timekeeper_);
   }
 }
 
@@ -136,6 +144,56 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   model_plugins_.push_back(model_plugin);
 
   ROS_INFO_NAMED("PluginManager", "%s loaded", msg.c_str());
+}
+
+void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader, YamlReader &world_config) {
+  std::string name = plugin_reader.Get<std::string>("name");
+  std::string type = plugin_reader.Get<std::string>("type");
+  ROS_INFO_NAMED("PluginManager", "finished load name and type");
+  // first check for duplicate plugins 
+  for(auto &it : world_plugins_) {
+    if(it->GetName() == name && it->GetType() == type) {
+      throw YAMLException("Invalid \"world plugins\" with name " + Q(name) +
+                        ", type " + Q(type) + " already exists");
+    }
+  }
+
+  boost::shared_ptr<WorldPlugin> world_plugin;
+  std::string msg = "World Plugin " + Q(name) + " type " + Q(type);
+
+  YAML::Node yaml_node;
+  for (const auto &k : plugin_reader.Node()) {
+    if (k.first.as<std::string>() != "name" &&
+        k.first.as<std::string>() != "type") {
+      yaml_node[k.first] = k.second;
+    }
+  }
+
+  // try to create the instance
+  ROS_INFO_NAMED("PluginManager", "created instance");
+  try {
+    if(type.find("::") != std::string::npos) {
+      world_plugin = world_plugin_loader_->createInstance(type);
+    } else {
+      ROS_INFO_NAMED("PluginManager", "else");
+      // world_plugin = world_plugin_loader_->createInstance("flatland_plugins::" + type);
+      world_plugin = world_plugin_loader_->createInstance("flatland_plugins::Random");
+    }
+  } catch (pluginlib::PluginlibException &e) {
+    throw PluginException(msg + ": " + std::string(e.what()));
+  }
+  
+  ROS_INFO_NAMED("PluginManager", "create instance finished");
+
+  try {
+    world_plugin->Initialize(world, name, type, yaml_node, world_config);
+  } catch (const std::exception &e) {
+    ROS_INFO_NAMED("PluginManager", "exception happened!");
+    throw PluginException(msg + ": " + std::string(e.what()));
+  }
+  world_plugins_.push_back(world_plugin);
+
+  ROS_INFO_NAMED("PluginManager", "%s loaded ", msg.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {

@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_plugin.h
- * @brief	Interface for ModelPlugin pluginlib plugins
- * @author Joseph Duchesne
+ * @name  flatland_plugin.h
+ * @brief Interface for Flatland pluginlib plugins
+ * @author Yi Ren
  *
  * Software License Agreement (BSD License)
  *
@@ -44,74 +44,96 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_SERVER_MODEL_PLUGIN_H
-#define FLATLAND_SERVER_MODEL_PLUGIN_H
+#ifndef FLATLAND_SERVER_FLATLAND_PLUGIN_H
+#define FLATLAND_SERVER_FLATLAND_PLUGIN_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/model.h>
-#include <flatland_server/flatland_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
+#include <string>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
+  class FlatlandPlugin {
+    
+  public:
+    enum class PluginType {Invalid, Model, World}; // Different plugin Types
+    std::string type_;  ///< type of the plugin
+    std::string name_;  ///< name of the plugin
+    ros::NodeHandle nh_; // ROS node handle
+    PluginType plugin_type_;
 
-/**
- * This class defines a model plugin. All implemented model plugins will inherit
- * from it A model plugin is a plugin that is directly tied to a single model in
- * the world
- */
-class ModelPlugin : public FlatlandPlugin {
- private:
-  Model *model_;      ///< model this plugin is tied to
+    /*
+    * @brief Get PluginType
+    */
+    const PluginType Type() {
+      return plugin_type_;
+    }
 
- public:
-  ros::NodeHandle nh_;  ///< ROS node handle
+    /**
+    * @brief Get plugin name
+    */
+    const std::string &GetName() const {
+      return name_;
+    }
 
-  /**
-   * @brief Get model
-   */
-  Model *GetModel();
+    /**
+    * @brief Get type of plugin
+    */
+    const std::string &GetType() const {
+      return type_;
+    }
 
-  /**
-   * @brief The method to initialize the ModelPlugin, required since Pluginlib
-   * require the class to have a default constructor
-   * @param[in] type Type of the plugin
-   * @param[in] name Name of the plugin
-   * @param[in] model The model associated with this model plugin
+    /**
+   * @brief The method for the particular model plugin to override and provide
+   * its own initialization
    * @param[in] config The plugin YAML node
    */
-  void Initialize(const std::string &type, const std::string &name,
-                  Model *model, const YAML::Node &config);
+  virtual void OnInitialize(const YAML::Node &config) = 0;
 
   /**
-   * @brief Helper function check if this model is part of the contact, and
-   * extracts all the useful information
+   * @brief This method is called before the Box2D physics step
+   * @param[in] timekeeper provide time related information
+   */
+  virtual void BeforePhysicsStep(const Timekeeper &timekeeper) {}
+
+  /**
+   * @brief This method is called after the Box2D physics step
+   * @param[in] timekeeper provide time related information
+   */
+  virtual void AfterPhysicsStep(const Timekeeper &timekeeper) {}
+
+  /**
+   * @brief A method that is called for all Box2D begin contacts
    * @param[in] contact Box2D contact
-   * @param[out] entity The entity that collided with this model
-   * @param[out] this_fixture The fixture from this model involved in the
-   * collision
-   * @param[out] other_fixture The fixture from the other entity involved in the
-   * collision
-   * @return True or false depending on if this model is involved. If false
-   * is returned, none of the entity, this_fixture, other_fixture pointers will
-   * be populated
    */
-  bool FilterContact(b2Contact *contact, Entity *&entity,
-                     b2Fixture *&this_fixture, b2Fixture *&other_fixture);
+  virtual void BeginContact(b2Contact *contact) {}
 
   /**
-   * @brief Helper function check if this model is part of the contact
+   * @brief A method that is called for all Box2D end contacts
    * @param[in] contact Box2D contact
-   * @return True or false depending on if this model is involved
    */
-  bool FilterContact(b2Contact *contact);
+  virtual void EndContact(b2Contact *contact) {}
 
- protected:
   /**
-   * @brief Model plugin default constructor
+   * @brief A method that is called for Box2D presolve
+   * @param[in] contact Box2D contact
+   * @param[in] oldManifold Manifold from the previous iteration
    */
-  ModelPlugin() = default;
+  virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {}
+
+  /**
+   * @brief A method that is called for Box2D postsolve
+   * @param[in] contact Box2D contact
+   * @param[in] impulse Impulse from the collision resolution
+   */
+  virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}
+
+  /**
+   * @brief Flatland plugin destructor
+   */
+  virtual ~FlatlandPlugin() = default;
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_SERVER_MODEL_PLUGIN_H
+}; // namespace 
+
+#endif // FLATLAND_SERVER_FLATLAND_PLUGIN_H
