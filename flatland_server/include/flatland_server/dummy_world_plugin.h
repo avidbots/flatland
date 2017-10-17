@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  world_random_wall.h
- * @brief   a simple plugin that add random walls on the field
+ * @name	  dummy_world_plugin.h
+ * @brief   Dummy World plugin testing basic function 
  * @author  Yi Ren
  *
  * Software License Agreement (BSD License)
@@ -44,21 +44,28 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/world_plugin.h>
-#include <flatland_server/types.h>
-#include <ros/ros.h>
 #include <Box2D/Box2D.h>
-#include <string>
+#include <flatland_server/world_plugin.h>
+#include <yaml-cpp/yaml.h>
 
-#ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
-#define FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+#ifndef FLATLAND_PLUGINS_DUMMY_WORLD_PLUGIN_H
+#define FLATLAND_PLUGINS_DUMMY_WORLD_PLUGIN_H
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
-  class RandomWall : public WorldPlugin {
-    void OnInitialize(const YAML::Node &config) override;
-  };
+/**
+ * This is a dummy plugin of type world plugin, used completely for testing
+ * purposes
+ */
+class DummyWorldPlugin : public WorldPlugin {
+ public:
+  /**
+   * @brief Initialization for the plugin
+   * @param[in] config Plugin YAML Node
+   */
+  void OnInitialize(const YAML::Node &config) override;
+};
 };
 
-#endif // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+#endif

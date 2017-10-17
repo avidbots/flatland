@@ -59,10 +59,11 @@ namespace flatland_server {
   // forward declaration
   class World;
   class WorldPlugin : public FlatlandPlugin {
-    World *world_;
-    std::string name_;
-    std::string type_;
-    YamlReader world_config_;
+    protected:
+      World *world_;
+      std::string name_;
+      std::string type_;
+      YamlReader world_config_;
     public:
       /*
       * @brief WorldPlugin default constructor

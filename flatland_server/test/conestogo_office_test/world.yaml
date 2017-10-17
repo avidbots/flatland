@@ -18,7 +18,7 @@ models:
     model: "sensor.model.yaml"
 plugins:
   - name: test1
-    type: Random
+    type: RandomWall
     layer: "2d"
     num_of_walls: 10
     wall_wall_dist: 1

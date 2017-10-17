@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  world_random_wall.h
- * @brief   a simple plugin that add random walls on the field
- * @author  Yi Ren
+ * @name  dummy_world_plugin_test.cpp
+ * @brief test world plugin
+ * @author Yi Ren
  *
  * Software License Agreement (BSD License)
  *
@@ -44,21 +44,33 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_server/dummy_world_plugin.h>
+#include <flatland_server/world.h>
 #include <flatland_server/world_plugin.h>
-#include <flatland_server/types.h>
+#include <gtest/gtest.h>
+#include <pluginlib/class_loader.h>
 #include <ros/ros.h>
-#include <Box2D/Box2D.h>
-#include <string>
+#include <yaml-cpp/yaml.h>
 
-#ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
-#define FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+TEST(DummyWorldPluginTest, pluginlib_load_test) {
+  pluginlib::ClassLoader<flatland_server::WorldPlugin> loader(
+      "flatland_server", "flatland_server::WorldPlugin");
 
-using namespace flatland_server;
+  try {
+    boost::shared_ptr<flatland_server::WorldPlugin> plugin =
+        loader.createInstance("flatland_plugins::DummyWorldPlugin");
 
-namespace flatland_plugins {
-  class RandomWall : public WorldPlugin {
-    void OnInitialize(const YAML::Node &config) override;
-  };
-};
+    YAML::Node n = YAML::Node();
+    YAMLReader reader;
+    plugin->Initialize(NULL, "DummyWorldPluginName", "DummyWorldPluginType", n, reader);
+  } catch (pluginlib::PluginlibException& e) {
+    FAIL() << "Failed to load Dummy World Plugin. " << e.what();
+  }
+}
 
-#endif // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+// Run all the tests that were declared with TEST()
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "dummy_world_plugin_test");
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}

@@ -95,6 +95,7 @@ add_library(flatland_lib
   src/service_manager.cpp
   src/yaml_reader.cpp
   src/dummy_model_plugin.cpp 
+  src/dummy_world_plugin.cpp
 )
 
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -215,6 +216,12 @@ if(CATKIN_ENABLE_TESTING)
                     test/dummy_model_plugin_test.test 
                     test/dummy_model_plugin_test.cpp) 
   target_link_libraries(dummy_model_plugin_test
+                        flatland_lib) 
+                        
+  add_rostest_gtest(dummy_world_plugin_test 
+                    test/dummy_world_plugin_test.test 
+                    test/dummy_world_plugin_test.cpp) 
+  target_link_libraries(dummy_world_plugin_test
                         flatland_lib) 
 
 

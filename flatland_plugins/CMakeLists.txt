@@ -78,6 +78,7 @@ add_library(flatland_plugins_lib
   src/tween.cpp
   src/bool_sensor.cpp
   src/world_modifier.cpp
+  src/world_random_wall.cpp
 )
 
 add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

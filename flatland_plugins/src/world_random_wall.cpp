@@ -51,13 +51,16 @@
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 #include <string>
+#include <iostream>
 #include <algorithm>
 #include <Box2D/Box2D.h>
+#include <pluginlib/class_list_macros.h>
 
 using namespace flatland_server;
-
+using std::cout;
+using std::endl;
 namespace flatland_plugins {
-  RandomWall::OnInitialize(const YAML::Node &config) {
+  void RandomWall::OnInitialize(const YAML::Node &config) {
     // read in the plugin config 
     YamlReader plugin_reader(config);
     std::string layer_name = plugin_reader.Get<std::string>("layer", "");
@@ -77,6 +80,7 @@ namespace flatland_plugins {
     if(layer == NULL) {
      throw("no such layer name!");
     }
+
     // read in the robot location from the world.yaml
     Pose robot_ini_pose;
     YamlReader models_reader = world_config_.SubnodeOpt("models", YamlReader::LIST);
@@ -91,12 +95,14 @@ namespace flatland_plugins {
       if(reader.Get<std::string>("name") == robot_name) {
         robot_ini_pose = reader.Get("pose", Pose(0,0,0));
         b2Transform tran = layer->body_->physics_body_->GetTransform();
-        b2Vec2 ini_pose = b2MulT(tran_, b2Vec2(robot_ini_pose.x, robot_ini_pose.y));
+        b2Vec2 ini_pose = b2MulT(tran, b2Vec2(robot_ini_pose.x, robot_ini_pose.y));
         robot_ini_pose.x = ini_pose.x;
         robot_ini_pose.y = ini_pose.y;
+        break;
       }
     }
     // create the world modifiyer
+    cout << "robot location read" << endl;
     WorldModifier modifier(world_, layer_name, wall_wall_dist,double_wall,robot_ini_pose);
 
     // get all walls
@@ -104,13 +110,16 @@ namespace flatland_plugins {
     for(b2Fixture *f = layer->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
       Wall_List.push_back(static_cast<b2EdgeShape *> ( f->GetShape() ));
     }
+    std::srand(std::time(0));
     std::random_shuffle(Wall_List.begin(), Wall_List.end());
     try {
       for(int i = 0; i < num_of_walls; i++) {
         modifier.AddFullWall(Wall_List[i]);
       }
+    } catch (std::string e) {
+      throw e;
     }
   }
 }; //namespace 
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::Random, flatland_server::WorldPlugin)
+PLUGINLIB_EXPORT_CLASS (flatland_plugins::RandomWall, flatland_server::WorldPlugin)

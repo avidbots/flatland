@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  world_random_wall.h
- * @brief   a simple plugin that add random walls on the field
+ * @name	  dummy_world_plugin.cpp
+ * @brief   Dummy world plugin
  * @author  Yi Ren
  *
  * Software License Agreement (BSD License)
@@ -44,21 +44,27 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_server/dummy_world_plugin.h>
+#include <flatland_server/exceptions.h>
 #include <flatland_server/world_plugin.h>
-#include <flatland_server/types.h>
-#include <ros/ros.h>
-#include <Box2D/Box2D.h>
-#include <string>
-
-#ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
-#define FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+#include <pluginlib/class_list_macros.h>
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
-  class RandomWall : public WorldPlugin {
-    void OnInitialize(const YAML::Node &config) override;
-  };
+
+void DummyWorldPlugin::OnInitialize(const YAML::Node &config) {
+  if(world_ != NULL) {
+    throw PluginException("World is not NULL!");
+  }
+  if(name_ != "DummyWorldPluginName") {
+    throw PluginException("Dummy world plugin name is in correct, instead of \"DummyWorldPluginName\", the name is " + name_);
+  }
+  if(type_ != "DummyWorldPluginType") {
+    throw PluginException("Dummy world plugin type is in correct, instead of \"DummyWorldPluginType\", the type is " + type_);
+  }
+}
 };
 
-#endif // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyWorldPlugin,
+                       flatland_server::WorldPlugin)

@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name  world_random_wall.h
- * @brief   a simple plugin that add random walls on the field
+ * @name  world_start_pose_obstacle.h
+ * @brief   Interface for StartPoseObstacle Plugin
  * @author  Yi Ren
  *
  * Software License Agreement (BSD License)
@@ -49,16 +49,34 @@
 #include <ros/ros.h>
 #include <Box2D/Box2D.h>
 #include <string>
+#include <map>
 
-#ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
-#define FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+#ifndef FLATLAND_PLUGINS_WORLD_START_POSE_OBSTACLE_H
+#define FLATLAND_PLUGINS_WORLD_START_POSE_OBSTACLE_H
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
-  class RandomWall : public WorldPlugin {
-    void OnInitialize(const YAML::Node &config) override;
+  // sub class for loading laser Param
+  struct LaserRead {
+    std::string name_; // name of the laser
+    b2Vec2 location_;  // location of the laser in local frame
+    double range_;     // range of the laser
+    double min_angle_;
+    double max_angle_;
+    double increment_;
+    LaserRead(std::string name, b2Vec2 location, double range, double min_angle, double max_angle, double increment):
+    name_(name), location_(location), range_(range), min_angle_(min_angle), max_angle_(max_angle), increment_(increment){}
   };
-};
 
-#endif // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+  class StartPoseObstacle : public WorldPlugin {
+    double start_pose_ratio_;
+    double start_pose_range_;
+    std::vector<LaserRead>laser_list_;
+    std::map<b2EdgeShape *, int>Wall_Laser_Hit_Map_; // map for each wall and how many laser hits is on them
+    void OnInitialize(const YAML::Node &config) override;
+    void ReadLasers(std::string yaml_path);
+  }
+}
+
+#endif //FLATLAND_PLUGINS_WORLD_START_POSE_OBSTACLE_H

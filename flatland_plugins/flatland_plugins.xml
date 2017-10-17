@@ -20,7 +20,7 @@
   <class type="flatland_plugins::BoolSensor" base_class_type="flatland_server::ModelPlugin">
     <description>Publish a boolean topic on collision</description>
   </class>
-  <class type="flatland_plugins::Random" base_class_type="flatland_server::WorldPlugin">
+  <class type="flatland_plugins::RandomWall" base_class_type="flatland_server::WorldPlugin">
     <description>Add random walls into the world</description>
   </class>
 </library>

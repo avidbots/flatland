@@ -58,14 +58,21 @@ PluginManager::PluginManager() {
   model_plugin_loader_ =
       new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
           "flatland_server", "flatland_server::ModelPlugin");
+  world_plugin_loader_ =
+      new pluginlib::ClassLoader<flatland_server::WorldPlugin>(
+          "flatland_server", "flatland_server::WorldPlugin");
 }
 
 PluginManager::~PluginManager() {
   for (int i = 0; i < model_plugins_.size(); i++) {
     model_plugins_[i].reset();  // deletes a shared pointer
   }
+  for (int j = 0; j < world_plugins_.size(); j++) {
+    world_plugins_[j].reset();  // deletes a shared pointer
+  }
 
   delete model_plugin_loader_;
+  delete world_plugin_loader_;
 }
 
 void PluginManager::BeforePhysicsStep(const Timekeeper &timekeeper_) {
@@ -170,14 +177,13 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader, Yam
   }
 
   // try to create the instance
-  ROS_INFO_NAMED("PluginManager", "created instance");
   try {
     if(type.find("::") != std::string::npos) {
       world_plugin = world_plugin_loader_->createInstance(type);
     } else {
       ROS_INFO_NAMED("PluginManager", "else");
       // world_plugin = world_plugin_loader_->createInstance("flatland_plugins::" + type);
-      world_plugin = world_plugin_loader_->createInstance("flatland_plugins::Random");
+      world_plugin = world_plugin_loader_->createInstance("flatland_plugins::" + type);
     }
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException(msg + ": " + std::string(e.what()));
