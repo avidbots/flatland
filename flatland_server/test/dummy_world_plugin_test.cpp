@@ -47,6 +47,7 @@
 #include <flatland_server/dummy_world_plugin.h>
 #include <flatland_server/world.h>
 #include <flatland_server/world_plugin.h>
+#include <flatland_server/yaml_reader.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
 #include <ros/ros.h>
