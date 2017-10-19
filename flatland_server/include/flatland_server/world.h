@@ -71,7 +71,7 @@ class World : public b2ContactListener {
   b2World *physics_world_;                  ///< Box2D physics world
   b2Vec2 gravity_;  ///< Box2D world gravity, always (0, 0)
   std::map<std::vector<std::string>, Layer *>
-      layers_name_map_;                    ///< map of all layers and thier name
+      layers_name_map_;           ///< map of all layers and thier name
   std::vector<Layer *> layers_;   ///< list of layers
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models

@@ -199,7 +199,8 @@ void World::LoadLayers(YamlReader &layers_reader) {
 
     Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
                                     names, color);
-    layers_name_map_.insert(std::pair<std::vector<std::string>, Layer *>(names, layer));
+    layers_name_map_.insert(
+        std::pair<std::vector<std::string>, Layer *>(names, layer));
     layers_.push_back(layer);
 
     ROS_INFO_NAMED("World", "Layer \"%s\" loaded", layer->name_.c_str());
