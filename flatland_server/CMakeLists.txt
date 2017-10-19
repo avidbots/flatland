@@ -222,7 +222,7 @@ if(CATKIN_ENABLE_TESTING)
                     test/dummy_world_plugin_test.test 
                     test/dummy_world_plugin_test.cpp) 
   target_link_libraries(dummy_world_plugin_test
-                        flatland_lib) 
+                        flatland_lib yaml-cpp) 
 
 
 endif()
