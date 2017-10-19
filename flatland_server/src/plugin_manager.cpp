@@ -47,9 +47,9 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
-#include <flatland_server/world_plugin.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/world.h>
+#include <flatland_server/world_plugin.h>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -153,15 +153,16 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   ROS_INFO_NAMED("PluginManager", "%s loaded", msg.c_str());
 }
 
-void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader, YamlReader &world_config) {
+void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
+                                    YamlReader &world_config) {
   std::string name = plugin_reader.Get<std::string>("name");
   std::string type = plugin_reader.Get<std::string>("type");
   ROS_INFO_NAMED("PluginManager", "finished load name and type");
-  // first check for duplicate plugins 
-  for(auto &it : world_plugins_) {
-    if(it->GetName() == name && it->GetType() == type) {
+  // first check for duplicate plugins
+  for (auto &it : world_plugins_) {
+    if (it->GetName() == name && it->GetType() == type) {
       throw YAMLException("Invalid \"world plugins\" with name " + Q(name) +
-                        ", type " + Q(type) + " already exists");
+                          ", type " + Q(type) + " already exists");
     }
   }
 
@@ -178,17 +179,19 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader, Yam
 
   // try to create the instance
   try {
-    if(type.find("::") != std::string::npos) {
+    if (type.find("::") != std::string::npos) {
       world_plugin = world_plugin_loader_->createInstance(type);
     } else {
       ROS_INFO_NAMED("PluginManager", "else");
-      // world_plugin = world_plugin_loader_->createInstance("flatland_plugins::" + type);
-      world_plugin = world_plugin_loader_->createInstance("flatland_plugins::" + type);
+      // world_plugin =
+      // world_plugin_loader_->createInstance("flatland_plugins::" + type);
+      world_plugin =
+          world_plugin_loader_->createInstance("flatland_plugins::" + type);
     }
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
-  
+
   ROS_INFO_NAMED("PluginManager", "create instance finished");
 
   try {

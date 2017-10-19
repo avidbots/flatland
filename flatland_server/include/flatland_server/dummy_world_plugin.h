@@ -8,7 +8,7 @@
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
  * @name	  dummy_world_plugin.h
- * @brief   Dummy World plugin testing basic function 
+ * @brief   Dummy World plugin testing basic function
  * @author  Yi Ren
  *
  * Software License Agreement (BSD License)

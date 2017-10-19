@@ -54,14 +54,20 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 void DummyWorldPlugin::OnInitialize(const YAML::Node &config) {
-  if(world_ != NULL) {
+  if (world_ != NULL) {
     throw PluginException("World is not NULL!");
   }
-  if(name_ != "DummyWorldPluginName") {
-    throw PluginException("Dummy world plugin name is in correct, instead of \"DummyWorldPluginName\", the name is " + name_);
+  if (name_ != "DummyWorldPluginName") {
+    throw PluginException(
+        "Dummy world plugin name is in correct, instead of "
+        "\"DummyWorldPluginName\", the name is " +
+        name_);
   }
-  if(type_ != "DummyWorldPluginType") {
-    throw PluginException("Dummy world plugin type is in correct, instead of \"DummyWorldPluginType\", the type is " + type_);
+  if (type_ != "DummyWorldPluginType") {
+    throw PluginException(
+        "Dummy world plugin type is in correct, instead of "
+        "\"DummyWorldPluginType\", the type is " +
+        type_);
   }
 }
 };

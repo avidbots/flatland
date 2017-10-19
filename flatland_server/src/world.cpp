@@ -75,12 +75,12 @@ World::~World() {
   // fixtures in a layer and it is too slow for the destroyBody method to remove
   // them since the AABB tree gets restructured everytime a fixture is removed
   // The memory will later be freed by deleting the world
-  for(auto &layer : layers_) {
-    if(layer.second->body_ != nullptr) {
+  for (auto &layer : layers_) {
+    if (layer.second->body_ != nullptr) {
       layer.second->body_->physics_body_ = nullptr;
     }
     delete layer.second;
-  } 
+  }
 
   // The bodies of models are not set to null like layers because there aren't
   // nearly as many fixtures, and we might hide some memory problems by using
@@ -136,8 +136,9 @@ World *World::MakeWorld(const std::string &yaml_path) {
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
     YamlReader models_reader =
         world_reader.SubnodeOpt("models", YamlReader::LIST);
-    YamlReader world_plugin_reader = world_reader.SubnodeOpt("plugins", YamlReader::LIST);
-    //world_reader.EnsureAccessedAllKeys();
+    YamlReader world_plugin_reader =
+        world_reader.SubnodeOpt("plugins", YamlReader::LIST);
+    // world_reader.EnsureAccessedAllKeys();
     w->LoadLayers(layers_reader);
     w->LoadModels(models_reader);
     w->LoadWorldPlugins(world_plugin_reader, w, world_reader);
@@ -221,11 +222,12 @@ void World::LoadModels(YamlReader &models_reader) {
   }
 }
 
-void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world, YamlReader &world_config) {
-  if(!world_plugin_reader.IsNodeNull()) {
-    for(int i = 0; i < world_plugin_reader.NodeSize(); i++) {
+void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
+                             YamlReader &world_config) {
+  if (!world_plugin_reader.IsNodeNull()) {
+    for (int i = 0; i < world_plugin_reader.NodeSize(); i++) {
       YamlReader reader = world_plugin_reader.Subnode(i, YamlReader::MAP);
-      ROS_INFO_NAMED("World","loading world_plugin");
+      ROS_INFO_NAMED("World", "loading world_plugin");
       plugin_manager_.LoadWorldPlugin(world, reader, world_config);
     }
   }

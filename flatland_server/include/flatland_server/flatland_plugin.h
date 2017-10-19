@@ -50,45 +50,38 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
-#include <string>
 #include <yaml-cpp/yaml.h>
+#include <string>
 
 namespace flatland_server {
-  class FlatlandPlugin {
-    
-  public:
-    enum class PluginType {Invalid, Model, World}; // Different plugin Types
-    std::string type_;  ///< type of the plugin
-    std::string name_;  ///< name of the plugin
-    ros::NodeHandle nh_; // ROS node handle
-    PluginType plugin_type_;
+class FlatlandPlugin {
+ public:
+  enum class PluginType { Invalid, Model, World };  // Different plugin Types
+  std::string type_;                                ///< type of the plugin
+  std::string name_;                                ///< name of the plugin
+  ros::NodeHandle nh_;                              // ROS node handle
+  PluginType plugin_type_;
 
-    /*
-    * @brief Get PluginType
-    */
-    const PluginType Type() {
-      return plugin_type_;
-    }
+  /*
+  * @brief Get PluginType
+  */
+  const PluginType Type() { return plugin_type_; }
 
-    /**
-    * @brief Get plugin name
-    */
-    const std::string &GetName() const {
-      return name_;
-    }
+  /**
+  * @brief Get plugin name
+  */
+  const std::string &GetName() const { return name_; }
 
-    /**
-    * @brief Get type of plugin
-    */
-    const std::string &GetType() const {
-      return type_;
-    }
+  /**
+  * @brief Get type of plugin
+  */
+  const std::string &GetType() const { return type_; }
 
-    /**
-   * @brief The method for the particular model plugin to override and provide
-   * its own initialization
-   * @param[in] config The plugin YAML node
-   */
+  /**
+ * @brief The method for the particular model plugin to override and provide
+ * its own initialization
+ * @param[in] config The plugin YAML node
+ */
   virtual void OnInitialize(const YAML::Node &config) = 0;
 
   /**
@@ -134,6 +127,6 @@ namespace flatland_server {
    */
   virtual ~FlatlandPlugin() = default;
 };
-}; // namespace 
+};  // namespace
 
-#endif // FLATLAND_SERVER_FLATLAND_PLUGIN_H
+#endif  // FLATLAND_SERVER_FLATLAND_PLUGIN_H

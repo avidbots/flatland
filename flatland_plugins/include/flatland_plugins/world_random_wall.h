@@ -44,10 +44,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/world_plugin.h>
-#include <flatland_server/types.h>
-#include <ros/ros.h>
 #include <Box2D/Box2D.h>
+#include <flatland_server/types.h>
+#include <flatland_server/world_plugin.h>
+#include <ros/ros.h>
 #include <string>
 
 #ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
@@ -56,9 +56,9 @@
 using namespace flatland_server;
 
 namespace flatland_plugins {
-  class RandomWall : public WorldPlugin {
-    void OnInitialize(const YAML::Node &config) override;
-  };
+class RandomWall : public WorldPlugin {
+  void OnInitialize(const YAML::Node &config) override;
+};
 };
 
-#endif // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
+#endif  // FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H

@@ -62,7 +62,8 @@ TEST(DummyWorldPluginTest, pluginlib_load_test) {
 
     YAML::Node n = YAML::Node();
     YAMLReader reader;
-    plugin->Initialize(NULL, "DummyWorldPluginName", "DummyWorldPluginType", n, reader);
+    plugin->Initialize(NULL, "DummyWorldPluginName", "DummyWorldPluginType", n,
+                       reader);
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy World Plugin. " << e.what();
   }

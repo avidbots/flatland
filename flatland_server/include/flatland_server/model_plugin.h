@@ -48,8 +48,8 @@
 #define FLATLAND_SERVER_MODEL_PLUGIN_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/model.h>
 #include <flatland_server/flatland_plugin.h>
+#include <flatland_server/model.h>
 #include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
@@ -63,7 +63,7 @@ namespace flatland_server {
  */
 class ModelPlugin : public FlatlandPlugin {
  private:
-  Model *model_;      ///< model this plugin is tied to
+  Model *model_;  ///< model this plugin is tied to
 
  public:
   ros::NodeHandle nh_;  ///< ROS node handle

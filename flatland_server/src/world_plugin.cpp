@@ -47,18 +47,19 @@
 #include <Box2D/Box2D.h>
 #include <ros/ros.h>
 
-#include <flatland_server/world_plugin.h>
 #include <flatland_server/world.h>
+#include <flatland_server/world_plugin.h>
 #include <string>
 
 namespace flatland_server {
-  void WorldPlugin::Initialize(World *world, std::string name, std::string type, 
-    YAML::Node &plugin_reader, YamlReader &world_config) {
-      world_ = world;
-      name_ = name;
-      type_ = type;
-      world_config_ = world_config;
-      plugin_type_ = PluginType::World;
-      OnInitialize(plugin_reader);
-  }
+void WorldPlugin::Initialize(World *world, std::string name, std::string type,
+                             YAML::Node &plugin_reader,
+                             YamlReader &world_config) {
+  world_ = world;
+  name_ = name;
+  type_ = type;
+  world_config_ = world_config;
+  plugin_type_ = PluginType::World;
+  OnInitialize(plugin_reader);
+}
 }
