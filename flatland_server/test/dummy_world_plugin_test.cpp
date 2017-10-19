@@ -64,7 +64,7 @@ TEST(DummyWorldPluginTest, pluginlib_load_test) {
         loader.createInstance("flatland_plugins::DummyWorldPlugin");
 
     YAML::Node n = YAML::Node();
-    YAMLReader reader;
+    YamlReader reader = YamlReader();
     plugin->Initialize(NULL, "DummyWorldPluginName", "DummyWorldPluginType", n,
                        reader);
   } catch (pluginlib::PluginlibException& e) {
