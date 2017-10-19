@@ -48,7 +48,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/world_plugin.h>
 #include <pluginlib/class_list_macros.h>
-
+#include <yaml-cpp/yaml.h>
 using namespace flatland_server;
 
 namespace flatland_plugins {

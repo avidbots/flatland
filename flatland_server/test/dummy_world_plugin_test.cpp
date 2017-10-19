@@ -52,6 +52,8 @@
 #include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
 
+using namespace flatland_server;
+
 TEST(DummyWorldPluginTest, pluginlib_load_test) {
   pluginlib::ClassLoader<flatland_server::WorldPlugin> loader(
       "flatland_server", "flatland_server::WorldPlugin");

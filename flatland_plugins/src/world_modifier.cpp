@@ -112,7 +112,7 @@ void WorldModifier::GetWallDirection(double d, b2Vec2 vertex1, b2Vec2 vertex2,
 void WorldModifier::AddWall(b2EdgeShape &new_wall) {
   Layer *layer = NULL;
   std::vector<std::string> cfr_names;
-  for (auto &it : world_->layers_) {
+  for (auto &it : world_->layers_name_map_) {
     for (auto &v_it : it.first) {
       if (v_it == layer_name_) {
         layer = it.second;

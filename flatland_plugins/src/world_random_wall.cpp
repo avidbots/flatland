@@ -69,7 +69,7 @@ void RandomWall::OnInitialize(const YAML::Node &config) {
   bool double_wall = plugin_reader.Get<bool>("double_wall", false);
   std::string robot_name = plugin_reader.Get<std::string>("robot_name", "");
   Layer *layer = NULL;
-  for (auto &it : world_->layers_) {
+  for (auto &it : world_->layers_name_map_) {
     for (auto &v_it : it.first) {
       if (v_it == layer_name) {
         layer = it.second;

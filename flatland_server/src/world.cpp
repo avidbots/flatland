@@ -76,10 +76,10 @@ World::~World() {
   // them since the AABB tree gets restructured everytime a fixture is removed
   // The memory will later be freed by deleting the world
   for (auto &layer : layers_) {
-    if (layer.second->body_ != nullptr) {
-      layer.second->body_->physics_body_ = nullptr;
+    if (layer->body_ != nullptr) {
+      layer->body_->physics_body_ = nullptr;
     }
-    delete layer.second;
+    delete layer;
   }
 
   // The bodies of models are not set to null like layers because there aren't
@@ -199,8 +199,8 @@ void World::LoadLayers(YamlReader &layers_reader) {
 
     Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
                                     names, color);
-    layers_.insert(std::pair<std::vector<std::string>, Layer *>(names, layer));
-    // layers_.push_back(layer);
+    layers_name_map_.insert(std::pair<std::vector<std::string>, Layer *>(names, layer));
+    layers_.push_back(layer);
 
     ROS_INFO_NAMED("World", "Layer \"%s\" loaded", layer->name_.c_str());
     layer->DebugOutput();
@@ -316,7 +316,7 @@ void World::MoveModel(const std::string &name, const Pose &pose) {
 void World::DebugVisualize(bool update_layers) {
   if (update_layers) {
     for (const auto &layer : layers_) {
-      layer.second->DebugVisualize();
+      layer->DebugVisualize();
     }
   }
 
