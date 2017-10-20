@@ -182,9 +182,6 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
     if (type.find("::") != std::string::npos) {
       world_plugin = world_plugin_loader_->createInstance(type);
     } else {
-      ROS_INFO_NAMED("PluginManager", "else");
-      // world_plugin =
-      // world_plugin_loader_->createInstance("flatland_plugins::" + type);
       world_plugin =
           world_plugin_loader_->createInstance("flatland_plugins::" + type);
     }

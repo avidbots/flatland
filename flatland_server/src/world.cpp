@@ -138,7 +138,7 @@ World *World::MakeWorld(const std::string &yaml_path) {
         world_reader.SubnodeOpt("models", YamlReader::LIST);
     YamlReader world_plugin_reader =
         world_reader.SubnodeOpt("plugins", YamlReader::LIST);
-    // world_reader.EnsureAccessedAllKeys();
+    world_reader.EnsureAccessedAllKeys();
     w->LoadLayers(layers_reader);
     w->LoadModels(models_reader);
     w->LoadWorldPlugins(world_plugin_reader, w, world_reader);
