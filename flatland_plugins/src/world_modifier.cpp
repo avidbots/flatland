@@ -68,6 +68,18 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 
+float RayTrace::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
+                              const b2Vec2 &normal, float fraction) {
+  // only register hit in the specified layers
+  if (!(fixture->GetFilterData().categoryBits & 1)) {
+    // cout << "hit others " << endl;
+    return -1.0f;  // return -1 to ignore this hit
+  }
+  is_hit_ = true;
+  fraction_ = fraction;
+  return fraction;
+}
+
 WorldModifier::WorldModifier(flatland_server::World *world,
                              std::string layer_name, double wall_wall_dist,
                              bool double_wall, Pose robot_ini_pose)

@@ -58,8 +58,33 @@
 using namespace flatland_server;
 
 namespace flatland_plugins {
-// forward declaration
-// class flatland_server::World;
+
+// sub class for loading laser Param
+struct LaserRead {
+  std::string name_;  // name of the laser
+  b2Vec2 location_;   // location of the laser in local frame
+  double range_;      // range of the laser
+  double min_angle_;
+  double max_angle_;
+  double increment_;
+  LaserRead(std::string name, b2Vec2 location, double range, double min_angle,
+            double max_angle, double increment)
+      : name_(name),
+        location_(location),
+        range_(range),
+        min_angle_(min_angle),
+        max_angle_(max_angle),
+        increment_(increment) {}
+};
+
+struct RayTrace : public b2RayCastCallback {
+  bool is_hit_;
+  float fraction_;
+  RayTrace() : is_hit_(false) {}
+  float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
+                      const b2Vec2 &normal, float fraction) override;
+};
+
 struct WorldModifier {
   // private members
   World *world_;  // the world we are modifying
