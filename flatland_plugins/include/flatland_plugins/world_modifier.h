@@ -80,7 +80,8 @@ struct LaserRead {
 struct RayTrace : public b2RayCastCallback {
   bool is_hit_;
   float fraction_;
-  RayTrace() : is_hit_(false) {}
+  uint16_t category_bits_;
+  RayTrace(uint16_t category_bits) : is_hit_(false), category_bits_(category_bits) {}
   float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                       const b2Vec2 &normal, float fraction) override;
 };

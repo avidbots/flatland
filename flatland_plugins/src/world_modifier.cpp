@@ -71,7 +71,7 @@ namespace flatland_plugins {
 float RayTrace::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
                               const b2Vec2 &normal, float fraction) {
   // only register hit in the specified layers
-  if (!(fixture->GetFilterData().categoryBits & 1)) {
+  if (!(fixture->GetFilterData().categoryBits & category_bits_)) {
     // cout << "hit others " << endl;
     return -1.0f;  // return -1 to ignore this hit
   }
