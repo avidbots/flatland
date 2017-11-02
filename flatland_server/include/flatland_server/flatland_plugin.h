@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	 plugin_manager.h
- * @brief	 Definition for plugin manager
- * @author Chunshang Li
+ * @name  flatland_plugin.h
+ * @brief Interface for Flatland pluginlib plugins
+ * @author Yi Ren
  *
  * Software License Agreement (BSD License)
  *
@@ -44,100 +44,89 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_PLUGIN_MANAGER_H
-#define FLATLAND_PLUGIN_MANAGER_H
+#ifndef FLATLAND_SERVER_FLATLAND_PLUGIN_H
+#define FLATLAND_SERVER_FLATLAND_PLUGIN_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_server/model.h>
-#include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
-#include <flatland_server/world_plugin.h>
-#include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_loader.h>
+#include <ros/ros.h>
 #include <yaml-cpp/yaml.h>
+#include <string>
 
 namespace flatland_server {
-
-// forward declaration
-class World;
-
-class PluginManager {
+class FlatlandPlugin {
  public:
-  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> *model_plugin_loader_;
+  enum class PluginType { Invalid, Model, World };  // Different plugin Types
+  std::string type_;                                ///< type of the plugin
+  std::string name_;                                ///< name of the plugin
+  ros::NodeHandle nh_;                              // ROS node handle
+  PluginType plugin_type_;
 
-  std::vector<boost::shared_ptr<WorldPlugin>> world_plugins_;
-  pluginlib::ClassLoader<flatland_server::WorldPlugin> *world_plugin_loader_;
-  /**
-   * @brief Plugin manager constructor
-   */
-  PluginManager();
+  /*
+  * @brief Get PluginType
+  */
+  const PluginType Type() { return plugin_type_; }
 
   /**
-   * @brief Plugin manager destructor
-   */
-  ~PluginManager();
+  * @brief Get plugin name
+  */
+  const std::string &GetName() const { return name_; }
+
+  /**
+  * @brief Get type of plugin
+  */
+  const std::string &GetType() const { return type_; }
+
+  /**
+ * @brief The method for the particular model plugin to override and provide
+ * its own initialization
+ * @param[in] config The plugin YAML node
+ */
+  virtual void OnInitialize(const YAML::Node &config) = 0;
 
   /**
    * @brief This method is called before the Box2D physics step
    * @param[in] timekeeper provide time related information
    */
-  void BeforePhysicsStep(const Timekeeper &timekeeper);
+  virtual void BeforePhysicsStep(const Timekeeper &timekeeper) {}
 
   /**
    * @brief This method is called after the Box2D physics step
    * @param[in] timekeeper provide time related information
    */
-  void AfterPhysicsStep(const Timekeeper &timekeeper);
+  virtual void AfterPhysicsStep(const Timekeeper &timekeeper) {}
 
   /**
-   * @brief This method removes all model plugins associated with a given mode
-   * @param[in] The model plugins is associated to
+   * @brief A method that is called for all Box2D begin contacts
+   * @param[in] contact Box2D contact
    */
-  void DeleteModelPlugin(Model *model);
+  virtual void BeginContact(b2Contact *contact) {}
 
   /**
-   * @brief Load model plugins
-   * @param[in] model The model that this plugin is tied to
-   * @param[in] plugin_reader The YAML reader with node containing the plugin
-   * parameter
+   * @brief A method that is called for all Box2D end contacts
+   * @param[in] contact Box2D contact
    */
-  void LoadModelPlugin(Model *model, YamlReader &plugin_reader);
-
-  /*
-   * @brief load world plugins
-   * @param[in] world, the world that thsi plugin is tied to
-   * @param[in] plugin_reader, the YAML reader with node containing the plugin
-   * @param[in] world_config, the yaml reader of world.yaml
-  */
-  void LoadWorldPlugin(World *world, YamlReader &plugin_reader,
-                       YamlReader &world_config);
+  virtual void EndContact(b2Contact *contact) {}
 
   /**
-   * @brief Method called for a box2D begin contact
-   * @param[in] contact Box2D contact information
+   * @brief A method that is called for Box2D presolve
+   * @param[in] contact Box2D contact
+   * @param[in] oldManifold Manifold from the previous iteration
    */
-  void BeginContact(b2Contact *contact);
+  virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {}
 
   /**
-   * @brief Method called for a box2D end contact
-   * @param[in] contact Box2D contact information
+   * @brief A method that is called for Box2D postsolve
+   * @param[in] contact Box2D contact
+   * @param[in] impulse Impulse from the collision resolution
    */
-  void EndContact(b2Contact *contact);
+  virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}
 
   /**
-   * @brief Method called for Box2D presolve
-   * @param[in] contact Box2D contact information
-   * @param[in] oldManifold The manifold from the previous timestep
+   * @brief Flatland plugin destructor
    */
-  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
-
-  /**
-   * @brief Method called for Box2D Postsolve
-   * @param[in] contact Box2D contact information
-   * @param[in] impulse The calculated impulse from the collision resolute
-   */
-  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
+  virtual ~FlatlandPlugin() = default;
 };
-};      // namespace flatland_server
-#endif  // FLATLAND_PLUGIN_MANAGER_H
+};  // namespace
+
+#endif  // FLATLAND_SERVER_FLATLAND_PLUGIN_H

@@ -7,9 +7,9 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	model_plugin.cpp
- * @brief	Implementation for ModelPlugin pluginlib plugins
- * @author Chunshang Li
+ * @name  dummy_world_plugin_test.cpp
+ * @brief test world plugin
+ * @author Yi Ren
  *
  * Software License Agreement (BSD License)
  *
@@ -44,50 +44,37 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/model_plugin.h>
+#include <flatland_server/dummy_world_plugin.h>
+#include <flatland_server/world.h>
+#include <flatland_server/world_plugin.h>
+#include <flatland_server/yaml_reader.h>
+#include <gtest/gtest.h>
+#include <pluginlib/class_loader.h>
+#include <ros/ros.h>
+#include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
+using namespace flatland_server;
 
-Model *ModelPlugin::GetModel() { return model_; }
+TEST(DummyWorldPluginTest, pluginlib_load_test) {
+  pluginlib::ClassLoader<flatland_server::WorldPlugin> loader(
+      "flatland_server", "flatland_server::WorldPlugin");
 
-void ModelPlugin::Initialize(const std::string &type, const std::string &name,
-                             Model *model, const YAML::Node &config) {
-  type_ = type;
-  name_ = name;
-  model_ = model;
-  plugin_type_ = PluginType::Model;
-  nh_ = ros::NodeHandle(model_->namespace_);
-  OnInitialize(config);
-}
+  try {
+    boost::shared_ptr<flatland_server::WorldPlugin> plugin =
+        loader.createInstance("flatland_plugins::DummyWorldPlugin");
 
-bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
-                                b2Fixture *&this_fixture,
-                                b2Fixture *&other_fixture) {
-  b2Fixture *f_A = contact->GetFixtureA();
-  b2Fixture *f_B = contact->GetFixtureB();
-  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
-  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
-  Entity *e_A = b_A->GetEntity();
-  Entity *e_B = b_B->GetEntity();
-
-  if (e_A == model_) {
-    entity = e_B;
-    this_fixture = f_A;
-    other_fixture = f_B;
-  } else if (e_B == model_) {
-    entity = e_A;
-    this_fixture = f_B;
-    other_fixture = f_A;
-  } else {
-    return false;
+    YAML::Node n = YAML::Node();
+    YamlReader reader = YamlReader();
+    plugin->Initialize(NULL, "DummyWorldPluginName", "DummyWorldPluginType", n,
+                       reader);
+  } catch (pluginlib::PluginlibException& e) {
+    FAIL() << "Failed to load Dummy World Plugin. " << e.what();
   }
-  return true;
 }
 
-bool ModelPlugin::FilterContact(b2Contact *contact) {
-  b2Fixture *f1, *f2;
-  Entity *e;
-  return FilterContact(contact, e, f1, f2);
+// Run all the tests that were declared with TEST()
+int main(int argc, char** argv) {
+  ros::init(argc, argv, "dummy_world_plugin_test");
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
-
-};  // namespace flatland_server

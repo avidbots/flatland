@@ -78,11 +78,11 @@ World::~World() {
   // fixtures in a layer and it is too slow for the destroyBody method to remove
   // them since the AABB tree gets restructured everytime a fixture is removed
   // The memory will later be freed by deleting the world
-  for (int i = 0; i < layers_.size(); i++) {
-    if (layers_[i]->body_ != nullptr) {
-      layers_[i]->body_->physics_body_ = nullptr;
+  for (auto &layer : layers_) {
+    if (layer->body_ != nullptr) {
+      layer->body_->physics_body_ = nullptr;
     }
-    delete layers_[i];
+    delete layer;
   }
 
   // The bodies of models are not set to null like layers because there aren't
@@ -142,10 +142,12 @@ World *World::MakeWorld(const std::string &yaml_path) {
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
     YamlReader models_reader =
         world_reader.SubnodeOpt("models", YamlReader::LIST);
+    YamlReader world_plugin_reader =
+        world_reader.SubnodeOpt("plugins", YamlReader::LIST);
     world_reader.EnsureAccessedAllKeys();
-
     w->LoadLayers(layers_reader);
     w->LoadModels(models_reader);
+    w->LoadWorldPlugins(world_plugin_reader, w, world_reader);
   } catch (const YAMLException &e) {
     ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
@@ -203,6 +205,8 @@ void World::LoadLayers(YamlReader &layers_reader) {
 
     Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
                                     names, color);
+    layers_name_map_.insert(
+        std::pair<std::vector<std::string>, Layer *>(names, layer));
     layers_.push_back(layer);
 
     ROS_INFO_NAMED("World", "Layer \"%s\" loaded", layer->name_.c_str());
@@ -225,6 +229,16 @@ void World::LoadModels(YamlReader &models_reader) {
   }
 }
 
+void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
+                             YamlReader &world_config) {
+  if (!world_plugin_reader.IsNodeNull()) {
+    for (int i = 0; i < world_plugin_reader.NodeSize(); i++) {
+      YamlReader reader = world_plugin_reader.Subnode(i, YamlReader::MAP);
+      ROS_INFO_NAMED("World", "loading world_plugin");
+      plugin_manager_.LoadWorldPlugin(world, reader, world_config);
+    }
+  }
+}
 void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
                       const std::string &name, const Pose &pose) {
   // ensure no duplicate model names

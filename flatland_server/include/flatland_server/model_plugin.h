@@ -48,6 +48,7 @@
 #define FLATLAND_SERVER_MODEL_PLUGIN_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/flatland_plugin.h>
 #include <flatland_server/model.h>
 #include <flatland_server/timekeeper.h>
 #include <ros/ros.h>
@@ -60,24 +61,12 @@ namespace flatland_server {
  * from it A model plugin is a plugin that is directly tied to a single model in
  * the world
  */
-class ModelPlugin {
+class ModelPlugin : public FlatlandPlugin {
  private:
-  std::string type_;  ///< type of the plugin
-  std::string name_;  ///< name of the plugin
-  Model *model_;      ///< model this plugin is tied to
+  Model *model_;  ///< model this plugin is tied to
 
  public:
   ros::NodeHandle nh_;  ///< ROS node handle
-
-  /**
-   * @brief Get plugin name
-   */
-  const std::string &GetName() const;
-
-  /**
-   * @brief Get type of plugin
-   */
-  const std::string &GetType() const;
 
   /**
    * @brief Get model
@@ -117,56 +106,6 @@ class ModelPlugin {
    * @return True or false depending on if this model is involved
    */
   bool FilterContact(b2Contact *contact);
-
-  /**
-   * @brief The method for the particular model plugin to override and provide
-   * its own initialization
-   * @param[in] config The plugin YAML node
-   */
-  virtual void OnInitialize(const YAML::Node &config) = 0;
-
-  /**
-   * @brief This method is called before the Box2D physics step
-   * @param[in] timekeeper provide time related information
-   */
-  virtual void BeforePhysicsStep(const Timekeeper &timekeeper) {}
-
-  /**
-   * @brief This method is called after the Box2D physics step
-   * @param[in] timekeeper provide time related information
-   */
-  virtual void AfterPhysicsStep(const Timekeeper &timekeeper) {}
-
-  /**
-   * @brief A method that is called for all Box2D begin contacts
-   * @param[in] contact Box2D contact
-   */
-  virtual void BeginContact(b2Contact *contact) {}
-
-  /**
-   * @brief A method that is called for all Box2D end contacts
-   * @param[in] contact Box2D contact
-   */
-  virtual void EndContact(b2Contact *contact) {}
-
-  /**
-   * @brief A method that is called for Box2D presolve
-   * @param[in] contact Box2D contact
-   * @param[in] oldManifold Manifold from the previous iteration
-   */
-  virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {}
-
-  /**
-   * @brief A method that is called for Box2D postsolve
-   * @param[in] contact Box2D contact
-   * @param[in] impulse Impulse from the collision resolution
-   */
-  virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}
-
-  /**
-   * @brief Model plugin destructor
-   */
-  virtual ~ModelPlugin() = default;
 
  protected:
   /**

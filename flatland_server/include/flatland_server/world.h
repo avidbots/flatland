@@ -54,6 +54,8 @@
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
+#include <map>
+#include <string>
 #include <string>
 #include <vector>
 
@@ -68,7 +70,9 @@ class World : public b2ContactListener {
  public:
   boost::filesystem::path world_yaml_dir_;  ///<directory containing world file
   b2World *physics_world_;                  ///< Box2D physics world
-  b2Vec2 gravity_;                ///< Box2D world gravity, always (0, 0)
+  b2Vec2 gravity_;  ///< Box2D world gravity, always (0, 0)
+  std::map<std::vector<std::string>, Layer *>
+      layers_name_map_;           ///< map of all layers and thier name
   std::vector<Layer *> layers_;   ///< list of layers
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
@@ -123,6 +127,14 @@ class World : public b2ContactListener {
    */
   void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
 
+  /*
+   * @brief Load world plugins
+   * @param[in] world_plugin_reader, readin the info about the plugin
+   * @param[in] world, the world where the plugin will be applied to
+   * @param[in] world config, the yaml reader of world.yaml
+  */
+  void LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
+                        YamlReader &world_config);
   /**
    * @brief load layers into the world. Throws YAMLException.
    * @param[in] layers_reader Yaml reader for node that has list of layers
