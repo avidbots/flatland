@@ -1,4 +1,5 @@
 - ".*/flatland/flatland_server/thirdparty/Box2D/.*"
+- ".*/flatland/flatland_server/.*warning: 'log_deprecated' is deprecated \\[clang-diagnostic-deprecated-declarations\\].*"
 - ".*/flatland/flatland_plugins/.*warning: 'log_deprecated' is deprecated \\[clang-diagnostic-deprecated-declarations\\].*"
 - ".*QtCore/qobject.h:235:16.*warning: Potential memory leak.*\\[clang-analyzer-cplusplus.NewDeleteLeaks\\].*"
 - ".*/flatland/flatland_viz/.*warning: 'log_deprecated' is deprecated \\[clang-diagnostic-deprecated-declarations\\].*"
