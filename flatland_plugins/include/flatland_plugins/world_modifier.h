@@ -96,7 +96,8 @@ struct WorldModifier {
   Pose robot_ini_pose_;
 
   /*
-  * @brief based on the info regard old wall and d, calculate new obstacle's vertices
+  * @brief based on the info regard old wall and d, calculate new obstacle's
+  * vertices
   * @param[in] double d, the sign of this value determine which side of the wall
   *   will the new obstacle be added
   * @param[in] b2Vec2 vertex1, old wall's vertex1
