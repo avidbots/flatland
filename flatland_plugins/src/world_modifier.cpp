@@ -89,7 +89,7 @@ WorldModifier::WorldModifier(flatland_server::World *world,
       double_wall_(double_wall),
       robot_ini_pose_(robot_ini_pose) {}
 
-void WorldModifier::GetWallDirection(double d, b2Vec2 vertex1, b2Vec2 vertex2,
+void WorldModifier::CalculateNewWall(double d, b2Vec2 vertex1, b2Vec2 vertex2,
                                      b2EdgeShape &new_wall) {
   b2Vec2 new_wall_v1;
   b2Vec2 new_wall_v2;
@@ -182,13 +182,13 @@ void WorldModifier::AddFullWall(b2EdgeShape *wall) {
 
   // add the main wall
   b2EdgeShape new_wall;
-  GetWallDirection(d, vertex1, vertex2, new_wall);
+  CalculateNewWall(d, vertex1, vertex2, new_wall);
   AddWall(new_wall);
   // add the sidewall
   AddSideWall(*wall, new_wall);
 
   if (double_wall_) {  // if add walls on both side
-    GetWallDirection(-d, vertex1, vertex2, new_wall);
+    CalculateNewWall(-d, vertex1, vertex2, new_wall);
     AddWall(new_wall);
     // add the sidewall
     AddSideWall(*wall, new_wall);
