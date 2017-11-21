@@ -65,6 +65,8 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
   world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
+  bool use_tf_prefix = reader.Get<bool>("use_tf_prefix", false);
+  tf_prefix_ = use_tf_prefix ? GetModel()->GetName() : "";
 
   std::string ref_body_name = reader.Get<std::string>("reference", "");
   std::vector<std::string> excluded_body_names =
@@ -153,9 +155,9 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
 
     // publish TF
     tf_stamped.header.frame_id =
-        tf::resolve("", GetModel()->NameSpaceTF(reference_body_->name_));
+        tf::resolve(tf_prefix_, GetModel()->NameSpaceTF(reference_body_->name_));
     tf_stamped.child_frame_id =
-        tf::resolve("", GetModel()->NameSpaceTF(body->name_));
+        tf::resolve(tf_prefix_, GetModel()->NameSpaceTF(body->name_));
     tf_stamped.transform.translation.x = rel_tf(0, 2);
     tf_stamped.transform.translation.y = rel_tf(1, 2);
     tf_stamped.transform.translation.z = 0;
@@ -176,7 +178,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
 
     tf_stamped.header.frame_id = world_frame_id_;
     tf_stamped.child_frame_id =
-        tf::resolve("", GetModel()->NameSpaceTF(reference_body_->name_));
+        tf::resolve(tf_prefix_, GetModel()->NameSpaceTF(reference_body_->name_));
     tf_stamped.transform.translation.x = p.x;
     tf_stamped.transform.translation.y = p.y;
     tf_stamped.transform.translation.z = 0;

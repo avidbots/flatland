@@ -64,6 +64,7 @@ namespace flatland_plugins {
 class ModelTfPublisher : public ModelPlugin {
  public:
   std::string world_frame_id_;  ///< name of the world frame id
+  std::string tf_prefix_;  ///< TF prefix to make unique frames for multiple instances
   bool publish_tf_world_;  ///< if to publish the world position of the bodies
   std::vector<Body *> excluded_bodies_;  ///< list of bodies to ignore
   Body *reference_body_;  ///< body used as a reference to other bodies
