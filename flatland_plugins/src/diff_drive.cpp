@@ -66,20 +66,12 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   std::string ns = use_model_namespace ? GetModel()->GetName() : "";
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
-  std::string twist_topic = reader.Get<std::string>("twist_sub", "cmd_vel");
-  if (use_model_namespace) {
-    twist_topic = tf::resolve(ns, twist_topic);
-  }
+  std::string twist_topic =
+      tf::resolve(ns, reader.Get<std::string>("twist_sub", "cmd_vel"));
   std::string odom_topic =
-      reader.Get<std::string>("odom_pub", "odometry/filtered");
-  if (use_model_namespace) {
-    odom_topic = tf::resolve(ns, odom_topic);
-  }
-  std::string ground_truth_topic =
-      reader.Get<std::string>("ground_truth_pub", "odometry/ground_truth");
-  if (use_model_namespace) {
-    ground_truth_topic = tf::resolve(ns, ground_truth_topic);
-  }
+      tf::resolve(ns, reader.Get<std::string>("odom_pub", "odometry/filtered"));
+  std::string ground_truth_topic = tf::resolve(
+      ns, reader.Get<std::string>("ground_truth_pub", "odometry/ground_truth"));
 
   // noise are in the form of linear x, linear y, angular variances
   std::vector<double> odom_twist_noise =
