@@ -104,7 +104,7 @@ struct WorldModifier {
   * @param[in] b2Vec2 vertex2, old wall's vertex2
   * @param[out] b2EdgeShape new_wall, reference passed in to set the vertices
   */
-  void GetWallDirection(double d, b2Vec2 vertex1, b2Vec2 vertex2,
+  void CalculateNewWall(double d, b2Vec2 vertex1, b2Vec2 vertex2,
                         b2EdgeShape &new_wall);
 
   /*
