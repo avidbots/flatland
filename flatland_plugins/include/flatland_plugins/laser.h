@@ -78,7 +78,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   double update_rate_;    ///< the rate laser scan will be published
   std::string frame_id_;  ///< laser frame id name
   std::string ns_;  ///< Namespace to make unique frames and topics for multiple
-                    ///instances
+                    /// instances
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
 
