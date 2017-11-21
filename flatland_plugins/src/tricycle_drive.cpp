@@ -67,16 +67,16 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   string ns = use_model_namespace ? GetModel()->GetName() : "";
   string odom_frame_id = r.Get<string>("odom_frame_id", "odom");
   string twist_topic = r.Get<string>("twist_sub", "cmd_vel");
-  if (use_model_namespace){
+  if (use_model_namespace) {
     twist_topic = tf::resolve(ns, twist_topic);
   }
   string odom_topic = r.Get<string>("odom_pub", "odometry/filtered");
-  if (use_model_namespace){
+  if (use_model_namespace) {
     odom_topic = tf::resolve(ns, odom_topic);
   }
   string ground_truth_topic =
       r.Get<string>("ground_truth_pub", "odometry/ground_truth");
-  if (use_model_namespace){
+  if (use_model_namespace) {
     ground_truth_topic = tf::resolve(ns, ground_truth_topic);
   }
 

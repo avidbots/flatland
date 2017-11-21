@@ -154,8 +154,8 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     double yaw = atan2(sine, cosine);
 
     // publish TF
-    tf_stamped.header.frame_id =
-        tf::resolve(tf_prefix_, GetModel()->NameSpaceTF(reference_body_->name_));
+    tf_stamped.header.frame_id = tf::resolve(
+        tf_prefix_, GetModel()->NameSpaceTF(reference_body_->name_));
     tf_stamped.child_frame_id =
         tf::resolve(tf_prefix_, GetModel()->NameSpaceTF(body->name_));
     tf_stamped.transform.translation.x = rel_tf(0, 2);
@@ -177,8 +177,8 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
     double yaw = reference_body_->physics_body_->GetAngle();
 
     tf_stamped.header.frame_id = world_frame_id_;
-    tf_stamped.child_frame_id =
-        tf::resolve(tf_prefix_, GetModel()->NameSpaceTF(reference_body_->name_));
+    tf_stamped.child_frame_id = tf::resolve(
+        tf_prefix_, GetModel()->NameSpaceTF(reference_body_->name_));
     tf_stamped.transform.translation.x = p.x;
     tf_stamped.transform.translation.y = p.y;
     tf_stamped.transform.translation.z = 0;
