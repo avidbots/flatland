@@ -96,15 +96,15 @@ struct WorldModifier {
   Pose robot_ini_pose_;
 
   /*
-  * @brief add wall depend on different orientation of the original wall and the
-  * robot
-  * @param[in] double d, calculated to determine which side of the old wall will
-  * the new be at
+  * @brief based on the info regard old wall and d, calculate new obstacle's
+  * vertices
+  * @param[in] double d, the sign of this value determine which side of the wall
+  *   will the new obstacle be added
   * @param[in] b2Vec2 vertex1, old wall's vertex1
   * @param[in] b2Vec2 vertex2, old wall's vertex2
-  * @param[out] b2EdgeShape new_wall, reference passed in to set the vertexs
+  * @param[out] b2EdgeShape new_wall, reference passed in to set the vertices
   */
-  void GetWallDirection(double d, b2Vec2 vertex1, b2Vec2 vertex2,
+  void CalculateNewWall(double d, b2Vec2 vertex1, b2Vec2 vertex2,
                         b2EdgeShape &new_wall);
 
   /*
