@@ -108,16 +108,16 @@ void Laser::OnInitialize(const YAML::Node &config) {
     laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
   laser_scan_.header.frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
+      tf::resolve(ns_, GetModel()->NameSpaceTF(frame_id_));
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
   laser_tf_.header.frame_id = tf::resolve(
-      "", GetModel()->NameSpaceTF(body_->GetName()));  // Todo: parent_tf param
+      ns_, GetModel()->NameSpaceTF(body_->GetName()));  // Todo: parent_tf param
   laser_tf_.child_frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
+      tf::resolve(ns_, GetModel()->NameSpaceTF(frame_id_));
   laser_tf_.transform.translation.x = origin_.x;
   laser_tf_.transform.translation.y = origin_.y;
   laser_tf_.transform.translation.z = 0;
@@ -209,7 +209,9 @@ float Laser::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
 void Laser::ParseParameters(const YAML::Node &config) {
   YamlReader reader(config);
   std::string body_name = reader.Get<std::string>("body");
-  topic_ = reader.Get<std::string>("topic", "scan");
+  bool use_model_namespace = reader.Get<bool>("use_namespace", false);
+  ns_ = use_model_namespace ? GetModel()->GetName() : "";
+  topic_ = tf::resolve(ns_, reader.Get<std::string>("topic", "scan"));
   frame_id_ = reader.Get<std::string>("frame", GetName());
   broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
   update_rate_ = reader.Get<double>("update_rate",
