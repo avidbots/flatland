@@ -210,9 +210,14 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
       geometry_msgs::TwistStamped twist_pub_msg;
       twist_pub_msg.header.stamp = ros::Time::now();
       twist_pub_msg.header.frame_id = odom_msg_.child_frame_id;
-      twist_pub_msg.twist.linear.x =
-          cos(angle) * linear_vel_local.x + sin(angle) * linear_vel_local.y;
-      twist_pub_msg.twist.angular.z = angular_vel;
+
+      // Forward velocity in twist.linear.x
+      twist_pub_msg.twist.linear.x = cos(angle) * linear_vel_local.x +
+                                     sin(angle) * linear_vel_local.y +
+                                     noise_gen_[3](rng_);
+
+      // Angular velocity in twist.angular.z
+      twist_pub_msg.twist.angular.z = angular_vel + noise_gen_[5](rng_);
       twist_pub_.publish(twist_pub_msg);
     }
 
