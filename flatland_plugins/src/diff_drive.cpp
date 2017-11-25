@@ -64,28 +64,14 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   pub_odom_ = reader.Get<bool>("pub_odom", true);
   pub_twist_ = reader.Get<bool>("pub_twist", false);
   std::string body_name = reader.Get<std::string>("body");
-  bool use_model_namespace = reader.Get<bool>("use_namespace", false);
-  std::string ns = use_model_namespace ? GetModel()->GetName() : "";
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
   std::string twist_topic = reader.Get<std::string>("twist_sub", "cmd_vel");
-  if (use_model_namespace) {
-    twist_topic = tf::resolve(ns, twist_topic);
-  }
   std::string odom_topic =
       reader.Get<std::string>("odom_pub", "odometry/filtered");
-  if (use_model_namespace) {
-    odom_topic = tf::resolve(ns, odom_topic);
-  }
   std::string ground_truth_topic =
       reader.Get<std::string>("ground_truth_pub", "odometry/ground_truth");
-  if (use_model_namespace) {
-    ground_truth_topic = tf::resolve(ns, ground_truth_topic);
-  }
   std::string twist_pub_topic = reader.Get<std::string>("twist_pub", "twist");
-  if (use_model_namespace) {
-    twist_pub_topic = tf::resolve(ns, twist_pub_topic);
-  }
 
   // noise are in the form of linear x, linear y, angular variances
   std::vector<double> odom_twist_noise =
@@ -124,7 +110,6 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
 
   // publish and subscribe to topics
   twist_sub_ = nh_.subscribe(twist_topic, 1, &DiffDrive::TwistCallback, this);
-
   if (pub_odom_) {
     odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
     ground_truth_pub_ =
@@ -138,7 +123,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
   ground_truth_msg_.child_frame_id =
-      tf::resolve(ns, GetModel()->NameSpaceTF(body_->name_));
+      tf::resolve("", GetModel()->NameSpaceTF(body_->name_));
   ground_truth_msg_.twist.covariance.fill(0);
   ground_truth_msg_.pose.covariance.fill(0);
   odom_msg_ = ground_truth_msg_;

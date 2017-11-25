@@ -63,22 +63,12 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   string front_wj_name = r.Get<string>("front_wheel_joint");
   string rear_left_wj_name = r.Get<string>("rear_left_wheel_joint");
   string rear_right_wj_name = r.Get<string>("rear_right_wheel_joint");
-  bool use_model_namespace = r.Get<bool>("use_namespace", false);
-  string ns = use_model_namespace ? GetModel()->GetName() : "";
   string odom_frame_id = r.Get<string>("odom_frame_id", "odom");
+
   string twist_topic = r.Get<string>("twist_sub", "cmd_vel");
-  if (use_model_namespace) {
-    twist_topic = tf::resolve(ns, twist_topic);
-  }
   string odom_topic = r.Get<string>("odom_pub", "odometry/filtered");
-  if (use_model_namespace) {
-    odom_topic = tf::resolve(ns, odom_topic);
-  }
   string ground_truth_topic =
       r.Get<string>("ground_truth_pub", "odometry/ground_truth");
-  if (use_model_namespace) {
-    ground_truth_topic = tf::resolve(ns, ground_truth_topic);
-  }
 
   // noise are in the form of linear x, linear y, angular variances
   vector<double> odom_twist_noise =
@@ -152,7 +142,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
   ground_truth_msg_.child_frame_id =
-      tf::resolve(ns, GetModel()->NameSpaceTF(body_->name_));
+      tf::resolve("", GetModel()->NameSpaceTF(body_->name_));
 
   ground_truth_msg_.twist.covariance.fill(0);
   ground_truth_msg_.pose.covariance.fill(0);
