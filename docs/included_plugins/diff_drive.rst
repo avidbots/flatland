@@ -43,9 +43,21 @@ velocities and odometries are w.r.t. the robot origin
       # publish noisy odometry
       odom_pub: odometry/filtered
 
-      # optional, defaults to "cmd_vel", the topic to advertise for publish
+      # optional, defaults to "odometry/ground_truth", the topic to advertise for publish
       # no noise ground truth odometry
       ground_truth_pub: odometry/ground_truth
+
+      # optional, defaults to "twist", the topic to publish noisy local frame velocity
+      # that simulates encoder readings
+      twist_pub: twist
+      
+      # optional, defaults to true, enables the advertising and publishing of both
+      # ground truth and noisy odometry
+      enable_odom_pub: true
+      
+      # optional, defaults to false, enables the advertising and publishing of noisy local
+      # frame velocity
+      enable_twist_pub: false
 
       # optional, defaults to [0, 0, 0], corresponds to noise on [x, y, yaw], 
       # the variances of gaussian noise to apply to the pose components of the
