@@ -55,9 +55,9 @@ velocities and odometries are w.r.t. the robot origin
       # ground truth and noisy odometry
       enable_odom_pub: true
       
-      # optional, defaults to false, enables the advertising and publishing of noisy local
+      # optional, defaults to true, enables the advertising and publishing of noisy local
       # frame velocity
-      enable_twist_pub: false
+      enable_twist_pub: true
 
       # optional, defaults to [0, 0, 0], corresponds to noise on [x, y, yaw], 
       # the variances of gaussian noise to apply to the pose components of the

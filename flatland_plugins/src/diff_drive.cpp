@@ -62,7 +62,7 @@ void DiffDrive::TwistCallback(const geometry_msgs::Twist& msg) {
 void DiffDrive::OnInitialize(const YAML::Node& config) {
   YamlReader reader(config);
   enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
-  enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", false);
+  enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
