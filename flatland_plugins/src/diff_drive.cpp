@@ -61,8 +61,8 @@ void DiffDrive::TwistCallback(const geometry_msgs::Twist& msg) {
 
 void DiffDrive::OnInitialize(const YAML::Node& config) {
   YamlReader reader(config);
-  pub_odom_ = reader.Get<bool>("pub_odom", true);
-  pub_twist_ = reader.Get<bool>("pub_twist", false);
+  enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
+  enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
@@ -110,13 +110,13 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
 
   // publish and subscribe to topics
   twist_sub_ = nh_.subscribe(twist_topic, 1, &DiffDrive::TwistCallback, this);
-  if (pub_odom_) {
+  if (enable_odom_pub_) {
     odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
     ground_truth_pub_ =
         nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
   }
 
-  if (pub_twist_) {
+  if (enable_twist_pub_) {
     twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>(twist_pub_topic, 1);
   }
 
@@ -199,12 +199,12 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
     odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
 
-    if (pub_odom_) {
+    if (enable_odom_pub_) {
       ground_truth_pub_.publish(ground_truth_msg_);
       odom_pub_.publish(odom_msg_);
     }
 
-    if (pub_twist_) {
+    if (enable_twist_pub_) {
       // Transform global frame velocity into local frame to simulate encoder
       // readings
       geometry_msgs::TwistStamped twist_pub_msg;
