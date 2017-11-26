@@ -61,6 +61,8 @@ void DiffDrive::TwistCallback(const geometry_msgs::Twist& msg) {
 
 void DiffDrive::OnInitialize(const YAML::Node& config) {
   YamlReader reader(config);
+  enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
+  enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
@@ -69,6 +71,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
       reader.Get<std::string>("odom_pub", "odometry/filtered");
   std::string ground_truth_topic =
       reader.Get<std::string>("ground_truth_pub", "odometry/ground_truth");
+  std::string twist_pub_topic = reader.Get<std::string>("twist_pub", "twist");
 
   // noise are in the form of linear x, linear y, angular variances
   std::vector<double> odom_twist_noise =
@@ -107,8 +110,15 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
 
   // publish and subscribe to topics
   twist_sub_ = nh_.subscribe(twist_topic, 1, &DiffDrive::TwistCallback, this);
-  odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
-  ground_truth_pub_ = nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
+  if (enable_odom_pub_) {
+    odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
+    ground_truth_pub_ =
+        nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
+  }
+
+  if (enable_twist_pub_) {
+    twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>(twist_pub_topic, 1);
+  }
 
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
@@ -189,8 +199,27 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
     odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
 
-    ground_truth_pub_.publish(ground_truth_msg_);
-    odom_pub_.publish(odom_msg_);
+    if (enable_odom_pub_) {
+      ground_truth_pub_.publish(ground_truth_msg_);
+      odom_pub_.publish(odom_msg_);
+    }
+
+    if (enable_twist_pub_) {
+      // Transform global frame velocity into local frame to simulate encoder
+      // readings
+      geometry_msgs::TwistStamped twist_pub_msg;
+      twist_pub_msg.header.stamp = ros::Time::now();
+      twist_pub_msg.header.frame_id = odom_msg_.child_frame_id;
+
+      // Forward velocity in twist.linear.x
+      twist_pub_msg.twist.linear.x = cos(angle) * linear_vel_local.x +
+                                     sin(angle) * linear_vel_local.y +
+                                     noise_gen_[3](rng_);
+
+      // Angular velocity in twist.angular.z
+      twist_pub_msg.twist.angular.z = angular_vel + noise_gen_[5](rng_);
+      twist_pub_.publish(twist_pub_msg);
+    }
 
     // publish odom tf
     geometry_msgs::TransformStamped odom_tf;
