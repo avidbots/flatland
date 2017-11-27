@@ -164,4 +164,8 @@ if(CATKIN_ENABLE_TESTING)
                     test/tween_test.cpp)
   target_link_libraries(tween_test flatland_plugins_lib)
 
+  add_rostest_gtest(gps_test test/gps_test.test
+                    test/gps_test.cpp)
+  target_link_libraries(gps_test flatland_plugins_lib)
+
 endif()

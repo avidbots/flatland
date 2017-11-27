@@ -80,5 +80,4 @@ public:
 
 }
 
-
-#endif // FLATLAND_PLUGINS_GPS_H
+#endif  // FLATLAND_PLUGINS_GPS_H
