@@ -18,11 +18,11 @@ namespace flatland_plugins {
  * This class simulates a GPS receiver in Flatland
  */
 class Gps : public ModelPlugin {
-public:
-  std::string topic_;   ///< topic name to publish the GPS fix
+ public:
+  std::string topic_;     ///< topic name to publish the GPS fix
   std::string frame_id_;  ///< GPS frame ID
-  Body *body_;          ///< body the simulated GPS antenna attaches to
-  Pose origin_;         ///< GPS sensor frame w.r.t the body
+  Body *body_;            ///< body the simulated GPS antenna attaches to
+  Pose origin_;           ///< GPS sensor frame w.r.t the body
   double ref_lat_rad_;  ///< latitude in radians corresponding to (0, 0) in map
                         /// frame
   double ref_lon_rad_;  ///< longitude in radians corresponding to (0, 0) in map
@@ -39,11 +39,11 @@ public:
   static double WGS84_A;   ///< Earth's major axis length
   static double WGS84_E2;  ///< Square of Earth's first eccentricity
 
-  ros::Publisher fix_publisher_;  ///< GPS fix topic publisher
-  tf::TransformBroadcaster tf_broadcaster_;   ///< broadcast GPS frame
-  geometry_msgs::TransformStamped gps_tf_;    ///< tf from body to GPS frame
-  sensor_msgs::NavSatFix gps_fix_;            ///< message for publishing output
-  UpdateTimer update_timer_;                  ///< for controlling update rate
+  ros::Publisher fix_publisher_;             ///< GPS fix topic publisher
+  tf::TransformBroadcaster tf_broadcaster_;  ///< broadcast GPS frame
+  geometry_msgs::TransformStamped gps_tf_;   ///< tf from body to GPS frame
+  sensor_msgs::NavSatFix gps_fix_;           ///< message for publishing output
+  UpdateTimer update_timer_;                 ///< for controlling update rate
 
   Eigen::Matrix3f m_body_to_gps_;  ///< tf from body to GPS
 
@@ -77,7 +77,6 @@ public:
    */
   void UpdateFix();
 };
-
 }
 
 #endif  // FLATLAND_PLUGINS_GPS_H

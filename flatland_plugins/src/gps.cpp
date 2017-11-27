@@ -8,8 +8,7 @@ namespace flatland_plugins {
 double Gps::WGS84_A = 6378137.0;
 double Gps::WGS84_E2 = 0.0066943799831668;
 
-void Gps::OnInitialize(const YAML::Node &config)
-{
+void Gps::OnInitialize(const YAML::Node &config) {
   ParseParameters(config);
   update_timer_.SetRate(update_rate_);
   fix_publisher_ = nh_.advertise<sensor_msgs::NavSatFix>(topic_, 1);
@@ -20,8 +19,7 @@ void Gps::OnInitialize(const YAML::Node &config)
   m_body_to_gps_ << c, -s, x, s, c, y, 0, 0, 1;
 }
 
-void Gps::BeforePhysicsStep(const Timekeeper &timekeeper)
-{
+void Gps::BeforePhysicsStep(const Timekeeper &timekeeper) {
   // keep the update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
