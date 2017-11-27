@@ -52,3 +52,4 @@ Class APIs are documented `here <http://flatland-simulator-api.readthedocs.io/>`
    included_plugins/laser
    included_plugins/model_tf_publisher
    included_plugins/tween
+   included_plugins/gps
