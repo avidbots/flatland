@@ -1,0 +1,4 @@
+<!-- Test launchfile for gps_test -->
+<launch>
+  <test pkg="flatland_plugins" type="gps_test" test-name="gps_test"/>
+</launch>
