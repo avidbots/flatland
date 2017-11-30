@@ -137,6 +137,11 @@ install(TARGETS flatland_viz
 install(DIRECTORY media/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/media)
 
+install(FILES
+   plugin_description.xml
+   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 #############
 ## Testing ##
 #############
