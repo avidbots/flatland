@@ -296,9 +296,16 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 }
 
 void Layer::DebugVisualize() const {
+
+  ROS_WARN("======== 3d visualize? ===========");
   DebugVisualization::Get().Reset(viz_name_);
+  DebugVisualization::Get().Reset(viz_name_+"_3d");
+  
   if (body_ != nullptr) {
     DebugVisualization::Get().Visualize(viz_name_, body_->physics_body_,
+                                        body_->color_.r, body_->color_.g,
+                                        body_->color_.b, body_->color_.a);
+    DebugVisualization::Get().VisualizeLayer(viz_name_+"_3d", body_->physics_body_,
                                         body_->color_.r, body_->color_.g,
                                         body_->color_.b, body_->color_.a);
   }

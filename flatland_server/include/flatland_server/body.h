@@ -49,6 +49,7 @@
 
 #include <flatland_server/entity.h>
 #include <flatland_server/types.h>
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
@@ -62,6 +63,7 @@ class Body {
   std::string name_;      ///< name of the body, unique within a model
   b2Body *physics_body_;  ///< Box2D physics body
   Color color_;           ///< color, for visualization
+  YAML::Node properties_;    ///< Properties document for plugins to use
 
   /**
    * @brief constructor for body, takes in all the required parameters

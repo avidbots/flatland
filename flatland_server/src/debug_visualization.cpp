@@ -240,10 +240,82 @@ void DebugVisualization::Publish() {
 
   if (to_delete.size() > 0) {
     for (const auto& topic : to_delete) {
+      ROS_WARN_NAMED("DebugVis", "Deleting topic %s", topic.c_str());
       topics_.erase(topic);
     }
     PublishTopicList();
   }
+}
+
+void DebugVisualization::VisualizeLayer(std::string name, b2Body* body, float r,
+                                   float g, float b, float a) {
+  AddTopicIfNotExist(name);
+
+  b2Fixture* fixture = body->GetFixtureList();
+  
+  visualization_msgs::Marker marker;
+  if (fixture == NULL) return;  // Nothing to visualize, empty linked list
+  
+  while (fixture != NULL) {  // traverse fixture linked list
+    
+    marker.header.frame_id = "map";
+    marker.header.stamp = ros::Time::now();
+    marker.id = topics_[name].markers.markers.size();
+    marker.color.r = r;
+    marker.color.g = g;
+    marker.color.b = b;
+    marker.color.a = a;
+    marker.scale.x = marker.scale.y = marker.scale.z = 1.0;
+    marker.frame_locked = true;
+    marker.pose.position.x = body->GetPosition().x;
+    marker.pose.position.y = body->GetPosition().y;
+
+    tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
+    q.setRPY(0, 0, body->GetAngle());  // from euler angles: roll, pitch, yaw
+    marker.pose.orientation = tf2::toMsg(q);
+    marker.type = marker.TRIANGLE_LIST;
+
+    // Get the shape from the fixture
+    if (fixture->GetType() == b2Shape::e_edge) {
+
+      geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
+      b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
+
+      
+      //marker.scale.x = 0.03;  // 3cm wide lines
+
+      p.x = edge->m_vertex1.x;
+      p.y = edge->m_vertex1.y;
+      p.z = 0.0;
+      marker.points.push_back(p);
+      p.x = edge->m_vertex2.x;
+      p.y = edge->m_vertex2.y;
+      p.z = 0.0;
+      marker.points.push_back(p);
+      p.x = edge->m_vertex2.x;
+      p.y = edge->m_vertex2.y;
+      p.z = 0.5;
+      marker.points.push_back(p);
+  
+      p.x = edge->m_vertex1.x;
+      p.y = edge->m_vertex1.y;
+      p.z = 0.0;
+      marker.points.push_back(p);
+      p.x = edge->m_vertex2.x;
+      p.y = edge->m_vertex2.y;
+      p.z = 0.5;
+      marker.points.push_back(p);
+      p.x = edge->m_vertex1.x;
+      p.y = edge->m_vertex1.y;
+      p.z = 0.5;
+      marker.points.push_back(p);
+    }
+
+    fixture = fixture->GetNext();  // Traverse the linked list of fixtures
+  }
+
+  topics_[name].markers.markers.push_back(marker);  // Add the new marker
+  topics_[name].needs_publishing = true;
 }
 
 void DebugVisualization::Visualize(std::string name, b2Body* body, float r,

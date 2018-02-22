@@ -48,6 +48,7 @@
 #define FLATLAND_SERVER_ENTITY_H
 
 #include <Box2D/Box2D.h>
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
@@ -63,6 +64,7 @@ class Entity {
 
   b2World *physics_world_;  ///< Box2D physics world
   std::string name_;        ///< name of the entity
+  YAML::Node properties_;    ///< Properties document for plugins to use
 
   /**
    * @brief Constructor for the entity
