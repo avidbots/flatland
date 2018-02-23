@@ -65,7 +65,7 @@ namespace flatland_server {
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-             double resolution, yaml_ptr properties)
+             double resolution, const YAML::Node& properties)
     : Entity(physics_world, names[0]),
       names_(names),
       cfr_(cfr),
@@ -78,7 +78,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const std::vector<LineSegment> &line_segments,
-             double scale, yaml_ptr properties)
+             double scale, const YAML::Node& properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
   body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
 
@@ -100,7 +100,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::vector<std::string> &names, const Color &color, yaml_ptr properties)
+             const std::vector<std::string> &names, const Color &color, const YAML::Node& properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {}
 
 Layer::~Layer() { delete body_; }
@@ -113,15 +113,12 @@ Body *Layer::GetBody() { return body_; }
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &map_path,
                         const std::vector<std::string> &names,
-                        const Color &color) {
+                        const Color &color, const YAML::Node& properties) {
   if (map_path.length() > 0) {  // If there is a map in this layer
     YamlReader reader(map_path);
     reader.SetErrorInfo("layer " + Q(names[0]));
 
     std::string type = reader.Get<std::string>("type", "");
-
-    auto properties = std::make_shared<YAML::Node>(
-      reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node());
 
     if (type == "line_segments") {
       double scale = reader.Get<double>("scale");
@@ -169,7 +166,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                        occupied_thresh, resolution, properties);
     }
   } else {  // If the layer has no static obstacles
-    return new Layer(physics_world, cfr, names, color, std::make_shared<YAML::Node>());
+    return new Layer(physics_world, cfr, names, color, properties);
   }
 }
 

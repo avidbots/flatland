@@ -188,6 +188,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
 
     boost::filesystem::path map_path(reader.Get<std::string>("map", ""));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
+    auto properties = reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node();
     reader.EnsureAccessedAllKeys();
 
     for (const auto &name : names) {
@@ -204,7 +205,7 @@ void World::LoadLayers(YamlReader &layers_reader) {
                    names[0].c_str(), map_path.string().c_str());
 
     Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
-                                    names, color);
+                                    names, color, properties);
     layers_name_map_.insert(
         std::pair<std::vector<std::string>, Layer *>(names, layer));
     layers_.push_back(layer);

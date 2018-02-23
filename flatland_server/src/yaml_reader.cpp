@@ -237,13 +237,15 @@ void YamlReader::EnsureAccessedAllKeys() {
     }
   }
 
+  std::string keys_str =
+      "{" + boost::algorithm::join(keys, ", ") + "}";
   std::string unused_keys_str =
       "{" + boost::algorithm::join(unused_keys, ", ") + "}";
 
   if (unused_keys.size() > 0) {
     throw YAMLException("Entry" + fmt_name_ +
                         " contains unrecognized entry(s) " + unused_keys_str +
-                        fmt_in_);
+                        fmt_in_+" keys: "+keys_str);
   }
 }
 }

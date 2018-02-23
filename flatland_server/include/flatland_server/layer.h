@@ -58,8 +58,6 @@
 
 namespace flatland_server {
 
-typedef std::shared_ptr<YAML::Node> yaml_ptr;
-
 /**
  * This class defines a layer in the simulation world which simulates the
  * environment in the world
@@ -88,7 +86,7 @@ class Layer : public Entity {
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-        double resolution, yaml_ptr properties);
+        double resolution, const YAML::Node& properties);
 
   /**
    * @brief Constructor for the Layer class for initialization using line
@@ -107,7 +105,7 @@ class Layer : public Entity {
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const std::vector<LineSegment> &line_segments,
-        double scale, yaml_ptr properties);
+        double scale, const YAML::Node& properties);
 
   /**
   * @brief Constructor for the Layer class for initialization with no static
@@ -119,7 +117,7 @@ class Layer : public Entity {
   */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
-        yaml_ptr properties);
+        const YAML::Node& properties);
 
   /**
    * @brief Destructor for the layer class
@@ -183,12 +181,13 @@ class Layer : public Entity {
    * names allow the physics body to be used as if there are multiple layers
    * @param[in] color Color of the layer
    * file, this is used to calculate the path to the layermap yaml file
+   * @param[in] properties A YAML node containing properties for plugins to use
    * @return A new layer
    */
   static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &map_path,
                           const std::vector<std::string> &names,
-                          const Color &color);
+                          const Color &color, const YAML::Node& properties);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H
