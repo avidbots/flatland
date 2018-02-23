@@ -136,7 +136,6 @@ class Tween : public flatland_server::ModelPlugin {
    */
   void TriggerCallback(const std_msgs::Bool& msg);
 };
-
 };
 
 #endif

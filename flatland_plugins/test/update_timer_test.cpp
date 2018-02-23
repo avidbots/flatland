@@ -98,29 +98,29 @@ class UpdateTimerTest : public ::testing::Test {
   }
 
   void ExecuteRateTest() {
-      Timekeeper timekeeper;
-      w = World::MakeWorld(world_yaml.string());
+    Timekeeper timekeeper;
+    w = World::MakeWorld(world_yaml.string());
 
-      // artificially load a plugin
-      boost::shared_ptr<TestPlugin> p(new TestPlugin());
-      p->Initialize("TestPlugin", "test_plugin", w->models_[0], YAML::Node());
-      w->plugin_manager_.model_plugins_.push_back(p);
-      
-      p->update_timer_.SetRate(set_rate);
+    // artificially load a plugin
+    boost::shared_ptr<TestPlugin> p(new TestPlugin());
+    p->Initialize("TestPlugin", "test_plugin", w->models_[0], YAML::Node());
+    w->plugin_manager_.model_plugins_.push_back(p);
 
-      timekeeper.SetMaxStepSize(step_size);
-      ros::WallRate rate(wall_rate);
+    p->update_timer_.SetRate(set_rate);
 
-      // run for two seconds
-      while (timekeeper.GetSimTime() < ros::Time(sim_test_time)) {
-        w->Update(timekeeper);
-        ros::spinOnce();
-        rate.sleep();
-      }
+    timekeeper.SetMaxStepSize(step_size);
+    ros::WallRate rate(wall_rate);
 
-      actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
+    // run for two seconds
+    while (timekeeper.GetSimTime() < ros::Time(sim_test_time)) {
+      w->Update(timekeeper);
+      ros::spinOnce();
+      rate.sleep();
+    }
 
-      printf("Actual Rate: %f, Expected Rate: %f\n", actual_rate, expected_rate);
+    actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
+
+    printf("Actual Rate: %f, Expected Rate: %f\n", actual_rate, expected_rate);
   }
 };
 

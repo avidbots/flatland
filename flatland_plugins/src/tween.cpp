@@ -45,12 +45,12 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_plugins/tween.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
-#include <flatland_plugins/tween.h>
 
 namespace flatland_plugins {
 
@@ -90,7 +90,6 @@ std::map<std::string, Tween::EasingType_> Tween::easing_strings_ = {
     {"bounceIn", Tween::EasingType_::bounceIn},
     {"bounceOut", Tween::EasingType_::bounceOut},
     {"bounceInOut", Tween::EasingType_::bounceInOut}};
-
 
 void Tween::OnInitialize(const YAML::Node& config) {
   YamlReader reader(config);

@@ -52,9 +52,11 @@ namespace flatland_plugins {
 UpdateTimer::UpdateTimer()
     : period_(ros::Duration(0)), last_update_time_(ros::Time(0, 0)) {}
 
-void UpdateTimer::SetRate(double rate) { 
-  if (rate == 0.0) period_ = ros::Duration(INT32_MAX,0);  // 1000 hours is infinity right?
-  else period_ = ros::Duration(1.0 / rate);
+void UpdateTimer::SetRate(double rate) {
+  if (rate == 0.0)
+    period_ = ros::Duration(INT32_MAX, 0);  // 1000 hours is infinity right?
+  else
+    period_ = ros::Duration(1.0 / rate);
 }
 
 bool UpdateTimer::CheckUpdate(const flatland_server::Timekeeper &timekeeper) {
