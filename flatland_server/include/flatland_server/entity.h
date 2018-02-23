@@ -65,7 +65,6 @@ class Entity {
 
   b2World *physics_world_;  ///< Box2D physics world
   std::string name_;        ///< name of the entity
-  std::shared_ptr<YAML::Node> properties_;  ///< Properties document for plugins to use
 
   /**
    * @brief Constructor for the entity

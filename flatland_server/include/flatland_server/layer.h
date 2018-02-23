@@ -82,6 +82,7 @@ class Layer : public Entity {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] bitmap Matrix containing the map image
    * @param[in] resolution Resolution of the map image in meters per pixel
+   * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
@@ -101,6 +102,7 @@ class Layer : public Entity {
    * @param[in] line_segments List of line segments
    * @param[in] scale Scale to apply to the line segment end points, works in
    * the same way as resolution
+   * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
@@ -114,6 +116,7 @@ class Layer : public Entity {
   * @param[in] cfr Collision filter registry
   * @param[in] names A list of names for the layer, the first name is used
   * for the name of the body
+  * @param[in] properties A YAML node containing properties for plugins to use
   */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,

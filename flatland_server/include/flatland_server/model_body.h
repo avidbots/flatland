@@ -76,12 +76,13 @@ class ModelBody : public Body {
    * @param[in] pose The pose to place the body at
    * @param[in] body_type Type of Box2D body, either dynamic, static, or
    * kinematic
+   * @param[in] properties per-object YAML properties for plugins to reference
    * @param[in] linear_damping Box2D body linear damping
    * @param[in] angular_damping Box2D body angular damping
    */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
             const std::string &name, const Color &color, const Pose &pose,
-            b2BodyType body_type, double linear_damping,
+            b2BodyType body_type, const YAML::Node& properties, double linear_damping,
             double angular_damping);
 
   /**

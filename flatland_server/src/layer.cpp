@@ -70,7 +70,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
       names_(names),
       cfr_(cfr),
       viz_name_("layer/" + name_) {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
 
   LoadFromBitmap(bitmap, occupied_thresh, resolution);
 }
@@ -80,7 +80,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const Pose &origin, const std::vector<LineSegment> &line_segments,
              double scale, const YAML::Node& properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
 
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 

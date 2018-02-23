@@ -274,39 +274,41 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
     marker.pose.orientation = tf2::toMsg(q);
     marker.type = marker.TRIANGLE_LIST;
 
+    YamlReader reader(body->properties_);
+    YamlReader debug_reader = reader.SubnodeOpt("debug", YamlReader::NodeTypeCheck::MAP);
+    float min_z = debug_reader.Get<float>("min_z", 0.0);
+    float max_z = debug_reader.Get<float>("max_z", 1.0);
+
     // Get the shape from the fixture
     if (fixture->GetType() == b2Shape::e_edge) {
 
       geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
       b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
 
-      
-      //marker.scale.x = 0.03;  // 3cm wide lines
-
       p.x = edge->m_vertex1.x;
       p.y = edge->m_vertex1.y;
-      p.z = 0.0;
+      p.z = min_z;
       marker.points.push_back(p);
       p.x = edge->m_vertex2.x;
       p.y = edge->m_vertex2.y;
-      p.z = 0.0;
+      p.z = min_z;
       marker.points.push_back(p);
       p.x = edge->m_vertex2.x;
       p.y = edge->m_vertex2.y;
-      p.z = 0.5;
+      p.z = max_z;
       marker.points.push_back(p);
   
       p.x = edge->m_vertex1.x;
       p.y = edge->m_vertex1.y;
-      p.z = 0.0;
+      p.z = min_z;
       marker.points.push_back(p);
       p.x = edge->m_vertex2.x;
       p.y = edge->m_vertex2.y;
-      p.z = 0.5;
+      p.z = max_z;
       marker.points.push_back(p);
       p.x = edge->m_vertex1.x;
       p.y = edge->m_vertex1.y;
-      p.z = 0.5;
+      p.z = max_z;
       marker.points.push_back(p);
     }
 
