@@ -65,12 +65,13 @@ namespace flatland_server {
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-             double resolution, const YAML::Node& properties)
+             double resolution, const YAML::Node &properties)
     : Entity(physics_world, names[0]),
       names_(names),
       cfr_(cfr),
       viz_name_("layer/" + name_) {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody,
+                   properties);
 
   LoadFromBitmap(bitmap, occupied_thresh, resolution);
 }
@@ -78,9 +79,10 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const std::vector<LineSegment> &line_segments,
-             double scale, const YAML::Node& properties)
+             double scale, const YAML::Node &properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
+  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody,
+                   properties);
 
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
@@ -100,7 +102,8 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::vector<std::string> &names, const Color &color, const YAML::Node& properties)
+             const std::vector<std::string> &names, const Color &color,
+             const YAML::Node &properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {}
 
 Layer::~Layer() { delete body_; }
@@ -113,7 +116,7 @@ Body *Layer::GetBody() { return body_; }
 Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                         const std::string &map_path,
                         const std::vector<std::string> &names,
-                        const Color &color, const YAML::Node& properties) {
+                        const Color &color, const YAML::Node &properties) {
   if (map_path.length() > 0) {  // If there is a map in this layer
     YamlReader reader(map_path);
     reader.SetErrorInfo("layer " + Q(names[0]));
@@ -298,16 +301,15 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 }
 
 void Layer::DebugVisualize() const {
-
   ROS_WARN("======== 3d visualize? ===========");
   DebugVisualization::Get().Reset(viz_name_);
-  DebugVisualization::Get().Reset(viz_name_+"_3d");
-  
+  DebugVisualization::Get().Reset(viz_name_ + "_3d");
+
   if (body_ != nullptr) {
     DebugVisualization::Get().Visualize(viz_name_, body_->physics_body_,
                                         body_->color_.r, body_->color_.g,
                                         body_->color_.b, body_->color_.a);
-    DebugVisualization::Get().VisualizeLayer(viz_name_+"_3d", body_);
+    DebugVisualization::Get().VisualizeLayer(viz_name_ + "_3d", body_);
   }
 }
 

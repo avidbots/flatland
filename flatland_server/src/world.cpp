@@ -188,7 +188,8 @@ void World::LoadLayers(YamlReader &layers_reader) {
 
     boost::filesystem::path map_path(reader.Get<std::string>("map", ""));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
-    auto properties = reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node();
+    auto properties =
+        reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node();
     reader.EnsureAccessedAllKeys();
 
     for (const auto &name : names) {

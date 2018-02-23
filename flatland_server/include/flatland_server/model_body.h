@@ -82,8 +82,8 @@ class ModelBody : public Body {
    */
   ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr, Model *model,
             const std::string &name, const Color &color, const Pose &pose,
-            b2BodyType body_type, const YAML::Node& properties, double linear_damping,
-            double angular_damping);
+            b2BodyType body_type, const YAML::Node &properties,
+            double linear_damping, double angular_damping);
 
   /**
    * @return The collision filter registry

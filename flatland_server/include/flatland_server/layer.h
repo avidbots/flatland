@@ -87,7 +87,7 @@ class Layer : public Entity {
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-        double resolution, const YAML::Node& properties);
+        double resolution, const YAML::Node &properties);
 
   /**
    * @brief Constructor for the Layer class for initialization using line
@@ -107,7 +107,7 @@ class Layer : public Entity {
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const std::vector<LineSegment> &line_segments,
-        double scale, const YAML::Node& properties);
+        double scale, const YAML::Node &properties);
 
   /**
   * @brief Constructor for the Layer class for initialization with no static
@@ -120,7 +120,7 @@ class Layer : public Entity {
   */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
-        const YAML::Node& properties);
+        const YAML::Node &properties);
 
   /**
    * @brief Destructor for the layer class
@@ -190,7 +190,7 @@ class Layer : public Entity {
   static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &map_path,
                           const std::vector<std::string> &names,
-                          const Color &color, const YAML::Node& properties);
+                          const Color &color, const YAML::Node &properties);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

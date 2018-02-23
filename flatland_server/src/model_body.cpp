@@ -52,10 +52,11 @@ namespace flatland_server {
 
 ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
                      Model *model, const std::string &name, const Color &color,
-                     const Pose &pose, b2BodyType body_type, const YAML::Node& properties,
-                     double linear_damping, double angular_damping)
-    : Body(physics_world, model, name, color, pose, body_type, properties, linear_damping,
-           angular_damping),
+                     const Pose &pose, b2BodyType body_type,
+                     const YAML::Node &properties, double linear_damping,
+                     double angular_damping)
+    : Body(physics_world, model, name, color, pose, body_type, properties,
+           linear_damping, angular_damping),
       cfr_(cfr) {}
 
 const CollisionFilterRegistry *ModelBody::GetCfr() const { return cfr_; }
@@ -86,8 +87,9 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   }
 
   // TODO: Read the model's properties
-  ModelBody *m = new ModelBody(physics_world, cfr, model, name, color, pose,
-                               type, YAML::Node(), linear_damping, angular_damping);
+  ModelBody *m =
+      new ModelBody(physics_world, cfr, model, name, color, pose, type,
+                    YAML::Node(), linear_damping, angular_damping);
 
   try {
     YamlReader footprints_node =

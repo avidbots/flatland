@@ -60,10 +60,10 @@ namespace flatland_server {
  */
 class Body {
  public:
-  Entity *entity_;        ///< The entity the body belongs to
-  std::string name_;      ///< name of the body, unique within a model
-  b2Body *physics_body_;  ///< Box2D physics body
-  Color color_;           ///< color, for visualization
+  Entity *entity_;         ///< The entity the body belongs to
+  std::string name_;       ///< name of the body, unique within a model
+  b2Body *physics_body_;   ///< Box2D physics body
+  Color color_;            ///< color, for visualization
   YAML::Node properties_;  ///< Properties document for plugins to use
 
   /**
@@ -79,8 +79,9 @@ class Body {
    * @param[in] angular_damping Box2D body angular damping
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
-       const Color &color, const Pose &pose, b2BodyType body_type, const YAML::Node& properties,
-       double linear_damping = 0, double angular_damping = 0);
+       const Color &color, const Pose &pose, b2BodyType body_type,
+       const YAML::Node &properties, double linear_damping = 0,
+       double angular_damping = 0);
 
   /**
    * @brief logs the debugging information for the body
