@@ -81,7 +81,7 @@ class Tween : public flatland_server::ModelPlugin {
     TRIGGER  // tween forwards on "true", backward on "false"
   };
   ModeType_ mode_;
-  static const std::map<std::string, Tween::ModeType_> mode_strings_;
+  static std::map<std::string, Tween::ModeType_> mode_strings_;
 
   enum class EasingType_ {
     linear,
@@ -114,7 +114,7 @@ class Tween : public flatland_server::ModelPlugin {
     bounceOut,
     bounceInOut
   };
-  static const std::map<std::string, Tween::EasingType_> easing_strings_;
+  static std::map<std::string, Tween::EasingType_> easing_strings_;
 
   /**
    * @name          OnInitialize
@@ -137,42 +137,6 @@ class Tween : public flatland_server::ModelPlugin {
   void TriggerCallback(const std_msgs::Bool& msg);
 };
 
-const std::map<std::string, Tween::ModeType_> Tween::mode_strings_ = {
-    {"yoyo", Tween::ModeType_::YOYO},
-    {"loop", Tween::ModeType_::LOOP},
-    {"once", Tween::ModeType_::ONCE},
-    {"trigger", Tween::ModeType_::TRIGGER}};
-
-const std::map<std::string, Tween::EasingType_> Tween::easing_strings_ = {
-    {"linear", Tween::EasingType_::linear},
-    {"quadraticIn", Tween::EasingType_::quadraticIn},
-    {"quadraticOut", Tween::EasingType_::quadraticOut},
-    {"quadraticInOut", Tween::EasingType_::quadraticInOut},
-    {"cubicIn", Tween::EasingType_::cubicIn},
-    {"cubicOut", Tween::EasingType_::cubicOut},
-    {"cubicInOut", Tween::EasingType_::cubicInOut},
-    {"quarticIn", Tween::EasingType_::quarticIn},
-    {"quarticOut", Tween::EasingType_::quarticOut},
-    {"quarticInOut", Tween::EasingType_::quarticInOut},
-    {"quinticIn", Tween::EasingType_::quinticIn},
-    {"quinticOut", Tween::EasingType_::quinticOut},
-    {"quinticInOut", Tween::EasingType_::quinticInOut},
-    // { "sinuisodal", Tween::EasingType_::sinuisodal },
-    {"exponentialIn", Tween::EasingType_::exponentialIn},
-    {"exponentialOut", Tween::EasingType_::exponentialOut},
-    {"exponentialInOut", Tween::EasingType_::exponentialInOut},
-    {"circularIn", Tween::EasingType_::circularIn},
-    {"circularOut", Tween::EasingType_::circularOut},
-    {"circularInOut", Tween::EasingType_::circularInOut},
-    {"backIn", Tween::EasingType_::backIn},
-    {"backOut", Tween::EasingType_::backOut},
-    {"backInOut", Tween::EasingType_::backInOut},
-    {"elasticIn", Tween::EasingType_::elasticIn},
-    {"elasticOut", Tween::EasingType_::elasticOut},
-    {"elasticInOut", Tween::EasingType_::elasticInOut},
-    {"bounceIn", Tween::EasingType_::bounceIn},
-    {"bounceOut", Tween::EasingType_::bounceOut},
-    {"bounceInOut", Tween::EasingType_::bounceInOut}};
 };
 
 #endif

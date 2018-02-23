@@ -162,7 +162,7 @@ if(CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(tween_test test/tween_test.test
                     test/tween_test.cpp)
-  target_link_libraries(tween_test flatland_plugins_lib)
+  target_link_libraries(tween_test flatland_plugins_lib ${catkin_LIBRARIES})
 
   add_rostest_gtest(gps_test test/gps_test.test
                     test/gps_test.cpp)
