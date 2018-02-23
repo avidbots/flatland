@@ -55,6 +55,8 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
 #include <fstream>
+#include <iostream>
+#include <memory>
 #include <opencv2/opencv.hpp>
 #include <sstream>
 
@@ -63,7 +65,7 @@ namespace flatland_server {
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-             double resolution)
+             double resolution, yaml_ptr properties)
     : Entity(physics_world, names[0]),
       names_(names),
       cfr_(cfr),
@@ -76,7 +78,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const std::vector<LineSegment> &line_segments,
-             double scale)
+             double scale, yaml_ptr properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
   body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody);
 
@@ -98,7 +100,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 }
 
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::vector<std::string> &names, const Color &color)
+             const std::vector<std::string> &names, const Color &color, yaml_ptr properties)
     : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {}
 
 Layer::~Layer() { delete body_; }
@@ -118,6 +120,9 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
 
     std::string type = reader.Get<std::string>("type", "");
 
+    auto properties = std::make_shared<YAML::Node>(
+      reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node());
+
     if (type == "line_segments") {
       double scale = reader.Get<double>("scale");
       Pose origin = reader.GetPose("origin");
@@ -135,7 +140,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
       ReadLineSegmentsFile(data_path.string(), line_segments);
 
       return new Layer(physics_world, cfr, names, color, origin, line_segments,
-                       scale);
+                       scale, properties);
 
     } else {
       double resolution = reader.Get<double>("resolution");
@@ -161,10 +166,10 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
       map.convertTo(bitmap, CV_32FC1, 1.0 / 255.0);
 
       return new Layer(physics_world, cfr, names, color, origin, bitmap,
-                       occupied_thresh, resolution);
+                       occupied_thresh, resolution, properties);
     }
   } else {  // If the layer has no static obstacles
-    return new Layer(physics_world, cfr, names, color);
+    return new Layer(physics_world, cfr, names, color, std::make_shared<YAML::Node>());
   }
 }
 
@@ -305,9 +310,7 @@ void Layer::DebugVisualize() const {
     DebugVisualization::Get().Visualize(viz_name_, body_->physics_body_,
                                         body_->color_.r, body_->color_.g,
                                         body_->color_.b, body_->color_.a);
-    DebugVisualization::Get().VisualizeLayer(viz_name_+"_3d", body_->physics_body_,
-                                        body_->color_.r, body_->color_.g,
-                                        body_->color_.b, body_->color_.a);
+    DebugVisualization::Get().VisualizeLayer(viz_name_+"_3d", body_);
   }
 }
 

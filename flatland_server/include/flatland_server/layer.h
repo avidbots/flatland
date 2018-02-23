@@ -58,6 +58,8 @@
 
 namespace flatland_server {
 
+typedef std::shared_ptr<YAML::Node> yaml_ptr;
+
 /**
  * This class defines a layer in the simulation world which simulates the
  * environment in the world
@@ -86,7 +88,7 @@ class Layer : public Entity {
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-        double resolution);
+        double resolution, yaml_ptr properties);
 
   /**
    * @brief Constructor for the Layer class for initialization using line
@@ -105,7 +107,7 @@ class Layer : public Entity {
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const std::vector<LineSegment> &line_segments,
-        double scale);
+        double scale, yaml_ptr properties);
 
   /**
   * @brief Constructor for the Layer class for initialization with no static
@@ -116,7 +118,8 @@ class Layer : public Entity {
   * for the name of the body
   */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::vector<std::string> &names, const Color &color);
+        const std::vector<std::string> &names, const Color &color,
+        yaml_ptr properties);
 
   /**
    * @brief Destructor for the layer class

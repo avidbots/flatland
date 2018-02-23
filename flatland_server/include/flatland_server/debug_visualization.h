@@ -55,6 +55,8 @@
 #include <string>
 #include <vector>
 
+#include "flatland_server/body.h"
+
 namespace flatland_server {
 struct DebugTopic {
   ros::Publisher publisher;
@@ -114,8 +116,7 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void VisualizeLayer(std::string name, b2Body* body, float r,
-                                   float g, float b, float a);
+  void VisualizeLayer(std::string name, Body* body);
 
   /**
    * @brief Remove all elements in a visualization topic

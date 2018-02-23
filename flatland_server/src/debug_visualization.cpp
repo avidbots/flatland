@@ -247,11 +247,10 @@ void DebugVisualization::Publish() {
   }
 }
 
-void DebugVisualization::VisualizeLayer(std::string name, b2Body* body, float r,
-                                   float g, float b, float a) {
+void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
   AddTopicIfNotExist(name);
 
-  b2Fixture* fixture = body->GetFixtureList();
+  b2Fixture* fixture = body->physics_body_->GetFixtureList();
   
   visualization_msgs::Marker marker;
   if (fixture == NULL) return;  // Nothing to visualize, empty linked list
@@ -261,17 +260,17 @@ void DebugVisualization::VisualizeLayer(std::string name, b2Body* body, float r,
     marker.header.frame_id = "map";
     marker.header.stamp = ros::Time::now();
     marker.id = topics_[name].markers.markers.size();
-    marker.color.r = r;
-    marker.color.g = g;
-    marker.color.b = b;
-    marker.color.a = a;
+    marker.color.r = body->color_.r;
+    marker.color.g = body->color_.g;
+    marker.color.b = body->color_.b;
+    marker.color.a = body->color_.a;
     marker.scale.x = marker.scale.y = marker.scale.z = 1.0;
     marker.frame_locked = true;
-    marker.pose.position.x = body->GetPosition().x;
-    marker.pose.position.y = body->GetPosition().y;
+    marker.pose.position.x = body->physics_body_->GetPosition().x;
+    marker.pose.position.y = body->physics_body_->GetPosition().y;
 
     tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
-    q.setRPY(0, 0, body->GetAngle());  // from euler angles: roll, pitch, yaw
+    q.setRPY(0, 0, body->physics_body_->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
     marker.type = marker.TRIANGLE_LIST;
 
