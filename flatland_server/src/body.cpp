@@ -51,8 +51,9 @@ namespace flatland_server {
 
 Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
            const Color &color, const Pose &pose, b2BodyType body_type,
-           double linear_damping, double angular_damping)
-    : entity_(entity), name_(name), color_(color) {
+           const YAML::Node &properties, double linear_damping,
+           double angular_damping)
+    : entity_(entity), name_(name), color_(color), properties_(properties) {
   b2BodyDef body_def;
   body_def.type = body_type;
   body_def.position.Set(pose.x, pose.y);
