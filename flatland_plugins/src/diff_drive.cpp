@@ -49,6 +49,7 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
@@ -117,7 +118,8 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   }
 
   if (enable_twist_pub_) {
-    twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>(twist_pub_topic, 1);
+    twist_pub_ = nh_.advertise<geometry_msgs::TwistWithCovarianceStamped>(
+        twist_pub_topic, 1);
   }
 
   // init the values for the messages
@@ -207,17 +209,20 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     if (enable_twist_pub_) {
       // Transform global frame velocity into local frame to simulate encoder
       // readings
-      geometry_msgs::TwistStamped twist_pub_msg;
+      geometry_msgs::TwistWithCovarianceStamped twist_pub_msg;
       twist_pub_msg.header.stamp = ros::Time::now();
       twist_pub_msg.header.frame_id = odom_msg_.child_frame_id;
 
       // Forward velocity in twist.linear.x
-      twist_pub_msg.twist.linear.x = cos(angle) * linear_vel_local.x +
-                                     sin(angle) * linear_vel_local.y +
-                                     noise_gen_[3](rng_);
+      twist_pub_msg.twist.twist.linear.x = cos(angle) * linear_vel_local.x +
+                                           sin(angle) * linear_vel_local.y +
+                                           noise_gen_[3](rng_);
 
       // Angular velocity in twist.angular.z
-      twist_pub_msg.twist.angular.z = angular_vel + noise_gen_[5](rng_);
+      twist_pub_msg.twist.twist.angular.z = angular_vel + noise_gen_[5](rng_);
+
+      twist_pub_msg.twist.covariance = odom_msg_.twist.covariance;
+
       twist_pub_.publish(twist_pub_msg);
     }
 
