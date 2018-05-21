@@ -64,6 +64,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   YamlReader reader(config);
   enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
   enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
+  broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
@@ -227,14 +228,16 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     }
 
     // publish odom tf
-    geometry_msgs::TransformStamped odom_tf;
-    odom_tf.header = odom_msg_.header;
-    odom_tf.child_frame_id = odom_msg_.child_frame_id;
-    odom_tf.transform.translation.x = odom_msg_.pose.pose.position.x;
-    odom_tf.transform.translation.y = odom_msg_.pose.pose.position.y;
-    odom_tf.transform.translation.z = 0;
-    odom_tf.transform.rotation = odom_msg_.pose.pose.orientation;
-    tf_broadcaster.sendTransform(odom_tf);
+    if (broadcast_tf_) {
+      geometry_msgs::TransformStamped odom_tf;
+      odom_tf.header = odom_msg_.header;
+      odom_tf.child_frame_id = odom_msg_.child_frame_id;
+      odom_tf.transform.translation.x = odom_msg_.pose.pose.position.x;
+      odom_tf.transform.translation.y = odom_msg_.pose.pose.position.y;
+      odom_tf.transform.translation.z = 0;
+      odom_tf.transform.rotation = odom_msg_.pose.pose.orientation;
+      tf_broadcaster.sendTransform(odom_tf);
+    }
   }
 
   // we apply the twist velocities, this must be done every physics step to make
