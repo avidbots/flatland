@@ -237,6 +237,7 @@ void YamlReader::EnsureAccessedAllKeys() {
     }
   }
 
+  std::string keys_str = "{" + boost::algorithm::join(keys, ", ") + "}";
   std::string unused_keys_str =
       "{" + boost::algorithm::join(unused_keys, ", ") + "}";
 

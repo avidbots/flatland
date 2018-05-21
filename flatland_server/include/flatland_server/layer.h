@@ -82,11 +82,12 @@ class Layer : public Entity {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] bitmap Matrix containing the map image
    * @param[in] resolution Resolution of the map image in meters per pixel
+   * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-        double resolution);
+        double resolution, const YAML::Node &properties);
 
   /**
    * @brief Constructor for the Layer class for initialization using line
@@ -101,11 +102,12 @@ class Layer : public Entity {
    * @param[in] line_segments List of line segments
    * @param[in] scale Scale to apply to the line segment end points, works in
    * the same way as resolution
+   * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const std::vector<LineSegment> &line_segments,
-        double scale);
+        double scale, const YAML::Node &properties);
 
   /**
   * @brief Constructor for the Layer class for initialization with no static
@@ -114,9 +116,11 @@ class Layer : public Entity {
   * @param[in] cfr Collision filter registry
   * @param[in] names A list of names for the layer, the first name is used
   * for the name of the body
+  * @param[in] properties A YAML node containing properties for plugins to use
   */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::vector<std::string> &names, const Color &color);
+        const std::vector<std::string> &names, const Color &color,
+        const YAML::Node &properties);
 
   /**
    * @brief Destructor for the layer class
@@ -180,12 +184,13 @@ class Layer : public Entity {
    * names allow the physics body to be used as if there are multiple layers
    * @param[in] color Color of the layer
    * file, this is used to calculate the path to the layermap yaml file
+   * @param[in] properties A YAML node containing properties for plugins to use
    * @return A new layer
    */
   static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &map_path,
                           const std::vector<std::string> &names,
-                          const Color &color);
+                          const Color &color, const YAML::Node &properties);
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

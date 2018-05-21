@@ -48,6 +48,8 @@
 #define FLATLAND_SERVER_ENTITY_H
 
 #include <Box2D/Box2D.h>
+#include <flatland_server/yaml_reader.h>
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 

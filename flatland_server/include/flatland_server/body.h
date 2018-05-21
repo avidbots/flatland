@@ -49,6 +49,8 @@
 
 #include <flatland_server/entity.h>
 #include <flatland_server/types.h>
+#include <flatland_server/yaml_reader.h>
+#include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
 
@@ -58,10 +60,11 @@ namespace flatland_server {
  */
 class Body {
  public:
-  Entity *entity_;        ///< The entity the body belongs to
-  std::string name_;      ///< name of the body, unique within a model
-  b2Body *physics_body_;  ///< Box2D physics body
-  Color color_;           ///< color, for visualization
+  Entity *entity_;         ///< The entity the body belongs to
+  std::string name_;       ///< name of the body, unique within a model
+  b2Body *physics_body_;   ///< Box2D physics body
+  Color color_;            ///< color, for visualization
+  YAML::Node properties_;  ///< Properties document for plugins to use
 
   /**
    * @brief constructor for body, takes in all the required parameters
@@ -71,12 +74,14 @@ class Body {
    * @param[in] color Color in r, g, b, a
    * @param[in] pose Pose to place the body at
    * @param[in] body_type Box2D body type either dynamic, kinematic, or static
+   * @param[in] properties per-object YAML properties for plugins to reference
    * @param[in] linear_damping Box2D body linear damping
    * @param[in] angular_damping Box2D body angular damping
    */
   Body(b2World *physics_world, Entity *entity, const std::string &name,
        const Color &color, const Pose &pose, b2BodyType body_type,
-       double linear_damping = 0, double angular_damping = 0);
+       const YAML::Node &properties, double linear_damping = 0,
+       double angular_damping = 0);
 
   /**
    * @brief logs the debugging information for the body

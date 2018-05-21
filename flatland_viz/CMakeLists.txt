@@ -128,7 +128,7 @@ target_link_libraries(flatland_viz_plugins
 #############
 
 # Mark executables and/or libraries for installation
-install(TARGETS flatland_viz
+install(TARGETS flatland_viz flatland_viz_plugins
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
