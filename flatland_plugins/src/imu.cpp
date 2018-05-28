@@ -78,7 +78,7 @@ void Imu::OnInitialize(const YAML::Node& config) {
       reader.Get<double>("pub_rate", std::numeric_limits<double>::infinity());
   update_timer_.SetRate(pub_rate_);
 
-  broadcast_tf_ = true;
+  broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
 
   // by default the covariance diagonal is the variance of actual noise
   // generated, non-diagonal elements are zero assuming the noises are
