@@ -20,6 +20,7 @@ testEnv:
   env5: ""
   env6: 444.4
   env7: ZZZ
+  env8: true
 testParam:
   param1: Foo
   param2: 7
@@ -28,3 +29,5 @@ testParam:
   param5: ""
   param6: 223
   param7: BBBC
+  param8: true
+  param9: true

@@ -301,7 +301,11 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 }
 
 void Layer::DebugVisualize() const {
-  ROS_WARN("======== 3d visualize? ===========");
+  // Don't try to visualized uninitalized layers
+  if (viz_name_.length() == 0) {
+    return;
+  }
+
   DebugVisualization::Get().Reset(viz_name_);
   DebugVisualization::Get().Reset(viz_name_ + "_3d");
 

@@ -114,6 +114,7 @@ TEST(YamlPreprocTest, testEvalStrings) {
   compareNodes("testEnv", "env5", in, out);
   compareNodes("testEnv", "env6", in, out);
   compareNodes("testEnv", "env7", in, out);
+  compareNodes("testEnv", "env8", in, out);
 
   compareNodes("testParam", "param1", in, out);
   compareNodes("testParam", "param2", in, out);
@@ -122,6 +123,8 @@ TEST(YamlPreprocTest, testEvalStrings) {
   compareNodes("testParam", "param5", in, out);
   compareNodes("testParam", "param6", in, out);
   compareNodes("testParam", "param7", in, out);
+  compareNodes("testParam", "param8", in, out);
+  compareNodes("testParam", "param9", in, out);
 }
 
 // Run all the tests that were declared with TEST()

@@ -116,6 +116,18 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
                         " already exists");
   }
 
+  if (!plugin_reader.Get<bool>("enabled", "true")) {
+    ROS_WARN_STREAM("Plugin "
+                    << Q(model->name_) << "."
+                    << plugin_reader.Get<std::string>("name", "unnamed")
+                    << " disabled");
+    return;
+  } else {
+    ROS_WARN_STREAM("Body " << Q(model->name_) << "."
+                            << plugin_reader.Get<std::string>("name", "unnamed")
+                            << " enabled");
+  }
+
   // remove the name and type of the YAML Node, the plugin does not need to know
   // about these parameters, remove method is broken in yaml cpp 5.2, so we
   // create a new node and add everything

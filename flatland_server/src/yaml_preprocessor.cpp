@@ -82,29 +82,42 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   std::string value = node.as<std::string>().substr(5);  // omit the $parse
   boost::algorithm::trim(value);                         // trim whitespace
 
-  if (value.find("return ") == std::string::npos) {  // Has no return statement
-    value = "return " + value;
-  }
-
-  // Create the Lua context
-  lua_State *L = luaL_newstate();
-  luaL_openlibs(L);
-  lua_pushcfunction(L, YamlPreprocessor::LuaGetEnv);
-  lua_setglobal(L, "env");
-  lua_pushcfunction(L, YamlPreprocessor::LuaGetParam);
-  lua_setglobal(L, "param");
-
-  int error = luaL_dostring(L, value.c_str());
-  if (error) {
-    ROS_ERROR_STREAM(lua_tostring(L, -1));
-    lua_pop(L, 1); /* pop error message from the stack */
-  } else {
-    int t = lua_type(L, 1);
-    if (t == LUA_TNIL) {
-      node = "";
-    } else {
-      node = lua_tostring(L, 1);
+  try {
+    if (value.find("return ") ==
+        std::string::npos) {  // Has no return statement
+      value = "return " + value;
     }
+
+    // Create the Lua context
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    lua_pushcfunction(L, YamlPreprocessor::LuaGetEnv);
+    lua_setglobal(L, "env");
+    lua_pushcfunction(L, YamlPreprocessor::LuaGetParam);
+    lua_setglobal(L, "param");
+
+    int error = luaL_dostring(L, value.c_str());
+    if (error) {
+      ROS_ERROR_STREAM(lua_tostring(L, -1));
+      lua_pop(L, 1); /* pop error message from the stack */
+    } else {
+      int t = lua_type(L, 1);
+      if (t == LUA_TNIL) {
+        node = "";
+        ROS_INFO_STREAM("Preprocessor parsed " << value << " as empty string");
+      } else if (t == LUA_TBOOLEAN) {
+        ROS_INFO_STREAM("Preprocessor parsed "
+                        << value << " as bool "
+                        << (lua_toboolean(L, 1) ? "true" : "false"));
+        node = lua_toboolean(L, 1) ? "true" : "false";
+      } else {
+        ROS_INFO_STREAM("Preprocessor parsed " << value << " as "
+                                               << lua_tostring(L, 1));
+        node = lua_tostring(L, 1);
+      }
+    }
+  } catch (...) {
+    ROS_ERROR_STREAM("Lua error in: " << value);
   }
 }
 
@@ -129,25 +142,20 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
   const char *name = lua_tostring(L, 1);
   const char *env = std::getenv(name);
 
-  if (lua_gettop(L) == 2) {  // default passed in
+  if (lua_gettop(L) == 2 && env == NULL) {  // use default
     if (lua_isnumber(L, 2)) {
-      if (env == NULL) {
-        lua_pushnumber(L, lua_tonumber(L, 2));
-      } else {
-        lua_pushnumber(L, std::atof(env));
-      }
+      lua_pushnumber(L, lua_tonumber(L, 2));
     } else if (lua_isstring(L, 2)) {
-      if (env == NULL) {
-        lua_pushstring(L, lua_tostring(L, 2));
-      } else {
-        lua_pushstring(L, env);
-      }
+      lua_pushstring(L, lua_tostring(L, 2));
+    } else if (lua_isboolean(L, 2)) {
+      lua_pushboolean(L, lua_toboolean(L, 2));
     }
   } else {              // no default
     if (env == NULL) {  // Push back a nil
       ROS_WARN_STREAM("No environment variable for: " << name);
       lua_pushnil(L);
     } else {
+      ROS_WARN_STREAM("Found env for " << name);
       try {  // Try to push a number
         double x = boost::lexical_cast<double>(env);
         lua_pushnumber(L, x);
@@ -165,26 +173,19 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
   std::string param_s;
   int param_i;
   double param_d;
+  bool param_b;
 
-  if (lua_gettop(L) == 2) {  // default value was passed in
+  if (lua_gettop(L) == 2 && !ros::param::has(name)) {  // use default
     if (lua_isnumber(L, 2)) {
-      if (!ros::param::has(name)) {  // return default
-        lua_pushnumber(L, lua_tonumber(L, 2));
-      } else {
-        if (ros::param::get(name, param_d)) {
-          lua_pushnumber(L, param_d);
-        } else {
-          ROS_WARN_STREAM("Couldn't load int/double value at param " << name);
-          lua_pushnil(L);
-        }
-      }
+      lua_pushnumber(L, lua_tonumber(L, 2));
+    } else if (lua_isboolean(L, 2)) {
+      lua_pushboolean(L, lua_toboolean(L, 2));
     } else if (lua_isstring(L, 2)) {
-      if (!ros::param::has(name)) {  // return default
-        lua_pushstring(L, lua_tostring(L, 2));
-      } else {
-        ros::param::get(name, param_s);
-        lua_pushstring(L, param_s.c_str());
-      }
+      lua_pushstring(L, lua_tostring(L, 2));
+    } else {
+      ROS_WARN_STREAM("Couldn't load int/double/string value at param "
+                      << name);
+      lua_pushnil(L);
     }
   } else {                         // no default
     if (!ros::param::has(name)) {  // Push back a nil
@@ -195,6 +196,8 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
         lua_pushnumber(L, param_d);
       } else if (ros::param::get(name, param_s)) {
         lua_pushstring(L, param_s.c_str());
+      } else if (ros::param::get(name, param_b)) {
+        lua_pushstring(L, param_b ? "true" : "false");
       } else {
         ROS_WARN_STREAM("Couldn't load int/double/string value at param "
                         << name);

@@ -22,6 +22,8 @@ testEnv:
   env5: $eval env("INVALID")
   env6: $eval env("INVALID","444.4")
   env7: $eval env("INVALID","ZZZ")
+  env8: $eval param("INVALID", true)
+
 testParam:
   param1: $eval param("/string")
   param2: $eval param("/int")
@@ -30,3 +32,5 @@ testParam:
   param5: $eval param("/invalid")
   param6: $eval param("/invalid","222")+1
   param7: $eval param("/invalid","BBB").."C"
+  param8: $eval param("/invalid", true)
+  param9: $eval true
