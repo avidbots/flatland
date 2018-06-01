@@ -55,8 +55,6 @@
 namespace flatland_server {
 
 void YamlPreprocessor::Parse(YAML::Node &node) {
-  ROS_WARN_NAMED("YamlPreprocessor", "Parse called!");
-
   YamlPreprocessor::ProcessNodes(node);
 }
 
@@ -73,9 +71,7 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
       }
       break;
     case YAML::NodeType::Scalar:
-      ROS_INFO_STREAM("Scalar: " << node.as<std::string>());
       if (node.as<std::string>().compare(0, 5, "$eval") == 0) {
-        ROS_WARN_STREAM("Found $eval");
         ProcessScalarNode(node);
       }
       break;
@@ -89,8 +85,6 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   if (value.find("return ") == std::string::npos) {  // Has no return statement
     value = "return " + value;
   }
-
-  ROS_WARN_STREAM(value);
 
   // Create the Lua context
   lua_State *L = luaL_newstate();
@@ -107,9 +101,9 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   } else {
     int t = lua_type(L, 1);
     if (t == LUA_TNIL) {
-      ROS_ERROR_STREAM("NULL result");
+      node = "";
     } else {
-      ROS_ERROR_STREAM("result: " << lua_tostring(L, 1));
+      node = lua_tostring(L, 1);
     }
   }
 }
@@ -151,15 +145,13 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
     }
   } else {              // no default
     if (env == NULL) {  // Push back a nil
-      ROS_ERROR_STREAM("No environment variable for: " << name);
+      ROS_WARN_STREAM("No environment variable for: " << name);
       lua_pushnil(L);
     } else {
       try {  // Try to push a number
         double x = boost::lexical_cast<double>(env);
-        ROS_ERROR_STREAM("Assuming number for: " << name);
         lua_pushnumber(L, x);
       } catch (boost::bad_lexical_cast &) {  // Otherwise it's a string
-        ROS_ERROR_STREAM("Assuming string for: " << name);
         lua_pushstring(L, env);
       }
     }
@@ -170,35 +162,43 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
 
 int YamlPreprocessor::LuaGetParam(lua_State *L) {
   const char *name = lua_tostring(L, 1);
-  std::string param;
-  ros::param::param<std::string>(name, param, "default_value");
+  std::string param_s;
+  int param_i;
+  double param_d;
 
   if (lua_gettop(L) == 2) {  // default value was passed in
     if (lua_isnumber(L, 2)) {
       if (!ros::param::has(name)) {  // return default
         lua_pushnumber(L, lua_tonumber(L, 2));
       } else {
-        lua_pushnumber(L, std::atof(param.c_str()));
+        if (ros::param::get(name, param_d)) {
+          lua_pushnumber(L, param_d);
+        } else {
+          ROS_WARN_STREAM("Couldn't load int/double value at param " << name);
+          lua_pushnil(L);
+        }
       }
     } else if (lua_isstring(L, 2)) {
       if (!ros::param::has(name)) {  // return default
         lua_pushstring(L, lua_tostring(L, 2));
       } else {
-        lua_pushstring(L, param.c_str());
+        ros::param::get(name, param_s);
+        lua_pushstring(L, param_s.c_str());
       }
     }
   } else {                         // no default
     if (!ros::param::has(name)) {  // Push back a nil
-      ROS_ERROR_STREAM("No environment variable for: " << name);
+      ROS_WARN_STREAM("No rosparam found for: " << name);
       lua_pushnil(L);
     } else {
-      try {  // Try to push a number
-        double x = boost::lexical_cast<double>(param.c_str());
-        ROS_ERROR_STREAM("Assuming number for: " << name);
-        lua_pushnumber(L, x);
-      } catch (boost::bad_lexical_cast &) {  // Otherwise it's a string
-        ROS_ERROR_STREAM("Assuming string for: " << name);
-        lua_pushstring(L, param.c_str());
+      if (ros::param::get(name, param_d)) {
+        lua_pushnumber(L, param_d);
+      } else if (ros::param::get(name, param_s)) {
+        lua_pushstring(L, param_s.c_str());
+      } else {
+        ROS_WARN_STREAM("Couldn't load int/double/string value at param "
+                        << name);
+        lua_pushnil(L);
       }
     }
   }

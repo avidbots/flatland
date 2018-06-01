@@ -12,7 +12,8 @@ bom: |
   $eval
   [[Some
   multiline
-  string]]
+  string
+  ]]
 testEnv:
   env1: $eval env("VALIDSTRING")
   env2: $eval env("VALIDNUMBER")
@@ -23,9 +24,9 @@ testEnv:
   env7: $eval env("INVALID","ZZZ")
 testParam:
   param1: $eval param("/string")
-  param2: $eval param("/number")
+  param2: $eval param("/int")
   param3: $eval param("/string","AAA")
-  param4: $eval param("/number","111")
+  param4: $eval param("/float","111")
   param5: $eval param("/invalid")
   param6: $eval param("/invalid","222")+1
   param7: $eval param("/invalid","BBB").."C"
