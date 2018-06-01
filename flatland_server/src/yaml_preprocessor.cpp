@@ -49,13 +49,13 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <cstring>
 #include <cstdlib>
- 
+#include <cstring>
+
 namespace flatland_server {
 
 void YamlPreprocessor::Parse(YAML::Node &node) {
-  ROS_WARN_NAMED("YamlPreprocessor","Parse called!");
+  ROS_WARN_NAMED("YamlPreprocessor", "Parse called!");
 
   YamlPreprocessor::ProcessNodes(node);
 }
@@ -63,12 +63,12 @@ void YamlPreprocessor::Parse(YAML::Node &node) {
 void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
   switch (node.Type()) {
     case YAML::NodeType::Sequence:
-      for (YAML::Node child : node){
+      for (YAML::Node child : node) {
         YamlPreprocessor::ProcessNodes(child);
       }
       break;
     case YAML::NodeType::Map:
-      for(YAML::iterator it=node.begin();it!=node.end();++it) {
+      for (YAML::iterator it = node.begin(); it != node.end(); ++it) {
         YamlPreprocessor::ProcessNodes(it->second);
       }
       break;
@@ -83,10 +83,9 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
 }
 
 void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
-  std::string value = node.as<std::string>().substr(5);  //omit the $parse
-  boost::algorithm::trim(value); //trim whitespace
+  std::string value = node.as<std::string>().substr(5);  // omit the $parse
+  boost::algorithm::trim(value);                         // trim whitespace
 
-  
   if (value.find("return ") == std::string::npos) {  // Has no return statement
     value = "return " + value;
   }
@@ -104,15 +103,14 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   int error = luaL_dostring(L, value.c_str());
   if (error) {
     ROS_ERROR_STREAM(lua_tostring(L, -1));
-    lua_pop(L, 1);  /* pop error message from the stack */
+    lua_pop(L, 1); /* pop error message from the stack */
   } else {
     int t = lua_type(L, 1);
-    if ( t == LUA_TNIL ) {
+    if (t == LUA_TNIL) {
       ROS_ERROR_STREAM("NULL result");
     } else {
       ROS_ERROR_STREAM("result: " << lua_tostring(L, 1));
     }
-    
   }
 }
 
@@ -135,7 +133,7 @@ YAML::Node YamlPreprocessor::LoadParse(const std::string &path) {
 
 int YamlPreprocessor::LuaGetEnv(lua_State *L) {
   const char *name = lua_tostring(L, 1);
-  const char* env = std::getenv(name);
+  const char *env = std::getenv(name);
 
   if (lua_gettop(L) == 2) {  // default passed in
     if (lua_isnumber(L, 2)) {
@@ -151,18 +149,18 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
         lua_pushstring(L, env);
       }
     }
-  } else {  // no default
+  } else {              // no default
     if (env == NULL) {  // Push back a nil
       ROS_ERROR_STREAM("No environment variable for: " << name);
-      lua_pushnil(L); 
+      lua_pushnil(L);
     } else {
       try {  // Try to push a number
         double x = boost::lexical_cast<double>(env);
         ROS_ERROR_STREAM("Assuming number for: " << name);
         lua_pushnumber(L, x);
-      } catch(boost::bad_lexical_cast&) {  // Otherwise it's a string
+      } catch (boost::bad_lexical_cast &) {  // Otherwise it's a string
         ROS_ERROR_STREAM("Assuming string for: " << name);
-        lua_pushstring(L,env);
+        lua_pushstring(L, env);
       }
     }
   }
@@ -189,16 +187,16 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
         lua_pushstring(L, param.c_str());
       }
     }
-  } else {  // no default
+  } else {                         // no default
     if (!ros::param::has(name)) {  // Push back a nil
       ROS_ERROR_STREAM("No environment variable for: " << name);
-      lua_pushnil(L); 
+      lua_pushnil(L);
     } else {
       try {  // Try to push a number
         double x = boost::lexical_cast<double>(param.c_str());
         ROS_ERROR_STREAM("Assuming number for: " << name);
         lua_pushnumber(L, x);
-      } catch(boost::bad_lexical_cast&) {  // Otherwise it's a string
+      } catch (boost::bad_lexical_cast &) {  // Otherwise it's a string
         ROS_ERROR_STREAM("Assuming string for: " << name);
         lua_pushstring(L, param.c_str());
       }
@@ -207,5 +205,4 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
 
   return 1;  // 1 return value
 }
-
 }

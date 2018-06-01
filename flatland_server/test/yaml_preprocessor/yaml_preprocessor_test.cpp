@@ -54,10 +54,10 @@ using namespace flatland_server;
 
 // Test the bodyToMarkers method on a polygon shape
 TEST(YamlPreprocTest, testEvalStrings) {
-
   boost::filesystem::path cwd = fs::path(__FILE__).parent_path();
-  
-  YAML::Node in = YamlPreprocessor::LoadParse((cwd / fs::path("/yaml/eval.strings.yaml")).string());
+
+  YAML::Node in = YamlPreprocessor::LoadParse(
+      (cwd / fs::path("/yaml/eval.strings.yaml")).string());
 
   // check that marker was created
   ASSERT_EQ(1, 1);
