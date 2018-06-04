@@ -64,10 +64,10 @@ PluginManager::PluginManager() {
 }
 
 PluginManager::~PluginManager() {
-  for (int i = 0; i < model_plugins_.size(); i++) {
+  for (unsigned int i = 0; i < model_plugins_.size(); i++) {
     model_plugins_[i].reset();  // deletes a shared pointer
   }
-  for (int j = 0; j < world_plugins_.size(); j++) {
+  for (unsigned int j = 0; j < world_plugins_.size(); j++) {
     world_plugins_[j].reset();  // deletes a shared pointer
   }
 

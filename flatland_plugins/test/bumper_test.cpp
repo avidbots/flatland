@@ -149,7 +149,7 @@ class BumperPluginTest : public ::testing::Test {
       return false;
     }
 
-    for (int i = 0; i < return_size; i++) {
+    for (unsigned int i = 0; i < return_size; i++) {
       std::string idx = "[" + std::to_string(i) + "]";
 
       if (collision.magnitude_forces[i] <= 0) {
@@ -171,7 +171,7 @@ class BumperPluginTest : public ::testing::Test {
 
   void SpinRos(float hz, int iterations) {
     ros::WallRate rate(hz);
-    for (int i = 0; i < iterations; i++) {
+    for (unsigned int i = 0; i < iterations; i++) {
       ros::spinOnce();
       rate.sleep();
     }
@@ -202,7 +202,7 @@ TEST_F(BumperPluginTest, collision_test) {
   Body* b1 = p->GetModel()->bodies_[1];
 
   // check that there are no collision at the begining
-  for (int i = 0; i < 100; i++) {
+  for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
   }
@@ -214,7 +214,7 @@ TEST_F(BumperPluginTest, collision_test) {
 
   // step 15 time which makes the body move 1.5 meters, will make base_link_1
   // collide, but not base_link_2, not that base_link_1's fixture is a sensor
-  for (int i = 0; i < 150; i++) {
+  for (unsigned int i = 0; i < 150; i++) {
     // Box2D needs velocity to be set every time step to ensure things are
     // moving at the desired velocity
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
@@ -229,7 +229,7 @@ TEST_F(BumperPluginTest, collision_test) {
   EXPECT_TRUE(CollisionsEq(msg2, "world", 0));
 
   // step another 5 times which moves 0.5 meters colliding base_link_2 as well
-  for (int i = 0; i < 50; i++) {
+  for (unsigned int i = 0; i < 50; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
     w->Update(timekeeper);
     ros::spinOnce();
@@ -245,7 +245,7 @@ TEST_F(BumperPluginTest, collision_test) {
                           "layer_1", "layer_1", 1, {1, 0}));
 
   // Now move backward far away from the wall, there collisions should clear
-  for (int i = 0; i < 300; i++) {
+  for (unsigned int i = 0; i < 300; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0.0));
     w->Update(timekeeper);
     ros::spinOnce();
@@ -260,7 +260,7 @@ TEST_F(BumperPluginTest, collision_test) {
   b0->physics_body_->SetTransform(b2Vec2(4, 0), 0);
   b1->physics_body_->SetTransform(b2Vec2(4, 0), 0);
 
-  for (int i = 0; i < 300; i++) {
+  for (unsigned int i = 0; i < 300; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0.0));
     w->Update(timekeeper);
     ros::spinOnce();

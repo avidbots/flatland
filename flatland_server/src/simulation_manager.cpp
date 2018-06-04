@@ -63,9 +63,9 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
     : world_(nullptr),
       update_rate_(update_rate),
       step_size_(step_size),
-      world_yaml_file_(world_yaml_file),
       show_viz_(show_viz),
-      viz_pub_rate_(viz_pub_rate) {
+      viz_pub_rate_(viz_pub_rate),
+      world_yaml_file_(world_yaml_file) {
   ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",

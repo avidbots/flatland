@@ -185,7 +185,7 @@ TEST_F(LaserPluginTest, range_test) {
 
   // let it spin for 10 times to make sure the message gets through
   ros::WallRate rate(500);
-  for (int i = 0; i < 10; i++) {
+  for (unsigned int i = 0; i < 10; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
     rate.sleep();
@@ -232,7 +232,7 @@ TEST_F(LaserPluginTest, intensity_test) {
 
   // let it spin for 10 times to make sure the message gets through
   ros::WallRate rate(500);
-  for (int i = 0; i < 10; i++) {
+  for (unsigned int i = 0; i < 10; i++) {
     w->Update(timekeeper);
     ros::spinOnce();
     rate.sleep();

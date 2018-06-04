@@ -88,7 +88,7 @@ World::~World() {
   // The bodies of models are not set to null like layers because there aren't
   // nearly as many fixtures, and we might hide some memory problems by using
   // the shortcut
-  for (int i = 0; i < models_.size(); i++) {
+  for (unsigned int i = 0; i < models_.size(); i++) {
     delete models_[i];
   }
 
@@ -292,7 +292,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
 void World::DeleteModel(const std::string &name) {
   bool found = false;
 
-  for (int i = 0; i < models_.size(); i++) {
+  for (unsigned int i = 0; i < models_.size(); i++) {
     // name is unique, so there will only be one object with this name
     if (models_[i]->GetName() == name) {
       // delete the plugins associated with the model
@@ -315,7 +315,7 @@ void World::MoveModel(const std::string &name, const Pose &pose) {
   // Find desired model
   bool found = false;
 
-  for (int i = 0; i < models_.size(); i++) {
+  for (unsigned int i = 0; i < models_.size(); i++) {
     if (models_[i]->GetName() == name) {
       // move the model
       models_[i]->SetPose(pose);

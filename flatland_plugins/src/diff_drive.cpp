@@ -129,7 +129,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   odom_msg_ = ground_truth_msg_;
 
   // copy from std::array to boost array
-  for (int i = 0; i < 36; i++) {
+  for (unsigned int i = 0; i < 36; i++) {
     odom_msg_.twist.covariance[i] = odom_twist_covar[i];
     odom_msg_.pose.covariance[i] = odom_pose_covar[i];
   }
@@ -137,13 +137,13 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   // init the random number generators
   std::random_device rd;
   rng_ = std::default_random_engine(rd());
-  for (int i = 0; i < 3; i++) {
+  for (unsigned int i = 0; i < 3; i++) {
     // variance is standard deviation squared
     noise_gen_[i] =
         std::normal_distribution<double>(0.0, sqrt(odom_pose_noise[i]));
   }
 
-  for (int i = 0; i < 3; i++) {
+  for (unsigned int i = 0; i < 3; i++) {
     noise_gen_[i + 3] =
         std::normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }

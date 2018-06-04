@@ -50,7 +50,7 @@
 namespace flatland_server {
 
 Timekeeper::Timekeeper()
-    : clock_topic_("/clock"), time_(ros::Time(0, 0)), max_step_size_(0) {
+    : time_(ros::Time(0, 0)), max_step_size_(0), clock_topic_("/clock") {
   clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
 }
 

@@ -77,12 +77,12 @@ class World : public b2ContactListener {
   std::vector<Model *> models_;   ///< list of models
   CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
   PluginManager plugin_manager_;  ///< for loading and updating plugins
+  bool service_paused_;  ///< indicates if simulation is paused by a service
+                         /// call or not
   InteractiveMarkerManager
       int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
-  bool service_paused_;  ///< indicates if simulation is paused by a service
-                         /// call or not
 
   /**
    * @brief Constructor for the world class. All data required for
