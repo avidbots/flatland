@@ -187,7 +187,6 @@ void TricycleDrive::ComputeJoints() {
 
     b2Vec2 wheel_anchor;  ///< wheel anchor point, must be (0,0)
     b2Vec2 body_anchor;   ///< body anchor point
-    Body* wheel_body;
     bool inv = false;
 
     // ensure one of the body is the main body for the odometry

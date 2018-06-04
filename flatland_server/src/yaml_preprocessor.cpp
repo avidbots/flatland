@@ -178,7 +178,6 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
 int YamlPreprocessor::LuaGetParam(lua_State *L) {
   const char *name = lua_tostring(L, 1);
   std::string param_s;
-  int param_i;
   double param_d;
   bool param_b;
 
