@@ -79,13 +79,13 @@ class YamlPreprocessor {
   static YAML::Node LoadParse(const std::string &path);
 
   /**
-   * @brief Find and run any eval nodes ($evalString etc.)
+   * @brief Find and run any $eval nodes
    * @param[in/out] node A Yaml node to recursively parse
    */
   static void ProcessNodes(YAML::Node &node);
 
   /**
-   * @brief Find and run any eval expressions ($evalString etc.)
+   * @brief Find and run any $eval expressions
    * @param[in/out] node A Yaml string node to parse
    */
   static void ProcessScalarNode(YAML::Node &node);
