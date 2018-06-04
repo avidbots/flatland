@@ -67,8 +67,8 @@ class Layer : public Entity {
   std::vector<std::string> names_;  ///< list of layer names
 
   Body *body_ = nullptr;
-  CollisionFilterRegistry *cfr_;    ///< collision filter registry
-  std::string viz_name_;            ///< for visualization
+  CollisionFilterRegistry *cfr_;  ///< collision filter registry
+  std::string viz_name_;          ///< for visualization
 
   /**
    * @brief Constructor for the Layer class for initialization using a image

@@ -84,7 +84,6 @@ class World : public b2ContactListener {
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
 
-
   /**
    * @brief Constructor for the world class. All data required for
    * initialization should be passed in here

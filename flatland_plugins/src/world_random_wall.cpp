@@ -64,7 +64,8 @@ void RandomWall::OnInitialize(const YAML::Node &config) {
   // read in the plugin config
   YamlReader plugin_reader(config);
   std::string layer_name = plugin_reader.Get<std::string>("layer", "");
-  unsigned int num_of_walls = plugin_reader.Get<unsigned int>("num_of_walls", 0);
+  unsigned int num_of_walls =
+      plugin_reader.Get<unsigned int>("num_of_walls", 0);
   double wall_wall_dist = plugin_reader.Get<double>("wall_wall_dist", 1);
   bool double_wall = plugin_reader.Get<bool>("double_wall", false);
   std::string robot_name = plugin_reader.Get<std::string>("robot_name", "");
