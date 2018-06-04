@@ -18,7 +18,8 @@ bindings for env and param
 
 Additional lua function bindings (beyond the normal standard libraries such as string, math, etc.):
 
-.. highlight:: lua
+.. code-block:: lua
+
   env(EnvName)  -- blank string + warning if not found
   env(EnvName, Default)
   param(ParamPath)  -- blank string + warning if not found
@@ -27,7 +28,8 @@ Additional lua function bindings (beyond the normal standard libraries such as s
 Sample expressions
 ------------------------------
 
-.. highlight:: yaml
+.. code-block:: yaml
+
   foo: $eval "Some arbitrary LUA expression"
   bar: |  # Multiline string
     $eval  -- $eval flag required to trigger LUA parsing
@@ -42,31 +44,36 @@ Lua expressions can explicitly `return` their value, but if no `return` is given
 env + param examples
 -----------------------------
 
-.. highlight:: yaml
+.. code-block:: yaml
+
   # in: (SOME_ENV not set)
   foo: $eval env("SOME_ENV")
   # out:
   foo: ""
 
-.. highlight:: yaml
+.. code-block:: yaml
+
   # in: (SOME_ENV not set)
   foo: $eval env("SOME_ENV", false)
   # out:
   foo: false
 
-.. highlight:: yaml
+.. code-block:: yaml
+
   # in: (export SOME_ENV=true)
   foo: $eval env("SOME_ENV")
   # out:
   foo: true
 
-.. highlight:: yaml
+.. code-block:: yaml
+
   # in: (rosparam /test/param not set)
   foo: $eval param("/test/param", 0)/2.0
   # out:
   foo: 0
 
-.. highlight:: yaml
+.. code-block:: yaml
+
   # in: (rosparam /test/param set to 5.0)
   foo: $eval param("/test/param", 0)/2.0 + 1
   # out:
