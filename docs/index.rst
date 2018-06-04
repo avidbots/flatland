@@ -36,6 +36,7 @@ Class APIs are documented `here <http://flatland-simulator-api.readthedocs.io/>`
    core_functions/world
    core_functions/layers
    core_functions/models
+   core_functions/yaml_preprocessor
    core_functions/ros_services
    core_functions/model_plugins
    core_functions/joystick
