@@ -75,6 +75,10 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
         ProcessScalarNode(node);
       }
       break;
+    case default:
+      ROS_WARN_STREAM(
+          "Yaml Preprocessor found an unexpected type: " << node.Type());
+      break;
   }
 }
 
@@ -83,20 +87,19 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   boost::algorithm::trim(value);                         // trim whitespace
   ROS_INFO_STREAM("Attempting to parse lua " << value);
 
-  try {
-    if (value.find("return ") ==
-        std::string::npos) {  // Has no return statement
-      value = "return " + value;
-    }
+  if (value.find("return ") == std::string::npos) {  // Has no return statement
+    value = "return " + value;
+  }
 
-    // Create the Lua context
-    lua_State *L = luaL_newstate();
-    luaL_openlibs(L);
-    lua_pushcfunction(L, YamlPreprocessor::LuaGetEnv);
-    lua_setglobal(L, "env");
-    lua_pushcfunction(L, YamlPreprocessor::LuaGetParam);
-    lua_setglobal(L, "param");
+  // Create the Lua context
+  lua_State *L = luaL_newstate();
+  luaL_openlibs(L);
+  lua_pushcfunction(L, YamlPreprocessor::LuaGetEnv);
+  lua_setglobal(L, "env");
+  lua_pushcfunction(L, YamlPreprocessor::LuaGetParam);
+  lua_setglobal(L, "param");
 
+  try { /* Attempt to run the Lua string and parse its results */
     int error = luaL_dostring(L, value.c_str());
     if (error) {
       ROS_ERROR_STREAM(lua_tostring(L, -1));
@@ -119,7 +122,8 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
         ROS_ERROR_STREAM("No lua output for " << value);
       }
     }
-  } catch (...) {
+  } catch (
+      ...) { /* Something went wrong parsing the lua, or gettings its results */
     ROS_ERROR_STREAM("Lua error in: " << value);
   }
 }

@@ -107,16 +107,11 @@ void Model::LoadBodies(YamlReader &bodies_reader) {
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
       YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
       if (!body_reader.Get<bool>("enabled", "true")) {
-        ROS_WARN_STREAM("Body "
+        ROS_INFO_STREAM("Body "
                         << Q(name_) << "."
                         << body_reader.Get<std::string>("name", "unnamed")
                         << " disabled");
         continue;
-      } else {
-        ROS_WARN_STREAM("Body "
-                        << Q(name_) << "."
-                        << body_reader.Get<std::string>("name", "unnamed")
-                        << " enabled");
       }
       ModelBody *b =
           ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
@@ -138,16 +133,11 @@ void Model::LoadJoints(YamlReader &joints_reader) {
     for (int i = 0; i < joints_reader.NodeSize(); i++) {
       YamlReader joint_reader = joints_reader.Subnode(i, YamlReader::MAP);
       if (!joint_reader.Get<bool>("enabled", "true")) {
-        ROS_WARN_STREAM("Joint "
+        ROS_INFO_STREAM("Joint "
                         << Q(name_) << "."
                         << joint_reader.Get<std::string>("name", "unnamed")
                         << " disabled");
         continue;
-      } else {
-        ROS_WARN_STREAM("Joint "
-                        << Q(name_) << "."
-                        << joint_reader.Get<std::string>("name", "unnamed")
-                        << " enabled");
       }
       Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);

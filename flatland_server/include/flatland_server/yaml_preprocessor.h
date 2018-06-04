@@ -61,46 +61,45 @@ namespace flatland_server {
 
 /**
  */
-class YamlPreprocessor {
- public:
-  /**
-   * @brief Preprocess with a given node
-   * @param[in/out] node A Yaml node to parse
-   * @return The parsed YAML::Node
-   */
-  static void Parse(YAML::Node &node);
+namespace YamlPreprocessor {
+/**
+ * @brief Preprocess with a given node
+ * @param[in/out] node A Yaml node to parse
+ * @return The parsed YAML::Node
+ */
+void Parse(YAML::Node &node);
 
-  /**
-   * @brief Constructor with a given path to a yaml file, throws exception on
-   * failure
-   * @param[in] path Path to the yaml file
-   * @return The parsed YAML::Node
-   */
-  static YAML::Node LoadParse(const std::string &path);
+/**
+ * @brief Constructor with a given path to a yaml file, throws exception on
+ * failure
+ * @param[in] path Path to the yaml file
+ * @return The parsed YAML::Node
+ */
+YAML::Node LoadParse(const std::string &path);
 
-  /**
-   * @brief Find and run any eval nodes ($evalString etc.)
-   * @param[in/out] node A Yaml node to recursively parse
-   */
-  static void ProcessNodes(YAML::Node &node);
+/**
+ * @brief Find and run any eval nodes ($evalString etc.)
+ * @param[in/out] node A Yaml node to recursively parse
+ */
+void ProcessNodes(YAML::Node &node);
 
-  /**
-   * @brief Find and run any eval expressions ($evalString etc.)
-   * @param[in/out] node A Yaml string node to parse
-   */
-  static void ProcessScalarNode(YAML::Node &node);
+/**
+ * @brief Find and run any eval expressions ($evalString etc.)
+ * @param[in/out] node A Yaml string node to parse
+ */
+void ProcessScalarNode(YAML::Node &node);
 
-  /**
-    * @brief Get an environment variable with an optional default value
-    * @param[in/out] lua_State The lua state/stack to read/write to/from
-    */
-  static int LuaGetEnv(lua_State *L);
+/**
+  * @brief Get an environment variable with an optional default value
+  * @param[in/out] lua_State The lua state/stack to read/write to/from
+  */
+int LuaGetEnv(lua_State *L);
 
-  /**
-    * @brief Get a rosparam with an optional default value
-    * @param[in/out] lua_State The lua state/stack to read/write to/from
-    */
-  static int LuaGetParam(lua_State *L);
+/**
+  * @brief Get a rosparam with an optional default value
+  * @param[in/out] lua_State The lua state/stack to read/write to/from
+  */
+int LuaGetParam(lua_State *L);
 };
 }
 

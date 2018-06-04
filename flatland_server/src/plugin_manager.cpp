@@ -123,11 +123,6 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
                       << plugin_reader.Get<std::string>("name", "unnamed")
                       << " disabled");
       return;
-    } else {
-      ROS_WARN_STREAM("Body "
-                      << Q(model->name_) << "."
-                      << plugin_reader.Get<std::string>("name", "unnamed")
-                      << " enabled");
     }
   } catch (...) {
     ROS_WARN_STREAM("Body " << Q(model->name_) << "."
