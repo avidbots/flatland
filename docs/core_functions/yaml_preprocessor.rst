@@ -20,9 +20,13 @@ Additional lua function bindings (beyond the normal standard libraries such as s
 
 .. code-block:: lua
 
-  env(EnvName)  -- blank string + warning if not found
+  -- returns an environment variable, blank string + warning if not found
+  env(EnvName)
+  -- returns an environment variable, Default if not found
   env(EnvName, Default)
+  -- returns a rosparam, blank string + warning if not found
   param(ParamPath)  -- blank string + warning if not found
+  -- returns a rosparam, Default if not found
   param(ParamPath, Default)
 
 Sample expressions
