@@ -190,7 +190,7 @@ void Layer::ReadLineSegmentsFile(const std::string &file_path,
     std::stringstream ss(line);
     float n[4];
 
-    for (int i = 0; i < 4; i++) {
+    for (unsigned int i = 0; i < 4; i++) {
       ss >> n[i];
 
       if (ss.fail()) {
@@ -250,7 +250,7 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
     bool started = false;
 
     // find all the walls, put the connected walls as a single line segment
-    for (int j = 0; j <= diff.total(); j++) {
+    for (unsigned int j = 0; j <= diff.total(); j++) {
       bool edge_exists = false;
       if (j < diff.total()) {
         edge_exists = diff.at<uint8_t>(0, j);  // 255 maps to true
@@ -282,7 +282,7 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
     int start = 0;
     bool started = false;
 
-    for (int j = 0; j <= diff.total(); j++) {
+    for (unsigned int j = 0; j <= diff.total(); j++) {
       bool edge_exists = false;
       if (j < diff.total()) {
         edge_exists = diff.at<uint8_t>(j, 0);
@@ -301,7 +301,7 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 }
 
 void Layer::DebugVisualize() const {
-  // Don't try to visualized uninitalized layers
+// Don't try to visualized uninitalized layers
   if (viz_name_.length() == 0) {
     return;
   }

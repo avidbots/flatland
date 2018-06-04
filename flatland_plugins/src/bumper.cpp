@@ -82,7 +82,7 @@ void Bumper::OnInitialize(const YAML::Node &config) {
 
   reader.EnsureAccessedAllKeys();
 
-  for (int i = 0; i < excluded_body_names.size(); i++) {
+  for (unsigned int i = 0; i < excluded_body_names.size(); i++) {
     Body *body = GetModel()->GetBody(excluded_body_names[i]);
 
     if (body == nullptr) {
@@ -200,7 +200,7 @@ void Bumper::BeginContact(b2Contact *contact) {
     bool ignore = false;
 
     // check that the body is not in the ignore list
-    for (int j = 0; j < excluded_bodies_.size(); j++) {
+    for (unsigned int j = 0; j < excluded_bodies_.size(); j++) {
       if (excluded_bodies_[j] == collision_body) {
         ignore = true;
         break;

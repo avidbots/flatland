@@ -144,7 +144,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
 void InteractiveMarkerManager::deleteModelMenuCallback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
   // Delete the model just as when the DeleteModel service is called
-  for (int i = 0; i < (*models_).size(); i++) {
+  for (unsigned int i = 0; i < (*models_).size(); i++) {
     if ((*models_)[i]->GetName() == feedback->marker_name) {
       // delete the plugins associated with the model
       plugin_manager_->DeleteModelPlugin((*models_)[i]);
@@ -174,7 +174,7 @@ void InteractiveMarkerManager::processMouseUpFeedback(
     const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
   // Update model that was manipulated the same way
   // as when the MoveModel service is called
-  for (int i = 0; i < models_->size(); i++) {
+  for (unsigned int i = 0; i < models_->size(); i++) {
     if ((*models_)[i]->GetName() == feedback->marker_name) {
       Pose new_pose;
       new_pose.x = feedback->pose.position.x;

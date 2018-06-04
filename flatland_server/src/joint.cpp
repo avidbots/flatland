@@ -91,7 +91,7 @@ Joint *Joint::MakeJoint(b2World *physics_world, Model *model,
 
   Vec2 anchors[2];
   ModelBody *bodies[2];
-  for (int i = 0; i < 2; i++) {
+  for (unsigned int i = 0; i < 2; i++) {
     YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
     std::string body_name = body_reader.Get<std::string>("name");
     anchors[i] = body_reader.GetVec2("anchor");

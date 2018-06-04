@@ -105,7 +105,7 @@ class LoadWorldTest : public ::testing::Test {
   // return the id if found, -1 otherwise
   int does_edge_exist(const b2EdgeShape &edge,
                       const std::vector<std::pair<b2Vec2, b2Vec2>> &edges) {
-    for (int i = 0; i < edges.size(); i++) {
+    for (unsigned int i = 0; i < edges.size(); i++) {
       auto e = edges[i];
       if ((float_cmp(edge.m_vertex1.x, e.first.x) &&
            float_cmp(edge.m_vertex1.y, e.first.y) &&
@@ -129,7 +129,7 @@ class LoadWorldTest : public ::testing::Test {
       const std::vector<b2EdgeShape> &edges1,
       const std::vector<std::pair<b2Vec2, b2Vec2>> &edges2) {
     std::vector<std::pair<b2Vec2, b2Vec2>> edges_cpy = edges2;
-    for (int i = 0; i < edges1.size(); i++) {
+    for (unsigned int i = 0; i < edges1.size(); i++) {
       auto e = edges1[i];
       int ret_idx = does_edge_exist(e, edges_cpy);
 
@@ -266,7 +266,7 @@ class LoadWorldTest : public ::testing::Test {
 
     auto pts = points;
 
-    for (int i = 0; i < cnt; i++) {
+    for (unsigned int i = 0; i < cnt; i++) {
       const b2Vec2 p = s->m_vertices[i];
 
       bool found_match = false;

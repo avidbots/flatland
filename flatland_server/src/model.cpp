@@ -59,11 +59,11 @@ Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
       viz_name_("model/" + name_) {}
 
 Model::~Model() {
-  for (int i = 0; i < joints_.size(); i++) {
+  for (unsigned int i = 0; i < joints_.size(); i++) {
     delete joints_[i];
   }
 
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     delete bodies_[i];
   }
 
@@ -154,7 +154,7 @@ void Model::LoadJoints(YamlReader &joints_reader) {
 }
 
 ModelBody *Model::GetBody(const std::string &name) {
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     if (bodies_[i]->name_ == name) {
       return bodies_[i];
     }
@@ -163,7 +163,7 @@ ModelBody *Model::GetBody(const std::string &name) {
 }
 
 Joint *Model::GetJoint(const std::string &name) {
-  for (int i = 0; i < joints_.size(); i++) {
+  for (unsigned int i = 0; i < joints_.size(); i++) {
     if (joints_[i]->name_ == name) {
       return joints_[i];
     }
@@ -217,7 +217,7 @@ void Model::SetPose(const Pose &pose) {
                                 bodies_[0]->physics_body_->GetAngle());
 
   // Inverse transform all bodies by this to reset their poses
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::InverseTransform(bodies_[i]->physics_body_->GetPosition(),
                                    root_body_transform),
@@ -243,7 +243,7 @@ void Model::TransformAll(const Pose &pose_delta) {
   RotateTranslate tf =
       Geometry::CreateTransform(pose_delta.x, pose_delta.y, pose_delta.theta);
 
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
         bodies_[i]->physics_body_->GetAngle() + pose_delta.theta);
