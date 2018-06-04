@@ -116,16 +116,24 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
                         " already exists");
   }
 
-  if (!plugin_reader.Get<bool>("enabled", "true")) {
-    ROS_WARN_STREAM("Plugin "
-                    << Q(model->name_) << "."
-                    << plugin_reader.Get<std::string>("name", "unnamed")
-                    << " disabled");
-    return;
-  } else {
+  try {
+    if (!plugin_reader.Get<bool>("enabled", "true")) {
+      ROS_WARN_STREAM("Plugin "
+                      << Q(model->name_) << "."
+                      << plugin_reader.Get<std::string>("name", "unnamed")
+                      << " disabled");
+      return;
+    } else {
+      ROS_WARN_STREAM("Body "
+                      << Q(model->name_) << "."
+                      << plugin_reader.Get<std::string>("name", "unnamed")
+                      << " enabled");
+    }
+  } catch (...) {
     ROS_WARN_STREAM("Body " << Q(model->name_) << "."
                             << plugin_reader.Get<std::string>("name", "unnamed")
-                            << " enabled");
+                            << " enabled because flag failed to parse: "
+                            << plugin_reader.Get<std::string>("enabled"));
   }
 
   // remove the name and type of the YAML Node, the plugin does not need to know

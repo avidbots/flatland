@@ -22,7 +22,7 @@ testEnv:
   env5: $eval env("INVALID")
   env6: $eval env("INVALID","444.4")
   env7: $eval env("INVALID","ZZZ")
-  env8: $eval param("INVALID", true)
+  env8: $eval env("INVALID", true)
 
 testParam:
   param1: $eval param("/string")

@@ -81,6 +81,7 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
 void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   std::string value = node.as<std::string>().substr(5);  // omit the $parse
   boost::algorithm::trim(value);                         // trim whitespace
+  ROS_INFO_STREAM("Attempting to parse lua " << value);
 
   try {
     if (value.find("return ") ==
@@ -110,10 +111,12 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
                         << value << " as bool "
                         << (lua_toboolean(L, 1) ? "true" : "false"));
         node = lua_toboolean(L, 1) ? "true" : "false";
-      } else {
+      } else if (t == LUA_TSTRING || t == LUA_TNUMBER) {
         ROS_INFO_STREAM("Preprocessor parsed " << value << " as "
                                                << lua_tostring(L, 1));
         node = lua_tostring(L, 1);
+      } else {
+        ROS_ERROR_STREAM("No lua output for " << value);
       }
     }
   } catch (...) {
