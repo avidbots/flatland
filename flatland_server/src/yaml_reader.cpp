@@ -44,6 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_server/yaml_preprocessor.h>
 #include <flatland_server/yaml_reader.h>
 #include <boost/filesystem/path.hpp>
 
@@ -54,12 +55,14 @@ YamlReader::YamlReader() : node_(YAML::Node()) {
 }
 
 YamlReader::YamlReader(const YAML::Node &node) : node_(node) {
+  YamlPreprocessor::Parse(node_);
   SetErrorInfo("_NONE_", "_NONE_");
 }
 
 YamlReader::YamlReader(const std::string &path) {
   try {
     node_ = YAML::LoadFile(path);
+    YamlPreprocessor::Parse(node_);
   } catch (const YAML::BadFile &e) {
     throw YAMLException("File does not exist, path=" + Q(path));
 

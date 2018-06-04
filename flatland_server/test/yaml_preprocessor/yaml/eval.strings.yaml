@@ -1,0 +1,36 @@
+foo: $eval return "Hello World"
+bar: $eval return string.gsub("Hello banana", "banana", "World")
+baz: $eval string.gsub("Hello banana", "banana", "World")
+bash: $eval 1234
+boop:
+  bal: $eval 12.34
+foop:
+ - A
+ - $eval "B"
+ - C
+bom: |
+  $eval
+  [[Some
+  multiline
+  string
+  ]]
+testEnv:
+  env1: $eval env("VALIDSTRING")
+  env2: $eval env("VALIDNUMBER")
+  env3: $eval env("VALIDSTRING","YYY")
+  env4: $eval env("VALIDNUMBER","333.3")
+  env5: $eval env("INVALID")
+  env6: $eval env("INVALID","444.4")
+  env7: $eval env("INVALID","ZZZ")
+  env8: $eval env("INVALID", true)
+
+testParam:
+  param1: $eval param("/string")
+  param2: $eval param("/int")
+  param3: $eval param("/string","AAA")
+  param4: $eval param("/float","111")
+  param5: $eval param("/invalid")
+  param6: $eval param("/invalid","222")+1
+  param7: $eval param("/invalid","BBB").."C"
+  param8: $eval param("/invalid", true)
+  param9: $eval true

@@ -26,6 +26,7 @@
   <depend>visualization_msgs</depend>
   <depend>interactive_markers</depend>
   <depend>flatland_msgs</depend>
+  <depend>lua-dev</depend>
 
   <export>
     <flatland_server plugin="${prefix}/flatland_plugins.xml" />

@@ -1,0 +1,33 @@
+foo: Hello World
+bar: Hello World
+baz: Hello World
+bash: 1234
+boop:
+  bal: 12.34
+foop:
+ - A
+ - B
+ - C
+bom: |
+  Some
+  multiline
+  string
+testEnv:
+  env1: Bar
+  env2: 123.4
+  env3: Bar
+  env4: 123.4
+  env5: ""
+  env6: 444.4
+  env7: ZZZ
+  env8: true
+testParam:
+  param1: Foo
+  param2: 7
+  param3: Foo
+  param4: 10.5
+  param5: ""
+  param6: 223
+  param7: BBBC
+  param8: true
+  param9: true

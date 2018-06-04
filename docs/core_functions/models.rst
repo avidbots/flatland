@@ -17,6 +17,9 @@ shown here. Examples can be found in flatland_server/tests.
       # required, name of the body, must be unique within the model
     - name: base_link
 
+      # optional, default true. If false (see yaml preprocessor for details), this body is skipped
+      enabled: true
+
       # optional, defaults to [0, 0, 0], in the form of [x, y, theta] w.r.t the
       # model pose specified in world yaml. Pose is simply the initial pose
       # of the body, it does not add additional constrains in any way
@@ -115,6 +118,9 @@ shown here. Examples can be found in flatland_server/tests.
       # joint types
       name: rear_wheel_revolute
 
+      # optional, default true. If false (see yaml preprocessor for details), this joint is skipped
+      enabled: true
+
       # optional, default to false, specifies whether two bodies connected a
       # this joint should collide with each other, applies to all joint types
       collide_connected: false
@@ -185,6 +191,9 @@ shown here. Examples can be found in flatland_server/tests.
       # required, type of the plugin to load. Note the plugin must be configured
       # property to be discovered. See the Writing Model Plugins page
     - type: Laser
+
+      # optional, default true. If false (see yaml preprocessor for details), this plugin is skipped
+      enabled: true
 
       # required, name of the plugin to load, must be unique in a model
       name: kinect
