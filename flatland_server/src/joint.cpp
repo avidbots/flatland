@@ -52,7 +52,7 @@ namespace flatland_server {
 
 Joint::Joint(b2World *physics_world, Model *model, const std::string &name,
              const Color &color, const b2JointDef &joint_def)
-    : physics_world_(physics_world), model_(model), name_(name), color_(color) {
+    :  model_(model), name_(name), physics_world_(physics_world), color_(color) {
   physics_joint_ = physics_world->CreateJoint(&joint_def);
   physics_joint_->SetUserData(this);
 }

@@ -69,7 +69,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
     : Entity(physics_world, names[0]),
       names_(names),
       cfr_(cfr),
-      viz_name_("layer/" + name_) {
+      viz_name_("layer/" + names[0]) {
   body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody,
                    properties);
 
@@ -80,7 +80,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const Pose &origin, const std::vector<LineSegment> &line_segments,
              double scale, const YAML::Node &properties)
-    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {
+    : Entity(physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layer/" + names[0]) {
   body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody,
                    properties);
 
@@ -104,7 +104,7 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
 Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::vector<std::string> &names, const Color &color,
              const YAML::Node &properties)
-    : Entity(physics_world, names[0]), names_(names), cfr_(cfr) {}
+    : Entity(physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layer/"+names[0]) {}
 
 Layer::~Layer() { delete body_; }
 

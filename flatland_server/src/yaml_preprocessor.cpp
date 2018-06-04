@@ -76,7 +76,7 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
       }
       break;
     default:
-      ROS_WARN_STREAM(
+      ROS_DEBUG_STREAM(
           "Yaml Preprocessor found an unexpected type: " << node.Type());
       break;
   }
