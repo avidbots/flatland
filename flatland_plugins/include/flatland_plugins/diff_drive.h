@@ -71,9 +71,12 @@ class DiffDrive : public flatland_server::ModelPlugin {
   nav_msgs::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;
   tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
-  bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
-  bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
-  bool broadcast_tf_;
+  bool enable_odom_pub_;       ///< YAML parameter to enable odom publishing
+  bool enable_twist_pub_;      ///< YAML parameter to enable twist publishing
+  bool broadcast_tf_;          ///< YAML parameter to enable tf broadcasting
+  bool twist_in_local_frame_;  ///< YAML parameter to publish velocity in local
+                               /// frame. Original diff drive plugin publishes
+  /// local velocity wrt to odom frame
 
   std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 6> noise_gen_;

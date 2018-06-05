@@ -65,6 +65,8 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
   enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
   broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
+  twist_in_local_frame_ = reader.Get<bool>("twist_in_local_frame", true);
+
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
 
@@ -174,8 +176,8 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
   if (publish) {
     // get the state of the body and publish the data
-    b2Vec2 linear_vel_local =
-        b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+    b2Vec2 linear_vel_local = b2body->GetLinearVelocityFromLocalPoint(
+        b2Vec2(0, 0));  // local velocity is in global frame!
     float angular_vel = b2body->GetAngularVelocity();
 
     ground_truth_msg_.header.stamp = ros::Time::now();
@@ -184,12 +186,22 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     ground_truth_msg_.pose.pose.position.z = 0;
     ground_truth_msg_.pose.pose.orientation =
         tf::createQuaternionMsgFromYaw(angle);
-    ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
-    ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
+
     ground_truth_msg_.twist.twist.linear.z = 0;
     ground_truth_msg_.twist.twist.angular.x = 0;
     ground_truth_msg_.twist.twist.angular.y = 0;
-    ground_truth_msg_.twist.twist.angular.z = angular_vel;
+    if (twist_in_local_frame_ == true) {
+      // change frame of velocity
+      ground_truth_msg_.twist.twist.linear.x =
+          cos(-angle) * linear_vel_local.x - sin(-angle) * linear_vel_local.y;
+      ground_truth_msg_.twist.twist.linear.y =
+          sin(-angle) * linear_vel_local.x + cos(-angle) * linear_vel_local.y;
+      ground_truth_msg_.twist.twist.angular.z = angular_vel;
+    } else {
+      ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
+      ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
+      ground_truth_msg_.twist.twist.angular.z = angular_vel;
+    }
 
     // add the noise to odom messages
     odom_msg_.header.stamp = ros::Time::now();
