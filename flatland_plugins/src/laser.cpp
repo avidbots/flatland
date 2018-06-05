@@ -72,7 +72,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   double x = origin_.x, y = origin_.y;
   m_body_to_laser_ << c, -s, x, s, c, y, 0, 0, 1;
 
-  int num_laser_points =
+  unsigned int num_laser_points =
       std::lround((max_angle_ - min_angle_) / increment_) + 1;
 
   // initialize size for the matrix storing the laser points
@@ -82,7 +82,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
 
   // pre-calculate the laser points w.r.t to the laser frame, since this never
   // changes
-  for (int i = 0; i < num_laser_points; i++) {
+  for (unsigned int i = 0; i < num_laser_points; i++) {
     float angle = min_angle_ + i * increment_;
 
     float x = range_ * cos(angle);
@@ -165,7 +165,7 @@ void Laser::ComputeLaserRanges() {
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   // loop through the laser points and call the Box2D world raycast
-  for (int i = 0; i < laser_scan_.ranges.size(); ++i) {
+  for (unsigned int i = 0; i < laser_scan_.ranges.size(); ++i) {
     laser_point.x = m_world_laser_points_(0, i);
     laser_point.y = m_world_laser_points_(1, i);
 

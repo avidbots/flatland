@@ -6,10 +6,10 @@
  *   \ \ \/\ \ \ \_/ |\ \ \/\ \L\ \ \ \L\ \/\ \L\ \ \ \_/\__, `\
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
- * @copyright Copyright 2017 Avidbots Corp.
- * @name	 timekeeper.cpp
- * @brief	 Used for simulation time keeping
- * @author Chunshang Li
+ * @copyright Copyright 2018 Avidbots Corp.
+ * @name	 yaml_preprocessor.h
+ * @brief	 Yaml preprocessor using Lua
+ * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
  *
@@ -44,36 +44,63 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/timekeeper.h>
-#include <rosgraph_msgs/Clock.h>
+#ifndef FLATLAND_SERVER_YAML_PREPROCESSOR_H
+#define FLATLAND_SERVER_YAML_PREPROCESSOR_H
+
+#include <flatland_server/exceptions.h>
+#include <yaml-cpp/yaml.h>
+
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+#include <set>
+#include <string>
+#include <vector>
 
 namespace flatland_server {
 
-Timekeeper::Timekeeper()
-    : time_(ros::Time(0, 0)), max_step_size_(0), clock_topic_("/clock") {
-  clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
+/**
+ */
+namespace YamlPreprocessor {
+/**
+ * @brief Preprocess with a given node
+ * @param[in/out] node A Yaml node to parse
+ * @return The parsed YAML::Node
+ */
+void Parse(YAML::Node &node);
+
+/**
+ * @brief Constructor with a given path to a yaml file, throws exception on
+ * failure
+ * @param[in] path Path to the yaml file
+ * @return The parsed YAML::Node
+ */
+YAML::Node LoadParse(const std::string &path);
+
+/**
+ * @brief Find and run any $eval nodes
+ * @param[in/out] node A Yaml node to recursively parse
+ */
+void ProcessNodes(YAML::Node &node);
+
+/**
+ * @brief Find and run any $eval expressions
+ * @param[in/out] node A Yaml string node to parse
+ */
+void ProcessScalarNode(YAML::Node &node);
+
+/**
+  * @brief Get an environment variable with an optional default value
+  * @param[in/out] lua_State The lua state/stack to read/write to/from
+  */
+int LuaGetEnv(lua_State *L);
+
+/**
+  * @brief Get a rosparam with an optional default value
+  * @param[in/out] lua_State The lua state/stack to read/write to/from
+  */
+int LuaGetParam(lua_State *L);
+};
 }
 
-void Timekeeper::StepTime() {
-  time_ += ros::Duration(max_step_size_);
-
-  UpdateRosClock();
-}
-
-void Timekeeper::UpdateRosClock() const {
-  rosgraph_msgs::Clock clock;
-  clock.clock = time_;
-  clock_pub_.publish(clock);
-}
-
-void Timekeeper::SetMaxStepSize(double step_size) {
-  max_step_size_ = step_size;
-}
-
-const ros::Time& Timekeeper::GetSimTime() const { return time_; }
-
-double Timekeeper::GetStepSize() const { return max_step_size_; }
-
-double Timekeeper::GetMaxStepSize() const { return max_step_size_; }
-
-};  // namespace flatland_server
+#endif  // FLATLAND_SERVER_YAML_PREPROCESSOR_H

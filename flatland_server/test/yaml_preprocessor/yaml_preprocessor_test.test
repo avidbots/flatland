@@ -1,0 +1,15 @@
+<!--
+Test launchfile for yaml_preprocessor_test
+
+This file tests that the preprocessor handles all manner of conditionals and statements
+-->
+<launch>
+  <param name="/string" value="Foo" type="str" />
+  <param name="/int" value="7" type="int" />
+  <param name="/float" value="10.5" type="double" />
+
+  <test pkg="flatland_server" type="yaml_preprocessor_test" test-name="yaml_preprocessor_test">
+    <env name="VALIDSTRING" value="Bar"/>
+    <env name="VALIDNUMBER" value="123.4"/>
+  </test>
+</launch>

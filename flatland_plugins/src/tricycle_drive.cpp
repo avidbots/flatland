@@ -149,7 +149,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   odom_msg_ = ground_truth_msg_;
 
   // copy from array to boost array
-  for (int i = 0; i < 36; i++) {
+  for (unsigned int i = 0; i < 36; i++) {
     odom_msg_.twist.covariance[i] = odom_twist_covar[i];
     odom_msg_.pose.covariance[i] = odom_pose_covar[i];
   }
@@ -157,12 +157,12 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   // init the random number generators
   random_device rd;
   rng_ = default_random_engine(rd());
-  for (int i = 0; i < 3; i++) {
+  for (unsigned int i = 0; i < 3; i++) {
     // variance is standard deviation squared
     noise_gen_[i] = normal_distribution<double>(0.0, sqrt(odom_pose_noise[i]));
   }
 
-  for (int i = 0; i < 3; i++) {
+  for (unsigned int i = 0; i < 3; i++) {
     noise_gen_[i + 3] =
         normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }
@@ -187,7 +187,6 @@ void TricycleDrive::ComputeJoints() {
 
     b2Vec2 wheel_anchor;  ///< wheel anchor point, must be (0,0)
     b2Vec2 body_anchor;   ///< body anchor point
-    Body* wheel_body;
     bool inv = false;
 
     // ensure one of the body is the main body for the odometry

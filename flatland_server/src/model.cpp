@@ -59,11 +59,11 @@ Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
       viz_name_("model/" + name_) {}
 
 Model::~Model() {
-  for (int i = 0; i < joints_.size(); i++) {
+  for (unsigned int i = 0; i < joints_.size(); i++) {
     delete joints_[i];
   }
 
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     delete bodies_[i];
   }
 
@@ -106,6 +106,13 @@ void Model::LoadBodies(YamlReader &bodies_reader) {
   } else {
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
       YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
+      if (!body_reader.Get<bool>("enabled", "true")) {
+        ROS_INFO_STREAM("Body "
+                        << Q(name_) << "."
+                        << body_reader.Get<std::string>("name", "unnamed")
+                        << " disabled");
+        continue;
+      }
       ModelBody *b =
           ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
       bodies_.push_back(b);
@@ -125,6 +132,13 @@ void Model::LoadJoints(YamlReader &joints_reader) {
   if (!joints_reader.IsNodeNull()) {
     for (int i = 0; i < joints_reader.NodeSize(); i++) {
       YamlReader joint_reader = joints_reader.Subnode(i, YamlReader::MAP);
+      if (!joint_reader.Get<bool>("enabled", "true")) {
+        ROS_INFO_STREAM("Joint "
+                        << Q(name_) << "."
+                        << joint_reader.Get<std::string>("name", "unnamed")
+                        << " disabled");
+        continue;
+      }
       Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);
 
@@ -140,7 +154,7 @@ void Model::LoadJoints(YamlReader &joints_reader) {
 }
 
 ModelBody *Model::GetBody(const std::string &name) {
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     if (bodies_[i]->name_ == name) {
       return bodies_[i];
     }
@@ -149,7 +163,7 @@ ModelBody *Model::GetBody(const std::string &name) {
 }
 
 Joint *Model::GetJoint(const std::string &name) {
-  for (int i = 0; i < joints_.size(); i++) {
+  for (unsigned int i = 0; i < joints_.size(); i++) {
     if (joints_[i]->name_ == name) {
       return joints_[i];
     }
@@ -203,7 +217,7 @@ void Model::SetPose(const Pose &pose) {
                                 bodies_[0]->physics_body_->GetAngle());
 
   // Inverse transform all bodies by this to reset their poses
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::InverseTransform(bodies_[i]->physics_body_->GetPosition(),
                                    root_body_transform),
@@ -229,7 +243,7 @@ void Model::TransformAll(const Pose &pose_delta) {
   RotateTranslate tf =
       Geometry::CreateTransform(pose_delta.x, pose_delta.y, pose_delta.theta);
 
-  for (int i = 0; i < bodies_.size(); i++) {
+  for (unsigned int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
         Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
         bodies_[i]->physics_body_->GetAngle() + pose_delta.theta);

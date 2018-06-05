@@ -77,7 +77,7 @@ void Gps::UpdateFix() {
   double alt;
   double p = sqrt(ecef_x * ecef_x + ecef_y * ecef_y);
   double lat_rad = atan(p / ecef_z);
-  for (int i = 0; i < 4; i++) {
+  for (unsigned int i = 0; i < 4; i++) {
     double s_lat = sin(lat_rad);
     r = WGS84_A / sqrt(1.0 - WGS84_E2 * s_lat * s_lat);
     alt = p / cos(lat_rad) - r;

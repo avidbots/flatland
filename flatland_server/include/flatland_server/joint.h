@@ -64,9 +64,9 @@ class Joint {
  public:
   Model *model_;            ///< Model the joint belongs to
   std::string name_;        ///< Name of the joint
-  b2Joint *physics_joint_;  ///< Box2D physics joint
   b2World *physics_world_;  ///< Box2D physics world
   Color color_;             ///< Color for visualization
+  b2Joint *physics_joint_;  ///< Box2D physics joint
 
   /**
    * @brief Constructor for the joint

@@ -33,6 +33,9 @@ find_library(YAML_CPP_LIBRARY
              PATHS ${YAML_CPP_LIBRARY_DIRS})
 link_directories(${YAML_CPP_LIBRARY_DIRS})
 
+# lua5.1
+find_package(Lua 5.1 QUIET)
+
 # OpenCV
 find_package(OpenCV REQUIRED)
 
@@ -71,6 +74,7 @@ include_directories(
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${LUA_INCLUDE_DIR}
   thirdparty
 )
 
@@ -98,6 +102,7 @@ add_library(flatland_lib
   src/yaml_reader.cpp
   src/dummy_model_plugin.cpp 
   src/dummy_world_plugin.cpp
+  src/yaml_preprocessor.cpp
 )
 
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -105,6 +110,7 @@ target_link_libraries(flatland_lib
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${LUA_LIBRARIES}
   flatland_Box2D
   yaml-cpp
 )
@@ -123,6 +129,7 @@ target_link_libraries(flatland_server
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
+  ${LUA_LIBRARIES}
   flatland_Box2D
   yaml-cpp
   flatland_lib
@@ -225,6 +232,12 @@ if(CATKIN_ENABLE_TESTING)
                     test/dummy_world_plugin_test.cpp) 
   target_link_libraries(dummy_world_plugin_test
                         flatland_lib yaml-cpp) 
+
+  add_rostest_gtest(yaml_preprocessor_test
+                    test/yaml_preprocessor/yaml_preprocessor_test.test 
+                    test/yaml_preprocessor/yaml_preprocessor_test.cpp) 
+  target_link_libraries(yaml_preprocessor_test
+                        flatland_lib yaml-cpp)
 
 
 endif()

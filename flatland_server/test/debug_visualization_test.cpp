@@ -323,7 +323,7 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
   ASSERT_EQ(markers.markers[0].type, markers.markers[0].LINE_LIST);
   ASSERT_EQ(markers.markers[0].points.size(), 6);
 
-  for (int i = 0; i < 6; i++) {
+  for (unsigned int i = 0; i < 6; i++) {
     ASSERT_FLOAT_EQ(markers.markers[0].points[i].x, 0.0) << "index: " << i;
     ASSERT_FLOAT_EQ(markers.markers[0].points[i].y, 0.0) << "index: " << i;
   }
@@ -337,7 +337,7 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
   ASSERT_EQ(markers.markers[1].type, markers.markers[1].CUBE_LIST);
   ASSERT_EQ(markers.markers[1].points.size(), 4);
 
-  for (int i = 0; i < 4; i++) {
+  for (unsigned int i = 0; i < 4; i++) {
     ASSERT_FLOAT_EQ(markers.markers[1].points[i].x, 0.0) << "index: " << i;
     ASSERT_FLOAT_EQ(markers.markers[1].points[i].y, 0.0) << "index: " << i;
   }
@@ -399,7 +399,7 @@ struct MarkerArraySubscriptionHelper {
    */
   bool waitForMessageCount(int count) {
     ros::Rate rate(10);  // throttle check to 10Hz
-    for (int i = 0; i < 20; i++) {
+    for (unsigned int i = 0; i < 20; i++) {
       ros::spinOnce();
       if (count_ >= count) return true;
       rate.sleep();

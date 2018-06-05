@@ -64,7 +64,8 @@ void RandomWall::OnInitialize(const YAML::Node &config) {
   // read in the plugin config
   YamlReader plugin_reader(config);
   std::string layer_name = plugin_reader.Get<std::string>("layer", "");
-  int num_of_walls = plugin_reader.Get<int>("num_of_walls", 0);
+  unsigned int num_of_walls =
+      plugin_reader.Get<unsigned int>("num_of_walls", 0);
   double wall_wall_dist = plugin_reader.Get<double>("wall_wall_dist", 1);
   bool double_wall = plugin_reader.Get<bool>("double_wall", false);
   std::string robot_name = plugin_reader.Get<std::string>("robot_name", "");
@@ -118,7 +119,7 @@ void RandomWall::OnInitialize(const YAML::Node &config) {
   std::srand(std::time(0));
   std::random_shuffle(Wall_List.begin(), Wall_List.end());
   try {
-    for (int i = 0; i < num_of_walls; i++) {
+    for (unsigned int i = 0; i < num_of_walls; i++) {
       modifier.AddFullWall(Wall_List[i]);
     }
   } catch (std::string e) {
