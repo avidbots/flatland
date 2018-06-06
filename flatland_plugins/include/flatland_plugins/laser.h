@@ -51,8 +51,10 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <tf/transform_broadcaster.h>
+#include <thirdparty/ThreadPool.h>
 #include <visualization_msgs/Marker.h>
 #include <Eigen/Dense>
+#include <thread>
 
 #ifndef FLATLAND_PLUGINS_LASER_H
 #define FLATLAND_PLUGINS_LASER_H
@@ -65,7 +67,7 @@ namespace flatland_plugins {
  * This class implements the model plugin class and provides laser data
  * for the given configurations
  */
-class Laser : public ModelPlugin, public b2RayCastCallback {
+class Laser : public ModelPlugin {
  public:
   std::string topic_;     ///< topic name to publish the laser scan
   Body *body_;            ///<  body the laser frame attaches to
@@ -79,6 +81,7 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   std::string frame_id_;  ///< laser frame id name
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
+  ThreadPool pool_;       ///< ThreadPool for managing concurrent scan threads
 
   /*
    * for setting reflectance layers. if the laser hits those layers,
@@ -97,9 +100,6 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   Eigen::Vector3f v_zero_point_;          ///< point representing (0,0)
   Eigen::Vector3f v_world_laser_origin_;  ///< (0,0) in the laser frame
   sensor_msgs::LaserScan laser_scan_;     ///< for publishing laser scan
-  bool did_hit_;     ///< Box2D ray trace checking if ray hits anything
-  float fraction_;   ///< Box2D ray trace fraction
-  float intensity_;  ///< Intensity of raytrace collision
 
   ros::Publisher scan_publisher_;             ///< ros laser topic publisher
   tf::TransformBroadcaster tf_broadcaster_;   ///< broadcast laser frame
@@ -107,15 +107,12 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
   UpdateTimer update_timer_;                  ///< for controlling update rate
 
   /**
-   * @brief Box2D raytrace call back method required for implementing the
-   * b2RayCastCallback abstract class
-   * @param[in] fixture Fixture the ray hits
-   * @param[in] point Point the ray hits the fixture
-   * @param[in] normal Vector indicating the normal at the point hit
-   * @param[in] fraction Fraction of ray length at hit point
+   * @brief Constructor to start the threadpool with N+1 threads
    */
-  float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
-                      const b2Vec2 &normal, float fraction) override;
+  Laser() : pool_(std::thread::hardware_concurrency() + 1) {
+    ROS_INFO_STREAM("Laser plugin loaded with "
+                    << (std::thread::hardware_concurrency() + 1) << " threads");
+  };
 
   /**
    * @brief Initialization for the plugin
@@ -139,6 +136,34 @@ class Laser : public ModelPlugin, public b2RayCastCallback {
    * @param[in] config Plugin YAML Node
    */
   void ParseParameters(const YAML::Node &config);
+};
+
+/**
+ * This class handles the b2RayCastCallback ReportFixture method
+ * allowing each thread to access its own callback object
+ */
+class LaserCallback : public b2RayCastCallback {
+ public:
+  bool did_hit_ = false;  ///< Box2D ray trace checking if ray hits anything
+  float fraction_ = 0;    ///< Box2D ray trace fraction
+  float intensity_ = 0;   ///< Intensity of raytrace collision
+  Laser *parent_;         ///< The parent Laser plugin
+
+  /**
+   * Default constructor to assign parent object
+   */
+  LaserCallback(Laser *parent) : parent_(parent){};
+
+  /**
+   * @brief Box2D raytrace call back method required for implementing the
+   * b2RayCastCallback abstract class
+   * @param[in] fixture Fixture the ray hits
+   * @param[in] point Point the ray hits the fixture
+   * @param[in] normal Vector indicating the normal at the point hit
+   * @param[in] fraction Fraction of ray length at hit point
+   */
+  float ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
+                      const b2Vec2 &normal, float fraction) override;
 };
 };
 
