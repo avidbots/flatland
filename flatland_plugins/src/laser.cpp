@@ -183,9 +183,8 @@ void Laser::ComputeLaserRanges() {
           if (!cb.did_hit_) {
             return std::make_pair<double, double>(NAN, 0);
           } else {
-            return std::make_pair<double, double>(
-                cb.fraction_ * this->range_ + this->noise_gen_(this->rng_),
-                cb.intensity_);
+            return std::make_pair<double, double>(cb.fraction_ * this->range_,
+                                                  cb.intensity_);
           }
         });
   }
@@ -193,7 +192,7 @@ void Laser::ComputeLaserRanges() {
   // Unqueue all of the future'd results
   for (unsigned int i = 0; i < laser_scan_.ranges.size(); ++i) {
     auto result = results[i].get();  // Pull the result from the future
-    laser_scan_.ranges[i] = result.first;
+    laser_scan_.ranges[i] = result.first + this->noise_gen_(this->rng_);
     if (reflectance_layers_bits_) laser_scan_.intensities[i] = result.second;
   }
 }
