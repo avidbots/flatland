@@ -131,13 +131,15 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
                             << plugin_reader.Get<std::string>("enabled"));
   }
 
-  // remove the name and type of the YAML Node, the plugin does not need to know
+  // remove the name, type and enabled of the YAML Node, the plugin does not
+  // need to know
   // about these parameters, remove method is broken in yaml cpp 5.2, so we
   // create a new node and add everything
   YAML::Node yaml_node;
   for (const auto &k : plugin_reader.Node()) {
     if (k.first.as<std::string>() != "name" &&
-        k.first.as<std::string>() != "type") {
+        k.first.as<std::string>() != "type" &&
+        k.first.as<std::string>() != "enabled") {
       yaml_node[k.first] = k.second;
     }
   }
