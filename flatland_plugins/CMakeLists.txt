@@ -16,22 +16,13 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   flatland_msgs
   std_msgs
+  yaml_cpp_catkin
 )
 
 find_package(Eigen3 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 find_package(PkgConfig REQUIRED)
-
-# yaml-cpp
-pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
-find_path(YAML_CPP_INCLUDE_DIR
-          NAMES yaml_cpp.h
-          PATHS ${YAML_CPP_INCLUDE_DIRS})
-find_library(YAML_CPP_LIBRARY
-             NAMES YAML_CPP
-             PATHS ${YAML_CPP_LIBRARY_DIRS})
-link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 ##############
 ## coverage ##
@@ -52,7 +43,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES flatland_plugins_lib
-  CATKIN_DEPENDS pluginlib roscpp flatland_server std_msgs
+  CATKIN_DEPENDS pluginlib roscpp flatland_server std_msgs yaml_cpp_catkin
 )
 
 ###########
@@ -63,7 +54,6 @@ include_directories(
   include
   include/thirdparty/tweeny
   ${catkin_INCLUDE_DIRS}
-  ${YAML_CPP_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
 )
 
@@ -86,7 +76,6 @@ add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 target_link_libraries(flatland_plugins_lib
   ${catkin_LIBRARIES}
   ${Eigen3_LIBRARIES}
-  yaml-cpp
 )
 
 #############
