@@ -13,6 +13,7 @@
 
 * Git clone flatland into your catkin workspace's src folder, and catkin build.
 * Optionally check out [turtlebot_flatland](https://github.com/avidbots/turtlebot_flatland) and run the turtlebot nav stack
+* Run `rosdep install --from-paths src --ignore-src` in your catkin workspace to install any missing rosdeps
 
 ### Who do I talk to? ###
 
