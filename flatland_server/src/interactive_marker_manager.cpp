@@ -227,7 +227,12 @@ void InteractiveMarkerManager::update() {
   // in at 33 Hz if the user is dragging the marker.  When the stream of
   // pose update feedback stops, automatically clear the manipulating_model_
   // flag to unpause the simulation.
-  double dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
+  double dt = 0;
+  try {
+    dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
+  } catch(std::runtime_error& ex) {
+    ROS_ERROR("Flatland Interactive Marker Manager runtime error: [%s]", ex.what());
+  }
   if (manipulating_model_ && dt > 0.1 && dt < 1.0) {
     manipulating_model_ = false;
   }
