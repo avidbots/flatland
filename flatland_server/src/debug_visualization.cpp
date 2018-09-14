@@ -78,7 +78,6 @@ void DebugVisualization::JointToMarkers(
 
   visualization_msgs::Marker marker;
   marker.header.frame_id = "map";
-  marker.header.stamp = ros::Time::now();
   marker.color.r = r;
   marker.color.g = g;
   marker.color.b = b;
@@ -127,7 +126,6 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
   while (fixture != NULL) {  // traverse fixture linked list
     visualization_msgs::Marker marker;
     marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time::now();
     marker.id = markers.markers.size();
     marker.color.r = r;
     marker.color.g = g;
@@ -218,7 +216,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
   }
 }
 
-void DebugVisualization::Publish() {
+void DebugVisualization::Publish(const Timekeeper &timekeeper) {
   // Iterate over the topics_ map as pair(name, topic)
 
   std::vector<std::string> to_delete;
@@ -233,6 +231,10 @@ void DebugVisualization::Publish() {
     if (topic.second.markers.markers.size() == 0) {
       to_delete.push_back(topic.first);
     } else {
+      // Iterate the marker array to update all the timestamps
+      for (unsigned int i = 0; i< topic.second.markers.markers.size(); i++) {
+        topic.second.markers.markers[i].header.stamp = timekeeper.GetSimTime(); 
+      }
       topic.second.publisher.publish(topic.second.markers);
       topic.second.needs_publishing = false;
     }
@@ -258,7 +260,6 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
   while (fixture != NULL) {  // traverse fixture linked list
 
     marker.header.frame_id = "map";
-    marker.header.stamp = ros::Time::now();
     marker.id = topics_[name].markers.markers.size();
     marker.color.r = body->color_.r;
     marker.color.g = body->color_.g;

@@ -119,7 +119,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
   ref_tf_m << r.q.c, -r.q.s, r.p.x, r.q.s, r.q.c, r.p.y, 0, 0, 1;
 
   geometry_msgs::TransformStamped tf_stamped;
-  tf_stamped.header.stamp = ros::Time::now();
+  tf_stamped.header.stamp = timekeeper.GetSimTime();
 
   // loop through the bodies to calculate TF, and ignores excluded bodies
   for (unsigned int i = 0; i < GetModel()->bodies_.size(); i++) {

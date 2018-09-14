@@ -83,6 +83,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
     // Transform original body frame marker from global to local frame
     RotateTranslate rt = Geometry::CreateTransform(pose.x, pose.y, pose.theta);
     transformed_body_marker.header.frame_id = "";
+    transformed_body_marker.header.stamp = ros::Time(0);
     transformed_body_marker.pose.position.x =
         (body_markers.markers[i].pose.position.x - rt.dx) * rt.cos +
         (body_markers.markers[i].pose.position.y - rt.dy) * rt.sin;
@@ -108,6 +109,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   // Send new interactive marker to server
   visualization_msgs::InteractiveMarker new_interactive_marker;
   new_interactive_marker.header.frame_id = "map";
+  new_interactive_marker.header.stamp =  ros::Time(0);
   new_interactive_marker.name = model_name;
   new_interactive_marker.pose.position.x = pose.x;
   new_interactive_marker.pose.position.y = pose.y;

@@ -28,12 +28,12 @@ void Gps::BeforePhysicsStep(const Timekeeper &timekeeper) {
   // only compute and publish when the number of subscribers is not zero
   if (fix_publisher_.getNumSubscribers() > 0) {
     UpdateFix();
-    gps_fix_.header.stamp = ros::Time::now();
+    gps_fix_.header.stamp = timekeeper.GetSimTime();
     fix_publisher_.publish(gps_fix_);
   }
 
   if (broadcast_tf_) {
-    gps_tf_.header.stamp = ros::Time::now();
+    gps_tf_.header.stamp = timekeeper.GetSimTime();
     tf_broadcaster_.sendTransform(gps_tf_);
   }
 }

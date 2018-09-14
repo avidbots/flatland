@@ -116,7 +116,7 @@ void SimulationManager::Main() {
 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);        // no need to update layer
-      DebugVisualization::Get().Publish();  // publish debug visualization
+      DebugVisualization::Get().Publish(timekeeper);  // publish debug visualization
     }
 
     ros::spinOnce();

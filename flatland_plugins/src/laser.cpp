@@ -136,12 +136,12 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
   // only compute and publish when the number of subscribers is not zero
   if (scan_publisher_.getNumSubscribers() > 0) {
     ComputeLaserRanges();
-    laser_scan_.header.stamp = ros::Time::now();
+    laser_scan_.header.stamp = timekeeper.GetSimTime();
     scan_publisher_.publish(laser_scan_);
   }
 
   if (broadcast_tf_) {
-    laser_tf_.header.stamp = ros::Time::now();
+    laser_tf_.header.stamp = timekeeper.GetSimTime();
     tf_broadcaster_.sendTransform(laser_tf_);
   }
 }
