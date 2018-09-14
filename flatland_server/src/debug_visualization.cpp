@@ -216,7 +216,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
   }
 }
 
-void DebugVisualization::Publish(const Timekeeper &timekeeper) {
+void DebugVisualization::Publish(const Timekeeper& timekeeper) {
   // Iterate over the topics_ map as pair(name, topic)
 
   std::vector<std::string> to_delete;
@@ -232,8 +232,8 @@ void DebugVisualization::Publish(const Timekeeper &timekeeper) {
       to_delete.push_back(topic.first);
     } else {
       // Iterate the marker array to update all the timestamps
-      for (unsigned int i = 0; i< topic.second.markers.markers.size(); i++) {
-        topic.second.markers.markers[i].header.stamp = timekeeper.GetSimTime(); 
+      for (unsigned int i = 0; i < topic.second.markers.markers.size(); i++) {
+        topic.second.markers.markers[i].header.stamp = timekeeper.GetSimTime();
       }
       topic.second.publisher.publish(topic.second.markers);
       topic.second.needs_publishing = false;

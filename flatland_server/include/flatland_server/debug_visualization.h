@@ -83,7 +83,7 @@ class DebugVisualization {
    * @brief Publish all marker array topics_ that need publishing
    * @param[in] timekeeper The time object to use for header timestamps
    */
-  void Publish(const Timekeeper &timekeeper);
+  void Publish(const Timekeeper& timekeeper);
 
   /**
    * @brief Visualize body

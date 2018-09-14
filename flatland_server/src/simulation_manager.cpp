@@ -80,7 +80,7 @@ void SimulationManager::Main() {
   try {
     world_ = World::MakeWorld(world_yaml_file_);
     ROS_INFO_NAMED("SimMan", "World loaded");
-  } catch (const std::exception &e) {
+  } catch (const std::exception& e) {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
   }
@@ -104,10 +104,10 @@ void SimulationManager::Main() {
     // see flatland_plugins/update_timer.cpp for this formula
     double f = 0.0;
     try {
-      f = fmod(
-        ros::WallTime::now().toSec() + (rate.expectedCycleTime().toSec() / 2.0),
-        viz_update_period);
-    } catch(std::runtime_error& ex) {
+      f = fmod(ros::WallTime::now().toSec() +
+                   (rate.expectedCycleTime().toSec() / 2.0),
+               viz_update_period);
+    } catch (std::runtime_error& ex) {
       ROS_ERROR("Flatland runtime error: [%s]", ex.what());
     }
     bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
@@ -115,8 +115,9 @@ void SimulationManager::Main() {
     world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
-      world_->DebugVisualize(false);        // no need to update layer
-      DebugVisualization::Get().Publish(timekeeper);  // publish debug visualization
+      world_->DebugVisualize(false);  // no need to update layer
+      DebugVisualization::Get().Publish(
+          timekeeper);  // publish debug visualization
     }
 
     ros::spinOnce();
