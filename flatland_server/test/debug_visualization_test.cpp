@@ -45,6 +45,7 @@
  */
 
 #include "flatland_server/debug_visualization.h"
+#include <flatland_server/timekeeper.h>
 #include <Box2D/Box2D.h>
 #include <gtest/gtest.h>
 #include <ros/ros.h>
