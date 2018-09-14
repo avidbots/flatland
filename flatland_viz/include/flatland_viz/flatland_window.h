@@ -91,17 +91,10 @@ class FlatlandWindow : public QMainWindow {
 
   rviz::VisualizationManager* getManager();
 
-  QLabel* fps_label_;
-
  protected Q_SLOTS:
 
   void openNewToolDialog();
 
-  void UpdateFps();
-
  private:
   FlatlandViz* viz_;
-
-  int frame_count_;
-  ros::WallTime last_fps_calc_time_;
 };
