@@ -102,7 +102,8 @@ rviz::VisualizationManager *FlatlandWindow::getManager() {
   return visualization_manager_;
 }
 
-FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
+FlatlandWindow::FlatlandWindow(QWidget *parent)
+    : QMainWindow(parent), last_fps_calc_time_(ros::WallTime::now()) {
   // Create the main viewport
   viz_ = new FlatlandViz(this);
   setCentralWidget(viz_);
@@ -125,10 +126,11 @@ FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
 
 void FlatlandWindow::UpdateFps() {
   frame_count_++;
-  ros::WallDuration wall_diff = ros::WallTime::now() - last_fps_calc_time_;
 
-  if (wall_diff.toSec() > 1.0) {
-    float fps = frame_count_ / wall_diff.toSec();
+  float time_delta = ros::WallTime::now().toSec() - last_fps_calc_time_.toSec();
+
+  if (time_delta > 1.0) {
+    float fps = frame_count_ / time_delta;
     frame_count_ = 0;
     last_fps_calc_time_ = ros::WallTime::now();
 
