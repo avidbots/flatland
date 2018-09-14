@@ -410,6 +410,9 @@ struct MarkerArraySubscriptionHelper {
 
 // Test the bodyToMarkers method on an unsupported shape
 TEST(DebugVizTest, testPublishMarkers) {
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(0.01);
+
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -454,14 +457,14 @@ TEST(DebugVizTest, testPublishMarkers) {
   EXPECT_EQ(sub.getNumPublishers(), 1);
 
   // Publish
-  flatland_server::DebugVisualization::Get().Publish();
+  flatland_server::DebugVisualization::Get().Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(1));
   EXPECT_EQ(helper.markers_.markers.size(), 1);
 
   // Publish again (should have no change- nothing needs publishing)
-  flatland_server::DebugVisualization::Get().Publish();
+  flatland_server::DebugVisualization::Get().Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(1));
@@ -475,7 +478,7 @@ TEST(DebugVizTest, testPublishMarkers) {
   // inserts two markers
   flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get().Publish();
+  flatland_server::DebugVisualization::Get().Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
@@ -484,7 +487,7 @@ TEST(DebugVizTest, testPublishMarkers) {
   // Reset marker list, this empties the markers array, and topics having
   // empty markers are automatically deleted
   flatland_server::DebugVisualization::Get().Reset("example");
-  flatland_server::DebugVisualization::Get().Publish();
+  flatland_server::DebugVisualization::Get().Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(2));  // Published two times
@@ -492,7 +495,7 @@ TEST(DebugVizTest, testPublishMarkers) {
   // publish again with some contents, and the topic is created again
   flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get().Publish();
+  flatland_server::DebugVisualization::Get().Publish(timekeeper);
 
   EXPECT_TRUE(helper.waitForMessageCount(3));
   EXPECT_EQ(2, helper.markers_.markers.size());
