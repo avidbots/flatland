@@ -79,8 +79,8 @@ TEST(DebugVizTest, testBodyToMarkersPolygon) {
 
   // Check that
   ASSERT_EQ(markers.markers[0].header.frame_id, "map");
-  ASSERT_NE(markers.markers[0].header.stamp.sec, 0);
-  ASSERT_NE(markers.markers[0].header.stamp.nsec, 0);
+  ASSERT_EQ(markers.markers[0].header.stamp.sec, 0);
+  ASSERT_EQ(markers.markers[0].header.stamp.nsec, 0);
 
   // Check color setting
   ASSERT_NEAR(markers.markers[0].color.r, 1.0, 1e-5);
@@ -500,6 +500,8 @@ TEST(DebugVizTest, testPublishMarkers) {
 
   EXPECT_TRUE(helper.waitForMessageCount(3));
   EXPECT_EQ(2, helper.markers_.markers.size());
+  ASSERT_NE(helper.markers_.markers[0].header.stamp.sec, 0);
+  ASSERT_NE(helper.markers_.markers[0].header.stamp.nsec, 0);
 }
 
 // Run all the tests that were declared with TEST()
