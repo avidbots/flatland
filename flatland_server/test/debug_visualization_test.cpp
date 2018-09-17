@@ -411,7 +411,7 @@ struct MarkerArraySubscriptionHelper {
 
 // Test the bodyToMarkers method on an unsupported shape
 TEST(DebugVizTest, testPublishMarkers) {
-  Timekeeper timekeeper;
+  flatland_server::Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.01);
 
   b2Vec2 gravity(0.0, 0.0);
