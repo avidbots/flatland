@@ -500,8 +500,6 @@ TEST(DebugVizTest, testPublishMarkers) {
 
   EXPECT_TRUE(helper.waitForMessageCount(3));
   EXPECT_EQ(2, helper.markers_.markers.size());
-  ASSERT_NE(helper.markers_.markers[0].header.stamp.sec, 0);
-  ASSERT_NE(helper.markers_.markers[0].header.stamp.nsec, 0);
 }
 
 // Run all the tests that were declared with TEST()
