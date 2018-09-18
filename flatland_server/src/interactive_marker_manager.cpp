@@ -83,6 +83,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
     // Transform original body frame marker from global to local frame
     RotateTranslate rt = Geometry::CreateTransform(pose.x, pose.y, pose.theta);
     transformed_body_marker.header.frame_id = "";
+    transformed_body_marker.header.stamp = ros::Time(0);
     transformed_body_marker.pose.position.x =
         (body_markers.markers[i].pose.position.x - rt.dx) * rt.cos +
         (body_markers.markers[i].pose.position.y - rt.dy) * rt.sin;
@@ -108,6 +109,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   // Send new interactive marker to server
   visualization_msgs::InteractiveMarker new_interactive_marker;
   new_interactive_marker.header.frame_id = "map";
+  new_interactive_marker.header.stamp = ros::Time(0);
   new_interactive_marker.name = model_name;
   new_interactive_marker.pose.position.x = pose.x;
   new_interactive_marker.pose.position.y = pose.y;
@@ -227,7 +229,14 @@ void InteractiveMarkerManager::update() {
   // in at 33 Hz if the user is dragging the marker.  When the stream of
   // pose update feedback stops, automatically clear the manipulating_model_
   // flag to unpause the simulation.
-  double dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
+  double dt = 0;
+  try {
+    dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
+  } catch (std::runtime_error &ex) {
+    ROS_ERROR(
+        "Flatland Interactive Marker Manager runtime error: (%f - %f) [%s]",
+        ros::WallTime::now().toSec(), pose_update_stamp_.toSec(), ex.what());
+  }
   if (manipulating_model_ && dt > 0.1 && dt < 1.0) {
     manipulating_model_ = false;
   }

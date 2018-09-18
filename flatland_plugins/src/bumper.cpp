@@ -131,7 +131,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
 
   flatland_msgs::Collisions collisions;
   collisions.header.frame_id = world_frame_id_;
-  collisions.header.stamp = ros::Time::now();
+  collisions.header.stamp = timekeeper.GetSimTime();
 
   // loop through all collisions in our record and publish
   for (it = contact_states_.begin(); it != contact_states_.end(); it++) {

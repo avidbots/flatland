@@ -56,6 +56,7 @@
 #include <vector>
 
 #include "flatland_server/body.h"
+#include "flatland_server/timekeeper.h"
 
 namespace flatland_server {
 struct DebugTopic {
@@ -80,8 +81,9 @@ class DebugVisualization {
 
   /**
    * @brief Publish all marker array topics_ that need publishing
+   * @param[in] timekeeper The time object to use for header timestamps
    */
-  void Publish();
+  void Publish(const Timekeeper& timekeeper);
 
   /**
    * @brief Visualize body
