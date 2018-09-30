@@ -51,6 +51,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_broadcaster.h>
+#include <random>
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
 #define FLATLAND_PLUGINS_DIFFDRIVE_H

@@ -50,6 +50,7 @@
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <random>
 
 #ifndef FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
 #define FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
