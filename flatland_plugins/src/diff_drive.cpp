@@ -245,6 +245,7 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     }
   }
 
+
   // we apply the twist velocities, this must be done every physics step to make
   // sure Box2D solver applies the correct velocity through out. The velocity
   // given in the twist message should be in the local frame
