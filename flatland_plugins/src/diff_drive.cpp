@@ -121,7 +121,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
 
   if (enable_ground_truth_pub_) {
     ground_truth_pub_ =
-            nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
+        nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
   }
 
   if (enable_twist_pub_) {
@@ -245,7 +245,6 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     }
   }
 
-
   // we apply the twist velocities, this must be done every physics step to make
   // sure Box2D solver applies the correct velocity through out. The velocity
   // given in the twist message should be in the local frame
@@ -267,7 +266,7 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   b2body->SetLinearVelocity(linear_vel_cm);
   b2body->SetAngularVelocity(angular_vel);
 }
-}
+}  // namespace flatland_plugins
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::DiffDrive,
                        flatland_server::ModelPlugin)

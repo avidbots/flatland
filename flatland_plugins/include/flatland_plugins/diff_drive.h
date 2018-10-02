@@ -72,13 +72,13 @@ class DiffDrive : public flatland_server::ModelPlugin {
   nav_msgs::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;
   tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
-  bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
-  bool enable_ground_truth_pub_;   ///< YAML parameter to enable ground truth publishing
-  bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
-  bool enable_tf_pub_;  ///< YAML parameter to enable twist publishing
+  bool enable_odom_pub_;          ///< YAML parameter to enable odom publishing
+  bool enable_ground_truth_pub_;  ///< YAML parameter to enable ground truth
+                                  /// publishing
+  bool enable_twist_pub_;         ///< YAML parameter to enable twist publishing
+  bool enable_tf_pub_;            ///< YAML parameter to enable twist publishing
 
-
-    std::default_random_engine rng_;
+  std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 6> noise_gen_;
 
   /**
