@@ -77,7 +77,6 @@ class DiffDrive : public flatland_server::ModelPlugin {
   bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
   bool enable_tf_pub_;  ///< YAML parameter to enable twist publishing
 
-
     std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 6> noise_gen_;
 
