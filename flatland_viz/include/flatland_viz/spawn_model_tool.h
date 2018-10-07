@@ -123,16 +123,21 @@ class SpawnModelTool : public rviz::Tool {
   */
   void SetMovingModelColor(QColor c);
 
+  /** 
+   * @name               LoadPreview
+   * @brief              Load a vector preview of the model
+   */
+  void LoadPreview();
+
   Ogre::Vector3
       intersection;     // location cursor intersects ground plane, ie the
                         // location to create the model
   float initial_angle;  // the angle to create the model at
   Ogre::SceneNode *moving_model_node_;  // the node for the 3D object
-  std::string model_resource_;          // path to 3d model
   enum ModelState { m_hidden, m_dragging, m_rotating };
   ModelState model_state;  // model state, first hidden, then dragging to
                            // intersection point, then rotating to desired angle
-  static QString path_to_model_file;  // full path to model file (yaml)
+  static QString path_to_model_file_;  // full path to model file (yaml)
   static QString model_name;  // base file name with path and extension removed
 
  protected:

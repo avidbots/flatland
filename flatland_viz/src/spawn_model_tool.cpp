@@ -6,7 +6,7 @@
  *   \ \ \/\ \ \ \_/ |\ \ \/\ \L\ \ \ \L\ \/\ \L\ \ \ \_/\__, `\
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
- * @copyright Copyright 2017 Avidbots Corp.
+ * @copyright Copyright 2018 Avidbots Corp.
  * @name   spawn_model_tool.cpp
  * @brief  Rviz compatible tool for spawning flatland model
  * @author Joseph Duchesne
@@ -14,7 +14,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2017, Avidbots Corp.
+ *  Copyright (c) 2018, Avidbots Corp.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -48,6 +48,7 @@
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreSubEntity.h>
+#include <OGRE/OgreException.h>
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -63,6 +64,9 @@
 
 #include <flatland_msgs/SpawnModel.h>
 
+#include <flatland_server/yaml_reader.h>
+#include <yaml-cpp/yaml.h>
+
 #include "flatland_viz/load_model_dialog.h"
 #include "flatland_viz/spawn_model_tool.h"
 // #include "load_model_dialog.h"
@@ -71,7 +75,7 @@
 class DialogOptionsWidget;
 
 namespace flatland_viz {
-QString SpawnModelTool::path_to_model_file;
+QString SpawnModelTool::path_to_model_file_;
 QString SpawnModelTool::model_name;
 
 // Set the "shortcut_key_" member variable defined in the
@@ -114,25 +118,25 @@ void SpawnModelTool::onInitialize() {
   Ogre::Quaternion orientation(Ogre::Radian(M_PI), Ogre::Vector3(1, 0, 0));
   arrow_->setOrientation(orientation);
 
-  // full path to the model file
-  model_resource_ = "package://flatland_viz/media/simple.dae";
+  // // full path to the model file
+  // model_resource_ = "package://flatland_viz/media/simple.dae";
 
-  // load the 3d model
-  if (rviz::loadMeshFromResource(model_resource_).isNull()) {
-    ROS_ERROR("SpawnModelTool: failed to load model resource '%s'.",
-              model_resource_.c_str());
-    return;
-  }
+  // // load the 3d model
+  // if (rviz::loadMeshFromResource(model_resource_).isNull()) {
+  //   ROS_ERROR("SpawnModelTool: failed to load model resource '%s'.",
+  //             model_resource_.c_str());
+  //   return;
+  // }
 
   // create an Ogre child scene node
   moving_model_node_ =
       scene_manager_->getRootSceneNode()->createChildSceneNode();
 
   // create an Ogre entity
-  Ogre::Entity *entity = scene_manager_->createEntity(model_resource_);
+  //Ogre::Entity *entity = scene_manager_->createEntity(model_resource_);
 
   // attach the object to the entity
-  moving_model_node_->attachObject(entity);
+  //moving_model_node_->attachObject(entity);
   moving_model_node_->setVisible(false);
 
   SetMovingModelColor(Qt::green);
@@ -194,7 +198,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
   // fill in the service request
   srv.request.name = model_name.toStdString();
   srv.request.ns = model_name.toStdString();
-  srv.request.yaml_path = path_to_model_file.toStdString();
+  srv.request.yaml_path = path_to_model_file_.toStdString();
   srv.request.pose.x = intersection[0];
   srv.request.pose.y = intersection[1];
   srv.request.pose.theta = initial_angle + M_PI / 2.0f;
@@ -220,12 +224,16 @@ void SpawnModelTool::SpawnModelInFlatland() {
 void SpawnModelTool::SetMovingModelColor(QColor c) {
   ROS_INFO_STREAM("SpawnModelTool::SetMovingModelColor");
 
+  try {
   Ogre::Entity *m_pEntity =
       static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
   const Ogre::MaterialPtr m_pMat = m_pEntity->getSubEntity(0)->getMaterial();
   m_pMat->getTechnique(0)->getPass(0)->setAmbient(1, 0, 0);
   m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
                                                   c.blueF(), 0);
+  } catch (Ogre::InvalidParametersException e) {
+    ROS_WARN_STREAM("Invalid preview model");
+  }
 }
 
 // processMouseEvent() is sort of the main function of a Tool, because
@@ -247,7 +255,7 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
 
   Ogre::Vector3 intersection2;
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
-
+  
   if (model_state == m_dragging) {
     if (rviz::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
                                           event.y, intersection)) {
@@ -299,7 +307,46 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
   return Render;
 }
 
-void SpawnModelTool::SavePath(QString p) { path_to_model_file = p; }
+void SpawnModelTool::LoadPreview() {
+  ROS_INFO_STREAM("Loading model " << path_to_model_file_.toStdString() << " now");
+
+  // Load the bodies list into a model object
+  flatland_server::YamlReader reader(path_to_model_file_.toStdString());
+
+  try {
+    flatland_server::YamlReader bodies_reader = reader.Subnode("bodies", flatland_server::YamlReader::LIST);
+    // Iterate each body and add to the preview
+    for (int i = 0; i < bodies_reader.NodeSize(); i++) {
+      flatland_server::YamlReader body_reader = bodies_reader.Subnode(i, flatland_server::YamlReader::MAP);
+      if (!body_reader.Get<bool>("enabled", "true")) {  // skip if disabled
+        continue;
+      }
+      flatland_server::YamlReader footprints_node =
+        body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
+       for (int j = 0; j < footprints_node.NodeSize(); j++) { 
+        flatland_server::YamlReader footprint = footprints_node.Subnode(i, flatland_server::YamlReader::MAP);
+
+        std::string type = footprint.Get<std::string>("type");
+        if (type == "circle") {
+          ROS_INFO("Loading circle footprint");
+          //LoadCircleFootprint(footprint);
+        } else if (type == "polygon") {
+          ROS_INFO("Loading polygon footprint");
+          //LoadPolygonFootprint(footprint);
+        } else {
+          throw flatland_server::YAMLException("Invalid footprint \"type\"");
+        }
+       }
+    }
+  } catch (const flatland_server::YAMLException &e) {
+    ROS_ERROR_STREAM("Couldn't load model bodies for preview");
+  }
+}
+
+void SpawnModelTool::SavePath(QString p) { 
+  path_to_model_file_ = p;
+  LoadPreview();
+}
 
 void SpawnModelTool::SaveName(QString n) { model_name = n; }
 
