@@ -64,7 +64,8 @@
 
 #include <flatland_msgs/SpawnModel.h>
 
-#include <flatland_server/yaml_reader.h>
+#include <flatland_server/types.h>
+
 #include <yaml-cpp/yaml.h>
 
 #include "flatland_viz/load_model_dialog.h"
@@ -201,7 +202,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
   srv.request.yaml_path = path_to_model_file_.toStdString();
   srv.request.pose.x = intersection[0];
   srv.request.pose.y = intersection[1];
-  srv.request.pose.theta = initial_angle + M_PI / 2.0f;
+  srv.request.pose.theta = initial_angle;
 
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
 
@@ -294,11 +295,7 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
       moving_model_node_->setVisible(true);
       moving_model_node_->setPosition(intersection);
       Ogre::Vector3 dir = intersection2 - intersection;
-      if (fabs(dir.y) > .001) {
-        initial_angle = -1.0 * atan2(dir.x, dir.y);
-      } else {
-        initial_angle = -90.0 * M_PI / 180.0;
-      }
+      initial_angle = atan2(dir.y, dir.x);
       Ogre::Quaternion orientation(Ogre::Radian(initial_angle),
                                    Ogre::Vector3(0, 0, 1));
       moving_model_node_->setOrientation(orientation);
@@ -308,7 +305,9 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
 }
 
 void SpawnModelTool::LoadPreview() {
-  ROS_INFO_STREAM("Loading model " << path_to_model_file_.toStdString() << " now");
+  // Clear the old preview, if there is one
+  moving_model_node_->removeAllChildren();
+  lines_list_.clear();
 
   // Load the bodies list into a model object
   flatland_server::YamlReader reader(path_to_model_file_.toStdString());
@@ -321,26 +320,55 @@ void SpawnModelTool::LoadPreview() {
       if (!body_reader.Get<bool>("enabled", "true")) {  // skip if disabled
         continue;
       }
+
+      auto pose = body_reader.GetPose("pose", flatland_server::Pose());
+
       flatland_server::YamlReader footprints_node =
         body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
        for (int j = 0; j < footprints_node.NodeSize(); j++) { 
-        flatland_server::YamlReader footprint = footprints_node.Subnode(i, flatland_server::YamlReader::MAP);
+        flatland_server::YamlReader footprint = footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
+
+        lines_list_.push_back(std::make_shared<rviz::BillboardLine>(context_->getSceneManager(), moving_model_node_));
+        auto lines = lines_list_.back();
+        lines->setColor(0.0, 1.0, 0.0, 0.75);  // Green
+        lines->setLineWidth(0.05);
+        lines->setOrientation( Ogre::Quaternion(Ogre::Radian(pose.theta), Ogre::Vector3(0, 0, 1)) );
+        lines->setPosition(  Ogre::Vector3(pose.x, pose.y, 0) );
 
         std::string type = footprint.Get<std::string>("type");
         if (type == "circle") {
-          ROS_INFO("Loading circle footprint");
-          //LoadCircleFootprint(footprint);
+          LoadCircleFootprint(footprint, pose);
         } else if (type == "polygon") {
-          ROS_INFO("Loading polygon footprint");
-          //LoadPolygonFootprint(footprint);
+          LoadPolygonFootprint(footprint, pose);
         } else {
           throw flatland_server::YAMLException("Invalid footprint \"type\"");
         }
        }
     }
   } catch (const flatland_server::YAMLException &e) {
-    ROS_ERROR_STREAM("Couldn't load model bodies for preview");
+    ROS_ERROR_STREAM("Couldn't load model bodies for preview" << e.what());
   }
+}
+
+void SpawnModelTool::LoadPolygonFootprint(flatland_server::YamlReader& footprint, const flatland_server::Pose pose) {
+  auto lines = lines_list_.back();
+  auto points =  footprint.GetList<flatland_server::Vec2>("points", 3, b2_maxPolygonVertices);
+  for (auto p : points) {
+    lines->addPoint( Ogre::Vector3(p.x, p.y, 0.) );
+  }
+  if (points.size()>0) {
+    lines->addPoint( Ogre::Vector3(points.at(0).x, points.at(0).y, 0.) );  // Close the box
+  }
+}
+
+void SpawnModelTool::LoadCircleFootprint(flatland_server::YamlReader& footprint, const flatland_server::Pose pose) {
+  auto lines = lines_list_.back();
+  auto center = footprint.GetVec2("center", flatland_server::Vec2());
+  auto radius = footprint.Get<float>("radius", 1.0);
+  for (float a=0.; a<M_PI*2.0; a+= M_PI/8.) {  // 16 point circle
+    lines->addPoint(Ogre::Vector3(center.x + radius*cos(a), center.y + radius*sin(a), 0.));
+  }
+  lines->addPoint( Ogre::Vector3(center.x + radius, center.y, 0.));  // close the loop
 }
 
 void SpawnModelTool::SavePath(QString p) { 
