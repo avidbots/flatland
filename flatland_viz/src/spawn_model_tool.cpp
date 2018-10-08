@@ -46,9 +46,9 @@
  */
 
 #include <OGRE/OgreEntity.h>
+#include <OGRE/OgreException.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreSubEntity.h>
-#include <OGRE/OgreException.h>
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -119,15 +119,9 @@ void SpawnModelTool::onInitialize() {
   Ogre::Quaternion orientation(Ogre::Radian(M_PI), Ogre::Vector3(1, 0, 0));
   arrow_->setOrientation(orientation);
 
-  // create an Ogre child scene node
+  // create an Ogre child scene node for rendering the preview outline
   moving_model_node_ =
       scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-  // create an Ogre entity
-  //Ogre::Entity *entity = scene_manager_->createEntity(model_resource_);
-
-  // attach the object to the entity
-  //moving_model_node_->attachObject(entity);
   moving_model_node_->setVisible(false);
 
   SetMovingModelColor(Qt::green);
@@ -216,12 +210,12 @@ void SpawnModelTool::SetMovingModelColor(QColor c) {
   ROS_INFO_STREAM("SpawnModelTool::SetMovingModelColor");
 
   try {
-  Ogre::Entity *m_pEntity =
-      static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
-  const Ogre::MaterialPtr m_pMat = m_pEntity->getSubEntity(0)->getMaterial();
-  m_pMat->getTechnique(0)->getPass(0)->setAmbient(1, 0, 0);
-  m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
-                                                  c.blueF(), 0);
+    Ogre::Entity *m_pEntity =
+        static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
+    const Ogre::MaterialPtr m_pMat = m_pEntity->getSubEntity(0)->getMaterial();
+    m_pMat->getTechnique(0)->getPass(0)->setAmbient(1, 0, 0);
+    m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
+                                                    c.blueF(), 0);
   } catch (Ogre::InvalidParametersException e) {
     ROS_WARN_STREAM("Invalid preview model");
   }
@@ -246,7 +240,7 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
 
   Ogre::Vector3 intersection2;
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
-  
+
   if (model_state == m_dragging) {
     if (rviz::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
                                           event.y, intersection)) {
@@ -303,10 +297,12 @@ void SpawnModelTool::LoadPreview() {
   flatland_server::YamlReader reader(path_to_model_file_.toStdString());
 
   try {
-    flatland_server::YamlReader bodies_reader = reader.Subnode("bodies", flatland_server::YamlReader::LIST);
+    flatland_server::YamlReader bodies_reader =
+        reader.Subnode("bodies", flatland_server::YamlReader::LIST);
     // Iterate each body and add to the preview
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
-      flatland_server::YamlReader body_reader = bodies_reader.Subnode(i, flatland_server::YamlReader::MAP);
+      flatland_server::YamlReader body_reader =
+          bodies_reader.Subnode(i, flatland_server::YamlReader::MAP);
       if (!body_reader.Get<bool>("enabled", "true")) {  // skip if disabled
         continue;
       }
@@ -314,16 +310,19 @@ void SpawnModelTool::LoadPreview() {
       auto pose = body_reader.GetPose("pose", flatland_server::Pose());
 
       flatland_server::YamlReader footprints_node =
-        body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
-       for (int j = 0; j < footprints_node.NodeSize(); j++) { 
-        flatland_server::YamlReader footprint = footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
+          body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
+      for (int j = 0; j < footprints_node.NodeSize(); j++) {
+        flatland_server::YamlReader footprint =
+            footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
 
-        lines_list_.push_back(std::make_shared<rviz::BillboardLine>(context_->getSceneManager(), moving_model_node_));
+        lines_list_.push_back(std::make_shared<rviz::BillboardLine>(
+            context_->getSceneManager(), moving_model_node_));
         auto lines = lines_list_.back();
         lines->setColor(0.0, 1.0, 0.0, 0.75);  // Green
         lines->setLineWidth(0.05);
-        lines->setOrientation( Ogre::Quaternion(Ogre::Radian(pose.theta), Ogre::Vector3(0, 0, 1)) );
-        lines->setPosition(  Ogre::Vector3(pose.x, pose.y, 0) );
+        lines->setOrientation(
+            Ogre::Quaternion(Ogre::Radian(pose.theta), Ogre::Vector3(0, 0, 1)));
+        lines->setPosition(Ogre::Vector3(pose.x, pose.y, 0));
 
         std::string type = footprint.Get<std::string>("type");
         if (type == "circle") {
@@ -333,35 +332,41 @@ void SpawnModelTool::LoadPreview() {
         } else {
           throw flatland_server::YAMLException("Invalid footprint \"type\"");
         }
-       }
+      }
     }
   } catch (const flatland_server::YAMLException &e) {
     ROS_ERROR_STREAM("Couldn't load model bodies for preview" << e.what());
   }
 }
 
-void SpawnModelTool::LoadPolygonFootprint(flatland_server::YamlReader& footprint, const flatland_server::Pose pose) {
+void SpawnModelTool::LoadPolygonFootprint(
+    flatland_server::YamlReader &footprint, const flatland_server::Pose pose) {
   auto lines = lines_list_.back();
-  auto points =  footprint.GetList<flatland_server::Vec2>("points", 3, b2_maxPolygonVertices);
+  auto points = footprint.GetList<flatland_server::Vec2>("points", 3,
+                                                         b2_maxPolygonVertices);
   for (auto p : points) {
-    lines->addPoint( Ogre::Vector3(p.x, p.y, 0.) );
+    lines->addPoint(Ogre::Vector3(p.x, p.y, 0.));
   }
-  if (points.size()>0) {
-    lines->addPoint( Ogre::Vector3(points.at(0).x, points.at(0).y, 0.) );  // Close the box
+  if (points.size() > 0) {
+    lines->addPoint(
+        Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
   }
 }
 
-void SpawnModelTool::LoadCircleFootprint(flatland_server::YamlReader& footprint, const flatland_server::Pose pose) {
+void SpawnModelTool::LoadCircleFootprint(flatland_server::YamlReader &footprint,
+                                         const flatland_server::Pose pose) {
   auto lines = lines_list_.back();
   auto center = footprint.GetVec2("center", flatland_server::Vec2());
   auto radius = footprint.Get<float>("radius", 1.0);
-  for (float a=0.; a<M_PI*2.0; a+= M_PI/8.) {  // 16 point circle
-    lines->addPoint(Ogre::Vector3(center.x + radius*cos(a), center.y + radius*sin(a), 0.));
+  for (float a = 0.; a < M_PI * 2.0; a += M_PI / 8.) {  // 16 point circle
+    lines->addPoint(Ogre::Vector3(center.x + radius * cos(a),
+                                  center.y + radius * sin(a), 0.));
   }
-  lines->addPoint( Ogre::Vector3(center.x + radius, center.y, 0.));  // close the loop
+  lines->addPoint(
+      Ogre::Vector3(center.x + radius, center.y, 0.));  // close the loop
 }
 
-void SpawnModelTool::SavePath(QString p) { 
+void SpawnModelTool::SavePath(QString p) {
   path_to_model_file_ = p;
   LoadPreview();
 }
