@@ -24,7 +24,6 @@ bodies:
 
   - name: rear_left_wheel
     color: [1, 1, 1, 0.75] 
-    #pose: [-0.83, -0.29, 0]
     footprints:
       - type: polygon
         density: 1.0
@@ -35,7 +34,6 @@ bodies:
 
   - name: rear_right_wheel
     color: [1, 1, 1, 0.75]
-    #pose: [-0.83, -0.29, 0]
     footprints:
       - type: polygon
         density: 1.0
