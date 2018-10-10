@@ -149,7 +149,14 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
                         "} layer(s) does not exist");
   }
 
-  fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
+  bool collision = footprint_reader.Get<bool>("collision", true);
+  if (collision) {
+    // b2d docs: maskBits are "I collide with" bitmask
+    fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
+  } else {
+    // "I will collide with nothing"
+    fixture_def.filter.maskBits = 0;
+  }
 }
 
 void ModelBody::LoadCircleFootprint(YamlReader &footprint_reader) {

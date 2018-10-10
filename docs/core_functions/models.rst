@@ -58,6 +58,11 @@ shown here. Examples can be found in flatland_server/tests.
           # between objects in the same layer, used for all footprint types
           layers: ["all"]
 
+          # optional, defaults to true
+          # If set to "false" entirely disables collision with this object
+          # Does not disable interactions like the laser scan plugin.
+          collision: true
+
           # required, the density of footprint in kg/m^2 in Box2D, used for all
           # footprint types
           density: 1
