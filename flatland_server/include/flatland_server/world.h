@@ -51,10 +51,13 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/interactive_marker_manager.h>
 #include <flatland_server/layer.h>
+#include <flatland_server/message_server.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
+
 #include <map>
+#include <queue>
 #include <string>
 #include <string>
 #include <vector>
@@ -66,6 +69,8 @@ namespace flatland_server {
  * that can represent environments at multiple levels, and models which are
  * can be robots or obstacles.
  */
+class InteractiveMarkerManager;
+
 class World : public b2ContactListener {
  public:
   boost::filesystem::path world_yaml_dir_;  ///<directory containing world file
@@ -83,6 +88,8 @@ class World : public b2ContactListener {
       int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
+
+  MessageServer message_server;
 
   /**
    * @brief Constructor for the world class. All data required for

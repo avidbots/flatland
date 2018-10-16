@@ -48,8 +48,15 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
+#include <flatland_server/world.h>
 
 namespace flatland_server {
+
+Model::Model(World *world, b2World *physics_world, CollisionFilterRegistry *cfr,
+             const std::string &ns, const std::string &name)
+    : Model(physics_world, cfr, ns, name) {
+  this->world = world;
+}
 
 Model::Model(b2World *physics_world, CollisionFilterRegistry *cfr,
              const std::string &ns, const std::string &name)
@@ -74,13 +81,14 @@ Model::~Model() {
   DebugVisualization::Get().Reset(viz_name_);
 }
 
-Model *Model::MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
+Model *Model::MakeModel(World *world, b2World *physics_world,
+                        CollisionFilterRegistry *cfr,
                         const std::string &model_yaml_path,
                         const std::string &ns, const std::string &name) {
   YamlReader reader(model_yaml_path);
   reader.SetErrorInfo("model " + Q(name));
 
-  Model *m = new Model(physics_world, cfr, ns, name);
+  Model *m = new Model(world, physics_world, cfr, ns, name);
 
   m->plugins_reader_ = reader.SubnodeOpt("plugins", YamlReader::LIST);
 
@@ -160,6 +168,12 @@ ModelBody *Model::GetBody(const std::string &name) {
     }
   }
   return nullptr;
+}
+
+World &Model::GetWorld() const { return *world; }
+
+MessageServer &Model::GetMessageServer() const {
+  return (GetWorld().message_server);
 }
 
 Joint *Model::GetJoint(const std::string &name) {

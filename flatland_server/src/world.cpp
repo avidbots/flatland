@@ -107,6 +107,8 @@ void World::Update(Timekeeper &timekeeper) {
     plugin_manager_.AfterPhysicsStep(timekeeper);
   }
   int_marker_manager_.update();
+
+  message_server.clean_old_topics();
 }
 
 void World::BeginContact(b2Contact *contact) {
@@ -257,8 +259,8 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",
                  abs_path.string().c_str());
 
-  Model *m =
-      Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
+  Model *m = Model::MakeModel(this, physics_world_, &cfr_, abs_path.string(),
+                              ns, name);
   m->TransformAll(pose);
 
   try {
