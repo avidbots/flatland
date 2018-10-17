@@ -49,13 +49,17 @@
 #define SPAWN_MODEL_TOOL_H
 
 #include <rviz/tool.h>
+#include <memory>
+#include <vector>
 
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
 #include <OgreVector3.h>
 
+#include <flatland_server/yaml_reader.h>
 #include <ros/ros.h>
+#include <rviz/ogre_helpers/billboard_line.h>
 #include "rviz/ogre_helpers/arrow.h"
 
 namespace flatland_viz {
@@ -122,23 +126,44 @@ class SpawnModelTool : public rviz::Tool {
   * @param c             QColor to set the 3d model
   */
   void SetMovingModelColor(QColor c);
+  /**
+   * @name               LoadPreview
+   * @brief              Load a vector preview of the model
+   */
+  void LoadPreview();
+  /**
+   * @name               LoadPolygonFootprint
+   * @brief              Load a vector preview of the model's polygon footprint
+   * @param footprint    The footprint yaml node
+   * @param pose         x,y,theta pose of footprint
+   */
+  void LoadPolygonFootprint(flatland_server::YamlReader &footprint,
+                            const flatland_server::Pose pose);
+  /**
+   * @name               LoadCircleFootprint
+   * @brief              Load a vector preview of the model's circle footprint
+   * @param footprint    The footprint yaml node
+   * @param pose         x,y,theta pose of footprint
+   */
+  void LoadCircleFootprint(flatland_server::YamlReader &footprint,
+                           const flatland_server::Pose pose);
 
   Ogre::Vector3
       intersection;     // location cursor intersects ground plane, ie the
                         // location to create the model
   float initial_angle;  // the angle to create the model at
   Ogre::SceneNode *moving_model_node_;  // the node for the 3D object
-  std::string model_resource_;          // path to 3d model
   enum ModelState { m_hidden, m_dragging, m_rotating };
   ModelState model_state;  // model state, first hidden, then dragging to
                            // intersection point, then rotating to desired angle
-  static QString path_to_model_file;  // full path to model file (yaml)
+  static QString path_to_model_file_;  // full path to model file (yaml)
   static QString model_name;  // base file name with path and extension removed
 
  protected:
   rviz::Arrow *arrow_;        // Rviz 3d arrow to show axis of rotation
   ros::NodeHandle nh;         // ros service node handle
   ros::ServiceClient client;  // ros service client
+  std::vector<std::shared_ptr<rviz::BillboardLine>> lines_list_;
 };
 
 }  // end namespace flatland_viz

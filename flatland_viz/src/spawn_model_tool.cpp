@@ -6,7 +6,7 @@
  *   \ \ \/\ \ \ \_/ |\ \ \/\ \L\ \ \ \L\ \/\ \L\ \ \ \_/\__, `\
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
- * @copyright Copyright 2017 Avidbots Corp.
+ * @copyright Copyright 2018 Avidbots Corp.
  * @name   spawn_model_tool.cpp
  * @brief  Rviz compatible tool for spawning flatland model
  * @author Joseph Duchesne
@@ -14,7 +14,7 @@
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2017, Avidbots Corp.
+ *  Copyright (c) 2018, Avidbots Corp.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,7 @@
  */
 
 #include <OGRE/OgreEntity.h>
+#include <OGRE/OgreException.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreSubEntity.h>
 
@@ -63,6 +64,10 @@
 
 #include <flatland_msgs/SpawnModel.h>
 
+#include <flatland_server/types.h>
+
+#include <yaml-cpp/yaml.h>
+
 #include "flatland_viz/load_model_dialog.h"
 #include "flatland_viz/spawn_model_tool.h"
 // #include "load_model_dialog.h"
@@ -71,7 +76,7 @@
 class DialogOptionsWidget;
 
 namespace flatland_viz {
-QString SpawnModelTool::path_to_model_file;
+QString SpawnModelTool::path_to_model_file_;
 QString SpawnModelTool::model_name;
 
 // Set the "shortcut_key_" member variable defined in the
@@ -105,7 +110,7 @@ void SpawnModelTool::onInitialize() {
   model_state = m_hidden;
 
   // make an arrow to show axis of rotation
-  arrow_ = new rviz::Arrow(scene_manager_, NULL, 2.0f, 0.2f, 0.5f, 0.35f);
+  arrow_ = new rviz::Arrow(scene_manager_, NULL, 2.0f, 0.2f, 0.3f, 0.35f);
   arrow_->setColor(0.0f, 0.0f, 1.0f, 1.0f);  // blue
   arrow_->getSceneNode()->setVisible(
       false);  // will only be visible during rotation phase
@@ -114,25 +119,9 @@ void SpawnModelTool::onInitialize() {
   Ogre::Quaternion orientation(Ogre::Radian(M_PI), Ogre::Vector3(1, 0, 0));
   arrow_->setOrientation(orientation);
 
-  // full path to the model file
-  model_resource_ = "package://flatland_viz/media/simple.dae";
-
-  // load the 3d model
-  if (rviz::loadMeshFromResource(model_resource_).isNull()) {
-    ROS_ERROR("SpawnModelTool: failed to load model resource '%s'.",
-              model_resource_.c_str());
-    return;
-  }
-
-  // create an Ogre child scene node
+  // create an Ogre child scene node for rendering the preview outline
   moving_model_node_ =
       scene_manager_->getRootSceneNode()->createChildSceneNode();
-
-  // create an Ogre entity
-  Ogre::Entity *entity = scene_manager_->createEntity(model_resource_);
-
-  // attach the object to the entity
-  moving_model_node_->attachObject(entity);
   moving_model_node_->setVisible(false);
 
   SetMovingModelColor(Qt::green);
@@ -194,10 +183,10 @@ void SpawnModelTool::SpawnModelInFlatland() {
   // fill in the service request
   srv.request.name = model_name.toStdString();
   srv.request.ns = model_name.toStdString();
-  srv.request.yaml_path = path_to_model_file.toStdString();
+  srv.request.yaml_path = path_to_model_file_.toStdString();
   srv.request.pose.x = intersection[0];
   srv.request.pose.y = intersection[1];
-  srv.request.pose.theta = initial_angle + M_PI / 2.0f;
+  srv.request.pose.theta = initial_angle;
 
   client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
 
@@ -220,12 +209,16 @@ void SpawnModelTool::SpawnModelInFlatland() {
 void SpawnModelTool::SetMovingModelColor(QColor c) {
   ROS_INFO_STREAM("SpawnModelTool::SetMovingModelColor");
 
-  Ogre::Entity *m_pEntity =
-      static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
-  const Ogre::MaterialPtr m_pMat = m_pEntity->getSubEntity(0)->getMaterial();
-  m_pMat->getTechnique(0)->getPass(0)->setAmbient(1, 0, 0);
-  m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
-                                                  c.blueF(), 0);
+  try {
+    Ogre::Entity *m_pEntity =
+        static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
+    const Ogre::MaterialPtr m_pMat = m_pEntity->getSubEntity(0)->getMaterial();
+    m_pMat->getTechnique(0)->getPass(0)->setAmbient(1, 0, 0);
+    m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
+                                                    c.blueF(), 0);
+  } catch (Ogre::InvalidParametersException e) {
+    ROS_WARN_STREAM("Invalid preview model");
+  }
 }
 
 // processMouseEvent() is sort of the main function of a Tool, because
@@ -286,11 +279,7 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
       moving_model_node_->setVisible(true);
       moving_model_node_->setPosition(intersection);
       Ogre::Vector3 dir = intersection2 - intersection;
-      if (fabs(dir.y) > .001) {
-        initial_angle = -1.0 * atan2(dir.x, dir.y);
-      } else {
-        initial_angle = -90.0 * M_PI / 180.0;
-      }
+      initial_angle = atan2(dir.y, dir.x);
       Ogre::Quaternion orientation(Ogre::Radian(initial_angle),
                                    Ogre::Vector3(0, 0, 1));
       moving_model_node_->setOrientation(orientation);
@@ -299,7 +288,88 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
   return Render;
 }
 
-void SpawnModelTool::SavePath(QString p) { path_to_model_file = p; }
+void SpawnModelTool::LoadPreview() {
+  // Clear the old preview, if there is one
+  moving_model_node_->removeAllChildren();
+  lines_list_.clear();
+
+  // Load the bodies list into a model object
+  flatland_server::YamlReader reader(path_to_model_file_.toStdString());
+
+  try {
+    flatland_server::YamlReader bodies_reader =
+        reader.Subnode("bodies", flatland_server::YamlReader::LIST);
+    // Iterate each body and add to the preview
+    for (int i = 0; i < bodies_reader.NodeSize(); i++) {
+      flatland_server::YamlReader body_reader =
+          bodies_reader.Subnode(i, flatland_server::YamlReader::MAP);
+      if (!body_reader.Get<bool>("enabled", "true")) {  // skip if disabled
+        continue;
+      }
+
+      auto pose = body_reader.GetPose("pose", flatland_server::Pose());
+
+      flatland_server::YamlReader footprints_node =
+          body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
+      for (int j = 0; j < footprints_node.NodeSize(); j++) {
+        flatland_server::YamlReader footprint =
+            footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
+
+        lines_list_.push_back(std::make_shared<rviz::BillboardLine>(
+            context_->getSceneManager(), moving_model_node_));
+        auto lines = lines_list_.back();
+        lines->setColor(0.0, 1.0, 0.0, 0.75);  // Green
+        lines->setLineWidth(0.05);
+        lines->setOrientation(
+            Ogre::Quaternion(Ogre::Radian(pose.theta), Ogre::Vector3(0, 0, 1)));
+        lines->setPosition(Ogre::Vector3(pose.x, pose.y, 0));
+
+        std::string type = footprint.Get<std::string>("type");
+        if (type == "circle") {
+          LoadCircleFootprint(footprint, pose);
+        } else if (type == "polygon") {
+          LoadPolygonFootprint(footprint, pose);
+        } else {
+          throw flatland_server::YAMLException("Invalid footprint \"type\"");
+        }
+      }
+    }
+  } catch (const flatland_server::YAMLException &e) {
+    ROS_ERROR_STREAM("Couldn't load model bodies for preview" << e.what());
+  }
+}
+
+void SpawnModelTool::LoadPolygonFootprint(
+    flatland_server::YamlReader &footprint, const flatland_server::Pose pose) {
+  auto lines = lines_list_.back();
+  auto points = footprint.GetList<flatland_server::Vec2>("points", 3,
+                                                         b2_maxPolygonVertices);
+  for (auto p : points) {
+    lines->addPoint(Ogre::Vector3(p.x, p.y, 0.));
+  }
+  if (points.size() > 0) {
+    lines->addPoint(
+        Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
+  }
+}
+
+void SpawnModelTool::LoadCircleFootprint(flatland_server::YamlReader &footprint,
+                                         const flatland_server::Pose pose) {
+  auto lines = lines_list_.back();
+  auto center = footprint.GetVec2("center", flatland_server::Vec2());
+  auto radius = footprint.Get<float>("radius", 1.0);
+  for (float a = 0.; a < M_PI * 2.0; a += M_PI / 8.) {  // 16 point circle
+    lines->addPoint(Ogre::Vector3(center.x + radius * cos(a),
+                                  center.y + radius * sin(a), 0.));
+  }
+  lines->addPoint(
+      Ogre::Vector3(center.x + radius, center.y, 0.));  // close the loop
+}
+
+void SpawnModelTool::SavePath(QString p) {
+  path_to_model_file_ = p;
+  LoadPreview();
+}
 
 void SpawnModelTool::SaveName(QString n) { model_name = n; }
 
