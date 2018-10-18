@@ -61,8 +61,6 @@ class World;
 class WorldPlugin : public FlatlandPlugin {
  protected:
   World *world_;
-  std::string name_;
-  std::string type_;
   YamlReader world_config_;
 
  public:
