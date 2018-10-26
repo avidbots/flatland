@@ -70,6 +70,16 @@ class Layer : public Entity {
   CollisionFilterRegistry *cfr_;  ///< collision filter registry
   std::string viz_name_;          ///< for visualization
 
+  struct MapDescription {
+    std::string path_;
+    double resolution_;
+    MapDescription() {}
+    MapDescription(const std::string &path, const double resolution)
+        : path_(path), resolution_(resolution) {}
+  };
+
+  const MapDescription map_description_;
+
   /**
    * @brief Constructor for the Layer class for initialization using a image
    * map file
@@ -87,8 +97,9 @@ class Layer : public Entity {
    */
   Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
-        const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-        double resolution, const YAML::Node &properties);
+        const Pose &origin, const std::string &map_path, const cv::Mat &bitmap,
+        double occupied_thresh, double resolution,
+        const YAML::Node &properties);
 
   /**
    * @brief Constructor for the Layer class for initialization using line

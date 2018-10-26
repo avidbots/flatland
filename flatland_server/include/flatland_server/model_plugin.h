@@ -71,7 +71,7 @@ class ModelPlugin : public FlatlandPlugin {
   /**
    * @brief Get model
    */
-  Model *GetModel();
+  Model *GetModel() const;
 
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
