@@ -812,7 +812,6 @@ TEST_F(LoadWorldTest, world_invalid_D) {
 TEST_F(LoadWorldTest, world_invalid_E) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/world_invalid_E/world.yaml");
-  test_yaml_fail("Flatland YAML: Model with name \"turtlebot\" already exists");
 }
 
 /**
