@@ -171,6 +171,13 @@ class World : public b2ContactListener {
   void DeleteModel(const std::string &name);
 
   /**
+ * @brief get model with a given name
+ * @param[in] name The name of the model you are looking for
+ * @param[out] Model* The model that you find
+ */
+  const Model *GetModel(const std::string &name);
+
+  /**
    * @brief move model with a given name
    * @param[in] name The name of the model to move
    * @param[in] pose The desired new pose of the model
