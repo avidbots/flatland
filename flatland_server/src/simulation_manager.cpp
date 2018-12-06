@@ -133,7 +133,7 @@ void SimulationManager::Main() {
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
 
-    ROS_INFO_THROTTLE_NAMED(
+    ROS_DEBUG_THROTTLE_NAMED(
         1, "SimMan",
         "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
         min_cycle_util, max_cycle_util, filtered_cycle_util, factor);

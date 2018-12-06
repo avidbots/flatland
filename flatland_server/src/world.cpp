@@ -322,6 +322,17 @@ void World::DeleteModel(const std::string &name) {
   }
 }
 
+const Model *World::GetModel(const std::string &name) {
+  for (const auto &model : models_) {
+    if (model->GetName() == name) {
+      return model;
+    }
+  }
+
+  throw Exception("Flatland World: failed to find model, model with name " +
+                  Q(name) + " does not exist");
+}
+
 void World::MoveModel(const std::string &name, const Pose &pose) {
   // Find desired model
   bool found = false;

@@ -170,6 +170,15 @@ ModelBody *Model::GetBody(const std::string &name) {
   return nullptr;
 }
 
+ModelPlugin *Model::GetPlugin(const std::string &name) const {
+  for (const auto &plugin : GetWorld().plugin_manager_.model_plugins_) {
+    if (plugin->GetModel() == this && plugin->GetName() == name) {
+      return plugin.get();
+    }
+  }
+  return nullptr;
+}
+
 World &Model::GetWorld() const { return *world; }
 
 MessageServer &Model::GetMessageServer() const {

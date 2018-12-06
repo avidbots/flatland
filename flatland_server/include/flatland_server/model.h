@@ -52,6 +52,7 @@
 #include <flatland_server/joint.h>
 #include <flatland_server/message_server.h>
 #include <flatland_server/model_body.h>
+#include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
@@ -59,6 +60,7 @@
 namespace flatland_server {
 
 class ModelBody;
+class ModelPlugin;
 class Joint;
 class World;
 
@@ -116,6 +118,13 @@ class Model : public Entity {
    * @return pointer to the body, nullptr indicates body cannot be found
    */
   ModelBody *GetBody(const std::string &name);
+
+  /**
+ * @brief Get a body in the model using its name
+ * @param[in] name Name of the body
+ * @return pointer to the body, nullptr indicates body cannot be found
+ */
+  ModelPlugin *GetPlugin(const std::string &name) const;
 
   /**
    * @brief Returns the
