@@ -156,18 +156,26 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
 
       } break;
 
-      case b2Shape::e_polygon: {  // Convert b2Polygon -> LINE_STRIP
+      case b2Shape::e_polygon: {  // Currently only
         b2PolygonShape* poly = (b2PolygonShape*)fixture->GetShape();
-        marker.type = marker.LINE_STRIP;
-        marker.scale.x = 0.03;  // 3cm wide lines
+        marker.type = marker.TRIANGLE_LIST;
 
-        for (int i = 0; i < poly->m_count; i++) {
-          geometry_msgs::Point p;
-          p.x = poly->m_vertices[i].x;
-          p.y = poly->m_vertices[i].y;
-          marker.points.push_back(p);
+        geometry_msgs::Point p1;
+        p1.x = poly->m_vertices[0].x;
+        p1.y = poly->m_vertices[0].y;
+
+        for (int i = 1; i < poly->m_count - 1; i++) {
+          geometry_msgs::Point p2;
+          p2.x = poly->m_vertices[i].x;
+          p2.y = poly->m_vertices[i].y;
+          geometry_msgs::Point p3;
+          p3.x = poly->m_vertices[i+1].x;
+          p3.y = poly->m_vertices[i+1].y;
+
+          marker.points.push_back(p1);
+          marker.points.push_back(p2);
+          marker.points.push_back(p3);
         }
-        marker.points.push_back(marker.points[0]);  // Close the shape
 
       } break;
 

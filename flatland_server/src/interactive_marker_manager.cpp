@@ -99,7 +99,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
     if (transformed_body_marker.type ==
             visualization_msgs::Marker::LINE_STRIP ||
         transformed_body_marker.type == visualization_msgs::Marker::LINE_LIST) {
-      transformed_body_marker.scale.x = 0.05;
+      transformed_body_marker.scale.x = 0.01;
     }
 
     // Add transformed body marker to interactive marker control object
