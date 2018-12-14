@@ -65,6 +65,7 @@ class Body {
   b2Body *physics_body_;   ///< Box2D physics body
   Color color_;            ///< color, for visualization
   YAML::Node properties_;  ///< Properties document for plugins to use
+  Pose parent_transform_;  ///< Transform relative to parent
 
   /**
    * @brief constructor for body, takes in all the required parameters
@@ -120,6 +121,11 @@ class Body {
    * @brief Set of the color of the body
    */
   void SetColor(const Color &color);
+
+  /**
+   * @brief Get the parent transform
+   */
+  const Pose &GetParentTransform() const;
 
   /**
    * Destructor for the body
