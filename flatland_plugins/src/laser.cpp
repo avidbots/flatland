@@ -188,11 +188,46 @@ void Laser::ComputeLaserRanges() {
         });
   }
 
+  auto range_trans = [this](std::future<std::pair<double, double>> &res) {
+    return res.get().first + this->noise_gen_(this->rng_);
+  };
+
+  auto laser_trans = [this](std::future<std::pair<double, double>> &res) {
+    auto r = res.get();
+    r.first += this->noise_gen_(this->rng_);
+    return r;
+  };
+
   // Unqueue all of the future'd results
-  for (unsigned int i = 0; i < laser_scan_.ranges.size(); ++i) {
-    auto result = results[i].get();  // Pull the result from the future
-    laser_scan_.ranges[i] = result.first + this->noise_gen_(this->rng_);
-    if (reflectance_layers_bits_) laser_scan_.intensities[i] = result.second;
+  if (reflectance_layers_bits_) {
+    if (flipped_) {
+      auto scans = laser_scan_.ranges.rbegin();
+      auto intensities = laser_scan_.intensities.rbegin();
+      auto result = results.begin();
+      for (; result != results.end(); ++result, ++scans, ++intensities) {
+        auto thing = laser_trans(*result);
+        *scans = thing.first;
+        *intensities = thing.second;
+      }
+    } else {
+      auto scans = laser_scan_.ranges.begin();
+      auto intensities = laser_scan_.intensities.begin();
+      auto result = results.begin();
+      for (; result != results.end(); ++result, ++scans, ++intensities) {
+        auto thing = laser_trans(*result);
+        *scans = thing.first;
+        *intensities = thing.second;
+      }
+    }
+
+  } else {
+    if (flipped_) {
+      std::transform(results.begin(), results.end(),
+                     laser_scan_.ranges.rbegin(), range_trans);
+    } else {
+      std::transform(results.begin(), results.end(), laser_scan_.ranges.begin(),
+                     range_trans);
+    }
   }
 }
 
@@ -228,6 +263,8 @@ void Laser::ParseParameters(const YAML::Node &config) {
   origin_ = reader.GetPose("origin", Pose(0, 0, 0));
   range_ = reader.Get<double>("range");
   noise_std_dev_ = reader.Get<double>("noise_std_dev", 0);
+
+  flipped_ = reader.Get<bool>("flipped", false);
 
   std::vector<std::string> layers =
       reader.GetList<std::string>("layers", {"all"}, -1, -1);
