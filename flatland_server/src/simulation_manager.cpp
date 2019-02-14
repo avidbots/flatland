@@ -44,11 +44,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/simulation_manager.h"
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
-#include <flatland_server/service_manager.h>
+#include <flatland_server/simulation_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <exception>
@@ -58,14 +57,20 @@
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     double update_rate, double step_size,
-                                     bool show_viz, double viz_pub_rate)
+                                     std::string models_path,
+                                     std::string world_plugins_path,
+                                     bool use_local_map, double update_rate,
+                                     double step_size, bool show_viz,
+                                     double viz_pub_rate)
     : world_(nullptr),
+      use_local_map_(use_local_map),
       update_rate_(update_rate),
       step_size_(step_size),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
-      world_yaml_file_(world_yaml_file) {
+      world_yaml_file_(world_yaml_file),
+      models_path_(models_path),
+      world_plugins_path_(world_plugins_path) {
   ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
@@ -78,11 +83,20 @@ void SimulationManager::Main() {
   run_simulator_ = true;
 
   try {
-    world_ = World::MakeWorld(world_yaml_file_);
+    world_ = World::MakeWorld(world_yaml_file_, models_path_,
+                              world_plugins_path_, use_local_map_);
     ROS_INFO_NAMED("SimMan", "World loaded");
   } catch (const std::exception& e) {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
+  }
+
+  if (!use_local_map_) {
+    map_changed_subscriber_ =
+        nh_.subscribe("/map_changed", 1, &SimulationManager::UpdateMap, this);
+  } else {
+    service_manager_ =
+        std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
   }
 
   if (show_viz_) world_->DebugVisualize();
@@ -92,7 +106,6 @@ void SimulationManager::Main() {
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
   double viz_update_period = 1.0f / viz_pub_rate_;
-  ServiceManager service_manager(this, world_);
   Timekeeper timekeeper;
 
   ros::WallRate rate(update_rate_);
@@ -141,6 +154,17 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
 
   delete world_;
+}
+
+void SimulationManager::UpdateMap(
+    const std_msgs::Empty::ConstPtr& map_changed) {
+  world_->LoadWorldEntities(world_yaml_file_);
+  if (show_viz_) world_->DebugVisualize();
+
+  if (service_manager_ == nullptr) {
+    service_manager_ =
+        std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
+  }
 }
 
 void SimulationManager::Shutdown() {

@@ -1,0 +1,9 @@
+properties: {}
+plugins:
+  - name: test1
+    type: RandomWall
+    layer: "2d"
+    num_of_walls: 10
+    wall_wall_dist: 1
+    double_wall: true
+    robot_name: cleaner1

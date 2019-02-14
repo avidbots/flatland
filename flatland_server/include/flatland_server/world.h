@@ -91,6 +91,9 @@ class World : public b2ContactListener {
 
   MessageServer message_server;
 
+  std::string models_path_;
+  bool use_local_map_;
+
   /**
    * @brief Constructor for the world class. All data required for
    * initialization should be passed in here
@@ -209,15 +212,26 @@ class World : public b2ContactListener {
    * @brief factory method to create a instance of the world class. Cleans all
    * the inputs before instantiation of the class. TThrows YAMLException.
    * @param[in] yaml_path Path to the world yaml file
+   * @param[in] models_path Path to the world yaml file
+   * @param[in] world_plugins_path Path to the world yaml file
    * @return pointer to a new world
    */
-  static World *MakeWorld(const std::string &yaml_path);
+  static World *MakeWorld(const std::string &yaml_path,
+                          const std::string &models_path,
+                          const std::string &world_plugins_path,
+                          const bool use_local_map);
 
   /**
-   * @brief Publish debug visualizations for everything
-   * @param[in] update_layers since layers are pretty much static, this
-   * parameter is used to skip updating layers
+   * @brief Loads the layers and objects in the world
+   * @param[in] yaml_path Path to the world yaml file
    */
+  void LoadWorldEntities(const std::string &yaml_path);
+
+  /**
+ * @brief Publish debug visualizations for everything
+ * @param[in] update_layers since layers are pretty much static, this
+ * parameter is used to skip updating layers
+ */
   void DebugVisualize(bool update_layers = true);
 };
 };      // namespace flatland_server

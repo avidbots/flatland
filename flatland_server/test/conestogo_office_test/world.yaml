@@ -1,4 +1,3 @@
-properties: {} # For later use
 layers:  # Support for arbitrary number of layers
   - name: "2d"  # layer 0 named "2d"
     map: "map.yaml"  # leading / denotes absolute file path, otherwise relative
@@ -16,17 +15,3 @@ models:
   - name: sensor
     pose: [2, 0, 0]
     model: "sensor.model.yaml"
-plugins:
-  - name: test1
-    type: RandomWall
-    layer: "2d"
-    num_of_walls: 10
-    wall_wall_dist: 1
-    double_wall: true
-    robot_name: cleaner1
-
-
-  # - name: turtlebot1 
-  #   pose: [12, 0, 0]
-  #   model: "turtlebot.model.yaml"
-    

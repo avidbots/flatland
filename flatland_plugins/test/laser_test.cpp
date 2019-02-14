@@ -60,7 +60,7 @@ using namespace flatland_plugins;
 class LaserPluginTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  boost::filesystem::path world_yaml_path;
   sensor_msgs::LaserScan scan_front, scan_center, scan_back;
   World* w;
 
@@ -166,11 +166,13 @@ class LaserPluginTest : public ::testing::Test {
  * Test the laser plugin for a given model and plugin configuration
  */
 TEST_F(LaserPluginTest, range_test) {
-  world_yaml = this_file_dir / fs::path("laser_tests/range_test/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/range_test/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml", true);
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -212,12 +214,13 @@ TEST_F(LaserPluginTest, range_test) {
  * Test the laser plugin for intensity configuration
  */
 TEST_F(LaserPluginTest, intensity_test) {
-  world_yaml =
-      this_file_dir / fs::path("laser_tests/intensity_test/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/intensity_test/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml", true);
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -260,10 +263,12 @@ TEST_F(LaserPluginTest, intensity_test) {
  * configurations
  */
 TEST_F(LaserPluginTest, invalid_A) {
-  world_yaml = this_file_dir / fs::path("laser_tests/invalid_A/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/invalid_A/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml", true);
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -285,10 +290,12 @@ TEST_F(LaserPluginTest, invalid_A) {
  * configurations
  */
 TEST_F(LaserPluginTest, invalid_B) {
-  world_yaml = this_file_dir / fs::path("laser_tests/invalid_B/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/invalid_B/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml", true);
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {

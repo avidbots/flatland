@@ -62,7 +62,7 @@ using namespace flatland_server;
 class LoadWorldTest : public ::testing::Test {
  protected:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  boost::filesystem::path world_yaml_path;
   World *w;
 
   void SetUp() override {
@@ -84,7 +84,9 @@ class LoadWorldTest : public ::testing::Test {
     std::regex regex(regex_str);
 
     try {
-      w = World::MakeWorld(world_yaml.string());
+      w = World::MakeWorld(
+          world_yaml_path.string() + "world.yaml", world_yaml_path.string(),
+          world_yaml_path.string() + "world_plugins.yaml", true);
       ADD_FAILURE() << "Expected an exception, but none were raised";
     } catch (const Exception &e) {
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
@@ -514,9 +516,10 @@ class LoadWorldTest : public ::testing::Test {
  * correct after instantiation
  */
 TEST_F(LoadWorldTest, simple_test_A) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
-  w = World::MakeWorld(world_yaml.string());
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/simple_test_A/");
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml", true);
 
   EXPECT_EQ(w->physics_velocity_iterations_, 11);
   EXPECT_EQ(w->physics_position_iterations_, 12);
@@ -753,11 +756,11 @@ TEST_F(LoadWorldTest, simple_test_A) {
  * an exception
  */
 TEST_F(LoadWorldTest, wrong_world_path) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/random_path/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/random_path/");
+
   test_yaml_fail(
       "Flatland YAML: File does not exist, "
-      "path=\".*/load_world_tests/random_path/world.yaml\".*");
+      "path=\".*/load_world_tests/random_path/world_plugins.yaml\".*");
 }
 
 /**
@@ -765,8 +768,8 @@ TEST_F(LoadWorldTest, wrong_world_path) {
  * an exception.
  */
 TEST_F(LoadWorldTest, world_invalid_A) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/world_invalid_A/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/world_invalid_A/");
   test_yaml_fail("Flatland YAML: Entry \"properties\" does not exist");
 }
 
@@ -775,8 +778,8 @@ TEST_F(LoadWorldTest, world_invalid_A) {
  * an exception.
  */
 TEST_F(LoadWorldTest, world_invalid_B) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/world_invalid_B/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/world_invalid_B/");
   test_yaml_fail(
       "Flatland YAML: Entry \"color\" must have size of exactly 4 \\(in "
       "\"layers\" index=0\\)");
@@ -787,8 +790,8 @@ TEST_F(LoadWorldTest, world_invalid_B) {
  * an exception.
  */
 TEST_F(LoadWorldTest, world_invalid_C) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/world_invalid_C/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/world_invalid_C/");
   test_yaml_fail(
       "Flatland YAML: Entry index=0 contains unrecognized entry\\(s\\) "
       "\\{\"random_param_1\", \"random_param_2\", \"random_param_3\"\\} \\(in "
@@ -800,8 +803,8 @@ TEST_F(LoadWorldTest, world_invalid_C) {
  * an exception.
  */
 TEST_F(LoadWorldTest, world_invalid_D) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/world_invalid_D/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/world_invalid_D/");
   test_yaml_fail("Flatland YAML: Layer with name \"layer\" already exists");
 }
 
@@ -810,8 +813,8 @@ TEST_F(LoadWorldTest, world_invalid_D) {
  * an exception.
  */
 TEST_F(LoadWorldTest, world_invalid_E) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/world_invalid_E/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/world_invalid_E/");
   test_yaml_fail("Flatland YAML: Model with name \"turtlebot\" already exists");
 }
 
@@ -820,8 +823,8 @@ TEST_F(LoadWorldTest, world_invalid_E) {
  * an exception.
  */
 TEST_F(LoadWorldTest, world_invalid_F) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/world_invalid_F/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/world_invalid_F/");
   test_yaml_fail(
       "Flatland YAML: Unable to add 3 additional layer\\(s\\) \\{layer_15, "
       "layer_16, layer_17\\}, current layers count is 14, max allowed is 16");
@@ -832,8 +835,7 @@ TEST_F(LoadWorldTest, world_invalid_F) {
  * load a invalid map yaml file. It should throw an exception.
  */
 TEST_F(LoadWorldTest, map_invalid_A) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/map_invalid_A/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/map_invalid_A/");
   test_yaml_fail(
       "Flatland YAML: Entry \"origin\" does not exist \\(in layer "
       "\"2d\"\\)");
@@ -845,8 +847,7 @@ TEST_F(LoadWorldTest, map_invalid_A) {
  * throw an exception
  */
 TEST_F(LoadWorldTest, map_invalid_B) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/map_invalid_B/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/map_invalid_B/");
   test_yaml_fail("Flatland YAML: Failed to load \".*\\.png\" in layer \"2d\"");
 }
 
@@ -855,8 +856,7 @@ TEST_F(LoadWorldTest, map_invalid_B) {
  * thrown
  */
 TEST_F(LoadWorldTest, map_invalid_C) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/map_invalid_C/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/map_invalid_C/");
   test_yaml_fail(
       "Flatland File: Failed to load \".*/map_invalid_C/random_file.dat\"");
 }
@@ -866,8 +866,7 @@ TEST_F(LoadWorldTest, map_invalid_C) {
  * thrown
  */
 TEST_F(LoadWorldTest, map_invalid_D) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/map_invalid_D/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/map_invalid_D/");
   test_yaml_fail(
       "Flatland File: Failed to read line segment from line 6, in file "
       "\"map_lines.dat\"");
@@ -878,8 +877,7 @@ TEST_F(LoadWorldTest, map_invalid_D) {
  * thrown
  */
 TEST_F(LoadWorldTest, map_invalid_E) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/map_invalid_E/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("load_world_tests/map_invalid_E/");
   test_yaml_fail(
       "Flatland YAML: Entry \"scale\" does not exist \\(in layer \"lines\"\\)");
 }
@@ -888,8 +886,8 @@ TEST_F(LoadWorldTest, map_invalid_E) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_A) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_A/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_A/");
   test_yaml_fail(
       "Flatland YAML: Entry \"bodies\" must be a list \\(in model "
       "\"turtlebot\"\\)");
@@ -899,8 +897,8 @@ TEST_F(LoadWorldTest, model_invalid_A) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_B) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_B/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_B/");
   test_yaml_fail(
       "Flatland YAML: Entry \"points\" must have size >= 3 \\(in model "
       "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");
@@ -910,8 +908,8 @@ TEST_F(LoadWorldTest, model_invalid_B) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_C) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_C/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_C/");
   test_yaml_fail(
       "Flatland YAML: Entry \"anchor\" must have size of exactly 2 \\(in model "
       "\"turtlebot\" joint \"right_wheel_weld\" \"bodies\" index=1\\)");
@@ -921,8 +919,8 @@ TEST_F(LoadWorldTest, model_invalid_C) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_D) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_D/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_D/");
   test_yaml_fail(
       "Flatland YAML: Cannot find body with name \"left_wheel_123\" in model "
       "\"turtlebot\" joint \"left_wheel_weld\" \"bodies\" index=1");
@@ -932,8 +930,8 @@ TEST_F(LoadWorldTest, model_invalid_D) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_E) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_E/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_E/");
   test_yaml_fail(
       "Flatland YAML: Invalid footprint \"layers\" in model \"turtlebot\" body "
       "\"left_wheel\" \"footprints\" index=0, \\{random_layer\\} layer\\(s\\) "
@@ -944,8 +942,8 @@ TEST_F(LoadWorldTest, model_invalid_E) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_F) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_F/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_F/");
   test_yaml_fail(
       "Flatland YAML: Entry index=0 contains unrecognized entry\\(s\\) "
       "\\{\"random_paramter\"\\} \\(in model \"turtlebot\" body \"base\" "
@@ -956,8 +954,8 @@ TEST_F(LoadWorldTest, model_invalid_F) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_G) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_G/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_G/");
   test_yaml_fail(
       "Flatland YAML: Entry body \"base\" contains unrecognized entry\\(s\\) "
       "\\{\"random_paramter\"\\} \\(in model \"turtlebot\"\\)");
@@ -967,8 +965,8 @@ TEST_F(LoadWorldTest, model_invalid_G) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_H) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_H/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_H/");
   test_yaml_fail(
       "Flatland YAML: Invalid \"bodies\" in \"turtlebot\" model, body with "
       "name \"base\" already exists");
@@ -978,8 +976,8 @@ TEST_F(LoadWorldTest, model_invalid_H) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_I) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_I/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_I/");
   test_yaml_fail(
       "Flatland YAML: Invalid \"joints\" in \"turtlebot\" model, joint with "
       "name \"wheel_weld\" already exists");
@@ -989,8 +987,8 @@ TEST_F(LoadWorldTest, model_invalid_I) {
  * This test tries to load a invalid model yaml file, it should fail
  */
 TEST_F(LoadWorldTest, model_invalid_J) {
-  world_yaml =
-      this_file_dir / fs::path("load_world_tests/model_invalid_J/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("load_world_tests/model_invalid_J/");
   test_yaml_fail(
       "Flatland YAML: Entry \"points\" must have size <= 8 \\(in model "
       "\"turtlebot\" body \"base\" \"footprints\" index=1\\)");

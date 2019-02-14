@@ -1,4 +1,3 @@
-properties_____: {} # invalid
 layers:
   - name: "2d"
     map: "map.yaml"

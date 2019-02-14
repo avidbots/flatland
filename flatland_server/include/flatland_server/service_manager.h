@@ -44,6 +44,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FLATLAND_PLUGIN_SERVICE_MANAGER_H
+#define FLATLAND_PLUGIN_SERVICE_MANAGER_H
+
 #include <flatland_msgs/DeleteModel.h>
 #include <flatland_msgs/MoveModel.h>
 #include <flatland_msgs/SpawnModel.h>
@@ -51,9 +54,6 @@
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
-
-#ifndef FLATLAND_PLUGIN_SERVICE_MANAGER_H
-#define FLATLAND_PLUGIN_SERVICE_MANAGER_H
 
 namespace flatland_server {
 

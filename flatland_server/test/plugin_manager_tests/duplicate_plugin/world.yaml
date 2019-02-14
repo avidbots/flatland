@@ -1,4 +1,3 @@
-properties: {}
 layers:
   - name: "2d"
     map: "../load_dummy_test/map.yaml"

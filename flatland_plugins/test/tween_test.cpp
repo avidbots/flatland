@@ -58,7 +58,7 @@ using namespace flatland_plugins;
 class TweenPluginTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  boost::filesystem::path world_yaml_path;
 
   void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
@@ -82,11 +82,13 @@ class TweenPluginTest : public ::testing::Test {
  * Test the tween plugin handles oneshot
  */
 TEST_F(TweenPluginTest, once_test) {
-  world_yaml = this_file_dir / fs::path("tween_tests/once.world.yaml");
+  world_yaml_path = this_file_dir / fs::path("tween_tests/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(world_yaml.string());
+  World* w = World::MakeWorld(
+      world_yaml_path.string() + "once.world.yaml", world_yaml_path.string(),
+      world_yaml_path.string() + "once.world_plugins.yaml", true);
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -116,11 +118,13 @@ TEST_F(TweenPluginTest, once_test) {
  * Test that the tween plugin yoyos
  */
 TEST_F(TweenPluginTest, yoyo_test) {
-  world_yaml = this_file_dir / fs::path("tween_tests/yoyo.world.yaml");
+  world_yaml_path = this_file_dir / fs::path("tween_tests/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(world_yaml.string());
+  World* w = World::MakeWorld(
+      world_yaml_path.string() + "yoyo.world.yaml", world_yaml_path.string(),
+      world_yaml_path.string() + "yoyo.world_plugins.yaml", true);
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -159,11 +163,13 @@ TEST_F(TweenPluginTest, yoyo_test) {
  * Test that the tween plugin loops
  */
 TEST_F(TweenPluginTest, loop_test) {
-  world_yaml = this_file_dir / fs::path("tween_tests/loop.world.yaml");
+  world_yaml_path = this_file_dir / fs::path("tween_tests/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(world_yaml.string());
+  World* w = World::MakeWorld(
+      world_yaml_path.string() + "loop.world.yaml", world_yaml_path.string(),
+      world_yaml_path.string() + "loop.world_plugins.yaml", true);
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());

@@ -62,7 +62,7 @@ using namespace flatland_msgs;
 class BumperPluginTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  boost::filesystem::path world_yaml_path;
   flatland_msgs::Collisions msg1, msg2;
   World* w;
 
@@ -182,12 +182,13 @@ class BumperPluginTest : public ::testing::Test {
  * Test the bumper plugin for a given model and plugin configuration
  */
 TEST_F(BumperPluginTest, collision_test) {
-  world_yaml =
-      this_file_dir / fs::path("bumper_tests/collision_test/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("bumper_tests/collision_test/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.01);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml", true);
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -284,10 +285,12 @@ TEST_F(BumperPluginTest, collision_test) {
  * Test with a invalid body specified in the exclude list
  */
 TEST_F(BumperPluginTest, invalid_A) {
-  world_yaml = this_file_dir / fs::path("bumper_tests/invalid_A/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("bumper_tests/invalid_A/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml", true);
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
