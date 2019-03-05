@@ -165,6 +165,7 @@ void SimulationManager::UpdateMap(
     service_manager_ =
         std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
   }
+  map_changed_subscriber_.shutdown();
 }
 
 void SimulationManager::Shutdown() {
