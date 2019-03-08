@@ -73,12 +73,12 @@ class Laser : public ModelPlugin {
   std::string topic_;     ///< topic name to publish the laser scan
   Body *body_;            ///<  body the laser frame attaches to
   Pose origin_;           ///< laser frame w.r.t the body
-  float range_;          ///< laser max range
-  float noise_std_dev_;  ///< noise std deviation
-  float max_angle_;      /// < laser max angle
-  float min_angle_;      ///< laser min angle
-  float increment_;      ///< laser angle increment
-  float update_rate_;    ///< the rate laser scan will be published
+  float range_;           ///< laser max range
+  float noise_std_dev_;   ///< noise std deviation
+  float max_angle_;       /// < laser max angle
+  float min_angle_;       ///< laser min angle
+  float increment_;       ///< laser angle increment
+  float update_rate_;     ///< the rate laser scan will be published
   std::string frame_id_;  ///< laser frame id name
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
   bool flipped_;          ///< whether the lidar is flipped
@@ -91,7 +91,7 @@ class Laser : public ModelPlugin {
    */
   uint16_t reflectance_layers_bits_;
 
-  std::default_random_engine rng_;              ///< random generator
+  std::default_random_engine rng_;             ///< random generator
   std::normal_distribution<float> noise_gen_;  ///< gaussian noise generator
 
   Eigen::Matrix3f m_body_to_laser_;       ///< tf from body to laser

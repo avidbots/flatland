@@ -100,15 +100,29 @@ World::~World() {
 
 void World::Update(Timekeeper &timekeeper) {
   if (!IsPaused()) {
+    START_PROFILE(timekeeper, "Before Physics Step");
     plugin_manager_.BeforePhysicsStep(timekeeper);
+    END_PROFILE(timekeeper, "Before Physics Step");
+
+    START_PROFILE(timekeeper, "Physics Step");
     physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
                          physics_position_iterations_);
-    timekeeper.StepTime();
-    plugin_manager_.AfterPhysicsStep(timekeeper);
-  }
-  int_marker_manager_.update();
+    END_PROFILE(timekeeper, "Physics Step");
 
+    timekeeper.StepTime();
+
+    START_PROFILE(timekeeper, "After Physics Step");
+    plugin_manager_.AfterPhysicsStep(timekeeper);
+    END_PROFILE(timekeeper, "After Physics Step");
+  }
+
+  START_PROFILE(timekeeper, "Update Interactive Marker");
+  int_marker_manager_.update();
+  END_PROFILE(timekeeper, "Update Interactive Marker");
+
+  START_PROFILE(timekeeper, "Clearing Message Server Topics");
   message_server.clean_old_topics();
+  END_PROFILE(timekeeper, "Clearing Message Server Topics");
 }
 
 void World::BeginContact(b2Contact *contact) {

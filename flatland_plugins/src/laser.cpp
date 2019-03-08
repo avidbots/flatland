@@ -59,7 +59,7 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 
-void Laser::OnInitialize(const YAML::Node &config) {
+void Laser::OnInitialize(const YAML::Node& config) {
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
@@ -126,7 +126,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_tf_.transform.rotation.w = q.w();
 }
 
-void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
+void Laser::BeforePhysicsStep(const Timekeeper& timekeeper) {
   // keep the update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
@@ -149,7 +149,7 @@ void Laser::ComputeLaserRanges() {
   // get the transformation matrix from the world to the body, and get the
   // world to laser frame transformation matrix by multiplying the world to body
   // and body to laser
-  const b2Transform &t = body_->GetPhysicsBody()->GetTransform();
+  const b2Transform& t = body_->GetPhysicsBody()->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
@@ -162,11 +162,12 @@ void Laser::ComputeLaserRanges() {
   // Conver to Box2D data types
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
+  // Results vector
+  std::vector<std::future<std::pair<float, float>>> results(
+      laser_scan_.ranges.size());
+
   // loop through the laser points and call the Box2D world raycast by
   // enqueueing the callback
-  // Results vector
-  std::vector<std::future<float>> results(laser_scan_.ranges.size());
-
   for (unsigned int i = 0; i < laser_scan_.ranges.size(); ++i) {
     results[i] =
         pool_.enqueue([i, this, laser_origin_point] {  // Lambda function
@@ -179,26 +180,47 @@ void Laser::ComputeLaserRanges() {
                                                  laser_point);
 
           if (!cb.did_hit_) {
-            return NAN;
+            return std::make_pair<float, float>(NAN, 0);
           } else {
-            return (cb.fraction_) * this->range_ + this->noise_gen_(this->rng_);
+            return std::make_pair<float, float>(
+                cb.fraction_ * this->range_ + this->noise_gen_(this->rng_),
+                static_cast<float>(cb.intensity_));
           }
         });
   }
+
+  // Unqueue all of the future'd results
+  if (reflectance_layers_bits_) {
+    if (flipped_) {
+      std::transform(results.begin(), results.end(),
+                     laser_scan_.intensities.rbegin(),
+                     [this](std::future<std::pair<float, float>>& res) {
+                       return res.get().second;
+                     });
+    } else {
+      std::transform(results.begin(), results.end(),
+                     laser_scan_.intensities.begin(),
+                     [this](std::future<std::pair<float, float>>& res) {
+                       return res.get().second;
+                     });
+    }
+  }
+
   if (flipped_) {
-    for (unsigned i = 0; i < laser_scan_.ranges.size(); ++i) {
-      laser_scan_.ranges[i] = results[i].get();
-    }
+    std::transform(results.begin(), results.end(), laser_scan_.ranges.rbegin(),
+                   [this](std::future<std::pair<float, float>>& res) {
+                     return res.get().first;
+                   });
   } else {
-    size_t ranges_size = laser_scan_.ranges.size();
-    for (unsigned i = 0; i < laser_scan_.ranges.size(); ++i) {
-      laser_scan_.ranges[ranges_size - i] = results[i].get();
-    }
+    std::transform(results.begin(), results.end(), laser_scan_.ranges.begin(),
+                   [this](std::future<std::pair<float, float>>& res) {
+                     return res.get().first;
+                   });
   }
 }
 
-float LaserCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
-                                   const b2Vec2 &normal, float fraction) {
+float LaserCallback::ReportFixture(b2Fixture* fixture, const b2Vec2& point,
+                                   const b2Vec2& normal, float fraction) {
   uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers
   if (!(category_bits & parent_->layers_bits_)) {
@@ -218,7 +240,7 @@ float LaserCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
   return fraction;
 }
 
-void Laser::ParseParameters(const YAML::Node &config) {
+void Laser::ParseParameters(const YAML::Node& config) {
   YamlReader reader(config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "scan");
