@@ -25,36 +25,37 @@ namespace flatland_server {
 
 class Profile {
  public:
+  Profile()
+      : lapse_count_(0),
+        started_(false),
+        start_time_(std::chrono::high_resolution_clock::now()),
+        total_duration_(std::chrono::high_resolution_clock::duration::zero()) {}
+
   void start() {
-    started = true;
-    start_time = std::chrono::high_resolution_clock::now();
+    started_ = true;
+    start_time_ = std::chrono::high_resolution_clock::now();
   }
 
   void end() {
-    assert(started);
-    lapse_count++;
-    total_duration += std::chrono::duration_cast<std::chrono::microseconds>(
-        std::chrono::high_resolution_clock::now() - start_time);
+    assert(started_);
+    lapse_count_++;
+    total_duration_ += std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::high_resolution_clock::now() - start_time_);
   }
 
-  Profile()
-      : lapse_count(0),
-        started(false),
-        start_time(std::chrono::high_resolution_clock::now()),
-        total_duration(std::chrono::high_resolution_clock::duration::zero()) {}
-
-  int getLapseCount() const { return lapse_count; }
+  int getLapseCount() const { return lapse_count_; }
 
   long getTotalDuration() const {
-    return std::chrono::duration_cast<std::chrono::microseconds>(total_duration)
+    return std::chrono::duration_cast<std::chrono::microseconds>(
+               total_duration_)
         .count();
   }
 
  private:
-  int lapse_count;
-  bool started;
-  std::chrono::high_resolution_clock::time_point start_time;
-  std::chrono::high_resolution_clock::duration total_duration;
+  int lapse_count_;
+  bool started_;
+  std::chrono::high_resolution_clock::time_point start_time_;
+  std::chrono::high_resolution_clock::duration total_duration_;
 };
 
 class Profiler {
