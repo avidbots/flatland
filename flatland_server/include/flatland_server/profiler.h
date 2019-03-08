@@ -1,7 +1,7 @@
 #ifndef FLATLAND_PROFILER_H
 #define FLATLAND_PROFILER_H
 
-#define PROFILER_ON true
+#define PROFILER_ON false
 #define PROFILER_OUTPUT_PATH "/tmp/flatland_profile_output.log"
 
 #if PROFILER_ON == true
