@@ -192,30 +192,35 @@ void Laser::ComputeLaserRanges() {
   // Unqueue all of the future'd results
   if (reflectance_layers_bits_) {
     if (flipped_) {
+      auto i = laser_scan_.intensities.rbegin();
+      auto r = laser_scan_.ranges.rbegin();
+      for (auto res = results.begin(); res != results.end(); ++res, ++i, ++r) {
+        auto result = res->get();
+        *r = result.first;
+        *i = result.second;
+      }
+    } else {
+      auto i = laser_scan_.intensities.begin();
+      auto r = laser_scan_.ranges.begin();
+      for (auto res = results.begin(); res != results.end(); ++res, ++i, ++r) {
+        auto result = res->get();
+        *r = result.first;
+        *i = result.second;
+      }
+    }
+  } else {
+    if (flipped_) {
       std::transform(results.begin(), results.end(),
-                     laser_scan_.intensities.rbegin(),
+                     laser_scan_.ranges.rbegin(),
                      [this](std::future<std::pair<float, float>>& res) {
-                       return res.get().second;
+                       return res.get().first;
                      });
     } else {
-      std::transform(results.begin(), results.end(),
-                     laser_scan_.intensities.begin(),
+      std::transform(results.begin(), results.end(), laser_scan_.ranges.begin(),
                      [this](std::future<std::pair<float, float>>& res) {
-                       return res.get().second;
+                       return res.get().first;
                      });
     }
-  }
-
-  if (flipped_) {
-    std::transform(results.begin(), results.end(), laser_scan_.ranges.rbegin(),
-                   [this](std::future<std::pair<float, float>>& res) {
-                     return res.get().first;
-                   });
-  } else {
-    std::transform(results.begin(), results.end(), laser_scan_.ranges.begin(),
-                   [this](std::future<std::pair<float, float>>& res) {
-                     return res.get().first;
-                   });
   }
 }
 
