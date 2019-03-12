@@ -108,7 +108,7 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
     START_PROFILE(timekeeper_,
                   "After Physics Step: " + world_plugin.get()->name_);
     world_plugin->AfterPhysicsStep(timekeeper_);
-    START_PROFILE(timekeeper_,
+    END_PROFILE(timekeeper_,
                   "After Physics Step: " + world_plugin.get()->name_);
   }
 }

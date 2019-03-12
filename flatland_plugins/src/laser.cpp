@@ -212,12 +212,12 @@ void Laser::ComputeLaserRanges() {
     if (flipped_) {
       std::transform(results.begin(), results.end(),
                      laser_scan_.ranges.rbegin(),
-                     [this](std::future<std::pair<float, float>>& res) {
+                     [](std::future<std::pair<float, float>>& res) {
                        return res.get().first;
                      });
     } else {
       std::transform(results.begin(), results.end(), laser_scan_.ranges.begin(),
-                     [this](std::future<std::pair<float, float>>& res) {
+                     [](std::future<std::pair<float, float>>& res) {
                        return res.get().first;
                      });
     }
