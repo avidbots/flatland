@@ -237,7 +237,7 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
 
   // thresholds the map, values between the occupied threshold and 1.0 are
   // considered to be occupied
-  cv::inRange(bitmap, occupied_thresh, 1.0, obstacle_map);
+  cv::inRange(bitmap, 1 - occupied_thresh, 1.0, obstacle_map);
 
   // pad the top and bottom of the map each with an empty row (255=white). This
   // helps to look at the transition from one row of pixel to another
