@@ -134,9 +134,6 @@ install(TARGETS flatland_viz flatland_viz_plugins
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(DIRECTORY media/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/media)
-
 install(FILES
    plugin_description.xml
    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

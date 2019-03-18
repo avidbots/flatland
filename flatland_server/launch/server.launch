@@ -29,7 +29,7 @@
   </node>
 
 <group if="$(arg show_viz)">
-  <node name="flatland_viz" pkg="flatland_viz" type="flatland_viz" required="true" unless="$(arg use_rviz)"/>
+  <node name="flatland_viz" pkg="flatland_viz" type="flatland_viz" output="screen" required="true" unless="$(arg use_rviz)"/>
 </group>
 
 

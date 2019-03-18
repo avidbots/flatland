@@ -1,6 +1,6 @@
 # README #
 
-![ci test result](https://travis-ci.org/avidbots/flatland.svg?branch=master "CI Test Result")
+![ci test result](https://travis-ci.com/avidbots/flatland.svg?branch=master "CI Test Result")
 
 
 ### What is this repository for? ###
