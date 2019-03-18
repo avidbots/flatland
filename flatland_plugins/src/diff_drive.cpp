@@ -174,9 +174,10 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   float angle = b2body->GetAngle();
 
   if (publish) {
-    // get the state of the body and publish the data
-    b2Vec2 linear_vel_local =
-        b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+    // get the velocity of the body, and convert to body frame, as required by
+    // http://docs.ros.org/melodic/api/nav_msgs/html/msg/Odometry.html
+    b2Vec2 linear_vel_local = b2body->GetLocalVector(
+        b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0)));
     float angular_vel = b2body->GetAngularVelocity();
 
     ground_truth_msg_.header.stamp = timekeeper.GetSimTime();
@@ -201,7 +202,8 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_msg_.pose.pose.orientation =
         tf::createQuaternionMsgFromYaw(angle + noise_gen_[2](rng_));
     odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
-    odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
+    // set to zero, since differential drive
+    odom_msg_.twist.twist.linear.y = 0;
     odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
 
     if (enable_odom_pub_) {
