@@ -45,7 +45,7 @@ class Profile {
 
   int getLapseCount() const { return lapse_count_; }
 
-  long getTotalDuration() const {
+  int64_t getTotalDuration() const {
     return std::chrono::duration_cast<std::chrono::microseconds>(
                total_duration_)
         .count();
@@ -63,7 +63,9 @@ class Profiler {
   Profile& get(const std::string& profile_name) {
     auto p = profiles_.find(profile_name);
     if (p == profiles_.end()) {
-      auto profile = profiles_.emplace(profile_name, Profile());
+      auto profile = profiles_.emplace(std::piecewise_construct,
+                                       std::forward_as_tuple(profile_name),
+                                       std::forward_as_tuple());
       return profile.first->second;
     }
     return p->second;
