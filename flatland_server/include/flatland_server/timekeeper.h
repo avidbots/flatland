@@ -47,6 +47,7 @@
 #ifndef FLATLAND_SERVER_TIME_KEEPER_H
 #define FLATLAND_SERVER_TIME_KEEPER_H
 
+#include <flatland_server/profiler.h>
 #include <ros/ros.h>
 #include <ros/time.h>
 
@@ -59,6 +60,7 @@ class Timekeeper {
   ros::Time time_;                 ///< simulation time
   double max_step_size_;           ///< maximum step size
   const std::string clock_topic_;  ///< the name of the clock topic
+  mutable Profiler profiler_;
 
   /**
    * @brief constructor

@@ -113,6 +113,7 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
   while (ros::ok() && run_simulator_) {
+    START_PROFILE(timekeeper, "Total Iteration");
     // for updating visualization at a given rate
     // see flatland_plugins/update_timer.cpp for this formula
     double f = 0.0;
@@ -134,6 +135,8 @@ void SimulationManager::Main() {
     }
 
     ros::spinOnce();
+
+    END_PROFILE(timekeeper, "Total Iteration");
     rate.sleep();
 
     iterations++;
@@ -153,6 +156,7 @@ void SimulationManager::Main() {
   }
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
 
+  PRINT_ALL_PROFILES(timekeeper);
   delete world_;
 }
 

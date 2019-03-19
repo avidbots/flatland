@@ -77,19 +77,39 @@ PluginManager::~PluginManager() {
 
 void PluginManager::BeforePhysicsStep(const Timekeeper &timekeeper_) {
   for (const auto &model_plugin : model_plugins_) {
+    START_PROFILE(timekeeper_, "Before Physics Step: " +
+                                   model_plugin.get()->GetModel()->name_ + " " +
+                                   model_plugin.get()->name_);
     model_plugin->BeforePhysicsStep(timekeeper_);
+    END_PROFILE(timekeeper_, "Before Physics Step: " +
+                                 model_plugin.get()->GetModel()->name_ + " " +
+                                 model_plugin.get()->name_);
   }
   for (const auto &world_plugin : world_plugins_) {
+    START_PROFILE(timekeeper_,
+                  "Before Physics Step: " + world_plugin.get()->name_);
     world_plugin->BeforePhysicsStep(timekeeper_);
+    END_PROFILE(timekeeper_,
+                "Before Physics Step: " + world_plugin.get()->name_);
   }
 }
 
 void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
   for (const auto &model_plugin : model_plugins_) {
+    START_PROFILE(timekeeper_, "After Physics Step: " +
+                                   model_plugin.get()->GetModel()->name_ + " " +
+                                   model_plugin.get()->name_);
     model_plugin->AfterPhysicsStep(timekeeper_);
+    END_PROFILE(timekeeper_, "After Physics Step: " +
+                                 model_plugin.get()->GetModel()->name_ + " " +
+                                 model_plugin.get()->name_);
   }
   for (const auto &world_plugin : world_plugins_) {
+    START_PROFILE(timekeeper_,
+                  "After Physics Step: " + world_plugin.get()->name_);
     world_plugin->AfterPhysicsStep(timekeeper_);
+    END_PROFILE(timekeeper_,
+                "After Physics Step: " + world_plugin.get()->name_);
   }
 }
 

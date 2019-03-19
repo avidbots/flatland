@@ -59,7 +59,7 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 
-void Laser::OnInitialize(const YAML::Node &config) {
+void Laser::OnInitialize(const YAML::Node& config) {
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
@@ -126,7 +126,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_tf_.transform.rotation.w = q.w();
 }
 
-void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
+void Laser::BeforePhysicsStep(const Timekeeper& timekeeper) {
   // keep the update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
@@ -149,7 +149,7 @@ void Laser::ComputeLaserRanges() {
   // get the transformation matrix from the world to the body, and get the
   // world to laser frame transformation matrix by multiplying the world to body
   // and body to laser
-  const b2Transform &t = body_->GetPhysicsBody()->GetTransform();
+  const b2Transform& t = body_->GetPhysicsBody()->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
@@ -163,7 +163,7 @@ void Laser::ComputeLaserRanges() {
   b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   // Results vector
-  std::vector<std::future<std::pair<double, double>>> results(
+  std::vector<std::future<std::pair<float, float>>> results(
       laser_scan_.ranges.size());
 
   // loop through the laser points and call the Box2D world raycast by
@@ -180,59 +180,52 @@ void Laser::ComputeLaserRanges() {
                                                  laser_point);
 
           if (!cb.did_hit_) {
-            return std::make_pair<double, double>(NAN, 0);
+            return std::make_pair<float, float>(NAN, 0);
           } else {
-            return std::make_pair<double, double>(cb.fraction_ * this->range_,
-                                                  cb.intensity_);
+            return std::make_pair<float, float>(
+                cb.fraction_ * this->range_ + this->noise_gen_(this->rng_),
+                static_cast<float>(cb.intensity_));
           }
         });
   }
 
-  auto range_trans = [this](std::future<std::pair<double, double>> &res) {
-    return res.get().first + this->noise_gen_(this->rng_);
-  };
-
-  auto laser_trans = [this](std::future<std::pair<double, double>> &res) {
-    auto r = res.get();
-    r.first += this->noise_gen_(this->rng_);
-    return r;
-  };
-
   // Unqueue all of the future'd results
   if (reflectance_layers_bits_) {
     if (flipped_) {
-      auto scans = laser_scan_.ranges.rbegin();
-      auto intensities = laser_scan_.intensities.rbegin();
-      auto result = results.begin();
-      for (; result != results.end(); ++result, ++scans, ++intensities) {
-        auto thing = laser_trans(*result);
-        *scans = thing.first;
-        *intensities = thing.second;
+      auto i = laser_scan_.intensities.rbegin();
+      auto r = laser_scan_.ranges.rbegin();
+      for (auto res = results.begin(); res != results.end(); ++res, ++i, ++r) {
+        auto result = res->get();
+        *r = result.first;
+        *i = result.second;
       }
     } else {
-      auto scans = laser_scan_.ranges.begin();
-      auto intensities = laser_scan_.intensities.begin();
-      auto result = results.begin();
-      for (; result != results.end(); ++result, ++scans, ++intensities) {
-        auto thing = laser_trans(*result);
-        *scans = thing.first;
-        *intensities = thing.second;
+      auto i = laser_scan_.intensities.begin();
+      auto r = laser_scan_.ranges.begin();
+      for (auto res = results.begin(); res != results.end(); ++res, ++i, ++r) {
+        auto result = res->get();
+        *r = result.first;
+        *i = result.second;
       }
     }
-
   } else {
     if (flipped_) {
       std::transform(results.begin(), results.end(),
-                     laser_scan_.ranges.rbegin(), range_trans);
+                     laser_scan_.ranges.rbegin(),
+                     [](std::future<std::pair<float, float>>& res) {
+                       return res.get().first;
+                     });
     } else {
       std::transform(results.begin(), results.end(), laser_scan_.ranges.begin(),
-                     range_trans);
+                     [](std::future<std::pair<float, float>>& res) {
+                       return res.get().first;
+                     });
     }
   }
 }
 
-float LaserCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
-                                   const b2Vec2 &normal, float fraction) {
+float LaserCallback::ReportFixture(b2Fixture* fixture, const b2Vec2& point,
+                                   const b2Vec2& normal, float fraction) {
   uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers
   if (!(category_bits & parent_->layers_bits_)) {
@@ -252,7 +245,7 @@ float LaserCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
   return fraction;
 }
 
-void Laser::ParseParameters(const YAML::Node &config) {
+void Laser::ParseParameters(const YAML::Node& config) {
   YamlReader reader(config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "scan");
@@ -300,7 +293,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   // init the random number generators
   std::random_device rd;
   rng_ = std::default_random_engine(rd());
-  noise_gen_ = std::normal_distribution<double>(0.0, noise_std_dev_);
+  noise_gen_ = std::normal_distribution<float>(0.0, noise_std_dev_);
 
   ROS_DEBUG_NAMED("LaserPlugin",
                   "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) "
@@ -313,6 +306,6 @@ void Laser::ParseParameters(const YAML::Node &config) {
                   min_angle_, max_angle_, increment_, layers_bits_,
                   boost::algorithm::join(layers, ",").c_str());
 }
-};
+};  // namespace flatland_plugins
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::Laser, flatland_server::ModelPlugin)
