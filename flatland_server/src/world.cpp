@@ -116,10 +116,6 @@ void World::Update(Timekeeper &timekeeper) {
     END_PROFILE(timekeeper, "After Physics Step");
   }
 
-  START_PROFILE(timekeeper, "Update Interactive Marker");
-  int_marker_manager_.update();
-  END_PROFILE(timekeeper, "Update Interactive Marker");
-
   START_PROFILE(timekeeper, "Clearing Message Server Topics");
   message_server.clean_old_topics();
   END_PROFILE(timekeeper, "Clearing Message Server Topics");

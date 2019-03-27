@@ -134,6 +134,12 @@ void SimulationManager::Main() {
           timekeeper);  // publish debug visualization
     }
 
+    if (update_viz) {
+      START_PROFILE(timekeeper, "Update Interactive Marker");
+      world_->int_marker_manager_.update();
+      END_PROFILE(timekeeper, "Update Interactive Marker");
+    }
+
     ros::spinOnce();
 
     END_PROFILE(timekeeper, "Total Iteration");
