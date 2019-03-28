@@ -117,6 +117,8 @@ std::vector<std::string> CollisionFilterRegistry::GetAllLayers() const {
   return layer_names;
 }
 
+void CollisionFilterRegistry::ClearAllLayers() { layer_id_table_.clear(); }
+
 int CollisionFilterRegistry::LayersCount() const {
   return layer_id_table_.size();
 }
