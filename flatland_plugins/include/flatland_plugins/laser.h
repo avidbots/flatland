@@ -94,14 +94,16 @@ class Laser : public ModelPlugin {
   std::default_random_engine rng_;             ///< random generator
   std::normal_distribution<float> noise_gen_;  ///< gaussian noise generator
 
-  Eigen::Matrix3f m_body_to_laser_;       ///< tf from body to laser
-  Eigen::Matrix3f m_world_to_body_;       ///< tf  from world to body
-  Eigen::Matrix3f m_world_to_laser_;      ///< tf from world to laser
-  Eigen::MatrixXf m_laser_points_;        ///< laser points in the laser' frame
-  Eigen::MatrixXf m_world_laser_points_;  /// laser point in the world frame
-  Eigen::Vector3f v_zero_point_;          ///< point representing (0,0)
-  Eigen::Vector3f v_world_laser_origin_;  ///< (0,0) in the laser frame
-  sensor_msgs::LaserScan laser_scan_;     ///< for publishing laser scan
+  Eigen::Matrix3f m_body_to_laser_;        ///< tf from body to laser
+  Eigen::Matrix3f m_world_to_body_;        ///< tf  from world to body
+  Eigen::Matrix3f m_world_to_laser_;       ///< tf from world to laser
+  Eigen::MatrixXf m_laser_points_;         ///< laser points in the laser' frame
+  Eigen::MatrixXf m_world_laser_points_;   /// laser point in the world frame
+  Eigen::Vector3f v_zero_point_;           ///< point representing (0,0)
+  Eigen::Vector3f v_world_laser_origin_;   ///< (0,0) in the laser frame
+  sensor_msgs::LaserScan laser_scan_;      ///< for publishing laser scan
+  std::vector<float> m_lastMaxFractions_;  ///< the robot move slowly when
+                                           /// comparing with to the scan rate
 
   ros::Publisher scan_publisher_;             ///< ros laser topic publisher
   tf::TransformBroadcaster tf_broadcaster_;   ///< broadcast laser frame

@@ -1016,13 +1016,13 @@ struct b2WorldRayCastWrapper
 	b2RayCastCallback* callback;
 };
 
-void b2World::RayCast(b2RayCastCallback* callback, const b2Vec2& point1, const b2Vec2& point2) const
+void b2World::RayCast(b2RayCastCallback* callback, const b2Vec2& point1, const b2Vec2& point2, float maxFraction/*=1.0*/) const
 {
 	b2WorldRayCastWrapper wrapper;
 	wrapper.broadPhase = &m_contactManager.m_broadPhase;
 	wrapper.callback = callback;
 	b2RayCastInput input;
-	input.maxFraction = 1.0f;
+	input.maxFraction = maxFraction;
 	input.p1 = point1;
 	input.p2 = point2;
 	m_contactManager.m_broadPhase.RayCast(&wrapper, input);
