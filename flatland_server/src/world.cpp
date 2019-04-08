@@ -139,8 +139,7 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
 
 World *World::MakeWorld(const std::string &yaml_path,
                         const std::string &models_path,
-                        const std::string &world_plugins_path,
-                        const bool use_local_map) {
+                        const std::string &world_plugins_path) {
   YamlReader world_settings_reader = YamlReader(world_plugins_path);
   YamlReader prop_reader =
       world_settings_reader.Subnode("properties", YamlReader::MAP);
@@ -157,14 +156,10 @@ World *World::MakeWorld(const std::string &yaml_path,
   w->physics_velocity_iterations_ = v;
   w->physics_position_iterations_ = p;
   w->models_path_ = models_path;
-  w->use_local_map_ = use_local_map;
+  w->yaml_path_ = yaml_path;
 
   try {
     w->LoadWorldPlugins(world_plugin_reader, w, world_settings_reader);
-
-    if (use_local_map) {
-      w->LoadWorldEntities(yaml_path);
-    }
 
     world_settings_reader.EnsureAccessedAllKeys();
 
@@ -184,9 +179,9 @@ World *World::MakeWorld(const std::string &yaml_path,
   return w;
 }
 
-void World::LoadWorldEntities(const std::string &yaml_path) {
+void World::LoadWorldEntities() {
   try {
-    YamlReader map_info_reader = YamlReader(yaml_path);
+    YamlReader map_info_reader = YamlReader(yaml_path_);
     YamlReader layers_reader =
         map_info_reader.Subnode("layers", YamlReader::LIST);
     YamlReader models_reader =
@@ -196,7 +191,8 @@ void World::LoadWorldEntities(const std::string &yaml_path) {
     this->LoadModels(models_reader);
 
   } catch (const YAMLException &e) {
-    ROS_FATAL_NAMED("World", "Error loading from YAML");
+    ROS_WARN_STREAM_DELAYED_THROTTLE_NAMED(1, "World", yaml_path_
+                                                           << "not loaded yet");
     throw e;
   } catch (const PluginException &e) {
     ROS_FATAL_NAMED("World", "Error loading plugins");

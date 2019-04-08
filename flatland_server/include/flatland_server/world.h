@@ -91,8 +91,8 @@ class World : public b2ContactListener {
 
   MessageServer message_server;
 
+  std::string yaml_path_;
   std::string models_path_;
-  bool use_local_map_;
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -218,14 +218,12 @@ class World : public b2ContactListener {
    */
   static World *MakeWorld(const std::string &yaml_path,
                           const std::string &models_path,
-                          const std::string &world_plugins_path,
-                          const bool use_local_map);
+                          const std::string &world_plugins_path);
 
   /**
    * @brief Loads the layers and objects in the world
-   * @param[in] yaml_path Path to the world yaml file
    */
-  void LoadWorldEntities(const std::string &yaml_path);
+  void LoadWorldEntities();
 
   /**
  * @brief Publish debug visualizations for everything

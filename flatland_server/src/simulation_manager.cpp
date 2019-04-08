@@ -83,23 +83,14 @@ void SimulationManager::Main() {
   run_simulator_ = true;
 
   try {
-    world_ = World::MakeWorld(world_yaml_file_, models_path_,
-                              world_plugins_path_, use_local_map_);
+    world_ =
+        World::MakeWorld(world_yaml_file_, models_path_, world_plugins_path_);
     ROS_INFO_NAMED("SimMan", "World loaded");
   } catch (const std::exception& e) {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
   }
-
-  if (!use_local_map_) {
-    map_changed_subscriber_ =
-        nh_.subscribe("/map_changed", 1, &SimulationManager::UpdateMap, this);
-  } else {
-    service_manager_ =
-        std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
-  }
-
-  if (show_viz_) world_->DebugVisualize();
+  service_manager_.reset(nullptr);
 
   int iterations = 0;
   double filtered_cycle_util = 0;
@@ -110,8 +101,29 @@ void SimulationManager::Main() {
 
   ros::WallRate rate(update_rate_);
   timekeeper.SetMaxStepSize(step_size_);
-  ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
+  ROS_INFO_NAMED("SimMan", "Waiting for Map");
+  while (ros::ok() && run_simulator_) {
+    try {
+      world_->LoadWorldEntities();
+      if (show_viz_) {
+        world_->DebugVisualize();
+      }
+      service_manager_ =
+          std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
+      break;
+    } catch (const YAMLException& ex) {
+      std::string exception(ex.what());
+      std::cerr << exception << std::endl;
+      if (exception.find("File does not exist") != std::string::npos) {
+        std::rethrow_exception(std::current_exception());
+      }
+      ROS_DEBUG_STREAM("Tried to load world yaml file " << world_yaml_file_);
+    }
+    rate.sleep();
+  }
+
+  ROS_INFO_NAMED("SimMan", "Received Map, Simulation Loop Started");
   while (ros::ok() && run_simulator_) {
     START_PROFILE(timekeeper, "Total Iteration");
     // for updating visualization at a given rate
@@ -164,17 +176,6 @@ void SimulationManager::Main() {
 
   PRINT_ALL_PROFILES(timekeeper);
   delete world_;
-}
-
-void SimulationManager::UpdateMap(
-    const std_msgs::Empty::ConstPtr& map_changed) {
-  world_->LoadWorldEntities(world_yaml_file_);
-  if (show_viz_) world_->DebugVisualize();
-
-  if (service_manager_ == nullptr) {
-    service_manager_ =
-        std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
-  }
 }
 
 void SimulationManager::Shutdown() {

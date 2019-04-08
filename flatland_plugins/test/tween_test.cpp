@@ -88,7 +88,8 @@ TEST_F(TweenPluginTest, once_test) {
   timekeeper.SetMaxStepSize(0.5);
   World* w = World::MakeWorld(
       world_yaml_path.string() + "once.world.yaml", world_yaml_path.string(),
-      world_yaml_path.string() + "once.world_plugins.yaml", true);
+      world_yaml_path.string() + "once.world_plugins.yaml");
+  w->LoadWorldEntities();
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -124,7 +125,8 @@ TEST_F(TweenPluginTest, yoyo_test) {
   timekeeper.SetMaxStepSize(0.5);
   World* w = World::MakeWorld(
       world_yaml_path.string() + "yoyo.world.yaml", world_yaml_path.string(),
-      world_yaml_path.string() + "yoyo.world_plugins.yaml", true);
+      world_yaml_path.string() + "yoyo.world_plugins.yaml");
+  w->LoadWorldEntities();
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -169,7 +171,8 @@ TEST_F(TweenPluginTest, loop_test) {
   timekeeper.SetMaxStepSize(0.5);
   World* w = World::MakeWorld(
       world_yaml_path.string() + "loop.world.yaml", world_yaml_path.string(),
-      world_yaml_path.string() + "loop.world_plugins.yaml", true);
+      world_yaml_path.string() + "loop.world_plugins.yaml");
+  w->LoadWorldEntities();
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());

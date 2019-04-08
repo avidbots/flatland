@@ -78,15 +78,16 @@ class LoadWorldTest : public ::testing::Test {
 
   // to test that the world instantiation will fail, and the exception
   // message matches the given regex string
-  void test_yaml_fail(std::string regex_str) {
+  void test_yaml_fail(const std::string &regex_str) {
     // do a regex match against error messages
     std::cmatch match;
     std::regex regex(regex_str);
 
     try {
-      w = World::MakeWorld(
-          world_yaml_path.string() + "world.yaml", world_yaml_path.string(),
-          world_yaml_path.string() + "world_plugins.yaml", true);
+      w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                           world_yaml_path.string(),
+                           world_yaml_path.string() + "world_plugins.yaml");
+      w->LoadWorldEntities();
       ADD_FAILURE() << "Expected an exception, but none were raised";
     } catch (const Exception &e) {
       EXPECT_TRUE(std::regex_match(e.what(), match, regex))
@@ -519,7 +520,8 @@ TEST_F(LoadWorldTest, simple_test_A) {
   world_yaml_path = this_file_dir / fs::path("load_world_tests/simple_test_A/");
   w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
                        world_yaml_path.string(),
-                       world_yaml_path.string() + "world_plugins.yaml", true);
+                       world_yaml_path.string() + "world_plugins.yaml");
+  w->LoadWorldEntities();
 
   EXPECT_EQ(w->physics_velocity_iterations_, 11);
   EXPECT_EQ(w->physics_position_iterations_, 12);

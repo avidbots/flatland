@@ -52,7 +52,6 @@
 #include <flatland_server/service_manager.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
-#include <std_msgs/Empty.h>
 #include <string>
 
 namespace flatland_server {
@@ -71,7 +70,6 @@ class SimulationManager {
   std::string models_path_;
   std::string world_plugins_path_;
 
-  ros::Subscriber map_changed_subscriber_;
   ros::NodeHandle nh_;
   std::unique_ptr<flatland_server::ServiceManager> service_manager_;
 
@@ -93,11 +91,6 @@ class SimulationManager {
    * This method contains the loop that runs the simulation
    */
   void Main();
-
-  /**
-  * Updates the map of the world
-  */
-  void UpdateMap(const std_msgs::Empty::ConstPtr& map_changed);
 
   /**
    * Kill the world
