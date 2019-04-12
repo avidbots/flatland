@@ -115,10 +115,6 @@ void World::Update(Timekeeper &timekeeper) {
     plugin_manager_.AfterPhysicsStep(timekeeper);
     END_PROFILE(timekeeper, "After Physics Step");
   }
-
-  START_PROFILE(timekeeper, "Clearing Message Server Topics");
-  message_server.clean_old_topics();
-  END_PROFILE(timekeeper, "Clearing Message Server Topics");
 }
 
 void World::BeginContact(b2Contact *contact) {
