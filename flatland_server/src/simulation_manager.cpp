@@ -100,7 +100,8 @@ void SimulationManager::Main() {
   double filtered_cycle_util = 0;
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
-  double viz_update_period = timekeeper.GetMaxStepSize() / rate.expectedCycleTime().toSec() / viz_pub_rate_;
+  double viz_update_period = timekeeper.GetMaxStepSize() /
+                             rate.expectedCycleTime().toSec() / viz_pub_rate_;
 
   ROS_INFO_NAMED("SimMan", "Waiting for Map");
   while (ros::ok() && run_simulator_) {
