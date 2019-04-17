@@ -121,6 +121,8 @@ void SimulationManager::Main() {
       ROS_DEBUG_STREAM_THROTTLE(5, "Tried to load world yaml file "
                                        << world_yaml_file_);
     }
+
+    timekeeper.StepTime();
     rate.sleep();
   }
 
