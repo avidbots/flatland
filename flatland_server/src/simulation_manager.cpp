@@ -92,15 +92,16 @@ void SimulationManager::Main() {
   }
   service_manager_.reset(nullptr);
 
+  Timekeeper timekeeper;
+  ros::WallRate rate(update_rate_);
+  timekeeper.SetMaxStepSize(step_size_);
+
   int iterations = 0;
   double filtered_cycle_util = 0;
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
-  double viz_update_period = 1.0f / viz_pub_rate_;
-  Timekeeper timekeeper;
-
-  ros::WallRate rate(update_rate_);
-  timekeeper.SetMaxStepSize(step_size_);
+  double viz_update_period = timekeeper.GetMaxStepSize() /
+                             rate.expectedCycleTime().toSec() / viz_pub_rate_;
 
   ROS_INFO_NAMED("SimMan", "Waiting for Map");
   while (ros::ok() && run_simulator_) {
@@ -130,7 +131,7 @@ void SimulationManager::Main() {
     // see flatland_plugins/update_timer.cpp for this formula
     double f = 0.0;
     try {
-      f = fmod(ros::WallTime::now().toSec() +
+      f = fmod(timekeeper.GetSimTime().toSec() +
                    (rate.expectedCycleTime().toSec() / 2.0),
                viz_update_period);
     } catch (std::runtime_error& ex) {
@@ -167,7 +168,7 @@ void SimulationManager::Main() {
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
 
-    ROS_DEBUG_THROTTLE_NAMED(
+    ROS_WARN_THROTTLE_NAMED(
         1, "SimMan",
         "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
         min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
