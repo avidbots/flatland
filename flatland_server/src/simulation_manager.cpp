@@ -116,7 +116,7 @@ void SimulationManager::Main() {
     } catch (const YAMLException& ex) {
       std::string exception(ex.what());
       if (exception.find("File does not exist") == std::string::npos) {
-        std::rethrow_exception(std::current_exception());
+        throw;
       }
       ROS_DEBUG_STREAM_THROTTLE(5, "Tried to load world yaml file "
                                        << world_yaml_file_);
