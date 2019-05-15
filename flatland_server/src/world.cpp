@@ -308,7 +308,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
 
   boost::filesystem::path abs_path(model_yaml_path);
   if (model_yaml_path.front() != '/') {
-    abs_path = world_yaml_dir_ / abs_path;
+    abs_path = models_path_ / abs_path;
   }
 
   ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",

@@ -109,7 +109,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
 
   srv.request.name = "service_manager_test_robot";
   srv.request.ns = "robot123";
-  srv.request.yaml_path = robot_yaml.string();
+  srv.request.yaml_name = robot_yaml.string();
   srv.request.pose.x = 101.1;
   srv.request.pose.y = 102.1;
   srv.request.pose.theta = 0.23;
@@ -148,7 +148,7 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
   flatland_msgs::SpawnModel srv;
 
   srv.request.name = "service_manager_test_robot";
-  srv.request.yaml_path = robot_yaml.string();
+  srv.request.yaml_name = robot_yaml.string();
   srv.request.pose.x = 1;
   srv.request.pose.y = 2;
   srv.request.pose.theta = 3;
