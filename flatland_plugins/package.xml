@@ -22,6 +22,7 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>flatland_msgs</depend>
+  <depend>nav_msgs</depend>
 
   <export>
     <flatland_server plugin="${prefix}/flatland_plugins.xml" />
