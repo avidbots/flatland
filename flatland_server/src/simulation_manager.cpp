@@ -45,28 +45,29 @@
  */
 
 #include "flatland_server/simulation_manager.h"
-#include <flatland_server/debug_visualization.h>
-#include <flatland_server/layer.h>
-#include <flatland_server/model.h>
-#include <flatland_server/service_manager.h>
-#include <flatland_server/world.h>
-#include <ros/ros.h>
+// #include <flatland_server/debug_visualization.h>
+// #include <flatland_server/layer.h>
+// #include <flatland_server/model.h>
+// #include <flatland_server/service_manager.h>
+// #include <flatland_server/world.h>
 #include <exception>
 #include <limits>
 #include <string>
+#include <cmath>
 
 namespace flatland_server {
 
-SimulationManager::SimulationManager(std::string world_yaml_file,
+SimulationManager::SimulationManager(std::shared_ptr<rclcpp::Node> node, std::string world_yaml_file,
                                      double update_rate, double step_size,
                                      bool show_viz, double viz_pub_rate)
-    : world_(nullptr),
+    : node_(node),
+      //world_(nullptr),
       update_rate_(update_rate),
       step_size_(step_size),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
       world_yaml_file_(world_yaml_file) {
-  ROS_INFO_NAMED("SimMan",
+  RCLCPP_INFO(rclcpp::get_logger("SimMan"),
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
                  world_yaml_file_.c_str(), update_rate_, step_size_,
@@ -74,78 +75,81 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
 }
 
 void SimulationManager::Main() {
-  ROS_INFO_NAMED("SimMan", "Initializing...");
+  RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Initializing...");
   run_simulator_ = true;
 
   try {
-    world_ = World::MakeWorld(world_yaml_file_);
-    ROS_INFO_NAMED("SimMan", "World loaded");
+    //world_ = World::MakeWorld(world_yaml_file_);
+    RCLCPP_INFO(rclcpp::get_logger("SimMan"), "World loaded");
   } catch (const std::exception& e) {
-    ROS_FATAL_NAMED("SimMan", "%s", e.what());
+    RCLCPP_FATAL(rclcpp::get_logger("SimMan"), "%s", e.what());
     return;
   }
 
-  if (show_viz_) world_->DebugVisualize();
+  //if (show_viz_) world_->DebugVisualize();
 
   int iterations = 0;
   double filtered_cycle_util = 0;
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
   double viz_update_period = 1.0f / viz_pub_rate_;
-  ServiceManager service_manager(this, world_);
-  Timekeeper timekeeper;
+  //ServiceManager service_manager(this, world_);
+  //Timekeeper timekeeper;
 
-  ros::WallRate rate(update_rate_);
-  timekeeper.SetMaxStepSize(step_size_);
-  ROS_INFO_NAMED("SimMan", "Simulation loop started");
+  rclcpp::WallRate rate(update_rate_);
+  rclcpp::Clock wall_clock(RCL_STEADY_TIME);
+  //timekeeper.SetMaxStepSize(step_size_);
+  RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop started");
 
-  while (ros::ok() && run_simulator_) {
+  while (rclcpp::ok() && run_simulator_) {
     // for updating visualization at a given rate
     // see flatland_plugins/update_timer.cpp for this formula
+    double start_time = wall_clock.now().seconds();
     double f = 0.0;
     try {
-      f = fmod(ros::WallTime::now().toSec() +
-                   (rate.expectedCycleTime().toSec() / 2.0),
+      f = std::fmod(wall_clock.now().seconds() +
+                   (update_rate_ / 2.0),
                viz_update_period);
     } catch (std::runtime_error& ex) {
-      ROS_ERROR("Flatland runtime error: [%s]", ex.what());
+      RCLCPP_ERROR(rclcpp::get_logger("SimMan"), "Flatland runtime error: [%s]", ex.what());
     }
-    bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
+    bool update_viz = ((f >= 0.0) && (f < 1.0f/update_rate_));
 
-    world_->Update(timekeeper);  // Step physics by ros cycle time
+    //world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
-      world_->DebugVisualize(false);  // no need to update layer
-      DebugVisualization::Get().Publish(
-          timekeeper);  // publish debug visualization
+      //world_->DebugVisualize(false);  // no need to update layer
+      //DebugVisualization::Get().Publish(
+      //    timekeeper);  // publish debug visualization
     }
 
-    ros::spinOnce();
+    rclcpp::spin_some(node_);
+    double cycle_time = wall_clock.now().seconds()-start_time;
     rate.sleep();
 
     iterations++;
 
-    double cycle_time = rate.cycleTime().toSec() * 1000;
-    double expected_cycle_time = rate.expectedCycleTime().toSec() * 1000;
+    
+    double expected_cycle_time = 1.0f/update_rate_;
     double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
-    double factor = timekeeper.GetStepSize() * 1000 / expected_cycle_time;
+    double factor = 0; //timekeeper.GetStepSize() / expected_cycle_time;
     min_cycle_util = std::min(cycle_util, min_cycle_util);
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
 
-    ROS_INFO_THROTTLE_NAMED(
-        1, "SimMan",
+    RCLCPP_INFO_THROTTLE(rclcpp::get_logger("SimMan"), wall_clock,
+         1000,
         "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
         min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
   }
-  ROS_INFO_NAMED("SimMan", "Simulation loop ended");
+  RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop ended");
 
-  delete world_;
+  //delete world_;
 }
 
 void SimulationManager::Shutdown() {
-  ROS_INFO_NAMED("SimMan", "Shutdown called");
+  RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Shutdown called");
   run_simulator_ = false;
 }
 
-};  // namespace flatland_server
+}  // namespace flatland_server

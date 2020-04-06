@@ -1,22 +1,27 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<package>
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
   <name>flatland</name>
-  <version>1.1.1</version>
+  <version>2.0.0</version>
   <description>
     This is the metapackage for flatland.
   </description>
   <maintainer email="joseph@avidbots.com">Joseph Duchesne</maintainer>
   <license>BSD</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <run_depend>flatland_msgs</run_depend>
-  <run_depend>flatland_plugins</run_depend>
-  <run_depend>flatland_server</run_depend>
-  <run_depend>flatland_viz</run_depend>
+  <exec_depend>flatland_msgs</exec_depend>
+  <!--
+  <exec_depend>flatland_plugins</exec_depend>
+  <exec_depend>flatland_server</exec_depend>
+  <exec_depend>flatland_viz</exec_depend>
+  -->
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
 
   <export>
-    <metapackage/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
-
