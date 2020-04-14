@@ -51,59 +51,61 @@
 namespace flatland_server {
 
 ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
-    : world_(world), sim_man_(sim_man) {
-  ros::NodeHandle nh;
-
-  spawn_model_service_ =
-      nh.advertiseService("spawn_model", &ServiceManager::SpawnModel, this);
-  delete_model_service_ =
-      nh.advertiseService("delete_model", &ServiceManager::DeleteModel, this);
-  move_model_service_ =
-      nh.advertiseService("move_model", &ServiceManager::MoveModel, this);
-  pause_service_ = nh.advertiseService("pause", &ServiceManager::Pause, this);
-  resume_service_ =
-      nh.advertiseService("resume", &ServiceManager::Resume, this);
-  toggle_pause_service_ =
-      nh.advertiseService("toggle_pause", &ServiceManager::TogglePause, this);
+    : world_(world), node_(world->node_), sim_man_(sim_man)  {
+  
+  using namespace std::placeholders;  // for _1, _2, ... etc
+  spawn_model_service_ =  node_->create_service<flatland_msgs::srv::SpawnModel>(
+    "spawn_model", std::bind(&ServiceManager::SpawnModel, this, _1, _2, _3));
+  delete_model_service_ = node_->create_service<flatland_msgs::srv::DeleteModel>(
+    "delete_model", std::bind(&ServiceManager::DeleteModel, this, _1, _2, _3));
+  move_model_service_ = node_->create_service<flatland_msgs::srv::MoveModel>(
+    "move_model", std::bind(&ServiceManager::MoveModel, this, _1, _2, _3));
+  pause_service_ = node_->create_service<std_srvs::srv::Empty>(
+    "pause", std::bind(&ServiceManager::Pause, this, _1, _2, _3));
+  resume_service_ = node_->create_service<std_srvs::srv::Empty>(
+    "resume", std::bind(&ServiceManager::Resume, this, _1, _2, _3));
+  toggle_pause_service_ = node_->create_service<std_srvs::srv::Empty>(
+    "toggle_pause", std::bind(&ServiceManager::TogglePause, this, _1, _2, _3));
 
   if (spawn_model_service_) {
-    ROS_INFO_NAMED("Service Manager", "Model spawning service ready to go");
+    RCLCPP_INFO(rclcpp::get_logger("Service Manager"), "Model spawning service ready to go");
   } else {
-    ROS_ERROR_NAMED("Service Manager", "Error starting model spawning service");
+    RCLCPP_ERROR(rclcpp::get_logger("Service Manager"), "Error starting model spawning service");
   }
 
   if (delete_model_service_) {
-    ROS_INFO_NAMED("Service Manager", "Model deleting service ready to go");
+    RCLCPP_INFO(rclcpp::get_logger("Service Manager"), "Model deleting service ready to go");
   } else {
-    ROS_ERROR_NAMED("Service Manager", "Error starting model deleting service");
+    RCLCPP_ERROR(rclcpp::get_logger("Service Manager"), "Error starting model deleting service");
   }
 
   if (move_model_service_) {
-    ROS_INFO_NAMED("Service Manager", "Model moving service ready to go");
+    RCLCPP_INFO(rclcpp::get_logger("Service Manager"), "Model moving service ready to go");
   } else {
-    ROS_ERROR_NAMED("Service Manager", "Error starting model moving service");
+    RCLCPP_ERROR(rclcpp::get_logger("Service Manager"), "Error starting model moving service");
   }
 }
 
-bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
-                                flatland_msgs::SpawnModel::Response &response) {
-  ROS_DEBUG_NAMED("ServiceManager",
+bool ServiceManager::SpawnModel(const std::shared_ptr<rmw_request_id_t> request_header,
+                                const std::shared_ptr<flatland_msgs::srv::SpawnModel::Request> request,
+                                std::shared_ptr<flatland_msgs::srv::SpawnModel::Response> response) {
+  RCLCPP_DEBUG(rclcpp::get_logger("ServiceManager"),
                   "Model spawn requested with path(\"%s\"), namespace(\"%s\"), "
                   "name(\'%s\"), pose(%f,%f,%f)",
-                  request.yaml_path.c_str(), request.ns.c_str(),
-                  request.name.c_str(), request.pose.x, request.pose.y,
-                  request.pose.theta);
+                  request->yaml_path.c_str(), request->ns.c_str(),
+                  request->name.c_str(), request->pose.x, request->pose.y,
+                  request->pose.theta);
 
-  Pose pose(request.pose.x, request.pose.y, request.pose.theta);
+  Pose pose(request->pose.x, request->pose.y, request->pose.theta);
 
   try {
-    world_->LoadModel(request.yaml_path, request.ns, request.name, pose);
-    response.success = true;
-    response.message = "";
+    world_->LoadModel(request->yaml_path, request->ns, request->name, pose);
+    response->success = true;
+    response->message = "";
   } catch (const std::exception &e) {
-    response.success = false;
-    response.message = std::string(e.what());
-    ROS_ERROR_NAMED("ServiceManager", "Failed to load model! Exception: %s",
+    response->success = false;
+    response->message = std::string(e.what());
+    RCLCPP_ERROR(rclcpp::get_logger("ServiceManager"), "Failed to load model! Exception: %s",
                     e.what());
   }
 
@@ -111,56 +113,61 @@ bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
 }
 
 bool ServiceManager::DeleteModel(
-    flatland_msgs::DeleteModel::Request &request,
-    flatland_msgs::DeleteModel::Response &response) {
-  ROS_DEBUG_NAMED("ServiceManager", "Model delete requested with name(\"%s\")",
-                  request.name.c_str());
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<flatland_msgs::srv::DeleteModel::Request> request,
+    std::shared_ptr<flatland_msgs::srv::DeleteModel::Response> response) {
+  RCLCPP_DEBUG(rclcpp::get_logger("ServiceManager"), "Model delete requested with name(\"%s\")",
+                  request->name.c_str());
 
   try {
-    world_->DeleteModel(request.name);
-    response.success = true;
-    response.message = "";
+    world_->DeleteModel(request->name);
+    response->success = true;
+    response->message = "";
   } catch (const std::exception &e) {
-    response.success = false;
-    response.message = std::string(e.what());
+    response->success = false;
+    response->message = std::string(e.what());
   }
 
   return true;
 }
 
-bool ServiceManager::MoveModel(flatland_msgs::MoveModel::Request &request,
-                               flatland_msgs::MoveModel::Response &response) {
-  ROS_DEBUG_NAMED("ServiceManager", "Model move requested with name(\"%s\")",
-                  request.name.c_str());
+bool ServiceManager::MoveModel(const std::shared_ptr<rmw_request_id_t> request_header,
+                               const std::shared_ptr<flatland_msgs::srv::MoveModel::Request> request,
+                               std::shared_ptr<flatland_msgs::srv::MoveModel::Response> response) {
+  RCLCPP_DEBUG(rclcpp::get_logger("ServiceManager"), "Model move requested with name(\"%s\")",
+                  request->name.c_str());
 
-  Pose pose(request.pose.x, request.pose.y, request.pose.theta);
+  Pose pose(request->pose.x, request->pose.y, request->pose.theta);
 
   try {
-    world_->MoveModel(request.name, pose);
-    response.success = true;
-    response.message = "";
+    world_->MoveModel(request->name, pose);
+    response->success = true;
+    response->message = "";
   } catch (const std::exception &e) {
-    response.success = false;
-    response.message = std::string(e.what());
+    response->success = false;
+    response->message = std::string(e.what());
   }
 
   return true;
 }
 
-bool ServiceManager::Pause(std_srvs::Empty::Request &request,
-                           std_srvs::Empty::Response &response) {
+bool ServiceManager::Pause(const std::shared_ptr<rmw_request_id_t> request_header,
+                           const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+                           std::shared_ptr<std_srvs::srv::Empty::Response> response) {
   world_->Pause();
   return true;
 }
 
-bool ServiceManager::Resume(std_srvs::Empty::Request &request,
-                            std_srvs::Empty::Response &response) {
+bool ServiceManager::Resume(const std::shared_ptr<rmw_request_id_t> request_header,
+                           const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+                           std::shared_ptr<std_srvs::srv::Empty::Response> response) {
   world_->Resume();
   return true;
 }
 
-bool ServiceManager::TogglePause(std_srvs::Empty::Request &request,
-                                 std_srvs::Empty::Response &response) {
+bool ServiceManager::TogglePause(const std::shared_ptr<rmw_request_id_t> request_header,
+                                 const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+                                 std::shared_ptr<std_srvs::srv::Empty::Response> response) {
   world_->TogglePaused();
   return true;
 }

@@ -133,5 +133,5 @@ class Body {
   Body(const Body &) = delete;
   Body &operator=(const Body &) = delete;
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H

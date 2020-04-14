@@ -130,6 +130,6 @@ class YAMLException : public Exception {
     return output.str();
   }
 };
-};  // namespace flatland_server
+}  //namespace flatland_server
 
 #endif  // FLATLAND_SERVER_WORLD_H

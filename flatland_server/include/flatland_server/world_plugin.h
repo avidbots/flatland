@@ -51,7 +51,7 @@
 #include <flatland_server/flatland_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 #include <string>
 
@@ -61,7 +61,7 @@ class World;
 class WorldPlugin : public FlatlandPlugin {
  protected:
   World *world_;
-  YamlReader world_config_;
+  rclcpp::Node::SharedPtr node_;
 
  public:
   /*
@@ -71,15 +71,16 @@ class WorldPlugin : public FlatlandPlugin {
 
   /*
   * @brief initialize the plugin
+  * @param[in] node, the rclcpp node pointer
   * @param[in] world, the World the plugin is attached to
   * @param[in] name, name of the plugin
   * @param[in] type, type of the plugin
   * @param[in] plugin_reader, the YAML node contain the plugin's config
   * @param[in] world_config, the yaml reader of world.yaml
   */
-  void Initialize(World *world, std::string name, std::string type,
+  void Initialize(rclcpp::Node::SharedPtr node, World *world, std::string name, std::string type,
                   YAML::Node &plugin_reader, YamlReader &world_config);
 };
-};
+}
 
 #endif  // FLATLAND_SERVER_WORLD_PLUGIN_H

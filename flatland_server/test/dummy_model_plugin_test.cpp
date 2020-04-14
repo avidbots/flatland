@@ -48,8 +48,8 @@
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
-#include <ros/ros.h>
+#include <pluginlib/class_loader.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
 /**
@@ -61,7 +61,7 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
+    std::shared_ptr<flatland_server::ModelPlugin> plugin =
         loader.createInstance("flatland_plugins::DummyModelPlugin");
 
     YAML::Node n = YAML::Node();

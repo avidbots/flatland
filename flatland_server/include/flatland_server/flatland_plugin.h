@@ -47,9 +47,12 @@
 #ifndef FLATLAND_SERVER_FLATLAND_PLUGIN_H
 #define FLATLAND_SERVER_FLATLAND_PLUGIN_H
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #include <Box2D/Box2D.h>
 #include <flatland_server/timekeeper.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 #include <string>
 
@@ -59,13 +62,13 @@ class FlatlandPlugin {
   enum class PluginType { Invalid, Model, World };  // Different plugin Types
   std::string type_;                                ///< type of the plugin
   std::string name_;                                ///< name of the plugin
-  ros::NodeHandle nh_;                              // ROS node handle
+  rclcpp::Node::SharedPtr node_;                    // ROS node
   PluginType plugin_type_;
 
   /*
   * @brief Get PluginType
   */
-  const PluginType Type() { return plugin_type_; }
+  PluginType Type() { return plugin_type_; }
 
   /**
   * @brief Get plugin name
@@ -127,6 +130,8 @@ class FlatlandPlugin {
    */
   virtual ~FlatlandPlugin() = default;
 };
-};  // namespace
+}  //namespace
+
+#pragma GCC diagnostic pop
 
 #endif  // FLATLAND_SERVER_FLATLAND_PLUGIN_H

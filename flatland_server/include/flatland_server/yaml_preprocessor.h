@@ -49,6 +49,7 @@
 
 #include <flatland_server/exceptions.h>
 #include <yaml-cpp/yaml.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <lauxlib.h>
 #include <lua.h>
@@ -61,9 +62,20 @@ namespace flatland_server {
 
 /**
  */
-namespace YamlPreprocessor {
+class YamlPreprocessor {
+  public:
+  std::shared_ptr<rclcpp::Node> ros_node_; 
+
+  /*
+   * @brief YamlPreprocessor constructor for yaml with lua expressions
+   *
+   * @param[in/out] ros_node the current ROS node for rosparam loading
+   */
+  YamlPreprocessor(std::shared_ptr<rclcpp::Node> ros_node) : ros_node_(ros_node) {}
+
 /**
  * @brief Preprocess with a given node
+ 
  * @param[in/out] node A Yaml node to parse
  * @return The parsed YAML::Node
  */
@@ -85,6 +97,7 @@ void ProcessNodes(YAML::Node &node);
 
 /**
  * @brief Find and run any $eval expressions
+ * @param[in/out] ros_node the current ROS node for rosparam loading
  * @param[in/out] node A Yaml string node to parse
  */
 void ProcessScalarNode(YAML::Node &node);
@@ -93,13 +106,14 @@ void ProcessScalarNode(YAML::Node &node);
   * @brief Get an environment variable with an optional default value
   * @param[in/out] lua_State The lua state/stack to read/write to/from
   */
-int LuaGetEnv(lua_State *L);
+static int LuaGetEnv(lua_State *L);
 
 /**
   * @brief Get a rosparam with an optional default value
+  * @param[in/out] ros_node the current ROS node for rosparam loading
   * @param[in/out] lua_State The lua state/stack to read/write to/from
   */
-int LuaGetParam(lua_State *L);
+static int LuaGetParam(lua_State *L);
 };
 }
 

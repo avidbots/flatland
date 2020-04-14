@@ -28,18 +28,9 @@ find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(std_srvs REQUIRED)
 
 # TODO: Fix plugins!
-
-# yaml-cpp
-#pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
-#find_path(YAML_CPP_INCLUDE_DIR
-#          NAMES yaml_cpp.h
-#          PATHS ${YAML_CPP_INCLUDE_DIRS})
-#find_library(YAML_CPP_LIBRARY
-#             NAMES YAML_CPP
-#             PATHS ${YAML_CPP_LIBRARY_DIRS})
-#link_directories(${YAML_CPP_LIBRARY_DIRS})
 
 # lua5.1
 find_package(Lua 5.1 QUIET)
@@ -47,8 +38,11 @@ find_package(Lua 5.1 QUIET)
 # OpenCV
 find_package(OpenCV REQUIRED)
 
+# Box2D
+find_package(Box2D REQUIRED)
+
 # Boost
-find_package(Boost REQUIRED COMPONENTS date_time system thread)
+find_package(Boost REQUIRED COMPONENTS date_time system thread filesystem)
 find_package(Threads)
 
 ##############
@@ -67,97 +61,83 @@ find_package(Threads)
 ## Build ##
 ###########
 
-# add_subdirectory("thirdparty/Box2D")
+#add_subdirectory("thirdparty/Box2D")
 
 ## Flatland server library
 add_library(flatland_lib SHARED
   src/simulation_manager.cpp
-#  src/world.cpp
-#  src/layer.cpp
-#  src/model.cpp
-#  src/entity.cpp
-#  src/debug_visualization.cpp
-#  src/geometry.cpp
-#  src/body.cpp
-#  src/joint.cpp
-#  src/model_body.cpp
-#  src/collision_filter_registry.cpp
-#  src/model_plugin.cpp
-#  src/world_plugin.cpp
-#  src/plugin_manager.cpp
-#  src/interactive_marker_manager.cpp
-#  src/timekeeper.cpp
-#  src/service_manager.cpp
-#  src/yaml_reader.cpp
-#  src/dummy_model_plugin.cpp 
-#  src/dummy_world_plugin.cpp
-#  src/yaml_preprocessor.cpp
+  src/world.cpp
+  src/layer.cpp
+  src/model.cpp
+  src/entity.cpp
+  src/debug_visualization.cpp
+  src/geometry.cpp
+  src/body.cpp
+  src/joint.cpp
+  src/model_body.cpp
+  src/collision_filter_registry.cpp
+  src/model_plugin.cpp
+  src/world_plugin.cpp
+  src/plugin_manager.cpp
+  #src/interactive_marker_manager.cpp
+  src/timekeeper.cpp
+  src/service_manager.cpp
+  src/yaml_reader.cpp
+  src/dummy_model_plugin.cpp 
+  src/dummy_world_plugin.cpp
+  src/yaml_preprocessor.cpp
 )
 
 target_include_directories(flatland_lib
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
+    $<INSTALL_INTERFACE:include>
+    ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib rclcpp flatland_msgs)
+ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs)
 
-#add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-#target_link_libraries(flatland_lib
-#  flatland_msgs
-#  ${catkin_LIBRARIES}
-#  ${OpenCV_LIBRARIES}
-#  ${Boost_LIBRARIES}
-#  ${LUA_LIBRARIES}
-#  flatland_Box2D
-#  yaml-cpp
-#)
-
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
-# add_dependencies(flatland_server_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(flatland_lib
+  ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${LUA_LIBRARIES}
+  ${BOX2D_LIBRARIES}
+  yaml-cpp
+)
 
 ## Declare a C++ executable
 add_executable(flatland_server src/flatland_server_node.cpp)
-ament_target_dependencies(flatland_server rclcpp flatland_msgs)
+ament_target_dependencies(flatland_server rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs)
 
-
-
-#target_include_directories(flatland_server PUBLIC
-#  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-#  $<INSTALL_INTERFACE:include>
-  #${YAML_CPP_INCLUDE_DIRS}
-  #${OpenCV_INCLUDE_DIRS}
-  #${Boost_INCLUDE_DIRS}
-  #${LUA_INCLUDE_DIR}
-  #thirdparty
-#)
 target_include_directories(flatland_server
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:include>)
+    $<INSTALL_INTERFACE:include>
+    ${LUA_INCLUDE_DIR}
+    ${yaml_cpp_vendor_INCLUDE_DIRS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flatland_server
-  #rclcpp
-  #${catkin_LIBRARIES}
-  #${OpenCV_LIBRARIES}
-  #${Boost_LIBRARIES}
-  #${LUA_LIBRARIES}
-  #flatland_Box2D
-  #yaml-cpp
+  ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${Boost_FILESYSTEM_LIBRARY}
+  ${LUA_LIBRARIES}
+  ${BOX2D_LIBRARIES}
+  yaml-cpp
   flatland_lib
 )
 
 
 ament_export_interfaces(export_flatland_lib HAS_LIBRARY_TARGET)
-ament_export_dependencies(flatland_msgs)
+# ament_export_libraries(flatland_lib)
+ament_export_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
 ament_package()
 
 #############
 ## Install ##
 #############
+
+pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
 
 install(
   TARGETS flatland_lib
@@ -174,20 +154,21 @@ install(TARGETS flatland_server
 )
 
 # Mark cpp header files for installation
-#install(DIRECTORY include/${PROJECT_NAME}/
-#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#  FILES_MATCHING PATTERN "*.h"
-#)
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
 
 # Install launchfiles
-#install(DIRECTORY launch
-#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#)
+install(DIRECTORY launch
+    DESTINATION share/${PROJECT_NAME}/
+)
 
-#install(DIRECTORY test/conestogo_office_test
-#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
-#)
+install(DIRECTORY test/conestogo_office_test
+    DESTINATION share/${PROJECT_NAME}/test
+)
 
+# TODO
 # Install plugins file
 #install(FILES flatland_plugins.xml
 #    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

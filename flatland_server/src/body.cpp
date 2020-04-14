@@ -45,7 +45,7 @@
  */
 
 #include <flatland_server/body.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace flatland_server {
 
@@ -91,8 +91,8 @@ const Color &Body::GetColor() const { return color_; }
 void Body::SetColor(const Color &color) { color_ = color; }
 
 void Body::DebugOutput() const {
-  ROS_DEBUG_NAMED(
-      "Body",
+  // todo
+  RCLCPP_DEBUG(rclcpp::get_logger("Body"),
       "Body %p: entity(%p, %s) name(%s) color(%f,%f,%f,%f) "
       "physics_body(%p) num_fixtures(%d) type(%d) pose(%f, %f, %f) "
       "angular_damping(%f) linear_damping(%f)",
@@ -103,4 +103,4 @@ void Body::DebugOutput() const {
       physics_body_->GetAngularDamping(), physics_body_->GetLinearDamping());
 }
 
-};  // namespace flatland_server
+}  //namespace flatland_server

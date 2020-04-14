@@ -146,4 +146,4 @@ uint16_t CollisionFilterRegistry::GetCategoryBits(
   return category_bits;
 }
 
-};  // namespace flatland_server
+}  //namespace flatland_server

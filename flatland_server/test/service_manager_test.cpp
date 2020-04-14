@@ -44,9 +44,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/DeleteModel.h>
-#include <flatland_msgs/MoveModel.h>
-#include <flatland_msgs/SpawnModel.h>
+#include <flatland_msgs/srv/DeleteModel.h>
+#include <flatland_msgs/srv/MoveModel.h>
+#include <flatland_msgs/srv/SpawnModel.h>
 #include <flatland_server/simulation_manager.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
@@ -64,7 +64,7 @@ class ServiceManagerTest : public ::testing::Test {
   boost::filesystem::path world_yaml;
   boost::filesystem::path robot_yaml;
   Timekeeper timekeeper;
-  ros::NodeHandle nh;
+  rclcpp::Node::SharedPtr node;   // todo
   ros::ServiceClient client;
   std::thread simulation_thread;
 
@@ -104,7 +104,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   robot_yaml = this_file_dir /
                fs::path("load_world_tests/simple_test_A/person.model.yaml");
 
-  flatland_msgs::SpawnModel srv;
+  flatland_msgs::srv::SpawnModel srv;
 
   srv.request.name = "service_manager_test_robot";
   srv.request.ns = "robot123";
@@ -113,7 +113,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   srv.request.pose.y = 102.1;
   srv.request.pose.theta = 0.23;
 
-  client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
+  client = nh.serviceClient<flatland_msgs::srv::SpawnModel>("spawn_model");
 
   // Threading is required since client.call blocks executing until return
   StartSimulationThread();
@@ -145,7 +145,7 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
 
   robot_yaml = this_file_dir / fs::path("random_path/turtlebot.model.yaml");
 
-  flatland_msgs::SpawnModel srv;
+  flatland_msgs::srv::SpawnModel srv;
 
   srv.request.name = "service_manager_test_robot";
   srv.request.yaml_path = robot_yaml.string();
@@ -153,7 +153,7 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
   srv.request.pose.y = 2;
   srv.request.pose.theta = 3;
 
-  client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
+  client = nh.serviceClient<flatland_msgs::srv::SpawnModel>("spawn_model");
 
   StartSimulationThread();
 
@@ -179,13 +179,13 @@ TEST_F(ServiceManagerTest, move_model) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
 
-  flatland_msgs::MoveModel srv;
+  flatland_msgs::srv::MoveModel srv;
   srv.request.name = "turtlebot1";
   srv.request.pose.x = 5.5;
   srv.request.pose.y = 9.9;
   srv.request.pose.theta = 0.77;
 
-  client = nh.serviceClient<flatland_msgs::MoveModel>("move_model");
+  client = nh.serviceClient<flatland_msgs::srv::MoveModel>("move_model");
 
   StartSimulationThread();
 
@@ -209,13 +209,13 @@ TEST_F(ServiceManagerTest, move_nonexistent_model) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
 
-  flatland_msgs::MoveModel srv;
+  flatland_msgs::srv::MoveModel srv;
   srv.request.name = "not_a_robot";
   srv.request.pose.x = 4;
   srv.request.pose.y = 5;
   srv.request.pose.theta = 0;
 
-  client = nh.serviceClient<flatland_msgs::MoveModel>("move_model");
+  client = nh.serviceClient<flatland_msgs::srv::MoveModel>("move_model");
 
   StartSimulationThread();
 
@@ -236,10 +236,10 @@ TEST_F(ServiceManagerTest, delete_model) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-  flatland_msgs::DeleteModel srv;
+  flatland_msgs::srv::DeleteModel srv;
   srv.request.name = "turtlebot1";
 
-  client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
+  client = nh.serviceClient<flatland_msgs::srv::DeleteModel>("delete_model");
 
   StartSimulationThread();
 
@@ -263,10 +263,10 @@ TEST_F(ServiceManagerTest, delete_nonexistent_model) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-  flatland_msgs::DeleteModel srv;
+  flatland_msgs::srv::DeleteModel srv;
   srv.request.name = "random_model";
 
-  client = nh.serviceClient<flatland_msgs::DeleteModel>("delete_model");
+  client = nh.serviceClient<flatland_msgs::srv::DeleteModel>("delete_model");
 
   StartSimulationThread();
 

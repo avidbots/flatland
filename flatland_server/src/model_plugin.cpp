@@ -50,13 +50,13 @@ namespace flatland_server {
 
 Model *ModelPlugin::GetModel() { return model_; }
 
-void ModelPlugin::Initialize(const std::string &type, const std::string &name,
+void ModelPlugin::Initialize(rclcpp::Node::SharedPtr node, const std::string &type, const std::string &name,
                              Model *model, const YAML::Node &config) {
   type_ = type;
   name_ = name;
   model_ = model;
   plugin_type_ = PluginType::Model;
-  nh_ = ros::NodeHandle(model_->namespace_);
+  node_ = node;
   OnInitialize(config);
 }
 
@@ -90,4 +90,4 @@ bool ModelPlugin::FilterContact(b2Contact *contact) {
   return FilterContact(contact, e, f1, f2);
 }
 
-};  // namespace flatland_server
+}  //namespace flatland_server

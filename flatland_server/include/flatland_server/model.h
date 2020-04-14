@@ -75,11 +75,12 @@ class Model : public Entity {
 
   /**
    * @brief Constructor for the model
+   * @param[in] rclcpp::Node Current ROS node shared pointer
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
    * @param[in] name Name of the model
    */
-  Model(b2World *physics_world, CollisionFilterRegistry *cfr,
+  Model (std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::string &ns, const std::string &name);
 
   /**
@@ -183,6 +184,7 @@ class Model : public Entity {
 
   /**
    * @brief Create a model, throws exceptions upon failure
+   * @param[in] rclcpp Node shared pointer
    * @param[in] physics_world Box2D physics world
    * @param[in] cfr Collision filter registry
    * @param[in] model_yaml_path Absolute path to the model yaml file
@@ -190,9 +192,9 @@ class Model : public Entity {
    * @param[in] name Name of the model
    * @return A new model
    */
-  static Model *MakeModel(b2World *physics_world, CollisionFilterRegistry *cfr,
+  static Model *MakeModel(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &model_yaml_path,
                           const std::string &ns, const std::string &name);
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_SERVER_MODEL_H

@@ -88,5 +88,5 @@ class Geometry {
   static b2Vec2 InverseTransform(const b2Vec2& in, const RotateTranslate& rt);
 };
 
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_SERVER_GEOMETRY_H

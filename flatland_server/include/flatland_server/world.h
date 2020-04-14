@@ -49,11 +49,12 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_server/collision_filter_registry.h>
-#include <flatland_server/interactive_marker_manager.h>
+//#include <flatland_server/interactive_marker_manager.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
+#include <rclcpp/rclcpp.hpp>
 #include <map>
 #include <string>
 #include <string>
@@ -69,6 +70,7 @@ namespace flatland_server {
 class World : public b2ContactListener {
  public:
   boost::filesystem::path world_yaml_dir_;  ///<directory containing world file
+  std::shared_ptr<rclcpp::Node> node_;
   b2World *physics_world_;                  ///< Box2D physics world
   b2Vec2 gravity_;  ///< Box2D world gravity, always (0, 0)
   std::map<std::vector<std::string>, Layer *>
@@ -79,16 +81,17 @@ class World : public b2ContactListener {
   PluginManager plugin_manager_;  ///< for loading and updating plugins
   bool service_paused_;  ///< indicates if simulation is paused by a service
                          /// call or not
-  InteractiveMarkerManager
-      int_marker_manager_;  ///< for dynamically moving models from Rviz
+  //InteractiveMarkerManager
+  //    int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
 
   /**
    * @brief Constructor for the world class. All data required for
    * initialization should be passed in here
+   * @param[in] rclcpp::Node Current ROS node shared pointer
    */
-  World();
+  World(std::shared_ptr<rclcpp::Node> node);
 
   /**
    * @brief Destructor for the world class
@@ -194,10 +197,11 @@ class World : public b2ContactListener {
   /**
    * @brief factory method to create a instance of the world class. Cleans all
    * the inputs before instantiation of the class. TThrows YAMLException.
+   * @param[in] rclcpp::Node Current ROS node shared pointer
    * @param[in] yaml_path Path to the world yaml file
    * @return pointer to a new world
    */
-  static World *MakeWorld(const std::string &yaml_path);
+  static World *MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &yaml_path);
 
   /**
    * @brief Publish debug visualizations for everything
@@ -206,5 +210,5 @@ class World : public b2ContactListener {
    */
   void DebugVisualize(bool update_layers = true);
 };
-};      // namespace flatland_server
+}       // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

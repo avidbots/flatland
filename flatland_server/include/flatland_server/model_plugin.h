@@ -47,11 +47,13 @@
 #ifndef FLATLAND_SERVER_MODEL_PLUGIN_H
 #define FLATLAND_SERVER_MODEL_PLUGIN_H
 
+
+
 #include <Box2D/Box2D.h>
 #include <flatland_server/flatland_plugin.h>
 #include <flatland_server/model.h>
 #include <flatland_server/timekeeper.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -66,7 +68,7 @@ class ModelPlugin : public FlatlandPlugin {
   Model *model_;  ///< model this plugin is tied to
 
  public:
-  ros::NodeHandle nh_;  ///< ROS node handle
+  rclcpp::Node::SharedPtr node_;  ///< ROS node
 
   /**
    * @brief Get model
@@ -76,12 +78,13 @@ class ModelPlugin : public FlatlandPlugin {
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
    * require the class to have a default constructor
+   * @param[in] node, the rclcpp node pointer
    * @param[in] type Type of the plugin
    * @param[in] name Name of the plugin
    * @param[in] model The model associated with this model plugin
    * @param[in] config The plugin YAML node
    */
-  void Initialize(const std::string &type, const std::string &name,
+  void Initialize(rclcpp::Node::SharedPtr node, const std::string &type, const std::string &name,
                   Model *model, const YAML::Node &config);
 
   /**
@@ -113,5 +116,6 @@ class ModelPlugin : public FlatlandPlugin {
    */
   ModelPlugin() = default;
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
+
 #endif  // FLATLAND_SERVER_MODEL_PLUGIN_H

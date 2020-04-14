@@ -53,7 +53,7 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #include <yaml-cpp/yaml.h>
 
 namespace flatland_server {
@@ -62,16 +62,18 @@ namespace flatland_server {
 class World;
 
 class PluginManager {
+ private:
+   rclcpp::Node::SharedPtr node_;
  public:
-  std::vector<boost::shared_ptr<ModelPlugin>> model_plugins_;
+  std::vector<std::shared_ptr<ModelPlugin>> model_plugins_;
   pluginlib::ClassLoader<flatland_server::ModelPlugin> *model_plugin_loader_;
 
-  std::vector<boost::shared_ptr<WorldPlugin>> world_plugins_;
+  std::vector<std::shared_ptr<WorldPlugin>> world_plugins_;
   pluginlib::ClassLoader<flatland_server::WorldPlugin> *world_plugin_loader_;
   /**
    * @brief Plugin manager constructor
    */
-  PluginManager();
+  PluginManager(rclcpp::Node::SharedPtr node);
 
   /**
    * @brief Plugin manager destructor
@@ -139,5 +141,5 @@ class PluginManager {
    */
   void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H

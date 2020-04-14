@@ -131,5 +131,6 @@ class ModelBody : public Body {
                              CollisionFilterRegistry *cfr, Model *model,
                              YamlReader &body_node);
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
+
 #endif  // FLATLAND_MODEL_BODY_H

@@ -47,10 +47,10 @@
 #ifndef FLATLAND_SERVER_SIMULATION_MANAGER_H
 #define FLATLAND_SERVER_SIMULATION_MANAGER_H
 
-//#include <Box2D/Box2D.h>
-// #include <flatland_server/debug_visualization.h>
-// #include <flatland_server/timekeeper.h>
-// #include <flatland_server/world.h>
+#include <Box2D/Box2D.h>
+#include <flatland_server/debug_visualization.h>
+#include <flatland_server/timekeeper.h>
+#include <flatland_server/world.h>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
@@ -60,7 +60,7 @@ class SimulationManager {
  public:
   std::shared_ptr<rclcpp::Node> node_;
   bool run_simulator_;           ///<  While true, keep running the sim loop
-  //World *world_;                 ///< Simulation world
+  World *world_;                 ///< Simulation world
   double update_rate_;           ///< sim loop rate
   double step_size_;             ///< step size
   bool show_viz_;                ///< flag to determine if to show visualization

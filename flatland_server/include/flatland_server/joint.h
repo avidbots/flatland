@@ -177,5 +177,5 @@ class Joint {
                               b2Vec2 anchor_A, b2Body *body_B, b2Vec2 anchor_B,
                               bool collide_connected);
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

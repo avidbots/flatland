@@ -44,25 +44,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/yaml_preprocessor.h>
+
 #include <flatland_server/yaml_reader.h>
 #include <boost/filesystem/path.hpp>
 
 namespace flatland_server {
 
-YamlReader::YamlReader() : node_(YAML::Node()) {
+YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node) : ros_node_(ros_node), yaml_preprocessor_(ros_node) {
   SetErrorInfo("_NONE_", "_NONE_");
 }
 
-YamlReader::YamlReader(const YAML::Node &node) : node_(node) {
-  YamlPreprocessor::Parse(node_);
+YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const YAML::Node &node) : node_(node), ros_node_(ros_node), yaml_preprocessor_(ros_node) {
+  yaml_preprocessor_.Parse(node_);
   SetErrorInfo("_NONE_", "_NONE_");
 }
 
-YamlReader::YamlReader(const std::string &path) {
+YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const std::string &path) : ros_node_(ros_node), yaml_preprocessor_(ros_node)  {
   try {
     node_ = YAML::LoadFile(path);
-    YamlPreprocessor::Parse(node_);
+    yaml_preprocessor_.Parse(node_);
   } catch (const YAML::BadFile &e) {
     throw YAMLException("File does not exist, path=" + Q(path));
 
@@ -85,7 +85,7 @@ int YamlReader::NodeSize() { return node_.size(); }
 
 YamlReader YamlReader::Subnode(int index, NodeTypeCheck type_check,
                                std::string subnode_location) {
-  YamlReader reader(node_[index]);
+  YamlReader reader(ros_node_, node_[index]);
 
   // default to use the error location message of its parent
   std::string location = subnode_location == ""
@@ -112,7 +112,7 @@ YamlReader YamlReader::Subnode(int index, NodeTypeCheck type_check,
 YamlReader YamlReader::Subnode(const std::string &key, NodeTypeCheck type_check,
                                std::string subnode_location) {
   accessed_keys_.insert(key);
-  YamlReader reader(node_[key]);
+  YamlReader reader(ros_node_, node_[key]);
 
   // default to use the error location message of its parent
   std::string location = subnode_location == ""
@@ -137,7 +137,7 @@ YamlReader YamlReader::SubnodeOpt(const std::string &key,
                                   std::string subnode_location) {
   if (!node_[key]) {
     accessed_keys_.insert(key);
-    return YamlReader(YAML::Node());
+    return YamlReader(ros_node_, YAML::Node());
   }
   return Subnode(key, type_check, subnode_location);
 }

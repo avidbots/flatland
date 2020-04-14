@@ -25,7 +25,7 @@ InteractiveMarkerManager::InteractiveMarkerManager(
 
 void InteractiveMarkerManager::createInteractiveMarker(
     const std::string &model_name, const Pose &pose,
-    const visualization_msgs::MarkerArray &body_markers) {
+    const visualization_msgs::msg::MarkerArray &body_markers) {
   // Set up interactive marker control objects to allow both translation and
   // rotation movement
   visualization_msgs::InteractiveMarkerControl plane_control;
@@ -49,8 +49,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
   no_control.name = "no_control";
   no_control.interaction_mode =
       visualization_msgs::InteractiveMarkerControl::NONE;
-  visualization_msgs::Marker text_marker;
-  text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  visualization_msgs::msg::Marker text_marker;
+  text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   text_marker.color.r = 1.0;
   text_marker.color.g = 1.0;
   text_marker.color.b = 1.0;
@@ -62,8 +62,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
   no_control.markers.push_back(text_marker);
 
   // Add a cube marker to be an easy-to-manipulate target in Rviz
-  visualization_msgs::Marker easy_to_click_cube;
-  easy_to_click_cube.type = visualization_msgs::Marker::CUBE;
+  visualization_msgs::msg::Marker easy_to_click_cube;
+  easy_to_click_cube.type = visualization_msgs::msg::Marker::CUBE;
   easy_to_click_cube.color.r = 0.0;
   easy_to_click_cube.color.g = 1.0;
   easy_to_click_cube.color.b = 0.0;
@@ -77,13 +77,13 @@ void InteractiveMarkerManager::createInteractiveMarker(
   // Also add body markers to the no_control object to visualize model pose
   // while moving its interactive marker
   for (size_t i = 0; i < body_markers.markers.size(); i++) {
-    visualization_msgs::Marker transformed_body_marker =
+    visualization_msgs::msg::Marker transformed_body_marker =
         body_markers.markers[i];
 
     // Transform original body frame marker from global to local frame
     RotateTranslate rt = Geometry::CreateTransform(pose.x, pose.y, pose.theta);
     transformed_body_marker.header.frame_id = "";
-    transformed_body_marker.header.stamp = ros::Time(0);
+    transformed_body_marker.header.stamp = rclcpp::Time(0);
     transformed_body_marker.pose.position.x =
         (body_markers.markers[i].pose.position.x - rt.dx) * rt.cos +
         (body_markers.markers[i].pose.position.y - rt.dy) * rt.sin;
@@ -97,8 +97,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
 
     // Make line strips thicker than the original
     if (transformed_body_marker.type ==
-            visualization_msgs::Marker::LINE_STRIP ||
-        transformed_body_marker.type == visualization_msgs::Marker::LINE_LIST) {
+            visualization_msgs::msg::Marker::LINE_STRIP ||
+        transformed_body_marker.type == visualization_msgs::msg::Marker::LINE_LIST) {
       transformed_body_marker.scale.x = 0.1;
     }
 
@@ -109,7 +109,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   // Send new interactive marker to server
   visualization_msgs::InteractiveMarker new_interactive_marker;
   new_interactive_marker.header.frame_id = "map";
-  new_interactive_marker.header.stamp = ros::Time(0);
+  new_interactive_marker.header.stamp = rclcpp::Time(0);
   new_interactive_marker.name = model_name;
   new_interactive_marker.pose.position.x = pose.x;
   new_interactive_marker.pose.position.y = pose.y;
@@ -233,7 +233,7 @@ void InteractiveMarkerManager::update() {
   try {
     dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
   } catch (std::runtime_error &ex) {
-    ROS_ERROR(
+    RCLCPP_ERROR(rclcpp::get_logger("Interactive Maker Manager"),
         "Flatland Interactive Marker Manager runtime error: (%f - %f) [%s]",
         ros::WallTime::now().toSec(), pose_update_stamp_.toSec(), ex.what());
   }

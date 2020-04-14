@@ -44,13 +44,13 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/DeleteModel.h>
-#include <flatland_msgs/MoveModel.h>
-#include <flatland_msgs/SpawnModel.h>
+#include <flatland_msgs/srv/delete_model.hpp>
+#include <flatland_msgs/srv/move_model.hpp>
+#include <flatland_msgs/srv/spawn_model.hpp>
 #include <flatland_server/simulation_manager.h>
 #include <flatland_server/world.h>
-#include <ros/ros.h>
-#include <std_srvs/Empty.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_srvs/srv/empty.hpp>
 
 #ifndef FLATLAND_PLUGIN_SERVICE_MANAGER_H
 #define FLATLAND_PLUGIN_SERVICE_MANAGER_H
@@ -66,15 +66,16 @@ class SimulationManager;
 class ServiceManager {
  public:
   World *world_;                ///< aaa handle to the simulation world
+  rclcpp::Node::SharedPtr node_;
   SimulationManager *sim_man_;  ///< a handle to the simulation manager
 
-  ros::ServiceServer spawn_model_service_;   ///< service for spawning models
-  ros::ServiceServer delete_model_service_;  ///< service for deleting models
-  ros::ServiceServer move_model_service_;    ///< service for moving models
-  ros::ServiceServer pause_service_;   ///< service for pausing the simulation
-  ros::ServiceServer resume_service_;  ///< service for resuming the simulation
-  ros::ServiceServer toggle_pause_service_;  ///< service for toggling the
-                                             /// pause state of the simulation
+  rclcpp::Service<flatland_msgs::srv::SpawnModel>::SharedPtr spawn_model_service_;    ///< service for spawning models
+  rclcpp::Service<flatland_msgs::srv::DeleteModel>::SharedPtr  delete_model_service_; ///< service for deleting models
+  rclcpp::Service<flatland_msgs::srv::MoveModel>::SharedPtr  move_model_service_;     ///< service for moving models
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr  pause_service_;                   ///< service for pausing the simulation
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr  resume_service_;                  ///< service for resuming the simulation
+  rclcpp::Service<std_srvs::srv::Empty>::SharedPtr  toggle_pause_service_;            ///< service for toggling the
+                                                                                      /// pause state of the simulation
 
   /**
    * @brief Service manager constructor
@@ -85,45 +86,54 @@ class ServiceManager {
 
   /**
    * @brief Callback for the spawn model service
+   * @param[in] request_header The ros middleware service header
    * @param[in] request Contains the request data for the service
    * @param[in/out] response Contains the response for the service
    */
-  bool SpawnModel(flatland_msgs::SpawnModel::Request &request,
-                  flatland_msgs::SpawnModel::Response &response);
+   bool SpawnModel(const std::shared_ptr<rmw_request_id_t> request_header,
+                   const std::shared_ptr<flatland_msgs::srv::SpawnModel::Request> request,
+                   std::shared_ptr<flatland_msgs::srv::SpawnModel::Response> response);
 
   /**
    * @brief Callback for the delete model service
+   * @param[in] request_header The ros middleware service header
    * @param[in] request Contains the request data for the service
    * @param[in/out] response Contains the response for the service
    */
-  bool DeleteModel(flatland_msgs::DeleteModel::Request &request,
-                   flatland_msgs::DeleteModel::Response &response);
+  bool DeleteModel(const std::shared_ptr<rmw_request_id_t> request_header,
+                   const std::shared_ptr<flatland_msgs::srv::DeleteModel::Request> request,
+                   std::shared_ptr<flatland_msgs::srv::DeleteModel::Response> response);
 
   /**
    * @brief Callback for the move model service
+   * @param[in] request_header The ros middleware service header
    * @param[in] request Contains the request data for the service
    * @param[in/out] response Contains the response for the service
    */
-  bool MoveModel(flatland_msgs::MoveModel::Request &request,
-                 flatland_msgs::MoveModel::Response &response);
+  bool MoveModel(const std::shared_ptr<rmw_request_id_t> request_header,
+                 const std::shared_ptr<flatland_msgs::srv::MoveModel::Request> request,
+                 std::shared_ptr<flatland_msgs::srv::MoveModel::Response> response);
 
   /**
    * @brief Callback for the pause service
    */
-  bool Pause(std_srvs::Empty::Request &request,
-             std_srvs::Empty::Response &response);
+  bool Pause(const std::shared_ptr<rmw_request_id_t> request_header,
+             const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+             std::shared_ptr<std_srvs::srv::Empty::Response> response);
 
   /**
    * @brief Callback for the resume service
    */
-  bool Resume(std_srvs::Empty::Request &request,
-              std_srvs::Empty::Response &response);
+  bool Resume(const std::shared_ptr<rmw_request_id_t> request_header,
+              const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+              std::shared_ptr<std_srvs::srv::Empty::Response> response);
 
   /**
    * @brief Callback for the pause toggle service
    */
-  bool TogglePause(std_srvs::Empty::Request &request,
-                   std_srvs::Empty::Response &response);
+  bool TogglePause(const std::shared_ptr<rmw_request_id_t> request_header,
+                   const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+                   std::shared_ptr<std_srvs::srv::Empty::Response> response);
 };
-};
+}
 #endif

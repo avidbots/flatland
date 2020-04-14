@@ -54,6 +54,8 @@
 #include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/version.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <flatland_server/yaml_preprocessor.h>
 
 // If we have a version of boost with type_index
 #if BOOST_VERSION / 100 % 1000 >= 56
@@ -78,6 +80,8 @@ class YamlReader {
   enum NodeTypeCheck { MAP, LIST, NO_CHECK };
 
   YAML::Node node_;                      ///< The YAML Node this processes
+  std::shared_ptr<rclcpp::Node> ros_node_;
+  YamlPreprocessor yaml_preprocessor_; 
   std::set<std::string> accessed_keys_;  /// Records of the keys processed
   ///< location of the entry, used to show where the error come from
   std::string filename_;
@@ -92,20 +96,20 @@ class YamlReader {
    * @brief Default constructor for yaml reader, initialize with a empty yaml
    * Node
    */
-  YamlReader();
+  YamlReader(std::shared_ptr<rclcpp::Node> ros_node);
 
   /**
    * @brief Constructor with a given node
    * @param[in] node A Yaml node to get data from
    */
-  YamlReader(const YAML::Node &node);
+  YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const YAML::Node &node);
 
   /**
    * @brief Constructor with a given path to a yaml file, throws exception on
    * failure
    * @param[in] path Path to the yaml file
    */
-  YamlReader(const std::string &path);
+  YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const std::string &path);
 
   /**
    * @brief Use this method to set the entry location and entry name for error

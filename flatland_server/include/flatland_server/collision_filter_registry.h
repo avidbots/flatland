@@ -132,5 +132,5 @@ class CollisionFilterRegistry {
       const std::vector<std::string> &layers,
       std::vector<std::string> *invalid_layers = nullptr) const;
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H

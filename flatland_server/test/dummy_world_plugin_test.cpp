@@ -49,8 +49,8 @@
 #include <flatland_server/world_plugin.h>
 #include <flatland_server/yaml_reader.h>
 #include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
-#include <ros/ros.h>
+#include <pluginlib/class_loader.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
 using namespace flatland_server;
@@ -60,7 +60,7 @@ TEST(DummyWorldPluginTest, pluginlib_load_test) {
       "flatland_server", "flatland_server::WorldPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::WorldPlugin> plugin =
+    std::shared_ptr<flatland_server::WorldPlugin> plugin =
         loader.createInstance("flatland_plugins::DummyWorldPlugin");
 
     YAML::Node n = YAML::Node();

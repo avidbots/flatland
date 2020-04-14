@@ -7,7 +7,7 @@
 #include <flatland_server/types.h>
 #include <interactive_markers/interactive_marker_server.h>
 #include <interactive_markers/menu_handler.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 namespace flatland_server {
 
@@ -35,7 +35,7 @@ class InteractiveMarkerManager {
    */
   void createInteractiveMarker(
       const std::string& model_name, const Pose& pose,
-      const visualization_msgs::MarkerArray& body_markers);
+      const visualization_msgs::msg::MarkerArray& body_markers);
 
   /**
    * @brief Remove interactive marker corresponding to a given model when
@@ -55,7 +55,7 @@ class InteractiveMarkerManager {
  private:
   interactive_markers::MenuHandler
       menu_handler_;  ///< Handler for the interactive marker context menus
-  boost::shared_ptr<interactive_markers::InteractiveMarkerServer>
+  std::shared_ptr<interactive_markers::InteractiveMarkerServer>
       interactive_marker_server_;  ///< Interactive marker server
   std::vector<Model*>*
       models_;  ///< Pointer to the model list in the World class

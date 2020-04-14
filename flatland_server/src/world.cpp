@@ -50,7 +50,7 @@
 #include <flatland_server/types.h>
 #include <flatland_server/world.h>
 #include <flatland_server/yaml_reader.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 #include <boost/filesystem.hpp>
 #include <map>
@@ -58,16 +58,18 @@
 
 namespace flatland_server {
 
-World::World()
-    : gravity_(0, 0),
+World::World(std::shared_ptr<rclcpp::Node> node)
+    : node_(node),
+      gravity_(0, 0),
       service_paused_(false),
-      int_marker_manager_(&models_, &plugin_manager_) {
+      plugin_manager_(node) /*,
+      int_marker_manager_(&models_, &plugin_manager_)*/ {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
 
 World::~World() {
-  ROS_INFO_NAMED("World", "Destroying world...");
+  RCLCPP_INFO(node_->get_logger(), "World: Destroying world...");
 
   // The order of things matters in the destructor. The contact listener is
   // removed first to avoid the triggering the contact functions in plugin
@@ -95,7 +97,7 @@ World::~World() {
   // This frees the entire Box2D world with everything in it
   delete physics_world_;
 
-  ROS_INFO_NAMED("World", "World destroyed");
+  RCLCPP_INFO(node_->get_logger(), "World: World destroyed");
 }
 
 void World::Update(Timekeeper &timekeeper) {
@@ -106,7 +108,7 @@ void World::Update(Timekeeper &timekeeper) {
     timekeeper.StepTime();
     plugin_manager_.AfterPhysicsStep(timekeeper);
   }
-  int_marker_manager_.update();
+  //int_marker_manager_.update();
 }
 
 void World::BeginContact(b2Contact *contact) {
@@ -125,14 +127,14 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   plugin_manager_.PostSolve(contact, impulse);
 }
 
-World *World::MakeWorld(const std::string &yaml_path) {
-  YamlReader world_reader = YamlReader(yaml_path);
+World *World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &yaml_path) {
+  YamlReader world_reader = YamlReader(node, yaml_path);
   YamlReader prop_reader = world_reader.Subnode("properties", YamlReader::MAP);
   int v = prop_reader.Get<int>("velocity_iterations", 10);
   int p = prop_reader.Get<int>("position_iterations", 10);
   prop_reader.EnsureAccessedAllKeys();
 
-  World *w = new World();
+  World *w = new World(node);
 
   w->world_yaml_dir_ = boost::filesystem::path(yaml_path).parent_path();
   w->physics_velocity_iterations_ = v;
@@ -149,15 +151,15 @@ World *World::MakeWorld(const std::string &yaml_path) {
     w->LoadModels(models_reader);
     w->LoadWorldPlugins(world_plugin_reader, w, world_reader);
   } catch (const YAMLException &e) {
-    ROS_FATAL_NAMED("World", "Error loading from YAML");
+    RCLCPP_FATAL(node->get_logger(), "World: Error loading from YAML");
     delete w;
     throw e;
   } catch (const PluginException &e) {
-    ROS_FATAL_NAMED("World", "Error loading plugins");
+    RCLCPP_FATAL(node->get_logger(), "World: Error loading plugins");
     delete w;
     throw e;
   } catch (const Exception &e) {
-    ROS_FATAL_NAMED("World", "Error loading world");
+    RCLCPP_FATAL(node->get_logger(), "World: Error loading world");
     delete w;
     throw e;
   }
@@ -202,16 +204,16 @@ void World::LoadLayers(YamlReader &layers_reader) {
       map_path = world_yaml_dir_ / map_path;
     }
 
-    ROS_INFO_NAMED("World", "Loading layer \"%s\" from path=\"%s\"",
+    RCLCPP_INFO(node_->get_logger(), "World: Loading layer \"%s\" from path=\"%s\"",
                    names[0].c_str(), map_path.string().c_str());
 
-    Layer *layer = Layer::MakeLayer(physics_world_, &cfr_, map_path.string(),
+    Layer *layer = Layer::MakeLayer(node_, physics_world_, &cfr_, map_path.string(),
                                     names, color, properties);
     layers_name_map_.insert(
         std::pair<std::vector<std::string>, Layer *>(names, layer));
     layers_.push_back(layer);
 
-    ROS_INFO_NAMED("World", "Layer \"%s\" loaded", layer->name_.c_str());
+    RCLCPP_INFO(node_->get_logger(), "World: Layer \"%s\" loaded", layer->name_.c_str());
     layer->DebugOutput();
   }
 }
@@ -236,7 +238,7 @@ void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
   if (!world_plugin_reader.IsNodeNull()) {
     for (int i = 0; i < world_plugin_reader.NodeSize(); i++) {
       YamlReader reader = world_plugin_reader.Subnode(i, YamlReader::MAP);
-      ROS_INFO_NAMED("World", "loading world_plugin");
+      RCLCPP_INFO(node_->get_logger(), "World: loading world_plugin");
       plugin_manager_.LoadWorldPlugin(world, reader, world_config);
     }
   }
@@ -254,11 +256,11 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     abs_path = world_yaml_dir_ / abs_path;
   }
 
-  ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",
+  RCLCPP_INFO(node_->get_logger(), "World: Loading model from path=\"%s\"",
                  abs_path.string().c_str());
 
   Model *m =
-      Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
+      Model::MakeModel(node_, physics_world_, &cfr_, abs_path.string(), ns, name);
   m->TransformAll(pose);
 
   try {
@@ -278,14 +280,14 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
 
   models_.push_back(m);
 
-  visualization_msgs::MarkerArray body_markers;
+  visualization_msgs::msg::MarkerArray body_markers;
   for (size_t i = 0; i < m->bodies_.size(); i++) {
-    DebugVisualization::Get().BodyToMarkers(
+    DebugVisualization::Get(node_)->BodyToMarkers(
         body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
   }
-  int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
+  //int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
 
-  ROS_INFO_NAMED("World", "Model \"%s\" loaded", m->name_.c_str());
+  RCLCPP_INFO(node_->get_logger(), "World: Model \"%s\" loaded", m->name_.c_str());
   m->DebugOutput();
 }
 
@@ -299,7 +301,7 @@ void World::DeleteModel(const std::string &name) {
       plugin_manager_.DeleteModelPlugin(models_[i]);
       delete models_[i];
       models_.erase(models_.begin() + i);
-      int_marker_manager_.deleteInteractiveMarker(name);
+      //int_marker_manager_.deleteInteractiveMarker(name);
       found = true;
       break;
     }
@@ -337,7 +339,7 @@ void World::Resume() { service_paused_ = false; }
 void World::TogglePaused() { service_paused_ = !service_paused_; }
 
 bool World::IsPaused() {
-  return service_paused_ || int_marker_manager_.isManipulating();
+  return service_paused_ /*|| int_marker_manager_.isManipulating()*/;
 }
 
 void World::DebugVisualize(bool update_layers) {
@@ -351,4 +353,4 @@ void World::DebugVisualize(bool update_layers) {
     model->DebugVisualize();
   }
 }
-};  // namespace flatland_server
+}  //namespace flatland_server

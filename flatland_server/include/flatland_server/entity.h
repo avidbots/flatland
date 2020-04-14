@@ -50,6 +50,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace flatland_server {
 
@@ -62,16 +63,18 @@ class Entity {
  public:
   /// Defines the type of entity
   enum EntityType { LAYER, MODEL };
+  std::shared_ptr<rclcpp::Node> node_;
 
   b2World *physics_world_;  ///< Box2D physics world
   std::string name_;        ///< name of the entity
 
   /**
    * @brief Constructor for the entity
+   * @param[in] rclcpp::Node shared pointer to the current ROS node
    * @param[in] physics_world Box2D physics_world
    * @param[in] name name of the entity
    */
-  Entity(b2World *physics_world, const std::string &name);
+  Entity(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, const std::string &name);
   virtual ~Entity() = default;
 
   /**
@@ -107,5 +110,5 @@ class Entity {
    */
   virtual void DebugOutput() const = 0;
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_SERVER_ENTITY_H

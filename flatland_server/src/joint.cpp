@@ -46,7 +46,7 @@
 
 #include <flatland_server/exceptions.h>
 #include <flatland_server/joint.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 namespace flatland_server {
 
@@ -191,7 +191,7 @@ void Joint::DebugOutput() const {
   Body *body_A = static_cast<Body *>(j->GetBodyA()->GetUserData());
   Body *body_B = static_cast<Body *>(j->GetBodyB()->GetUserData());
 
-  ROS_DEBUG_NAMED("Joint",
+  RCLCPP_DEBUG(rclcpp::get_logger("Joint"),
                   "Joint %p: model(%p, %s) name(%s) color(%f,%f,%f,%f) "
                   "physics_joint(%p) body_A(%p, %s) anchor_A_world(%f, %f) "
                   "body_B(%p, %s) anchor_B_world(%f, %f)",
@@ -202,4 +202,4 @@ void Joint::DebugOutput() const {
                   j->GetAnchorB().y);
 }
 
-};  // namespace flatland_server
+}  //namespace flatland_server

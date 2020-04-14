@@ -46,37 +46,41 @@
 
 #include "flatland_server/debug_visualization.h"
 #include <Box2D/Box2D.h>
-#include <ros/master.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <map>
 #include <string>
 
 namespace flatland_server {
 
-DebugVisualization::DebugVisualization() : node_("~debug") {
+DebugVisualization::DebugVisualization(rclcpp::Node::SharedPtr node) : node_(node) {
   topic_list_publisher_ =
-      node_.advertise<flatland_msgs::DebugTopicList>("topics", 0, true);
+      node_->create_publisher<flatland_msgs::msg::DebugTopicList>("topics", 1);
 }
 
-DebugVisualization& DebugVisualization::Get() {
-  static DebugVisualization instance;
+std::shared_ptr<DebugVisualization> DebugVisualization::Get(rclcpp::Node::SharedPtr node) {
+  static std::shared_ptr<DebugVisualization> instance;
+  // todo: fix this? How should singletons work with shared pointers?
+  if (!instance) {
+    instance = std::make_shared<DebugVisualization>(node);
+  }
   return instance;
 }
 
 void DebugVisualization::JointToMarkers(
-    visualization_msgs::MarkerArray& markers, b2Joint* joint, float r, float g,
+    visualization_msgs::msg::MarkerArray& markers, b2Joint* joint, float r, float g,
     float b, float a) {
   if (joint->GetType() == e_distanceJoint ||
       joint->GetType() == e_pulleyJoint || joint->GetType() == e_mouseJoint) {
-    ROS_ERROR_NAMED("DebugVis",
+    RCLCPP_ERROR(rclcpp::get_logger("DebugVis"),
                     "Unimplemented visualization joints. See b2World.cpp for "
                     "implementation");
     return;
   }
 
-  visualization_msgs::Marker marker;
+  visualization_msgs::msg::Marker marker;
   marker.header.frame_id = "map";
   marker.color.r = r;
   marker.color.g = g;
@@ -85,7 +89,7 @@ void DebugVisualization::JointToMarkers(
   marker.type = marker.LINE_LIST;
   marker.scale.x = 0.01;
 
-  geometry_msgs::Point p_a1, p_a2, p_b1, p_b2;
+  geometry_msgs::msg::Point p_a1, p_a2, p_b1, p_b2;
   p_a1.x = joint->GetAnchorA().x;
   p_a1.y = joint->GetAnchorA().y;
   p_a2.x = joint->GetAnchorB().x;
@@ -118,13 +122,13 @@ void DebugVisualization::JointToMarkers(
   markers.markers.push_back(marker);
 }
 
-void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
+void DebugVisualization::BodyToMarkers(visualization_msgs::msg::MarkerArray& markers,
                                        b2Body* body, float r, float g, float b,
                                        float a) {
   b2Fixture* fixture = body->GetFixtureList();
 
   while (fixture != NULL) {  // traverse fixture linked list
-    visualization_msgs::Marker marker;
+    visualization_msgs::msg::Marker marker;
     marker.header.frame_id = "map";
     marker.id = markers.markers.size();
     marker.color.r = r;
@@ -149,7 +153,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
         marker.scale.x = diameter;
         marker.scale.y = diameter;
 
-        geometry_msgs::Point p;
+        geometry_msgs::msg::Point p;
         p.x = circle->m_p.x;
         p.y = circle->m_p.y;
         marker.points.push_back(p);
@@ -162,7 +166,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
         marker.scale.x = 0.03;  // 3cm wide lines
 
         for (int i = 0; i < poly->m_count; i++) {
-          geometry_msgs::Point p;
+          geometry_msgs::msg::Point p;
           p.x = poly->m_vertices[i].x;
           p.y = poly->m_vertices[i].y;
           marker.points.push_back(p);
@@ -172,7 +176,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
       } break;
 
       case b2Shape::e_edge: {    // Convert b2Edge -> LINE_LIST
-        geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
+        geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
         b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
 
         // If the last marker is a line list, extend it
@@ -202,7 +206,8 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
       } break;
 
       default:  // Unsupported shape
-        ROS_WARN_THROTTLE_NAMED(1.0, "DebugVis", "Unsupported Box2D shape %d",
+        rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
+        RCLCPP_WARN_THROTTLE(rclcpp::get_logger("Debug Visualization"), steady_clock, 1000, "Unsupported Box2D shape %d",
                                 static_cast<int>(fixture->GetType()));
         fixture = fixture->GetNext();
         continue;  // Do not add broken marker
@@ -235,14 +240,14 @@ void DebugVisualization::Publish(const Timekeeper& timekeeper) {
       for (unsigned int i = 0; i < topic.second.markers.markers.size(); i++) {
         topic.second.markers.markers[i].header.stamp = timekeeper.GetSimTime();
       }
-      topic.second.publisher.publish(topic.second.markers);
+      topic.second.publisher->publish(topic.second.markers);
       topic.second.needs_publishing = false;
     }
   }
 
   if (to_delete.size() > 0) {
     for (const auto& topic : to_delete) {
-      ROS_WARN_NAMED("DebugVis", "Deleting topic %s", topic.c_str());
+      RCLCPP_WARN(rclcpp::get_logger("DebugVis"), "Deleting topic %s", topic.c_str());
       topics_.erase(topic);
     }
     PublishTopicList();
@@ -254,7 +259,7 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
 
   b2Fixture* fixture = body->physics_body_->GetFixtureList();
 
-  visualization_msgs::Marker marker;
+  visualization_msgs::msg::Marker marker;
   if (fixture == NULL) return;  // Nothing to visualize, empty linked list
 
   while (fixture != NULL) {  // traverse fixture linked list
@@ -276,7 +281,7 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
     marker.pose.orientation = tf2::toMsg(q);
     marker.type = marker.TRIANGLE_LIST;
 
-    YamlReader reader(body->properties_);
+    YamlReader reader(node_, body->properties_);
     YamlReader debug_reader =
         reader.SubnodeOpt("debug", YamlReader::NodeTypeCheck::MAP);
     float min_z = debug_reader.Get<float>("min_z", 0.0);
@@ -284,7 +289,7 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
 
     // Get the shape from the fixture
     if (fixture->GetType() == b2Shape::e_edge) {
-      geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
+      geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
       b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
 
       p.x = edge->m_vertex1.x;
@@ -346,18 +351,18 @@ void DebugVisualization::AddTopicIfNotExist(const std::string& name) {
   // If the topic doesn't exist yet, create it
   if (topics_.count(name) == 0) {
     topics_[name] = {
-        node_.advertise<visualization_msgs::MarkerArray>(name, 0, true), true,
-        visualization_msgs::MarkerArray()};
+        node_->create_publisher<visualization_msgs::msg::MarkerArray>(name, 1), true,
+        visualization_msgs::msg::MarkerArray()};
 
-    ROS_INFO_ONCE_NAMED("DebugVis", "Visualizing %s", name.c_str());
+    RCLCPP_INFO_ONCE(rclcpp::get_logger("Debug Visualization"), "Visualizing %s", name.c_str());
     PublishTopicList();
   }
 }
 
 void DebugVisualization::PublishTopicList() {
-  flatland_msgs::DebugTopicList topic_list;
+  flatland_msgs::msg::DebugTopicList topic_list;
   for (auto const& topic_pair : topics_)
     topic_list.topics.push_back(topic_pair.first);
-  topic_list_publisher_.publish(topic_list);
+  topic_list_publisher_->publish(topic_list);
 }
-};  // namespace flatland_server
+}  //namespace flatland_server

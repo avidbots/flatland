@@ -188,7 +188,7 @@ TEST_F(PluginManagerTest, collision_test) {
   Body *b0 = m0->bodies_[0];
   Body *b1 = m1->bodies_[0];
   PluginManager *pm = &w->plugin_manager_;
-  boost::shared_ptr<TestModelPlugin> shared_p(new TestModelPlugin());
+  std::shared_ptr<TestModelPlugin> shared_p(new TestModelPlugin());
   shared_p->Initialize("TestModelPlugin", "test_model_plugin", m0,
                        YAML::Node());
   pm->model_plugins_.push_back(shared_p);
@@ -294,7 +294,7 @@ TEST_F(PluginManagerTest, collision_test) {
   p->ClearTestingVariables();
 
   // w->DebugVisualize();
-  // DebugVisualization::Get().Publish();
+  // DebugVisualization::Get(node_)->Publish();
   // ros::spin();
 }
 

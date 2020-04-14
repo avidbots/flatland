@@ -48,9 +48,9 @@
 #define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
 
 #include <Box2D/Box2D.h>
-#include <flatland_msgs/DebugTopicList.h>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <flatland_msgs/msg/debug_topic_list.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 #include <map>
 #include <string>
 #include <vector>
@@ -60,24 +60,23 @@
 
 namespace flatland_server {
 struct DebugTopic {
-  ros::Publisher publisher;
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr publisher;
   bool needs_publishing;
-  visualization_msgs::MarkerArray markers;
+  visualization_msgs::msg::MarkerArray markers;
 };
 
 class DebugVisualization {
- private:
-  DebugVisualization();
 
  public:
+  DebugVisualization(rclcpp::Node::SharedPtr node);
   std::map<std::string, DebugTopic> topics_;
-  ros::NodeHandle node_;
-  ros::Publisher topic_list_publisher_;
+  rclcpp::Node::SharedPtr node_;
+  rclcpp::Publisher<flatland_msgs::msg::DebugTopicList>::SharedPtr  topic_list_publisher_;
 
   /**
    * @brief Return the singleton object
    */
-  static DebugVisualization& Get();
+  static std::shared_ptr<DebugVisualization> Get(rclcpp::Node::SharedPtr node);
 
   /**
    * @brief Publish all marker array topics_ that need publishing
@@ -135,7 +134,7 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void BodyToMarkers(visualization_msgs::MarkerArray& markers, b2Body* body,
+  void BodyToMarkers(visualization_msgs::msg::MarkerArray& markers, b2Body* body,
                      float r, float g, float b, float a);
 
   /**
@@ -147,7 +146,7 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void JointToMarkers(visualization_msgs::MarkerArray& markers, b2Joint* joint,
+  void JointToMarkers(visualization_msgs::msg::MarkerArray& markers, b2Joint* joint,
                       float r, float g, float b, float a);
 
   /**
@@ -161,5 +160,5 @@ class DebugVisualization {
    */
   void PublishTopicList();
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

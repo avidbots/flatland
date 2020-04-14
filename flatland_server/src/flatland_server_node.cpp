@@ -59,7 +59,7 @@
  * @param[in]   sig: signal itself
  */
 // void SigintHandler(int sig) {
-//   ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+//   RCLCPP_WARN(rclcpp::get_logger("Node"), "*** Shutting down... ***");
 
 //   if (simulation_manager != nullptr) {
 //     simulation_manager->Shutdown();

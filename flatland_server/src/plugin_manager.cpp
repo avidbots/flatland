@@ -54,7 +54,7 @@
 
 namespace flatland_server {
 
-PluginManager::PluginManager() {
+PluginManager::PluginManager(rclcpp::Node::SharedPtr node) : node_(node) {
   model_plugin_loader_ =
       new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
           "flatland_server", "flatland_server::ModelPlugin");
@@ -96,7 +96,7 @@ void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
 void PluginManager::DeleteModelPlugin(Model *model) {
   model_plugins_.erase(
       std::remove_if(model_plugins_.begin(), model_plugins_.end(),
-                     [&](boost::shared_ptr<ModelPlugin> p) {
+                     [&](std::shared_ptr<ModelPlugin> p) {
                        return p->GetModel() == model;
                      }),
       model_plugins_.end());
@@ -108,7 +108,7 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
 
   // ensure no plugin with the same model and name
   if (std::count_if(model_plugins_.begin(), model_plugins_.end(),
-                    [&](boost::shared_ptr<ModelPlugin> i) {
+                    [&](std::shared_ptr<ModelPlugin> i) {
                       return i->GetName() == name && i->GetModel() == model;
                     }) >= 1) {
     throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
@@ -118,14 +118,14 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
 
   try {
     if (!plugin_reader.Get<bool>("enabled", "true")) {
-      ROS_WARN_STREAM("Plugin "
+      RCLCPP_WARN_STREAM(rclcpp::get_logger("Plugin Manager"), "Plugin "
                       << Q(model->name_) << "."
                       << plugin_reader.Get<std::string>("name", "unnamed")
                       << " disabled");
       return;
     }
   } catch (...) {
-    ROS_WARN_STREAM("Body " << Q(model->name_) << "."
+    RCLCPP_WARN_STREAM(rclcpp::get_logger("Plugin Manager"), "Body " << Q(model->name_) << "."
                             << plugin_reader.Get<std::string>("name", "unnamed")
                             << " enabled because flag failed to parse: "
                             << plugin_reader.Get<std::string>("enabled"));
@@ -144,37 +144,37 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
     }
   }
 
-  boost::shared_ptr<ModelPlugin> model_plugin;
+  std::shared_ptr<ModelPlugin> model_plugin;
 
   std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) + " model " +
                     Q(model->name_);
 
   try {
     if (type.find("::") != std::string::npos) {
-      model_plugin = model_plugin_loader_->createInstance(type);
+      model_plugin = model_plugin_loader_->createSharedInstance(type);
     } else {
       model_plugin =
-          model_plugin_loader_->createInstance("flatland_plugins::" + type);
+          model_plugin_loader_->createSharedInstance("flatland_plugins::" + type);
     }
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
 
   try {
-    model_plugin->Initialize(type, name, model, yaml_node);
+    model_plugin->Initialize(node_, type, name, model, yaml_node);
   } catch (const std::exception &e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
   model_plugins_.push_back(model_plugin);
 
-  ROS_INFO_NAMED("PluginManager", "%s loaded", msg.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "%s loaded", msg.c_str());
 }
 
 void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
                                     YamlReader &world_config) {
   std::string name = plugin_reader.Get<std::string>("name");
   std::string type = plugin_reader.Get<std::string>("type");
-  ROS_INFO_NAMED("PluginManager", "finished load name and type");
+  RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "finished load name and type");
   // first check for duplicate plugins
   for (auto &it : world_plugins_) {
     if (it->GetName() == name && it->GetType() == type) {
@@ -183,7 +183,7 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
     }
   }
 
-  boost::shared_ptr<WorldPlugin> world_plugin;
+  std::shared_ptr<WorldPlugin> world_plugin;
   std::string msg = "World Plugin " + Q(name) + " type " + Q(type);
 
   YAML::Node yaml_node;
@@ -197,26 +197,26 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
   // try to create the instance
   try {
     if (type.find("::") != std::string::npos) {
-      world_plugin = world_plugin_loader_->createInstance(type);
+      world_plugin = world_plugin_loader_->createSharedInstance(type);
     } else {
       world_plugin =
-          world_plugin_loader_->createInstance("flatland_plugins::" + type);
+          world_plugin_loader_->createSharedInstance("flatland_plugins::" + type);
     }
   } catch (pluginlib::PluginlibException &e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
 
-  ROS_INFO_NAMED("PluginManager", "create instance finished");
+  RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "create instance finished");
 
   try {
-    world_plugin->Initialize(world, name, type, yaml_node, world_config);
+    world_plugin->Initialize(node_, world, name, type, yaml_node, world_config);
   } catch (const std::exception &e) {
-    ROS_INFO_NAMED("PluginManager", "exception happened!");
+    RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "exception happened!");
     throw PluginException(msg + ": " + std::string(e.what()));
   }
   world_plugins_.push_back(world_plugin);
 
-  ROS_INFO_NAMED("PluginManager", "%s loaded ", msg.c_str());
+  RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "%s loaded ", msg.c_str());
 }
 
 void PluginManager::BeginContact(b2Contact *contact) {
@@ -245,4 +245,4 @@ void PluginManager::PostSolve(b2Contact *contact,
   }
 }
 
-};  // namespace flatland_server
+}  //namespace flatland_server

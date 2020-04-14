@@ -65,6 +65,7 @@ namespace flatland_server {
 class Layer : public Entity {
  public:
   std::vector<std::string> names_;  ///< list of layer names
+  std::shared_ptr<rclcpp::Node> node_;
 
   Body *body_ = nullptr;
   CollisionFilterRegistry *cfr_;  ///< collision filter registry
@@ -73,6 +74,7 @@ class Layer : public Entity {
   /**
    * @brief Constructor for the Layer class for initialization using a image
    * map file
+   * @param[in] rclcpp::Node shared pointer to the current ROS node
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
    * @param[in] names A list of names for the layer, the first name is used
@@ -85,7 +87,8 @@ class Layer : public Entity {
    * @param[in] resolution Resolution of the map image in meters per pixel
    * @param[in] properties A YAML node containing properties for plugins to use
    */
-  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+  Layer(std::shared_ptr<rclcpp::Node> node,
+        b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
         double resolution, const YAML::Node &properties);
@@ -93,6 +96,7 @@ class Layer : public Entity {
   /**
    * @brief Constructor for the Layer class for initialization using line
    * segments
+   * @param[in] rclcpp::Node shared pointer to the current ROS node
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
    * @param[in] names A list of names for the layer, the first name is used
@@ -105,7 +109,7 @@ class Layer : public Entity {
    * the same way as resolution
    * @param[in] properties A YAML node containing properties for plugins to use
    */
-  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+  Layer(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const Pose &origin, const std::vector<LineSegment> &line_segments,
         double scale, const YAML::Node &properties);
@@ -113,13 +117,14 @@ class Layer : public Entity {
   /**
   * @brief Constructor for the Layer class for initialization with no static
   * map in it
+  * @param[in] rclcpp::Node shared pointer to the current ROS node
   * @param[in] physics_world Pointer to the box2d physics world
   * @param[in] cfr Collision filter registry
   * @param[in] names A list of names for the layer, the first name is used
   * for the name of the body
   * @param[in] properties A YAML node containing properties for plugins to use
   */
-  Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
+  Layer(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
         const std::vector<std::string> &names, const Color &color,
         const YAML::Node &properties);
 
@@ -177,6 +182,7 @@ class Layer : public Entity {
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon
    * failure
+   * @param[in] rclcpp Node shared pointer
    * @param[in] physics_world Pointer to the box2d physics world
    * @param[in] cfr Collision filter registry
    * @param[in] map_path Path to the file containing layer data
@@ -188,10 +194,10 @@ class Layer : public Entity {
    * @param[in] properties A YAML node containing properties for plugins to use
    * @return A new layer
    */
-  static Layer *MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
+  static Layer *MakeLayer(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
                           const std::string &map_path,
                           const std::vector<std::string> &names,
                           const Color &color, const YAML::Node &properties);
 };
-};      // namespace flatland_server
+}      //namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

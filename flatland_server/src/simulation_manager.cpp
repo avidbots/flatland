@@ -45,11 +45,11 @@
  */
 
 #include "flatland_server/simulation_manager.h"
-// #include <flatland_server/debug_visualization.h>
-// #include <flatland_server/layer.h>
-// #include <flatland_server/model.h>
-// #include <flatland_server/service_manager.h>
-// #include <flatland_server/world.h>
+#include <flatland_server/debug_visualization.h>
+#include <flatland_server/layer.h>
+#include <flatland_server/model.h>
+#include <flatland_server/service_manager.h>
+#include <flatland_server/world.h>
 #include <exception>
 #include <limits>
 #include <string>
@@ -61,7 +61,7 @@ SimulationManager::SimulationManager(std::shared_ptr<rclcpp::Node> node, std::st
                                      double update_rate, double step_size,
                                      bool show_viz, double viz_pub_rate)
     : node_(node),
-      //world_(nullptr),
+      world_(nullptr),
       update_rate_(update_rate),
       step_size_(step_size),
       show_viz_(show_viz),
@@ -79,26 +79,26 @@ void SimulationManager::Main() {
   run_simulator_ = true;
 
   try {
-    //world_ = World::MakeWorld(world_yaml_file_);
+    world_ = World::MakeWorld(node_, world_yaml_file_);
     RCLCPP_INFO(rclcpp::get_logger("SimMan"), "World loaded");
   } catch (const std::exception& e) {
     RCLCPP_FATAL(rclcpp::get_logger("SimMan"), "%s", e.what());
     return;
   }
 
-  //if (show_viz_) world_->DebugVisualize();
+  if (show_viz_) world_->DebugVisualize();
 
   int iterations = 0;
   double filtered_cycle_util = 0;
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
   double viz_update_period = 1.0f / viz_pub_rate_;
-  //ServiceManager service_manager(this, world_);
-  //Timekeeper timekeeper;
+  ServiceManager service_manager(this, world_);
+  Timekeeper timekeeper(node_);
 
   rclcpp::WallRate rate(update_rate_);
   rclcpp::Clock wall_clock(RCL_STEADY_TIME);
-  //timekeeper.SetMaxStepSize(step_size_);
+  timekeeper.SetMaxStepSize(step_size_);
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop started");
 
   while (rclcpp::ok() && run_simulator_) {
@@ -115,12 +115,12 @@ void SimulationManager::Main() {
     }
     bool update_viz = ((f >= 0.0) && (f < 1.0f/update_rate_));
 
-    //world_->Update(timekeeper);  // Step physics by ros cycle time
+    world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
-      //world_->DebugVisualize(false);  // no need to update layer
-      //DebugVisualization::Get().Publish(
-      //    timekeeper);  // publish debug visualization
+      world_->DebugVisualize(false);  // no need to update layer
+      DebugVisualization::Get(node_)->Publish(
+          timekeeper);  // publish debug visualization
     }
 
     rclcpp::spin_some(node_);
@@ -132,7 +132,7 @@ void SimulationManager::Main() {
     
     double expected_cycle_time = 1.0f/update_rate_;
     double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
-    double factor = 0; //timekeeper.GetStepSize() / expected_cycle_time;
+    double factor = timekeeper.GetStepSize() / expected_cycle_time;
     min_cycle_util = std::min(cycle_util, min_cycle_util);
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
@@ -144,7 +144,7 @@ void SimulationManager::Main() {
   }
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop ended");
 
-  //delete world_;
+  delete world_;
 }
 
 void SimulationManager::Shutdown() {

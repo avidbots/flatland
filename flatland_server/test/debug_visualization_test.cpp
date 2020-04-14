@@ -48,8 +48,8 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/timekeeper.h>
 #include <gtest/gtest.h>
-#include <ros/ros.h>
-#include <visualization_msgs/MarkerArray.h>
+#include <rclcpp/rclcpp.hpp>
+#include <visualization_msgs/msg/MarkerArray.h>
 #include <cmath>
 
 // Test the bodyToMarkers method on a polygon shape
@@ -71,8 +71,8 @@ TEST(DebugVizTest, testBodyToMarkersPolygon) {
   fixtureDef.friction = 0.3f;
   body->CreateFixture(&fixtureDef);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body, 1.0,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.5, 0.7);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -133,8 +133,8 @@ TEST(DebugVizTest, testBodyToMarkersCircle) {
   fixtureDef.shape = &circle;
   body->CreateFixture(&fixtureDef);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body, 1.0,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -161,8 +161,8 @@ TEST(DebugVizTest, testBodyToMarkersEdge) {
   fixtureDef.shape = &edge;
   body->CreateFixture(&fixtureDef);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body, 1.0,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -195,8 +195,8 @@ TEST(DebugVizTest, testBodyToMarkersUnsupported) {
   fixtureDef.shape = &chain;
   body->CreateFixture(&fixtureDef);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body, 1.0,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was not created
   ASSERT_EQ(markers.markers.size(), 0);
@@ -224,8 +224,8 @@ TEST(DebugVizTest, testBodyToMarkersMultifixture) {
   fixtureDef.shape = &edge;
   body->CreateFixture(&fixtureDef);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body, 1.0,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that one marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -267,10 +267,10 @@ TEST(DebugVizTest, testBodyToMarkersMultibody) {
   fixtureDef2.shape = &edge2;
   body2->CreateFixture(&fixtureDef2);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body, 1.0,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body, 1.0,
                                                            0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get().BodyToMarkers(markers, body2, 1.0,
+  flatland_server::DebugVisualization::Get(node_)->BodyToMarkers(markers, body2, 1.0,
                                                            0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1);
@@ -312,10 +312,10 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
   b2Joint* j1 = world.CreateJoint(&jd1);
   b2Joint* j2 = world.CreateJoint(&jd2);
 
-  visualization_msgs::MarkerArray markers;
-  flatland_server::DebugVisualization::Get().JointToMarkers(markers, j1, 0.1,
+  visualization_msgs::msg::MarkerArray markers;
+  flatland_server::DebugVisualization::Get(node_)->JointToMarkers(markers, j1, 0.1,
                                                             0.2, 0.3, 0.4);
-  flatland_server::DebugVisualization::Get().JointToMarkers(markers, j2, 0.5,
+  flatland_server::DebugVisualization::Get(node_)->JointToMarkers(markers, j2, 0.5,
                                                             0.6, 0.7, 0.8);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 4);
@@ -376,7 +376,7 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
 
 // A helper class to accept MarkerArray message callbacks
 struct MarkerArraySubscriptionHelper {
-  visualization_msgs::MarkerArray markers_;
+  visualization_msgs::msg::MarkerArray markers_;
   int count_;
 
   MarkerArraySubscriptionHelper() : count_(0) {}
@@ -385,10 +385,10 @@ struct MarkerArraySubscriptionHelper {
    * @brief callback that stores the last message and total message count
    * @param msg The input message pointer
    */
-  void callback(const visualization_msgs::MarkerArrayConstPtr& msg) {
+  void callback(const visualization_msgs::msg::MarkerArrayConstPtr& msg) {
     ++count_;
-    ROS_INFO("GOT ONE");
-    markers_ = visualization_msgs::MarkerArray(*msg);  // Copy the message
+    RCLCPP_INFO(rclcpp::get_logger("Debug Visualization Test"), "GOT ONE");
+    markers_ = visualization_msgs::msg::MarkerArray(*msg);  // Copy the message
   }
 
   /**
@@ -436,20 +436,20 @@ TEST(DebugVizTest, testPublishMarkers) {
   b2Joint* joint = world.CreateJoint(&joint_def);
 
   // Set up helper class subscribing to rostopic
-  ros::NodeHandle nh;
+  rclcpp::Node::SharedPtr node_;  // TODO
   MarkerArraySubscriptionHelper helper;
   ros::Subscriber sub =
       nh.subscribe("/debug_visualization_test/debug/example", 0,
                    &MarkerArraySubscriptionHelper::callback, &helper);
 
-  flatland_server::DebugVisualization::Get().Visualize("example", body, 1.0,
+  flatland_server::DebugVisualization::Get(node_)->Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
 
   // Check pre publish conditions
-  EXPECT_EQ(flatland_server::DebugVisualization::Get().topics_.size(), 1);
+  EXPECT_EQ(flatland_server::DebugVisualization::Get(node_)->topics_.size(), 1);
   ros::spinOnce();
   EXPECT_EQ(helper.count_, 0);
-  EXPECT_EQ(flatland_server::DebugVisualization::Get()
+  EXPECT_EQ(flatland_server::DebugVisualization::Get(node_)
                 .topics_["example"]
                 .needs_publishing,
             true);
@@ -458,28 +458,28 @@ TEST(DebugVizTest, testPublishMarkers) {
   EXPECT_EQ(sub.getNumPublishers(), 1);
 
   // Publish
-  flatland_server::DebugVisualization::Get().Publish(timekeeper);
+  flatland_server::DebugVisualization::Get(node_)->Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(1));
   EXPECT_EQ(helper.markers_.markers.size(), 1);
 
   // Publish again (should have no change- nothing needs publishing)
-  flatland_server::DebugVisualization::Get().Publish(timekeeper);
+  flatland_server::DebugVisualization::Get(node_)->Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(1));
   EXPECT_EQ(1, helper.markers_.markers.size());
 
   // Publish some more markers
-  flatland_server::DebugVisualization::Get().Visualize("example", body, 1.0,
+  flatland_server::DebugVisualization::Get(node_)->Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get().Visualize("example", body, 1.0,
+  flatland_server::DebugVisualization::Get(node_)->Visualize("example", body, 1.0,
                                                        0.0, 0.0, 1.0);
   // inserts two markers
-  flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
+  flatland_server::DebugVisualization::Get(node_)->Visualize("example", joint, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get().Publish(timekeeper);
+  flatland_server::DebugVisualization::Get(node_)->Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
@@ -487,16 +487,16 @@ TEST(DebugVizTest, testPublishMarkers) {
 
   // Reset marker list, this empties the markers array, and topics having
   // empty markers are automatically deleted
-  flatland_server::DebugVisualization::Get().Reset("example");
-  flatland_server::DebugVisualization::Get().Publish(timekeeper);
+  flatland_server::DebugVisualization::Get(node_)->Reset("example");
+  flatland_server::DebugVisualization::Get(node_)->Publish(timekeeper);
 
   // Verify that message was published
   EXPECT_TRUE(helper.waitForMessageCount(2));  // Published two times
 
   // publish again with some contents, and the topic is created again
-  flatland_server::DebugVisualization::Get().Visualize("example", joint, 1.0,
+  flatland_server::DebugVisualization::Get(node_)->Visualize("example", joint, 1.0,
                                                        0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get().Publish(timekeeper);
+  flatland_server::DebugVisualization::Get(node_)->Publish(timekeeper);
 
   EXPECT_TRUE(helper.waitForMessageCount(3));
   EXPECT_EQ(2, helper.markers_.markers.size());
