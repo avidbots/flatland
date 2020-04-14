@@ -11,7 +11,7 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-## Find catkin macros and libraries
+## Find macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
@@ -60,8 +60,6 @@ find_package(Threads)
 ###########
 ## Build ##
 ###########
-
-#add_subdirectory("thirdparty/Box2D")
 
 ## Flatland server library
 add_library(flatland_lib SHARED
