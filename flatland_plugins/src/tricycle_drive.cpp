@@ -98,10 +98,14 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   auto odom_pose_covar =
       r.GetArray<double, 36>("odom_pose_covariance", odom_pose_covar_default);
 
-  // Default max_angular_velocity=0 means "unbounded"
-  max_angular_velocity_ = r.Get<double>("max_angular_velocity", 0.0);
-  target_wheel_angle_ = 0.0;
-  theta_f_ = 0.0;
+  // Default max_steer_angle=0, max_angular_velocity=0, and
+  // max_steer_acceleration=0 mean "unbounded"
+  max_steer_angle_ = r.Get<double>("max_steer_angle", 0.0);
+  max_steer_velocity_ = r.Get<double>("max_angular_velocity", 0.0);
+  max_steer_acceleration_ = r.Get<double>("max_steer_acceleration", 0.0);
+  delta_command_ = 0.0;
+  delta_ = 0.0;
+  d_delta_ = 0.0;
 
   r.EnsureAccessedAllKeys();
 
@@ -291,7 +295,8 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   float angle = b2body->GetAngle();
 
   if (publish) {
-    // get the state of the body and publish the data
+    // 1. get the state of the body and publish the data,
+    //    before the tricycle physics get updated
     b2Vec2 linear_vel_local =
         b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
     float angular_vel = b2body->GetAngularVelocity();
@@ -325,24 +330,71 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_pub_.publish(odom_msg_);
   }
 
+  // 2. Update the tricycle physics based on the twist command
+  //    This is a highly simplified kinematic approximation of the response
+  //    of the steering and drive mechanisms.
+
+  // Equations of motion for steering (kinematics only)
+  // Let δ (delta)  = measured steering angle
+  //     δ_c        = commanded steering angle
+  // Then the kinematic discrete-time equations are (1st-order approximation):
+  //   (1)  δ[t+1] = δ[t] + dδ[t+1] * dt          new steering angle
+  //   (2)  dδ[t+1] = dδ[t] + d2δ[t+1] * dt       new steering velocity
+  //   (3)  d2δ[t+1] = (dδ_c[t+1] - dδ[t]) / dt   new steering acceleration
+  //   (4)  dδ_c[t+1] = (δ_c[t+1] - δ[t]) / dt    new steering velocity command
+  //          when it requires > 1 dt to reach δ[t+1]
+  //        0.0
+  //          otherwise
+  // subject to:
+  //   |δ[t]| <= max_steer_angle_
+  //   |dδ[t]| <= max_steer_velocity_
+  //   |d2δ[t]| <= max_steer_acceleration_
+
   // twist message contains the speed and angle of the front wheel
-  double v_f = twist_msg_.linear.x;            // velocity at front wheel
-  target_wheel_angle_ = twist_msg_.angular.z;  // front wheel steering angle
-  double theta = angle;                        // angle of the robot
+  double v_f = twist_msg_.linear.x;       // target velocity at front wheel
+  delta_command_ = twist_msg_.angular.z;  // target steering angle
+  double theta = angle;                   // angle of robot in map frame
+  double dt = timekeeper.GetStepSize();
 
-  if (max_angular_velocity_ == 0.0) {  // Infinite angular velocity
-    theta_f_ = target_wheel_angle_;
-  } else {  // If angular velocity is bounded, bound it
-    double max_angle_step = max_angular_velocity_ * timekeeper.GetStepSize();
-
-    if (target_wheel_angle_ > theta_f_) {
-      theta_f_ +=
-          std::min<double>(max_angle_step, target_wheel_angle_ - theta_f_);
-    } else {
-      theta_f_ -=
-          std::min<double>(max_angle_step, theta_f_ - target_wheel_angle_);
-    }
+  // In the simulation, the equations of motion have to be computed backwards
+  // (4) Update the new commanded steering velocity
+  //     Note: Set target steer velocity = 0 rad/s to avoid overshooting, when
+  //           it is possible to reach the commanded steering angle in 1 step
+  double d_delta_command = 0.0;
+  double delta_max_one_step = d_delta_ * d_delta_ / 2 / max_steer_acceleration_;
+  if (max_steer_acceleration_ == 0.0) {
+    delta_max_one_step = fabs(delta_command_ - delta_);
   }
+  if (fabs(delta_command_ - delta_) >= delta_max_one_step) {
+    d_delta_command = (delta_command_ - delta_) / dt;
+  }
+  if (max_steer_velocity_ != 0.0) {
+    // Saturating the command also saturates the steering velocity
+    d_delta_command =
+        Saturate(d_delta_command, -max_steer_velocity_, max_steer_velocity_);
+  }
+
+  // (3) Update the new steering acceleration
+  double d2_delta = (d_delta_command - d_delta_) / dt;
+  if (max_steer_acceleration_ != 0.0) {
+    d2_delta =
+        Saturate(d2_delta, -max_steer_acceleration_, max_steer_acceleration_);
+  }
+
+  // (2) Update the new steering velocity
+  d_delta_ += d2_delta * dt;
+
+  // (1) Update the new steering angle
+  delta_ += d_delta_ * dt;
+  if (max_steer_angle_ != 0.0) {
+    delta_ = Saturate(delta_, -max_steer_angle_, max_steer_angle_);
+  }
+
+  ROS_DEBUG_THROTTLE(0.5,
+                     "Using new tricycle steering, d2_delta = %.4f, "
+                     "d_delta = %.4f, twist.x = %.4f, twist.delta = %.4f",
+                     d2_delta, d_delta_, twist_msg_.linear.x,
+                     twist_msg_.angular.z);
 
   // change angle of the front wheel for visualization
 
@@ -350,17 +402,17 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
       dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
   j->EnableLimit(true);
   if (invert_steering_angle_) {
-    j->SetLimits(-theta_f_, -theta_f_);
+    j->SetLimits(-delta_, -delta_);
   } else {
-    j->SetLimits(theta_f_, theta_f_);
+    j->SetLimits(delta_, delta_);
   }
 
   // calculate the desired velocity using the bicycle model in the world frame
   // looking at the rear center, formulas obtained from avidbots robot systems
   // confluence page
-  double v_x = v_f * cos(theta_f_) * cos(theta);  // x velocity in world
-  double v_y = v_f * cos(theta_f_) * sin(theta);  // y velocity in world
-  double w = v_f * sin(theta_f_) / wheelbase_;    // angular velocity
+  double v_x = v_f * cos(delta_) * cos(theta);  // x velocity in world
+  double v_y = v_f * cos(delta_) * sin(theta);  // y velocity in world
+  double w = v_f * sin(delta_) / wheelbase_;    // angular velocity
 
   // Now we would like the rear center to move at v_x, v_y, and w, since Box2D
   // applies velocities at center of mass, we must use rigid body kinematics
@@ -384,6 +436,16 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
 void TricycleDrive::TwistCallback(const geometry_msgs::Twist& msg) {
   twist_msg_ = msg;
+}
+
+double TricycleDrive::Saturate(double in, double lower, double upper) {
+  if (lower > upper) {
+    return in;
+  }
+  double out = in;
+  out = std::max(out, lower);
+  out = std::min(out, upper);
+  return out;
 }
 }
 
