@@ -62,8 +62,8 @@ World::World(std::shared_ptr<rclcpp::Node> node)
     : node_(node),
       gravity_(0, 0),
       service_paused_(false),
-      plugin_manager_(node) /*,
-      int_marker_manager_(&models_, &plugin_manager_)*/ {
+      plugin_manager_(node),
+      int_marker_manager_(&models_, &plugin_manager_) {
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -285,7 +285,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     DebugVisualization::Get(node_)->BodyToMarkers(
         body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
   }
-  //int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
+  int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
 
   RCLCPP_INFO(node_->get_logger(), "World: Model \"%s\" loaded", m->name_.c_str());
   m->DebugOutput();

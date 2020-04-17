@@ -49,7 +49,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_server/collision_filter_registry.h>
-//#include <flatland_server/interactive_marker_manager.h>
+#include <flatland_server/interactive_marker_manager.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
@@ -81,8 +81,7 @@ class World : public b2ContactListener {
   PluginManager plugin_manager_;  ///< for loading and updating plugins
   bool service_paused_;  ///< indicates if simulation is paused by a service
                          /// call or not
-  //InteractiveMarkerManager
-  //    int_marker_manager_;  ///< for dynamically moving models from Rviz
+  InteractiveMarkerManager     int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
 

@@ -1,4 +1,5 @@
 #include <flatland_server/interactive_marker_manager.h>
+#include <functional>
 
 namespace flatland_server {
 
@@ -9,15 +10,15 @@ InteractiveMarkerManager::InteractiveMarkerManager(
   manipulating_model_ = false;
 
   // Initialize interactive marker server
-  interactive_marker_server_.reset(
-      new interactive_markers::InteractiveMarkerServer(
-          "interactive_model_markers"));
+  interactive_marker_server_ = std::make_shared<interactive_markers::InteractiveMarkerServer>(
+    "interactive_model_markers", plugin_manager_->node_);
 
   // Add "Delete Model" context menu option to menu handler and bind callback
+  using namespace std::placeholders;
   menu_handler_.setCheckState(
       menu_handler_.insert(
           "Delete Model",
-          boost::bind(&InteractiveMarkerManager::deleteModelMenuCallback, this,
+          std::bind(&InteractiveMarkerManager::deleteModelMenuCallback, this,
                       _1)),
       interactive_markers::MenuHandler::NO_CHECKBOX);
   interactive_marker_server_->applyChanges();
@@ -28,27 +29,27 @@ void InteractiveMarkerManager::createInteractiveMarker(
     const visualization_msgs::msg::MarkerArray &body_markers) {
   // Set up interactive marker control objects to allow both translation and
   // rotation movement
-  visualization_msgs::InteractiveMarkerControl plane_control;
+  visualization_msgs::msg::InteractiveMarkerControl plane_control;
   plane_control.always_visible = true;
   plane_control.orientation.w = 0.707;
   plane_control.orientation.y = 0.707;
   plane_control.name = "move_xy";
   plane_control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::MOVE_PLANE;
-  visualization_msgs::InteractiveMarkerControl rotate_control;
+      visualization_msgs::msg::InteractiveMarkerControl::MOVE_PLANE;
+  visualization_msgs::msg::InteractiveMarkerControl rotate_control;
   rotate_control.always_visible = true;
   rotate_control.orientation.w = 0.707;
   rotate_control.orientation.y = 0.707;
   rotate_control.name = "rotate_z";
   rotate_control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
+      visualization_msgs::msg::InteractiveMarkerControl::ROTATE_AXIS;
 
   // Add a non-interactive text marker with the model name
-  visualization_msgs::InteractiveMarkerControl no_control;
+  visualization_msgs::msg::InteractiveMarkerControl no_control;
   no_control.always_visible = true;
   no_control.name = "no_control";
   no_control.interaction_mode =
-      visualization_msgs::InteractiveMarkerControl::NONE;
+      visualization_msgs::msg::InteractiveMarkerControl::NONE;
   visualization_msgs::msg::Marker text_marker;
   text_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
   text_marker.color.r = 1.0;
@@ -107,7 +108,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   }
 
   // Send new interactive marker to server
-  visualization_msgs::InteractiveMarker new_interactive_marker;
+  visualization_msgs::msg::InteractiveMarker new_interactive_marker;
   new_interactive_marker.header.frame_id = "map";
   new_interactive_marker.header.stamp = rclcpp::Time(0);
   new_interactive_marker.name = model_name;
@@ -121,20 +122,21 @@ void InteractiveMarkerManager::createInteractiveMarker(
   interactive_marker_server_->insert(new_interactive_marker);
 
   // Bind feedback callbacks for the new interactive marker
+  using namespace std::placeholders;
   interactive_marker_server_->setCallback(
       model_name,
-      boost::bind(&InteractiveMarkerManager::processMouseUpFeedback, this, _1),
-      visualization_msgs::InteractiveMarkerFeedback::MOUSE_UP);
+      std::bind(&InteractiveMarkerManager::processMouseUpFeedback, this, _1),
+      visualization_msgs::msg::InteractiveMarkerFeedback::MOUSE_UP);
   interactive_marker_server_->setCallback(
       model_name,
-      boost::bind(&InteractiveMarkerManager::processMouseDownFeedback, this,
+      std::bind(&InteractiveMarkerManager::processMouseDownFeedback, this,
                   _1),
-      visualization_msgs::InteractiveMarkerFeedback::MOUSE_DOWN);
+      visualization_msgs::msg::InteractiveMarkerFeedback::MOUSE_DOWN);
   interactive_marker_server_->setCallback(
       model_name,
-      boost::bind(&InteractiveMarkerManager::processPoseUpdateFeedback, this,
+      std::bind(&InteractiveMarkerManager::processPoseUpdateFeedback, this,
                   _1),
-      visualization_msgs::InteractiveMarkerFeedback::POSE_UPDATE);
+      visualization_msgs::msg::InteractiveMarkerFeedback::POSE_UPDATE);
 
   // Add context menu to the new interactive marker
   menu_handler_.apply(*interactive_marker_server_, model_name);
@@ -144,7 +146,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
 }
 
 void InteractiveMarkerManager::deleteModelMenuCallback(
-    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+    const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback) {
   // Delete the model just as when the DeleteModel service is called
   for (unsigned int i = 0; i < (*models_).size(); i++) {
     if ((*models_)[i]->GetName() == feedback->marker_name) {
@@ -173,7 +175,7 @@ void InteractiveMarkerManager::deleteInteractiveMarker(
 }
 
 void InteractiveMarkerManager::processMouseUpFeedback(
-    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+    const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback) {
   // Update model that was manipulated the same way
   // as when the MoveModel service is called
   for (unsigned int i = 0; i < models_->size(); i++) {
@@ -195,13 +197,13 @@ void InteractiveMarkerManager::processMouseUpFeedback(
 }
 
 void InteractiveMarkerManager::processMouseDownFeedback(
-    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
+    const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback) {
   manipulating_model_ = true;
 }
 
 void InteractiveMarkerManager::processPoseUpdateFeedback(
-    const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback) {
-  pose_update_stamp_ = ros::WallTime::now();
+    const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &feedback) {
+  pose_update_stamp_ = rclcpp::Clock(RCL_SYSTEM_TIME).now();
 }
 
 void InteractiveMarkerManager::update() {
@@ -211,7 +213,7 @@ void InteractiveMarkerManager::update() {
   // an interactive marker
   if (!manipulating_model_) {
     for (size_t i = 0; i < (*models_).size(); i++) {
-      geometry_msgs::Pose new_pose;
+      geometry_msgs::msg::Pose new_pose;
       new_pose.position.x =
           (*models_)[i]->bodies_[0]->physics_body_->GetPosition().x;
       new_pose.position.y =
@@ -231,11 +233,11 @@ void InteractiveMarkerManager::update() {
   // flag to unpause the simulation.
   double dt = 0;
   try {
-    dt = (ros::WallTime::now() - pose_update_stamp_).toSec();
+    dt = RCL_NS_TO_S((rclcpp::Clock(RCL_SYSTEM_TIME).now()- pose_update_stamp_).nanoseconds());
   } catch (std::runtime_error &ex) {
     RCLCPP_ERROR(rclcpp::get_logger("Interactive Maker Manager"),
-        "Flatland Interactive Marker Manager runtime error: (%f - %f) [%s]",
-        ros::WallTime::now().toSec(), pose_update_stamp_.toSec(), ex.what());
+        "Flatland Interactive Marker Manager runtime error: [%s]",
+        ex.what());
   }
   if (manipulating_model_ && dt > 0.1 && dt < 1.0) {
     manipulating_model_ = false;

@@ -62,9 +62,8 @@ namespace flatland_server {
 class World;
 
 class PluginManager {
- private:
-   rclcpp::Node::SharedPtr node_;
  public:
+  rclcpp::Node::SharedPtr node_;
   std::vector<std::shared_ptr<ModelPlugin>> model_plugins_;
   pluginlib::ClassLoader<flatland_server::ModelPlugin> *model_plugin_loader_;
 

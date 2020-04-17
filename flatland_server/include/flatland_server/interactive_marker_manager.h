@@ -5,9 +5,12 @@
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/types.h>
-#include <interactive_markers/interactive_marker_server.h>
-#include <interactive_markers/menu_handler.h>
+#include <interactive_markers/interactive_marker_server.hpp>
+#include <visualization_msgs/msg/interactive_marker_feedback.hpp>
+#include <visualization_msgs/msg/interactive_marker.hpp>
+#include <interactive_markers/menu_handler.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <geometry_msgs/msg/pose.hpp>
 
 namespace flatland_server {
 
@@ -56,14 +59,14 @@ class InteractiveMarkerManager {
   interactive_markers::MenuHandler
       menu_handler_;  ///< Handler for the interactive marker context menus
   std::shared_ptr<interactive_markers::InteractiveMarkerServer>
-      interactive_marker_server_;  ///< Interactive marker server
+      interactive_marker_server_ = nullptr;  ///< Interactive marker server
   std::vector<Model*>*
       models_;  ///< Pointer to the model list in the World class
   PluginManager*
       plugin_manager_;  ///< Pointer to the plugin manager in the World class
   bool manipulating_model_;  ///< Boolean flag indicating if the user is
   /// manipulating a model with its interactive marker
-  ros::WallTime pose_update_stamp_;  ///< Timestamp of the last received pose
+  rclcpp::Time pose_update_stamp_;  ///< Timestamp of the last received pose
   /// update feedback. Used to handle when the
   /// interactive marker server stops
   /// manipulating without triggering a
@@ -76,7 +79,7 @@ class InteractiveMarkerManager {
   * manipulated model and the new pose
   */
   void processMouseUpFeedback(
-      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+      const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr& feedback);
 
   /**
   * @brief Process interactive feedback on a MOUSE_DOWN event and use it
@@ -86,7 +89,7 @@ class InteractiveMarkerManager {
   * manipulated model and the current pose. Not used in this callback
   */
   void processMouseDownFeedback(
-      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+      const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr& feedback);
 
   /**
   * @brief Process interactive feedback on a POSE_UPDATE event and record
@@ -95,7 +98,7 @@ class InteractiveMarkerManager {
   * manipulated model and the current pose. Not used in this method
   */
   void processPoseUpdateFeedback(
-      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+      const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr& feedback);
 
   /**
   * @brief Process feedback from the context menu of the interactive marker to
@@ -104,7 +107,7 @@ class InteractiveMarkerManager {
   * to be deleted
   */
   void deleteModelMenuCallback(
-      const visualization_msgs::InteractiveMarkerFeedbackConstPtr& feedback);
+      const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr& feedback);
 };
 }
 

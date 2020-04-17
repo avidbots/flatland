@@ -77,7 +77,7 @@ add_library(flatland_lib SHARED
   src/model_plugin.cpp
   src/world_plugin.cpp
   src/plugin_manager.cpp
-  #src/interactive_marker_manager.cpp
+  src/interactive_marker_manager.cpp
   src/timekeeper.cpp
   src/service_manager.cpp
   src/yaml_reader.cpp
@@ -92,7 +92,7 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs)
+ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
@@ -105,7 +105,7 @@ target_link_libraries(flatland_lib
 
 ## Declare a C++ executable
 add_executable(flatland_server src/flatland_server_node.cpp)
-ament_target_dependencies(flatland_server rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs)
+ament_target_dependencies(flatland_server rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_include_directories(flatland_server
   PUBLIC
