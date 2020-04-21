@@ -25,6 +25,7 @@
   <depend>tf2_ros</depend>
   <depend>yaml_cpp_vendor</depend>
   <depend>flatland_msgs</depend>
+  <depend>flatland_server</depend>
   <depend>lua-dev</depend>
 
   <export>
