@@ -49,9 +49,10 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <pluginlib/class_list_macros.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <pluginlib/class_list_macros.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 #include <cmath>
 #include <limits>
 
@@ -60,10 +61,11 @@ using namespace flatland_server;
 namespace flatland_plugins {
 
 void Laser::OnInitialize(const YAML::Node &config) {
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
-  scan_publisher_ = nh_.advertise<sensor_msgs::LaserScan>(topic_, 1);
+  scan_publisher_ = node_->create_publisher<sensor_msgs::msg::LaserScan>(topic_, 1);
 
   // construct the body to laser transformation matrix once since it never
   // changes
@@ -106,18 +108,15 @@ void Laser::OnInitialize(const YAML::Node &config) {
     laser_scan_.intensities.resize(num_laser_points);
   else
     laser_scan_.intensities.resize(0);
-  laser_scan_.header.seq = 0;
   laser_scan_.header.frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
+      GetModel()->NameSpaceTF(frame_id_);
 
   // Broadcast transform between the body and laser
-  tf::Quaternion q;
+  tf2::Quaternion q;
   q.setRPY(0, 0, origin_.theta);
 
-  laser_tf_.header.frame_id = tf::resolve(
-      "", GetModel()->NameSpaceTF(body_->GetName()));  // Todo: parent_tf param
-  laser_tf_.child_frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
+  laser_tf_.header.frame_id = GetModel()->NameSpaceTF(body_->GetName());  // Todo: parent_tf param
+  laser_tf_.child_frame_id = GetModel()->NameSpaceTF(frame_id_);
   laser_tf_.transform.translation.x = origin_.x;
   laser_tf_.transform.translation.y = origin_.y;
   laser_tf_.transform.translation.z = 0;
@@ -134,15 +133,15 @@ void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
   }
 
   // only compute and publish when the number of subscribers is not zero
-  if (scan_publisher_.getNumSubscribers() > 0) {
+  if (scan_publisher_->get_subscription_count() > 0) {
     ComputeLaserRanges();
     laser_scan_.header.stamp = timekeeper.GetSimTime();
-    scan_publisher_.publish(laser_scan_);
+    scan_publisher_->publish(laser_scan_);
   }
 
   if (broadcast_tf_) {
     laser_tf_.header.stamp = timekeeper.GetSimTime();
-    tf_broadcaster_.sendTransform(laser_tf_);
+    tf_broadcaster_->sendTransform(laser_tf_);
   }
 }
 
@@ -219,7 +218,7 @@ float LaserCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
 }
 
 void Laser::ParseParameters(const YAML::Node &config) {
-  YamlReader reader(config);
+  YamlReader reader(node_, config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "scan");
   frame_id_ = reader.Get<std::string>("frame", GetName());
@@ -266,7 +265,7 @@ void Laser::ParseParameters(const YAML::Node &config) {
   rng_ = std::default_random_engine(rd());
   noise_gen_ = std::normal_distribution<double>(0.0, noise_std_dev_);
 
-  ROS_DEBUG_NAMED("LaserPlugin",
+  RCLCPP_DEBUG(rclcpp::get_logger("LaserPlugin"),
                   "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) "
                   "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
                   "noise_std_dev(%f) angle_min(%f) angle_max(%f) "
@@ -277,6 +276,6 @@ void Laser::ParseParameters(const YAML::Node &config) {
                   min_angle_, max_angle_, increment_, layers_bits_,
                   boost::algorithm::join(layers, ",").c_str());
 }
-};
+}
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::Laser, flatland_server::ModelPlugin)

@@ -84,7 +84,7 @@ bool LoadModelDialog::numbering;
 LoadModelDialog::LoadModelDialog(QWidget *parent,
                                  flatland_viz::SpawnModelTool *tool)
     : QDialog(parent), tool_(tool) {
-  ROS_INFO_STREAM("ModelDialog::ModelDialog");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "ModelDialog::ModelDialog");
   QVBoxLayout *v_layout = new QVBoxLayout;
   setLayout(v_layout);
 
@@ -157,12 +157,12 @@ LoadModelDialog::LoadModelDialog(QWidget *parent,
 }
 
 void LoadModelDialog::CancelButtonClicked() {
-  ROS_INFO_STREAM("LoadModelDialog::CancelButtonClicked");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::CancelButtonClicked");
   this->close();
 }
 
 void LoadModelDialog::OkButtonClicked() {
-  ROS_INFO_STREAM("LoadModelDialog::OkButtonClicked");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::OkButtonClicked");
 
   QString name = n_edit->displayText();
 
@@ -187,7 +187,7 @@ void LoadModelDialog::AddNumberAndUpdateName() {
 }
 
 void LoadModelDialog::on_PathButtonClicked() {
-  ROS_INFO_STREAM("LoadModelDialog::on_PathButtonClicked");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::on_PathButtonClicked");
   path_to_model_file = ChooseFile();
 
   AddNumberAndUpdateName();
@@ -196,7 +196,7 @@ void LoadModelDialog::on_PathButtonClicked() {
 }
 
 void LoadModelDialog::NumberCheckBoxChanged(bool i) {
-  ROS_INFO_STREAM("NumberCheckBoxChanged");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "NumberCheckBoxChanged");
   numbering = !numbering;
   AddNumberAndUpdateName();
 }

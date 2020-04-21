@@ -15,9 +15,9 @@ The definition of Collisions and Collision messages are shown below.
 
 .. code-block:: bash
   
-  string entity_A              # the name of this model
+  string entity_a              # the name of this model
   string body_A                # this model's body
-  string entity_B              # name of the other entity, model or layer, collided with this model
+  string entity_b              # name of the other entity, model or layer, collided with this model
   string body_B                # body of the other entity
   float64[] magnitude_forces   # force of impact at each point
   Vector2[] contact_positions  # list of contact points

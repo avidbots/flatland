@@ -1,7 +1,7 @@
 #ifndef PAUSE_SIM_TOOL_H
 #define PAUSE_SIM_TOOL_H
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <rviz/tool.h>
 #include <std_srvs/Empty.h>
 

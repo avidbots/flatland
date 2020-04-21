@@ -59,7 +59,7 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
   dummy_param_int_ = config["dummy_param_int"].as<int>();
 
   // Dummy plugin has the these values enforced for testing
-  if (fabs(dummy_param_float_ - 0.123456) > 1e-7) {
+  if (std::fabs(dummy_param_float_ - 0.123456) > 1e-7) {
     throw YAMLException(
         "dummy_param_float must be 0.1253456, instead it was \"" +
         std::to_string(dummy_param_float_) + "\"");
@@ -76,7 +76,7 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
         dummy_param_string_ + "\"");
   }
 }
-};
+}
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,
                        flatland_server::ModelPlugin)

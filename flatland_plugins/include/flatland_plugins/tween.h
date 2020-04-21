@@ -49,9 +49,9 @@
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/types.h>
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
-#include <std_msgs/Bool.h>
+#include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include "tweeny.h"
 
 #ifndef FLATLAND_PLUGINS_TWEEN_H
@@ -68,7 +68,7 @@ class Tween : public flatland_server::ModelPlugin {
   Pose delta_;      // The maximum change
   float duration_;  // Seconds to enact change over
 
-  ros::Subscriber trigger_sub_;  // Handle forward/reverse trigger
+ rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr trigger_sub_;  // Handle forward/reverse trigger
   bool triggered_ = false;  // If true,animate forwards, otherwise backwards
 
   tweeny::tween<double, double, double> tween_;  // The tween object (x,y,theta)
@@ -134,7 +134,7 @@ class Tween : public flatland_server::ModelPlugin {
    * @brief     Handles external tween triggers for mode "trigger"
    * @param[in] The boolean message
    */
-  void TriggerCallback(const std_msgs::Bool& msg);
+  void TriggerCallback(const std_msgs::msg::Bool::SharedPtr msg);
 };
 };
 

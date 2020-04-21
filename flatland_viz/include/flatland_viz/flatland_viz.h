@@ -47,7 +47,7 @@
 #ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
 #define FLATLAND_VIZ_FLATLAND_VIZ_H
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <QAction>
 #include <QActionGroup>
 #include <QList>
@@ -101,7 +101,7 @@ class FlatlandViz : public QWidget {
    *
    * @param msg The DebugTopicList message
    */
-  void RecieveDebugTopics(const flatland_msgs::DebugTopicList& msg);
+  void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList& msg);
 
   /**
    * @brief Destruct
@@ -116,7 +116,7 @@ class FlatlandViz : public QWidget {
   rviz::Display* grid_;
   rviz::Display* interactive_markers_;
   std::map<std::string, rviz::Display*> debug_displays_;
-  ros::Subscriber debug_topic_subscriber_;
+  rclcpp::Subscription<flatland_msgs::msg::DebugTopicList>::SharedPtr debug_topic_subscriber_;
   rviz::PropertyTreeWidget* tree_widget_;
   FlatlandWindow* parent_;
 

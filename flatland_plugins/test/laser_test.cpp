@@ -50,7 +50,7 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/msg/LaserScan.hpp>
 #include <regex>
 
 namespace fs = boost::filesystem;
@@ -61,7 +61,7 @@ class LaserPluginTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
-  sensor_msgs::LaserScan scan_front, scan_center, scan_back;
+  sensor_msgs::msg::LaserScan scan_front, scan_center, scan_back;
   World* w;
 
   void SetUp() override {
@@ -84,7 +84,7 @@ class LaserPluginTest : public ::testing::Test {
       return true;
     }
 
-    bool ret = fabs(n1 - n2) < 1e-5;
+    bool ret = std::fabs(n1 - n2) < 1e-5;
     return ret;
   }
 
@@ -107,7 +107,7 @@ class LaserPluginTest : public ::testing::Test {
   }
 
   // check the received scan data is as expected
-  bool ScanEq(const sensor_msgs::LaserScan& scan, std::string frame_id,
+  bool ScanEq(const sensor_msgs::msg::LaserScan& scan, std::string frame_id,
               float angle_min, float angle_max, float angle_increment,
               float time_increment, float scan_time, float range_min,
               float range_max, std::vector<float> ranges,
@@ -157,9 +157,9 @@ class LaserPluginTest : public ::testing::Test {
     return true;
   }
 
-  void ScanFrontCb(const sensor_msgs::LaserScan& msg) { scan_front = msg; };
-  void ScanCenterCb(const sensor_msgs::LaserScan& msg) { scan_center = msg; };
-  void ScanBackCb(const sensor_msgs::LaserScan& msg) { scan_back = msg; };
+  void ScanFrontCb(const sensor_msgs::msg::LaserScan& msg) { scan_front = msg; };
+  void ScanCenterCb(const sensor_msgs::msg::LaserScan& msg) { scan_center = msg; };
+  void ScanBackCb(const sensor_msgs::msg::LaserScan& msg) { scan_back = msg; };
 };
 
 /**

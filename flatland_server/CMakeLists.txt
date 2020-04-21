@@ -30,8 +30,6 @@ find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 find_package(std_srvs REQUIRED)
 
-# TODO: Fix plugins!
-
 # lua5.1
 find_package(Lua 5.1 QUIET)
 
@@ -127,8 +125,9 @@ target_link_libraries(flatland_server
 
 
 ament_export_interfaces(export_flatland_lib HAS_LIBRARY_TARGET)
-# ament_export_libraries(flatland_lib)
-ament_export_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_libraries(flatland_lib)
+ament_export_dependencies(rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_include_directories(include)
 ament_package()
 
 #############

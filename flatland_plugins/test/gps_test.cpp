@@ -2,7 +2,7 @@
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 TEST(GpsPluginTest, load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(

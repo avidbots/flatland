@@ -60,6 +60,6 @@ void WorldPlugin::Initialize(rclcpp::Node::SharedPtr node, World *world, std::st
   type_ = type;
   plugin_type_ = PluginType::World;
   node_ = node;
-  OnInitialize(plugin_reader);
+  OnInitialize(plugin_reader, world_config);
 }
 }

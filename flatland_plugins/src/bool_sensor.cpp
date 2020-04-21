@@ -47,14 +47,14 @@
 #include <flatland_plugins/bool_sensor.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
 
 void BoolSensor::OnInitialize(const YAML::Node &config) {
-  YamlReader reader(config);
+  YamlReader reader(node_, config);
 
   // defaults
   std::string topic_name = reader.Get<std::string>("topic", "bool_sensor");
@@ -82,9 +82,9 @@ void BoolSensor::OnInitialize(const YAML::Node &config) {
 
   // Init publisher
   publisher_ =
-      nh_.advertise<std_msgs::Bool>(GetModel()->NameSpaceTopic(topic_name), 1);
+      node_->create_publisher<std_msgs::msg::Bool>(GetModel()->NameSpaceTopic(topic_name), 1);
 
-  ROS_DEBUG_NAMED("BoolSensor",
+  RCLCPP_DEBUG(rclcpp::get_logger("BoolSensor"),
                   "Initialized with params: topic(%s) body(%s) "
                   "update_rate(%f)",
                   topic_name.c_str(), body_name.c_str(), update_rate_);
@@ -98,7 +98,7 @@ void BoolSensor::AfterPhysicsStep(const Timekeeper &timekeeper) {
 
   // This logic allows collisions that occur and resolve faster than the update
   // rate to result in at least one "true" publish
-  std_msgs::Bool msg;
+  std_msgs::msg::Bool msg;
   if (hit_something_) {  // We hit something since the last publish
     msg.data = true;
     hit_something_ = false;  // Reset for next time
@@ -109,7 +109,7 @@ void BoolSensor::AfterPhysicsStep(const Timekeeper &timekeeper) {
       msg.data = false;
     }
   }
-  publisher_.publish(msg);
+  publisher_->publish(msg);
 }
 
 void BoolSensor::BeginContact(b2Contact *contact) {

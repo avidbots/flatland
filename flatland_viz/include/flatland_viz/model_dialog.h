@@ -53,11 +53,11 @@
 #include <QPushButton>
 #include <QWidget>
 
-#include <flatland_msgs/SpawnModel.h>
+#include <flatland_msgs/msg/SpawnModel.hpp>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <boost/filesystem.hpp>
 #include <iostream>
 #include <regex>
@@ -126,7 +126,7 @@ class ModelDialog : public QDialog {
   boost::filesystem::path this_file_dir;
   ros::NodeHandle nh;
   ros::ServiceClient client;
-  flatland_msgs::SpawnModel srv;
+  flatland_msgs::msg::SpawnModel srv;
   World* w;
 };
 

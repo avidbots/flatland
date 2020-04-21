@@ -48,14 +48,15 @@
 #define FLATLAND_PLUGINS_UPDATE_TIMER_H
 
 #include <flatland_server/timekeeper.h>
-#include <ros/time.h>
+#include <rclcpp/rclcpp.hpp>
+#include <cmath>
 
 namespace flatland_plugins {
 
 class UpdateTimer {
  public:
-  ros::Duration period_;        ///< period of update
-  ros::Time last_update_time_;  ///< last time the update occured
+  rclcpp::Duration period_;        ///< period of update
+  rclcpp::Time last_update_time_;  ///< last time the update occured
 
   /**
    * @brief Update timer constructor
@@ -76,6 +77,6 @@ class UpdateTimer {
    */
   bool CheckUpdate(const flatland_server::Timekeeper &timekeeper);
 };
-};
+}
 
 #endif

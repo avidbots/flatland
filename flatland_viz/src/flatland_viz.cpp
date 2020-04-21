@@ -67,7 +67,7 @@
 #include <QToolButton>
 #include <QUrl>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <stdlib.h>
 
 #include "rviz/display.h"
@@ -374,7 +374,7 @@ void FlatlandViz::setFullScreen(bool full_screen) {
   show();
 }
 
-void FlatlandViz::RecieveDebugTopics(const flatland_msgs::DebugTopicList& msg) {
+void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList& msg) {
   std::vector<std::string> topics = msg.topics;
 
   // check for deleted topics

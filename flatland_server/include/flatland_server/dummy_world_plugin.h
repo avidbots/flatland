@@ -63,9 +63,10 @@ class DummyWorldPlugin : public WorldPlugin {
   /**
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
+   * @param[in] world_config The world configuration file
    */
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node &plugin_reader, YamlReader &world_config) override;
 };
-};
+}
 
 #endif

@@ -44,9 +44,9 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/srv/DeleteModel.h>
-#include <flatland_msgs/srv/MoveModel.h>
-#include <flatland_msgs/srv/SpawnModel.h>
+#include <flatland_msgs/msg/srv/DeleteModel.hpp>
+#include <flatland_msgs/msg/srv/MoveModel.hpp>
+#include <flatland_msgs/msg/srv/SpawnModel.hpp>
 #include <flatland_server/simulation_manager.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>

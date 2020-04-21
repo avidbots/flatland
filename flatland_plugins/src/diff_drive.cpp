@@ -48,19 +48,23 @@
 #include <flatland_plugins/diff_drive.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <pluginlib/class_list_macros.h>
-#include <ros/ros.h>
-#include <tf/tf.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/convert.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
 namespace flatland_plugins {
 
-void DiffDrive::TwistCallback(const geometry_msgs::Twist& msg) {
+void DiffDrive::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
   twist_msg_ = msg;
 }
 
 void DiffDrive::OnInitialize(const YAML::Node& config) {
-  YamlReader reader(config);
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
+
+  YamlReader reader(node_, config);
   enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
   enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
   std::string body_name = reader.Get<std::string>("body");
@@ -109,21 +113,22 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   }
 
   // publish and subscribe to topics
-  twist_sub_ = nh_.subscribe(twist_topic, 1, &DiffDrive::TwistCallback, this);
+  using std::placeholders::_1;
+  twist_sub_ = node_->create_subscription<geometry_msgs::msg::Twist>(
+    twist_topic, 1, std::bind(&DiffDrive::TwistCallback, this, _1));
   if (enable_odom_pub_) {
-    odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
+    odom_pub_ = node_->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 1);
     ground_truth_pub_ =
-        nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
+        node_->create_publisher<nav_msgs::msg::Odometry>(ground_truth_topic, 1);
   }
 
   if (enable_twist_pub_) {
-    twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>(twist_pub_topic, 1);
+    twist_pub_ = node_->create_publisher<geometry_msgs::msg::TwistStamped>(twist_pub_topic, 1);
   }
 
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
-  ground_truth_msg_.child_frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(body_->name_));
+  ground_truth_msg_.child_frame_id = GetModel()->NameSpaceTF(body_->name_);
   ground_truth_msg_.twist.covariance.fill(0);
   ground_truth_msg_.pose.covariance.fill(0);
   odom_msg_ = ground_truth_msg_;
@@ -148,7 +153,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
         std::normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }
 
-  ROS_DEBUG_NAMED("DiffDrive",
+  RCLCPP_DEBUG(rclcpp::get_logger("DiffDrive"),
                   "Initialized with params body(%p %s) odom_frame_id(%s) "
                   "twist_sub(%s) odom_pub(%s) ground_truth_pub(%s) "
                   "odom_pose_noise({%f,%f,%f}) odom_twist_noise({%f,%f,%f}) "
@@ -178,8 +183,10 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     ground_truth_msg_.pose.pose.position.x = position.x;
     ground_truth_msg_.pose.pose.position.y = position.y;
     ground_truth_msg_.pose.pose.position.z = 0;
-    ground_truth_msg_.pose.pose.orientation =
-        tf::createQuaternionMsgFromYaw(angle);
+    tf2::Quaternion q;
+    q.setRPY(0, 0, angle);
+
+    ground_truth_msg_.pose.pose.orientation= tf2::toMsg(q);
     ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
     ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
     ground_truth_msg_.twist.twist.linear.z = 0;
@@ -193,21 +200,21 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_msg_.twist.twist = ground_truth_msg_.twist.twist;
     odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
     odom_msg_.pose.pose.position.y += noise_gen_[1](rng_);
-    odom_msg_.pose.pose.orientation =
-        tf::createQuaternionMsgFromYaw(angle + noise_gen_[2](rng_));
+    q.setRPY(0, 0, angle + noise_gen_[2](rng_));
+    odom_msg_.pose.pose.orientation= tf2::toMsg(q);
     odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
     odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
     odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
 
     if (enable_odom_pub_) {
-      ground_truth_pub_.publish(ground_truth_msg_);
-      odom_pub_.publish(odom_msg_);
+      ground_truth_pub_->publish(ground_truth_msg_);
+      odom_pub_->publish(odom_msg_);
     }
 
     if (enable_twist_pub_) {
       // Transform global frame velocity into local frame to simulate encoder
       // readings
-      geometry_msgs::TwistStamped twist_pub_msg;
+      geometry_msgs::msg::TwistStamped twist_pub_msg;
       twist_pub_msg.header.stamp = timekeeper.GetSimTime();
       twist_pub_msg.header.frame_id = odom_msg_.child_frame_id;
 
@@ -218,26 +225,26 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
       // Angular velocity in twist.angular.z
       twist_pub_msg.twist.angular.z = angular_vel + noise_gen_[5](rng_);
-      twist_pub_.publish(twist_pub_msg);
+      twist_pub_->publish(twist_pub_msg);
     }
 
     // publish odom tf
-    geometry_msgs::TransformStamped odom_tf;
+    geometry_msgs::msg::TransformStamped odom_tf;
     odom_tf.header = odom_msg_.header;
     odom_tf.child_frame_id = odom_msg_.child_frame_id;
     odom_tf.transform.translation.x = odom_msg_.pose.pose.position.x;
     odom_tf.transform.translation.y = odom_msg_.pose.pose.position.y;
     odom_tf.transform.translation.z = 0;
     odom_tf.transform.rotation = odom_msg_.pose.pose.orientation;
-    tf_broadcaster.sendTransform(odom_tf);
+    tf_broadcaster_->sendTransform(odom_tf);
   }
 
   // we apply the twist velocities, this must be done every physics step to make
   // sure Box2D solver applies the correct velocity through out. The velocity
   // given in the twist message should be in the local frame
-  b2Vec2 linear_vel_local(twist_msg_.linear.x, 0);
+  b2Vec2 linear_vel_local(twist_msg_->linear.x, 0);
   b2Vec2 linear_vel = b2body->GetWorldVector(linear_vel_local);
-  float angular_vel = twist_msg_.angular.z;  // angular is independent of frames
+  float angular_vel = twist_msg_->angular.z;  // angular is independent of frames
 
   // we want the velocity vector in the world frame at the center of mass
 

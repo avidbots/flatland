@@ -44,13 +44,13 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/Collision.h>
-#include <flatland_msgs/Collisions.h>
+#include <flatland_msgs/msg/collision.hpp>
+#include <flatland_msgs/msg/collisions.hpp>
 #include <flatland_plugins/bumper.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 using namespace flatland_server;
@@ -68,7 +68,7 @@ void Bumper::ContactState::Reset() {
 }
 
 void Bumper::OnInitialize(const YAML::Node &config) {
-  YamlReader reader(config);
+  YamlReader reader(node_, config);
 
   // defaults
   world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
@@ -95,9 +95,9 @@ void Bumper::OnInitialize(const YAML::Node &config) {
 
   update_timer_.SetRate(update_rate_);
   collisions_publisher_ =
-      nh_.advertise<flatland_msgs::Collisions>(topic_name_, 1);
+      node_->create_publisher<flatland_msgs::msg::Collisions>(topic_name_, 1);
 
-  ROS_DEBUG_NAMED("Bumper",
+  RCLCPP_DEBUG(rclcpp::get_logger("Bumper"),
                   "Initialized with params: topic(%s) world_frame_id(%s) "
                   "publish_all_collisions(%d) update_rate(%f) exclude({%s})",
                   topic_name_.c_str(), world_frame_id_.c_str(),
@@ -129,7 +129,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
 
   std::map<b2Contact *, ContactState>::iterator it;
 
-  flatland_msgs::Collisions collisions;
+  flatland_msgs::msg::Collisions collisions;
   collisions.header.frame_id = world_frame_id_;
   collisions.header.stamp = timekeeper.GetSimTime();
 
@@ -137,12 +137,12 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
   for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
     b2Contact *c = it->first;
     ContactState *s = &it->second;
-    flatland_msgs::Collision collision;
-    collision.entity_A = GetModel()->GetName();
-    collision.entity_B = s->entity_B->name_;
+    flatland_msgs::msg::Collision collision;
+    collision.entity_a = GetModel()->GetName();
+    collision.entity_b = s->entity_b->name_;
 
-    collision.body_A = s->body_A->name_;
-    collision.body_B = s->body_B->name_;
+    collision.body_a = s->body_A->name_;
+    collision.body_b = s->body_B->name_;
 
     // If there was no post solve called, which means that the collision
     // probably involves a Box2D sensor, therefore there are no contact points,
@@ -168,8 +168,8 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
                                 ave_tangential_force * ave_tangential_force);
 
         collision.magnitude_forces.push_back(force_abs);
-        flatland_msgs::Vector2 point;
-        flatland_msgs::Vector2 normal;
+        flatland_msgs::msg::Vector2 point;
+        flatland_msgs::msg::Vector2 normal;
         point.x = s->points[i].x;
         point.y = s->points[i].y;
         normal.x = s->normal.x;
@@ -182,7 +182,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
     collisions.collisions.push_back(collision);
   }
 
-  collisions_publisher_.publish(collisions);
+  collisions_publisher_->publish(collisions);
 }
 
 void Bumper::BeginContact(b2Contact *contact) {
@@ -211,7 +211,7 @@ void Bumper::BeginContact(b2Contact *contact) {
     if (!ignore) {
       contact_states_[contact] = ContactState();
       ContactState *c = &contact_states_[contact];
-      c->entity_B = other_entity;
+      c->entity_b = other_entity;
       c->body_B = static_cast<Body *>(other_fixture->GetBody()->GetUserData());
       c->body_A = collision_body;
 

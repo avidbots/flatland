@@ -98,7 +98,7 @@ class LoadWorldTest : public ::testing::Test {
   }
 
   bool float_cmp(double n1, double n2) {
-    bool ret = fabs(n1 - n2) < 1e-5;
+    bool ret = std::fabs(n1 - n2) < 1e-5;
     return ret;
   }
 

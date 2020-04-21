@@ -62,7 +62,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <flatland_msgs/SpawnModel.h>
+#include <flatland_msgs/msg/SpawnModel.hpp>
 
 #include <flatland_server/types.h>
 
@@ -142,7 +142,7 @@ void SpawnModelTool::onInitialize() {
 // user edits the property.  This is a fine idea, and is possible, but
 // is left as an exercise for the reader.
 void SpawnModelTool::activate() {
-  ROS_INFO_STREAM("SpawnModelTool::activate ");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::activate ");
 
   LoadModelDialog *model_dialog = new LoadModelDialog(NULL, this);
   model_dialog->setModal(true);
@@ -150,7 +150,7 @@ void SpawnModelTool::activate() {
 }
 
 void SpawnModelTool::BeginPlacement() {
-  ROS_INFO_STREAM("SpawnModelTool::BeginPlacement");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::BeginPlacement");
   model_state = m_dragging;
 
   if (moving_model_node_) {
@@ -173,9 +173,9 @@ void SpawnModelTool::deactivate() {
 }
 
 void SpawnModelTool::SpawnModelInFlatland() {
-  ROS_INFO_STREAM(
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  
       "SpawnModelTool::SpawnModelInFlatland name:" << model_name.toStdString());
-  flatland_msgs::SpawnModel srv;
+  flatland_msgs::msg::SpawnModel srv;
 
   // model names can not have embeded period char
   model_name = model_name.replace(".", "_", Qt::CaseSensitive);
@@ -188,7 +188,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
   srv.request.pose.y = intersection[1];
   srv.request.pose.theta = initial_angle;
 
-  client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
+  client = nh.serviceClient<flatland_msgs::msg::SpawnModel>("spawn_model");
 
   // make ros service call
   bool client_is_running = client.call(srv);
@@ -207,7 +207,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
 }
 
 void SpawnModelTool::SetMovingModelColor(QColor c) {
-  ROS_INFO_STREAM("SpawnModelTool::SetMovingModelColor");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::SetMovingModelColor");
 
   try {
     Ogre::Entity *m_pEntity =
@@ -379,5 +379,5 @@ void SpawnModelTool::SaveName(QString n) { model_name = n; }
 
 }  // end namespace flatland_viz
 
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 PLUGINLIB_EXPORT_CLASS(flatland_viz::SpawnModelTool, rviz::Tool)

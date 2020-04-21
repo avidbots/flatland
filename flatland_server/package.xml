@@ -29,7 +29,7 @@
   <depend>interactive_markers</depend>
   <depend>flatland_msgs</depend>
   <depend>lua-dev</depend>
-  <depend>box2d</depend>
+  <depend>box2d-dev</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

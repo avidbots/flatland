@@ -80,6 +80,15 @@ class WorldPlugin : public FlatlandPlugin {
   */
   void Initialize(rclcpp::Node::SharedPtr node, World *world, std::string name, std::string type,
                   YAML::Node &plugin_reader, YamlReader &world_config);
+
+  /*
+  * @brief trigger after plugin is initialized
+  * 
+  * @param[in] plugin_reader, the YAML node contain the plugin's config
+  * @param[in] world_config, the yaml reader of world.yaml
+  */
+  virtual void OnInitialize(const YAML::Node &plugin_reader, YamlReader &world_config) = 0;
+
 };
 }
 

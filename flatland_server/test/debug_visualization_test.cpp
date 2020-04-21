@@ -49,7 +49,7 @@
 #include <flatland_server/timekeeper.h>
 #include <gtest/gtest.h>
 #include <rclcpp/rclcpp.hpp>
-#include <visualization_msgs/msg/MarkerArray.h>
+#include <visualization_msgs/msg/msg/MarkerArray.hpp>
 #include <cmath>
 
 // Test the bodyToMarkers method on a polygon shape

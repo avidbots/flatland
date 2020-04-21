@@ -1,74 +1,57 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
+
 project(flatland_plugins)
 
-# Ensure we're using c++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-## Find catkin macros and libraries
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+
+## Find macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  rostest
-  pluginlib
-  roscpp
-  flatland_server
-  cmake_modules
-  tf
-  flatland_msgs
-  std_msgs
-)
 
-find_package(Eigen3 REQUIRED)
+find_package(ament_cmake REQUIRED)
 
-## System dependencies are found with CMake's conventions
-find_package(PkgConfig REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(flatland_server REQUIRED)
+find_package(flatland_msgs REQUIRED)
+find_package(yaml_cpp_vendor REQUIRED)
+#  rostest
 
-# yaml-cpp
-pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
-find_path(YAML_CPP_INCLUDE_DIR
-          NAMES yaml_cpp.h
-          PATHS ${YAML_CPP_INCLUDE_DIRS})
-find_library(YAML_CPP_LIBRARY
-             NAMES YAML_CPP
-             PATHS ${YAML_CPP_LIBRARY_DIRS})
-link_directories(${YAML_CPP_LIBRARY_DIRS})
+
+find_package(Eigen3 REQUIRED)# lua5.1
+find_package(Lua 5.1 QUIET)
 
 ##############
 ## coverage ##
 ##############
 
-set(COVERAGE "OFF" CACHE STRING "Enable coverage generation.")
+# set(COVERAGE "OFF" CACHE STRING "Enable coverage generation.")
 
-message(STATUS "Using COVERAGE: ${COVERAGE}")
-if("${COVERAGE}" STREQUAL "ON")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
-endif()
+# message(STATUS "Using COVERAGE: ${COVERAGE}")
+# if("${COVERAGE}" STREQUAL "ON")
+#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
+# endif()
 
-
-###################################
-## catkin specific configuration ##
-###################################
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES flatland_plugins_lib
-  CATKIN_DEPENDS pluginlib roscpp flatland_server std_msgs
-)
 
 ###########
 ## Build ##
 ###########
 
-include_directories(
-  include
-  include/thirdparty/tweeny
-  ${catkin_INCLUDE_DIRS}
-  ${YAML_CPP_INCLUDE_DIRS}
-  ${Eigen3_INCLUDE_DIRS}
-)
-
 # Declare a C++ library
-add_library(flatland_plugins_lib
+add_library(flatland_plugins_lib SHARED
   src/laser.cpp
   src/tricycle_drive.cpp
   src/diff_drive.cpp
@@ -82,43 +65,49 @@ add_library(flatland_plugins_lib
   src/gps.cpp
 )
 
-add_dependencies(flatland_plugins_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ament_target_dependencies(flatland_plugins_lib rclcpp flatland_server flatland_msgs pluginlib geometry_msgs tf2 tf2_ros tf2_geometry_msgs yaml_cpp_vendor)
+
+target_include_directories(flatland_plugins_lib PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/thirdparty/tweeny>
+  $<INSTALL_INTERFACE:include/thirdparty/tweeny>
+  ${Eigen3_INCLUDE_DIRS}
+  ${LUA_INCLUDE_DIR}
+  ${yaml_cpp_vendor_INCLUDE_DIRS})
+
+
 target_link_libraries(flatland_plugins_lib
-  ${catkin_LIBRARIES}
   ${Eigen3_LIBRARIES}
+  ${LUA_LIBRARIES}
   yaml-cpp
 )
+
+ament_export_interfaces(export_flatland_plugins_lib HAS_LIBRARY_TARGET)
+# ament_export_libraries(flatland_lib)
+ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib geometry_msgs tf2 tf2_ros tf2_geometry_msgs yaml_cpp_vendor)
+ament_package()
 
 #############
 ## Install ##
 #############
 
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
+pluginlib_export_plugin_description_file(flatland_plugins_lib plugin_description.xml)
 
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-# Mark executables and/or libraries for installation
-install(TARGETS flatland_plugins_lib
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+install(
+  TARGETS flatland_plugins_lib
+  EXPORT export_flatland_plugins_lib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
 )
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(
+  DIRECTORY include/
+  DESTINATION include
   FILES_MATCHING PATTERN "*.h"
-)
-
-# Install plugins file
-install(FILES flatland_plugins.xml
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 #############
@@ -133,7 +122,7 @@ install(FILES flatland_plugins.xml
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
+if(FALSE) # fake a block comment
 if(CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(laser_test test/laser_test.test
@@ -168,4 +157,5 @@ if(CATKIN_ENABLE_TESTING)
                     test/gps_test.cpp)
   target_link_libraries(gps_test flatland_plugins_lib)
 
+endif()
 endif()

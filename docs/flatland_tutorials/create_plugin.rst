@@ -117,14 +117,14 @@ Create a new file called simple.cpp in the **flatland_plugins/src** directory.
 .. code-block:: Cpp
 
     #include <flatland_plugins/simple.h>
-    #include <pluginlib/class_list_macros.h>
-    #include <ros/ros.h>
+    #include <pluginlib/class_list_macros.hpp>
+    #include <rclcpp/rclcpp.hpp>
 
     using namespace flatland_server;
     namespace flatland_tutorials {
 
     void Simple::OnInitialize(const YAML::Node &config) {
-    ROS_ERROR_STREAM("Hello world");
+    RCLCPP_INFO(rclcpp::get_logger("Simple Plugin"), "Hello world");
     }
     };
 

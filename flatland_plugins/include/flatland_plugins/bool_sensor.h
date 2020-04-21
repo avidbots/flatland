@@ -46,8 +46,8 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
-#include <ros/ros.h>
-#include <std_msgs/Bool.h>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 #ifndef FLATLAND_PLUGINS_BOOL_SENSOR_H
 #define FLATLAND_PLUGINS_BOOL_SENSOR_H
@@ -69,7 +69,7 @@ class BoolSensor : public ModelPlugin {
   int collisions_ = 0;          ///< Current number of collisions
   bool hit_something_ = false;  ///< "latch" var to ensure all hits published
 
-  ros::Publisher publisher_;  ///< For publishing the collisions
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr publisher_;  ///< For publishing the collisions
 
   /**
    * @brief Initialization for the plugin

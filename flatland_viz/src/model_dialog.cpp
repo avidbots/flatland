@@ -218,7 +218,7 @@ void ModelDialog::SpawnModelClient() {
   srv.request.pose.y = y_edit->text().toFloat();
   srv.request.pose.theta = a_edit->text().toFloat();
 
-  client = nh.serviceClient<flatland_msgs::SpawnModel>("spawn_model");
+  client = nh.serviceClient<flatland_msgs::msg::SpawnModel>("spawn_model");
 
   client.call(srv);
 }

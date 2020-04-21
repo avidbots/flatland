@@ -2,9 +2,9 @@
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/types.h>
-#include <ros/ros.h>
-#include <sensor_msgs/NavSatFix.h>
-#include <tf/transform_broadcaster.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/nav_sat_fix.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 #include <Eigen/Dense>
 
 #ifndef FLATLAND_PLUGINS_GPS_H
@@ -39,10 +39,10 @@ class Gps : public ModelPlugin {
   static double WGS84_A;   ///< Earth's major axis length
   static double WGS84_E2;  ///< Square of Earth's first eccentricity
 
-  ros::Publisher fix_publisher_;             ///< GPS fix topic publisher
-  tf::TransformBroadcaster tf_broadcaster_;  ///< broadcast GPS frame
-  geometry_msgs::TransformStamped gps_tf_;   ///< tf from body to GPS frame
-  sensor_msgs::NavSatFix gps_fix_;           ///< message for publishing output
+  rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr  fix_publisher_;             ///< GPS fix topic publisher
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< broadcast GPS frame
+  geometry_msgs::msg::TransformStamped gps_tf_;   ///< tf from body to GPS frame
+  sensor_msgs::msg::NavSatFix gps_fix_;           ///< message for publishing output
   UpdateTimer update_timer_;                 ///< for controlling update rate
 
   Eigen::Matrix3f m_body_to_gps_;  ///< tf from body to GPS

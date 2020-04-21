@@ -44,7 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/Collisions.h>
+#include <flatland_msgs/msg/Collisions.hpp>
 #include <flatland_plugins/bumper.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
@@ -63,7 +63,7 @@ class BumperPluginTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
-  flatland_msgs::Collisions msg1, msg2;
+  flatland_msgs::msg::Collisions msg1, msg2;
   World* w;
 
   void SetUp() override {
@@ -86,7 +86,7 @@ class BumperPluginTest : public ::testing::Test {
       return true;
     }
 
-    bool ret = fabs(n1 - n2) < epsilon;
+    bool ret = std::fabs(n1 - n2) < epsilon;
     return ret;
   }
 
@@ -126,14 +126,14 @@ class BumperPluginTest : public ::testing::Test {
   }
 
   // check the received scan data is as expected
-  bool CollisionEq(const Collision& collision, const std::string& entity_A,
-                   const std::string& body_A, const std::string& entity_B,
+  bool CollisionEq(const Collision& collision, const std::string& entity_a,
+                   const std::string& body_A, const std::string& entity_b,
                    const std::string& body_B, int return_size,
                    const std::pair<float, float>& normal) {
-    if (!StringEq("entity_A", collision.entity_A, entity_A)) return false;
-    if (!StringEq("body_A", collision.body_A, body_A)) return false;
-    if (!StringEq("entity_B", collision.entity_B, entity_B)) return false;
-    if (!StringEq("body_B", collision.body_B, body_B)) return false;
+    if (!StringEq("entity_a", collision.entity_a, entity_a)) return false;
+    if (!StringEq("body_A", collision.body_a, body_A)) return false;
+    if (!StringEq("entity_b", collision.entity_b, entity_b)) return false;
+    if (!StringEq("body_B", collision.body_b, body_B)) return false;
 
     if (!(collision.magnitude_forces.size() <= 2 &&
           collision.contact_positions.size() <= 2 &&
@@ -165,9 +165,9 @@ class BumperPluginTest : public ::testing::Test {
     return true;
   }
 
-  void CollisionCb_A(const flatland_msgs::Collisions& msg) { msg1 = msg; }
+  void CollisionCb_A(const flatland_msgs::msg::Collisions& msg) { msg1 = msg; }
 
-  void CollisionCb_B(const flatland_msgs::Collisions& msg) { msg2 = msg; }
+  void CollisionCb_B(const flatland_msgs::msg::Collisions& msg) { msg2 = msg; }
 
   void SpinRos(float hz, int iterations) {
     ros::WallRate rate(hz);
@@ -209,8 +209,8 @@ TEST_F(BumperPluginTest, collision_test) {
   SpinRos(500, 10);  // make sure the messages gets through
 
   // check time is not zero to make sure message is received
-  ASSERT_NE(msg1.header.stamp, ros::Time(0, 0));
-  ASSERT_NE(msg2.header.stamp, ros::Time(0, 0));
+  ASSERT_NE(msg1.header.stamp, rclcpp::Time(0, 0));
+  ASSERT_NE(msg2.header.stamp, rclcpp::Time(0, 0));
 
   // step 15 time which makes the body move 1.5 meters, will make base_link_1
   // collide, but not base_link_2, not that base_link_1's fixture is a sensor

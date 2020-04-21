@@ -48,17 +48,19 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <pluginlib/class_list_macros.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <pluginlib/class_list_macros.hpp>
 #include <Eigen/Dense>
 #include <boost/algorithm/string/join.hpp>
+#include <tf2/LinearMath/Quaternion.h>
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
 
 void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
-  YamlReader reader(config);
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
+  YamlReader reader(node_, config);
 
   // default values
   publish_tf_world_ = reader.Get<bool>("publish_tf_world", false);
@@ -97,8 +99,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
 
   update_timer_.SetRate(update_rate_);
 
-  ROS_DEBUG_NAMED(
-      "ModelTfPublisher",
+  RCLCPP_DEBUG(rclcpp::get_logger("ModelTFPublisher"),
       "Initialized with params: reference(%s, %p) "
       "publish_tf_world(%d) world_frame_id(%s) update_rate(%f), exclude({%s})",
       reference_body_->name_.c_str(), reference_body_, publish_tf_world_,
@@ -118,7 +119,7 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
   const b2Transform &r = reference_body_->physics_body_->GetTransform();
   ref_tf_m << r.q.c, -r.q.s, r.p.x, r.q.s, r.q.c, r.p.y, 0, 0, 1;
 
-  geometry_msgs::TransformStamped tf_stamped;
+  geometry_msgs::msg::TransformStamped tf_stamped;
   tf_stamped.header.stamp = timekeeper.GetSimTime();
 
   // loop through the bodies to calculate TF, and ignores excluded bodies
@@ -153,20 +154,20 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
 
     // publish TF
     tf_stamped.header.frame_id =
-        tf::resolve("", GetModel()->NameSpaceTF(reference_body_->name_));
+        GetModel()->NameSpaceTF(reference_body_->name_);
     tf_stamped.child_frame_id =
-        tf::resolve("", GetModel()->NameSpaceTF(body->name_));
+        GetModel()->NameSpaceTF(body->name_);
     tf_stamped.transform.translation.x = rel_tf(0, 2);
     tf_stamped.transform.translation.y = rel_tf(1, 2);
     tf_stamped.transform.translation.z = 0;
-    tf::Quaternion q;
+    tf2::Quaternion q;
     q.setRPY(0, 0, yaw);
     tf_stamped.transform.rotation.x = q.x();
     tf_stamped.transform.rotation.y = q.y();
     tf_stamped.transform.rotation.z = q.z();
     tf_stamped.transform.rotation.w = q.w();
 
-    tf_broadcaster.sendTransform(tf_stamped);
+    tf_broadcaster_->sendTransform(tf_stamped);
   }
 
   // publish world TF if necessary
@@ -176,18 +177,18 @@ void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
 
     tf_stamped.header.frame_id = world_frame_id_;
     tf_stamped.child_frame_id =
-        tf::resolve("", GetModel()->NameSpaceTF(reference_body_->name_));
+        GetModel()->NameSpaceTF(reference_body_->name_);
     tf_stamped.transform.translation.x = p.x;
     tf_stamped.transform.translation.y = p.y;
     tf_stamped.transform.translation.z = 0;
-    tf::Quaternion q;
+    tf2::Quaternion q;
     q.setRPY(0, 0, yaw);
     tf_stamped.transform.rotation.x = q.x();
     tf_stamped.transform.rotation.y = q.y();
     tf_stamped.transform.rotation.z = q.z();
     tf_stamped.transform.rotation.w = q.w();
 
-    tf_broadcaster.sendTransform(tf_stamped);
+    tf_broadcaster_->sendTransform(tf_stamped);
   }
 }
 };

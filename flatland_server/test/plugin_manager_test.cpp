@@ -138,7 +138,7 @@ class PluginManagerTest : public ::testing::Test {
   }
 
   bool fltcmp(double n1, double n2) {
-    bool ret = fabs(n1 - n2) < 1e-7;
+    bool ret = std::fabs(n1 - n2) < 1e-7;
     return ret;
   }
 

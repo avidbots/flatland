@@ -27,9 +27,8 @@ However, we recommend throwing exceptions from flatland_server/exceptions.h.
   class ModelPlugin {
    public:
 
-    // ROS node handle initialize with robot namespace, if namespace is "", it
-    // will work as if there are no namespace
-    ros::NodeHandle nh_;
+    // ROS node pointer
+    std::shared_ptr<rclcpp::Node> node_;
 
     const std::string &GetName() const;
     const std::string &GetType() const;
@@ -43,7 +42,7 @@ However, we recommend throwing exceptions from flatland_server/exceptions.h.
 
     // These two functions are called before and after the physics step, the
     // time data contained in timekeeper and ROS simulation time from
-    // ros::Time::Now() have been set correctly
+    // rclcpp::Time::Now() have been set correctly
     virtual void BeforePhysicsStep(const Timekeeper &timekeeper) {} // time t
     virtual void AfterPhysicsStep(const Timekeeper &timekeeper) {}  // time t + dt
 
@@ -152,14 +151,14 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
     // src/const_velocity_plugin.cpp
 
     #include <flatland_plugins/laser.h>
-    #include <pluginlib/class_list_macros.h>
+    #include <pluginlib/class_list_macros.hpp>
     #include <flatland_server/yaml_reader.h>
     #include <flatland_server/exceptions.h>
 
     namespace flatland_plugins {
 
     void ConstVelocity::OnInitialize(const YAML::Node &config) {
-      flatland_server::YamlReader reader(config);
+      flatland_server::YamlReader reader(node_, config);
 
       vel_x = reader.Get<double>("vel_x");
       vel_y = reader.Get<double>("vel_y");
@@ -317,7 +316,7 @@ and  flatland_plugins for more details.
 Simulation Time
 ---------------
 Using the launch file provided, ROS will be configured to use simulation time.
-One can use ros::Time::now() to get the current time. Simulation time can be
+One can use rclcpp::Time::now() to get the current time. Simulation time can be
 obtained from the timekeeper object, as well as other time related information
 such as step size.
 

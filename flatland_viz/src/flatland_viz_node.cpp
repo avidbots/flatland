@@ -44,7 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <signal.h>
 #include <QApplication>
 #include "flatland_viz/flatland_window.h"
@@ -57,13 +57,13 @@ FlatlandWindow* window = nullptr;
  * @param[in]   sig: signal itself
  */
 void SigintHandler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+  RCLCPP_WARN(rclcpp::get_logger("Node", "*** Shutting down... ***"));
 
   if (window != nullptr) {
     delete window;
     window = nullptr;
   }
-  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("Flatland Viz"), "Beginning ros shutdown");
   ros::shutdown();
 }
 

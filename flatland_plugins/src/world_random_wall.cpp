@@ -49,8 +49,8 @@
 #include <flatland_plugins/world_random_wall.h>
 #include <flatland_server/types.h>
 #include <flatland_server/world_plugin.h>
-#include <pluginlib/class_list_macros.h>
-#include <ros/ros.h>
+#include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 #include <algorithm>
 #include <iostream>
@@ -60,9 +60,9 @@ using namespace flatland_server;
 using std::cout;
 using std::endl;
 namespace flatland_plugins {
-void RandomWall::OnInitialize(const YAML::Node &config) {
+void RandomWall::OnInitialize(const YAML::Node &config, YamlReader &world_config) {
   // read in the plugin config
-  YamlReader plugin_reader(config);
+  YamlReader plugin_reader(node_, config);
   std::string layer_name = plugin_reader.Get<std::string>("layer", "");
   unsigned int num_of_walls =
       plugin_reader.Get<unsigned int>("num_of_walls", 0);
@@ -85,7 +85,7 @@ void RandomWall::OnInitialize(const YAML::Node &config) {
   // read in the robot location from the world.yaml
   Pose robot_ini_pose;
   YamlReader models_reader =
-      world_config_.SubnodeOpt("models", YamlReader::LIST);
+      world_config.SubnodeOpt("models", YamlReader::LIST);
   if (models_reader.IsNodeNull()) {
     throw("no robot specified!");
   }

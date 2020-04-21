@@ -81,13 +81,6 @@ class FlatlandPlugin {
   const std::string &GetType() const { return type_; }
 
   /**
- * @brief The method for the particular model plugin to override and provide
- * its own initialization
- * @param[in] config The plugin YAML node
- */
-  virtual void OnInitialize(const YAML::Node &config) = 0;
-
-  /**
    * @brief This method is called before the Box2D physics step
    * @param[in] timekeeper provide time related information
    */

@@ -76,6 +76,13 @@ class ModelPlugin : public FlatlandPlugin {
   Model *GetModel();
 
   /**
+   * @brief The method for the particular model plugin to override and provide
+   * its own initialization
+   * @param[in] config The plugin YAML node
+   */
+  virtual void OnInitialize(const YAML::Node &config) = 0;
+
+  /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib
    * require the class to have a default constructor
    * @param[in] node, the rclcpp node pointer

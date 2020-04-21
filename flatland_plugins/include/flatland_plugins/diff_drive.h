@@ -48,9 +48,10 @@
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
-#include <tf/transform_broadcaster.h>
+#include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <tf2_ros/transform_broadcaster.h>
 #include <random>
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
@@ -62,16 +63,16 @@ namespace flatland_plugins {
 
 class DiffDrive : public flatland_server::ModelPlugin {
  public:
-  ros::Subscriber twist_sub_;
-  ros::Publisher odom_pub_;
-  ros::Publisher ground_truth_pub_;
-  ros::Publisher twist_pub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_sub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr ground_truth_pub_;
+  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
   Body* body_;
-  geometry_msgs::Twist twist_msg_;
-  nav_msgs::Odometry odom_msg_;
-  nav_msgs::Odometry ground_truth_msg_;
+  geometry_msgs::msg::Twist::SharedPtr twist_msg_;
+  nav_msgs::msg::Odometry odom_msg_;
+  nav_msgs::msg::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;
-  tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
+  std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< For publish ROS TF
   bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
   bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
 
@@ -95,7 +96,7 @@ class DiffDrive : public flatland_server::ModelPlugin {
    * @brief       callback to apply twist (velocity and omega)
    * @param[in]   timestep how much the physics time will increment
    */
-  void TwistCallback(const geometry_msgs::Twist& msg);
+  void TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
 };
 };
 

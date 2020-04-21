@@ -46,7 +46,7 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #ifndef FLATLAND_PLUGINS_BUMPER_H
 #define FLATLAND_PLUGINS_BUMPER_H
@@ -71,7 +71,7 @@ class Bumper : public ModelPlugin {
 
     Body *body_A;      ///< the body of the model involved in the collision
     Body *body_B;      ///< the other body involved in the collision
-    Entity *entity_B;  /// the entity the other body belongs to
+    Entity *entity_b;  /// the entity the other body belongs to
 
     ContactState();  ///< initializes counters and sums
     void Reset();    ///< Reset counter and sums
@@ -88,7 +88,7 @@ class Bumper : public ModelPlugin {
 
   /// For keeping track of contacts
   std::map<b2Contact *, ContactState> contact_states_;
-  ros::Publisher collisions_publisher_;  ///< For publishing the collisions
+  rclcpp::Publisher<flatland_msgs::msg::Collisions>::SharedPtr collisions_publisher_;  ///< For publishing the collisions
 
   /**
    * @brief Initialization for the plugin

@@ -44,7 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 #include <Box2D/Box2D.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <flatland_plugins/world_modifier.h>
 #include <flatland_server/layer.h>
@@ -94,7 +94,7 @@ void WorldModifier::CalculateNewWall(double d, b2Vec2 vertex1, b2Vec2 vertex2,
   b2Vec2 new_wall_v1;
   b2Vec2 new_wall_v2;
   if (d == 0) {  // if distance towards the robot is 0
-    ROS_FATAL_NAMED("Node", "robot start pose hit the wall!");
+    RCLCPP_FATAL(rclcpp::get_logger("World Modifier"), "robot start pose hit the wall!");
   } else if (d < 0) {              // if on the left side
     if (vertex1.x == vertex2.x) {  // if it is a vertical wall
       new_wall_v1.Set(vertex1.x + wall_wall_dist_, vertex1.y);

@@ -50,17 +50,17 @@
 namespace flatland_plugins {
 
 UpdateTimer::UpdateTimer()
-    : period_(ros::Duration(0)), last_update_time_(ros::Time(0, 0)) {}
+    : period_(rclcpp::Duration(0)), last_update_time_(rclcpp::Time(0, 0)) {}
 
 void UpdateTimer::SetRate(double rate) {
   if (rate == 0.0)
-    period_ = ros::Duration(INT32_MAX, 0);  // 1000 hours is infinity right?
+    period_ = rclcpp::Duration(INT32_MAX, 0);  // 1000 hours is infinity right?
   else
-    period_ = ros::Duration(1.0 / rate);
+    period_ = rclcpp::Duration::from_seconds(1.0 / rate);
 }
 
 bool UpdateTimer::CheckUpdate(const flatland_server::Timekeeper &timekeeper) {
-  if (fabs(period_.toSec()) < 1e-5) {
+  if (std::fabs(period_.seconds()) < 1e-5) {
     return true;
   }
 
@@ -79,7 +79,7 @@ bool UpdateTimer::CheckUpdate(const flatland_server::Timekeeper &timekeeper) {
   // hector_gazebo/hector_gazebo_plugins/include/hector_gazebo_plugins/update_timer.h
   double step = timekeeper.GetMaxStepSize();
   double fraction =
-      fmod(timekeeper.GetSimTime().toSec() + (step / 2.0), period_.toSec());
+      std::fmod(timekeeper.GetSimTime().seconds() + (step / 2.0), period_.seconds());
 
   if ((fraction >= 0.0) && (fraction < step)) {
     last_update_time_ = timekeeper.GetSimTime();

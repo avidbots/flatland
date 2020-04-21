@@ -48,8 +48,9 @@
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
-#include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/msg/twist.hpp>
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <random>
 
 #ifndef FLATLAND_PLUGINS_TRICYCLE_DRIVE_H
@@ -74,12 +75,12 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double target_wheel_angle_;    ///< The current target wheel angle
   double theta_f_;  ///< The current angular offset of the front wheel
 
-  geometry_msgs::Twist twist_msg_;
-  nav_msgs::Odometry odom_msg_;
-  nav_msgs::Odometry ground_truth_msg_;
-  ros::Subscriber twist_sub_;
-  ros::Publisher odom_pub_;
-  ros::Publisher ground_truth_pub_;
+  geometry_msgs::msg::Twist::SharedPtr twist_msg_;
+  nav_msgs::msg::Odometry odom_msg_;
+  nav_msgs::msg::Odometry ground_truth_msg_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_sub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
+  rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr ground_truth_pub_;
 
   UpdateTimer update_timer_;
 
@@ -111,7 +112,7 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   * @brief         callback to apply twist (velocity and omega)
   * @param[in]     timestep how much the physics time will increment
   */
-  void TwistCallback(const geometry_msgs::Twist& msg);
+  void TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
 };
 }
 

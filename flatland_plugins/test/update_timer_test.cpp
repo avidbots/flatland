@@ -112,7 +112,7 @@ class UpdateTimerTest : public ::testing::Test {
     ros::WallRate rate(wall_rate);
 
     // run for two seconds
-    while (timekeeper.GetSimTime() < ros::Time(sim_test_time)) {
+    while (timekeeper.GetSimTime() < rclcpp::Time(sim_test_time)) {
       w->Update(timekeeper);
       ros::spinOnce();
       rate.sleep();

@@ -47,7 +47,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/types.h>
 #include <flatland_server/world_plugin.h>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
 #ifndef FLATLAND_PLUGINS_WORLD_RANDOM_WALL_H
@@ -57,7 +57,7 @@ using namespace flatland_server;
 
 namespace flatland_plugins {
 class RandomWall : public WorldPlugin {
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node &config, YamlReader &world_config) override;
 };
 };
 

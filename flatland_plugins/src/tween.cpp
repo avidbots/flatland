@@ -48,9 +48,9 @@
 #include <flatland_plugins/tween.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
-#include <pluginlib/class_list_macros.h>
-#include <ros/ros.h>
-#include <tf/tf.h>
+#include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/rclcpp.hpp>
+//#include <tf/tf.h>
 
 namespace flatland_plugins {
 
@@ -92,7 +92,7 @@ std::map<std::string, Tween::EasingType_> Tween::easing_strings_ = {
     {"bounceInOut", Tween::EasingType_::bounceInOut}};
 
 void Tween::OnInitialize(const YAML::Node& config) {
-  YamlReader reader(config);
+  YamlReader reader(node_, config);
   std::string body_name = reader.Get<std::string>("body");
 
   // reciprocal, loop, or oneshot
@@ -104,8 +104,8 @@ void Tween::OnInitialize(const YAML::Node& config) {
   // Boolean play pause topic
   std::string trigger_topic = reader.Get<std::string>("trigger_topic", "");
   if (trigger_topic != "") {
-    trigger_sub_ =
-        nh_.subscribe(trigger_topic, 1, &Tween::TriggerCallback, this);
+    trigger_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
+      trigger_topic, 1, std::bind(&Tween::TriggerCallback, this, std::placeholders::_1));
   }
 
   body_ = GetModel()->GetBody(body_name);
@@ -231,7 +231,7 @@ void Tween::OnInitialize(const YAML::Node& config) {
   // Make sure there are no unused keys
   reader.EnsureAccessedAllKeys();
 
-  ROS_DEBUG_NAMED("Tween",
+  RCLCPP_DEBUG(rclcpp::get_logger("Tween"),
                   "Initialized with params body(%p %s) "
                   "start ({%f,%f,%f}) "
                   "end ({%f,%f,%f}) "
@@ -243,14 +243,15 @@ void Tween::OnInitialize(const YAML::Node& config) {
                   (int)mode_, easing.c_str());
 }
 
-void Tween::TriggerCallback(const std_msgs::Bool& msg) {
-  triggered_ = msg.data;
+void Tween::TriggerCallback(const std_msgs::msg::Bool::SharedPtr msg) {
+  triggered_ = msg->data;
 }
 
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   std::array<double, 3> v =
       tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
-  ROS_DEBUG_THROTTLE_NAMED(1.0, "Tween", "value %f,%f,%f step %f progress %f",
+  rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
+  RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("Tween"), steady_clock, 1000, "value %f,%f,%f step %f progress %f",
                            v[0], v[1], v[2], timekeeper.GetStepSize(),
                            tween_.progress());
   body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]),

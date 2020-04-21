@@ -73,7 +73,7 @@ class TweenPluginTest : public ::testing::Test {
       return true;
     }
 
-    bool ret = fabs(n1 - n2) < epsilon;
+    bool ret = std::fabs(n1 - n2) < epsilon;
     return ret;
   }
 };

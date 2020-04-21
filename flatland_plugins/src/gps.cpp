@@ -1,5 +1,5 @@
 #include <flatland_plugins/gps.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 
 using namespace flatland_server;
 
@@ -9,9 +9,10 @@ double Gps::WGS84_A = 6378137.0;
 double Gps::WGS84_E2 = 0.0066943799831668;
 
 void Gps::OnInitialize(const YAML::Node &config) {
+  tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
   ParseParameters(config);
   update_timer_.SetRate(update_rate_);
-  fix_publisher_ = nh_.advertise<sensor_msgs::NavSatFix>(topic_, 1);
+  fix_publisher_ = node_->create_publisher<sensor_msgs::msg::NavSatFix>(topic_, 1);
 
   double c = cos(origin_.theta);
   double s = sin(origin_.theta);
@@ -26,15 +27,15 @@ void Gps::BeforePhysicsStep(const Timekeeper &timekeeper) {
   }
 
   // only compute and publish when the number of subscribers is not zero
-  if (fix_publisher_.getNumSubscribers() > 0) {
+  if (fix_publisher_->get_subscription_count() > 0) {
     UpdateFix();
     gps_fix_.header.stamp = timekeeper.GetSimTime();
-    fix_publisher_.publish(gps_fix_);
+    fix_publisher_->publish(gps_fix_);
   }
 
   if (broadcast_tf_) {
     gps_tf_.header.stamp = timekeeper.GetSimTime();
-    tf_broadcaster_.sendTransform(gps_tf_);
+    tf_broadcaster_->sendTransform(gps_tf_);
   }
 }
 
@@ -88,7 +89,7 @@ void Gps::UpdateFix() {
 }
 
 void Gps::ParseParameters(const YAML::Node &config) {
-  YamlReader reader(config);
+  YamlReader reader(node_, config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "gps/fix");
   frame_id_ = reader.Get<std::string>("frame", GetName());
@@ -105,9 +106,9 @@ void Gps::ParseParameters(const YAML::Node &config) {
   }
 
   std::string parent_frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(body_->GetName()));
+      GetModel()->NameSpaceTF(body_->GetName());
   std::string child_frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
+      GetModel()->NameSpaceTF(frame_id_);
 
   // Set constant frame ID in GPS fix message
   gps_fix_.header.frame_id = child_frame_id;

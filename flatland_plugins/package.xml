@@ -1,10 +1,11 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>flatland_plugins</name>
-  <version>1.1.1</version>
+  <version>2.0.0</version>
   <description>Default plugins for flatland</description>
   <license>BSD</license>
-  <url type="website">https://bitbucket.org/avidbots/flatland</url>
+  <url type="website">https://github.com/avidbots/flatland</url>
 
   <maintainer email="joseph@avidbots.com">Joseph Duchesne</maintainer>
   <author email="joseph@avidbots.com">Joseph Duchesne</author>
@@ -13,17 +14,22 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>flatland_server</depend>
+  <build_depend>cmake_modules</build_depend>
+
+  <depend>OpenCV</depend>
   <depend>pluginlib</depend>
-  <depend>roscpp</depend>
-  <depend>yaml-cpp</depend>
-  <depend>cmake_modules</depend>
-  <depend>tf</depend>
+  <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>yaml-cpp-vendor</depend>
   <depend>flatland_msgs</depend>
+  <depend>lua-dev</depend>
 
   <export>
-    <flatland_server plugin="${prefix}/flatland_plugins.xml" />
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

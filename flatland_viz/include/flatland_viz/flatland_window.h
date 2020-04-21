@@ -46,7 +46,7 @@
 
 // namespace rviz;
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <QLabel>
 #include <QMainWindow>
 #include <QPushButton>

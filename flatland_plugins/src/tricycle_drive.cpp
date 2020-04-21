@@ -49,14 +49,17 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_list_macros.h>
-#include <ros/ros.h>
-#include <tf/tf.h>
+#include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/convert.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <memory>
 
 namespace flatland_plugins {
 
 void TricycleDrive::OnInitialize(const YAML::Node& config) {
-  YamlReader r(config);
+  YamlReader r(node_, config);
 
   // load all the parameters
   string body_name = r.Get<string>("body");
@@ -134,15 +137,16 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   ComputeJoints();
 
   // publish and subscribe to topics
-  twist_sub_ =
-      nh_.subscribe(twist_topic, 1, &TricycleDrive::TwistCallback, this);
-  odom_pub_ = nh_.advertise<nav_msgs::Odometry>(odom_topic, 1);
-  ground_truth_pub_ = nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
+  using std::placeholders::_1;
+  twist_sub_ = node_->create_subscription<geometry_msgs::msg::Twist>(
+    twist_topic, 1, std::bind(&TricycleDrive::TwistCallback, this, _1));
+  odom_pub_ = node_->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 1);
+  ground_truth_pub_ = node_->create_publisher<nav_msgs::msg::Odometry>(ground_truth_topic, 1);
 
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
   ground_truth_msg_.child_frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(body_->name_));
+      GetModel()->NameSpaceTF(body_->name_);
 
   ground_truth_msg_.twist.covariance.fill(0);
   ground_truth_msg_.pose.covariance.fill(0);
@@ -167,8 +171,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
         normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }
 
-  ROS_DEBUG_NAMED(
-      "TricycleDrive",
+  RCLCPP_DEBUG(rclcpp::get_logger("TricycleDrive"),
       "Initialized with params body(%p %s) front_wj(%p %s) "
       "rear_left_wj(%p %s) rear_right_wj(%p %s) "
       "odom_frame_id(%s) twist_sub(%s) odom_pub(%s) "
@@ -207,7 +210,7 @@ void TricycleDrive::ComputeJoints() {
     body_anchor = body_->physics_body_->GetLocalPoint(body_anchor);
 
     // ensure the joint is anchored at (0,0) of the wheel_body
-    if (fabs(wheel_anchor.x) > 1e-5 || fabs(wheel_anchor.y) > 1e-5) {
+    if (std::fabs(wheel_anchor.x) > 1e-5 || std::fabs(wheel_anchor.y) > 1e-5) {
       throw YAMLException("Joint " + Q(joint->GetName()) +
                           " must be anchored at (0, 0) on the wheel");
     }
@@ -244,7 +247,7 @@ void TricycleDrive::ComputeJoints() {
   b2Vec2 rear_right_anchor = get_anchor(rear_right_wj_);
 
   // the front wheel must be at (0,0) of the body
-  if (fabs(front_anchor.x) > 1e-5 || fabs(front_anchor.y) > 1e-5) {
+  if (std::fabs(front_anchor.x) > 1e-5 || std::fabs(front_anchor.y) > 1e-5) {
     throw YAMLException(
         "Front wheel joint must have its body anchored at (0, 0)");
   }
@@ -266,7 +269,7 @@ void TricycleDrive::ComputeJoints() {
   double y4 = y3 + k * (x2 - x1);
 
   // check (x4, y4) equals to rear_center_
-  if (fabs(x4 - rear_center_.x) > 1e-5 || fabs(y4 - rear_center_.y) > 1e-5) {
+  if (std::fabs(x4 - rear_center_.x) > 1e-5 || std::fabs(y4 - rear_center_.y) > 1e-5) {
     throw YAMLException(
         "The mid point between the rear wheel anchors on the body must equal "
         "the perpendicular intersection between the rear axel (line segment "
@@ -300,8 +303,9 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     ground_truth_msg_.pose.pose.position.x = position.x;
     ground_truth_msg_.pose.pose.position.y = position.y;
     ground_truth_msg_.pose.pose.position.z = 0;
-    ground_truth_msg_.pose.pose.orientation =
-        tf::createQuaternionMsgFromYaw(angle);
+    tf2::Quaternion q;
+    q.setRPY(0, 0, angle);
+    ground_truth_msg_.pose.pose.orientation= tf2::toMsg(q);
     ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
     ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
     ground_truth_msg_.twist.twist.linear.z = 0;
@@ -315,19 +319,19 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_msg_.twist.twist = ground_truth_msg_.twist.twist;
     odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
     odom_msg_.pose.pose.position.y += noise_gen_[1](rng_);
-    odom_msg_.pose.pose.orientation =
-        tf::createQuaternionMsgFromYaw(angle + noise_gen_[2](rng_));
+    q.setRPY(0, 0, angle + noise_gen_[2](rng_));
+    odom_msg_.pose.pose.orientation= tf2::toMsg(q);
     odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
     odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
     odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
 
-    ground_truth_pub_.publish(ground_truth_msg_);
-    odom_pub_.publish(odom_msg_);
+    ground_truth_pub_->publish(ground_truth_msg_);
+    odom_pub_->publish(odom_msg_);
   }
 
   // twist message contains the speed and angle of the front wheel
-  double v_f = twist_msg_.linear.x;            // velocity at front wheel
-  target_wheel_angle_ = twist_msg_.angular.z;  // front wheel steering angle
+  double v_f = twist_msg_->linear.x;            // velocity at front wheel
+  target_wheel_angle_ = twist_msg_->angular.z;  // front wheel steering angle
   double theta = angle;                        // angle of the robot
 
   if (max_angular_velocity_ == 0.0) {  // Infinite angular velocity
@@ -382,7 +386,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   b2body->SetAngularVelocity(w);
 }
 
-void TricycleDrive::TwistCallback(const geometry_msgs::Twist& msg) {
+void TricycleDrive::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
   twist_msg_ = msg;
 }
 }

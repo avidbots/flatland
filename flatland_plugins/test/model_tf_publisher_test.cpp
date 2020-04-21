@@ -49,9 +49,9 @@
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
-#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <gtest/gtest.h>
-#include <tf/transform_datatypes.h>
+#include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_listener.h>
 #include <regex>
 
@@ -85,14 +85,14 @@ class ModelTfPublisherTest : public ::testing::Test {
       return true;
     }
 
-    bool ret = fabs(n1 - n2) < 1e-5;
+    bool ret = std::fabs(n1 - n2) < 1e-5;
     return ret;
   }
 
   // Test if transform equals to expected
-  bool TfEq(const geometry_msgs::TransformStamped& tf, float x, float y,
+  bool TfEq(const geometry_msgs::msg::TransformStamped& tf, float x, float y,
             float a) {
-    tf::Quaternion q;
+    tf2::Quaternion q;
     tf::quaternionMsgToTF(tf.transform.rotation, q);
     tf::Matrix3x3 rot_matrix(q);
     double roll, pitch, yaw;
@@ -134,12 +134,12 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
 
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
-  geometry_msgs::TransformStamped tf_world_to_base;
-  geometry_msgs::TransformStamped tf_world_to_antenna;
-  geometry_msgs::TransformStamped tf_base_to_left_wheel;
-  geometry_msgs::TransformStamped tf_base_to_right_wheel;
-  geometry_msgs::TransformStamped tf_base_to_front_bumper;
-  geometry_msgs::TransformStamped tf_base_to_rear_bumper;
+  geometry_msgs::msg::TransformStamped tf_world_to_base;
+  geometry_msgs::msg::TransformStamped tf_world_to_antenna;
+  geometry_msgs::msg::TransformStamped tf_base_to_left_wheel;
+  geometry_msgs::msg::TransformStamped tf_base_to_right_wheel;
+  geometry_msgs::msg::TransformStamped tf_base_to_front_bumper;
+  geometry_msgs::msg::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
   ros::WallRate rate(500);
@@ -151,18 +151,18 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
 
   // check for the transformations that should exist
   tf_world_to_base =
-      tf_buffer.lookupTransform("world", "my_robot_base", ros::Time(0));
+      tf_buffer.lookupTransform("world", "my_robot_base", rclcpp::Time(0));
   tf_world_to_antenna =
-      tf_buffer.lookupTransform("world", "my_robot_antenna", ros::Time(0));
+      tf_buffer.lookupTransform("world", "my_robot_antenna", rclcpp::Time(0));
   tf_base_to_left_wheel = tf_buffer.lookupTransform(
-      "my_robot_base", "my_robot_left_wheel", ros::Time(0));
+      "my_robot_base", "my_robot_left_wheel", rclcpp::Time(0));
   tf_base_to_right_wheel = tf_buffer.lookupTransform(
-      "my_robot_base", "my_robot_right_wheel", ros::Time(0));
+      "my_robot_base", "my_robot_right_wheel", rclcpp::Time(0));
 
   // check for the transformations that should not exist
   try {
     tf_base_to_front_bumper = tf_buffer.lookupTransform(
-        "my_robot_base", "my_robot_front_bumper", ros::Time(0));
+        "my_robot_base", "my_robot_front_bumper", rclcpp::Time(0));
     ADD_FAILURE() << "Expected an exception, but none were raised";
   } catch (const tf2::TransformException& e) {
     EXPECT_STREQ(
@@ -173,7 +173,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
 
   try {
     tf_base_to_rear_bumper = tf_buffer.lookupTransform(
-        "my_robot_base", "my_robot_rear_bumper", ros::Time(0));
+        "my_robot_base", "my_robot_rear_bumper", rclcpp::Time(0));
     ADD_FAILURE() << "Expected an exception, but none were raised";
   } catch (const tf2::TransformException& e) {
     EXPECT_STREQ(
@@ -208,12 +208,12 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
 
   tf2_ros::Buffer tf_buffer;
   tf2_ros::TransformListener tf_listener(tf_buffer);
-  geometry_msgs::TransformStamped tf_map_to_base;
-  geometry_msgs::TransformStamped tf_base_to_antenna;
-  geometry_msgs::TransformStamped tf_base_to_left_wheel;
-  geometry_msgs::TransformStamped tf_base_to_right_wheel;
-  geometry_msgs::TransformStamped tf_base_to_front_bumper;
-  geometry_msgs::TransformStamped tf_base_to_rear_bumper;
+  geometry_msgs::msg::TransformStamped tf_map_to_base;
+  geometry_msgs::msg::TransformStamped tf_base_to_antenna;
+  geometry_msgs::msg::TransformStamped tf_base_to_left_wheel;
+  geometry_msgs::msg::TransformStamped tf_base_to_right_wheel;
+  geometry_msgs::msg::TransformStamped tf_base_to_front_bumper;
+  geometry_msgs::msg::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
   ros::WallRate rate(500);
@@ -224,18 +224,18 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   }
 
   tf_base_to_antenna =
-      tf_buffer.lookupTransform("base", "antenna", ros::Time(0));
+      tf_buffer.lookupTransform("base", "antenna", rclcpp::Time(0));
   tf_base_to_left_wheel =
-      tf_buffer.lookupTransform("base", "left_wheel", ros::Time(0));
+      tf_buffer.lookupTransform("base", "left_wheel", rclcpp::Time(0));
   tf_base_to_right_wheel =
-      tf_buffer.lookupTransform("base", "right_wheel", ros::Time(0));
+      tf_buffer.lookupTransform("base", "right_wheel", rclcpp::Time(0));
   tf_base_to_front_bumper =
-      tf_buffer.lookupTransform("base", "front_bumper", ros::Time(0));
+      tf_buffer.lookupTransform("base", "front_bumper", rclcpp::Time(0));
   tf_base_to_rear_bumper =
-      tf_buffer.lookupTransform("base", "rear_bumper", ros::Time(0));
+      tf_buffer.lookupTransform("base", "rear_bumper", rclcpp::Time(0));
 
   try {
-    tf_map_to_base = tf_buffer.lookupTransform("map", "base", ros::Time(0));
+    tf_map_to_base = tf_buffer.lookupTransform("map", "base", rclcpp::Time(0));
     ADD_FAILURE() << "Expected an exception, but none were raised";
   } catch (const tf2::TransformException& e) {
     EXPECT_STREQ(
