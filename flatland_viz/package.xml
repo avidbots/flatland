@@ -11,7 +11,7 @@
   <author>Chunshang Li</author>
   <author>Mike Brousseau</author>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>cmake_modules</build_depend>
 
