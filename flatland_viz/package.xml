@@ -13,8 +13,6 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>cmake_modules</build_depend>
-
   <depend>qtbase5-dev</depend>
   <depend>libqt5-core</depend>
   <depend>libqt5-gui</depend>
