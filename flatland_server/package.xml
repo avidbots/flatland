@@ -29,6 +29,9 @@
   <depend>flatland_msgs</depend>
   <depend>lua-dev</depend>
   <depend>box2d-dev</depend>
+  <depend>libboost-date-time-dev</depend>
+  <depend>libboost-filesystem-dev</depend>
+  <depend>libboost-dev</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

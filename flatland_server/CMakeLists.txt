@@ -40,7 +40,7 @@ find_package(OpenCV REQUIRED)
 find_package(Box2D REQUIRED)
 
 # Boost
-find_package(Boost REQUIRED COMPONENTS date_time system thread filesystem)
+find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 find_package(Threads)
 
 ##############
