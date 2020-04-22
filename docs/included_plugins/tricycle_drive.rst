@@ -33,8 +33,12 @@ and axel track from the robot.
   rear left wheel to the rear right wheel) bisects the rear axel
 * The x velocity and angle given are physically feasible, no additional checks
   are applied, and the bicycle model is used directly
-* Kinematic limits can be specified for the steering angle, angular velocity,
-  and angular acceleration
+* Kinematic limits can be specified for the steering angle, steering angular
+  velocity, and steering angular acceleration, to model the tricycle model's
+  front wheel steering response to commanded steering angle changes.
+  This does not fully account for lag in the steering response, but provides a
+  slightly more realistic acceleration- and velocity-bounded steering response.
+  A future update will introduce the steering lag model to the tricycle plugin.
 
 The plugin also sets the angle of the front wheel for visualization purposes, it
 has no effect on the actual motion of the robot.
@@ -113,14 +117,17 @@ has no effect on the actual motion of the robot.
                              0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0]
 
-      # optional, defaults to 0.0
-      # sets the steering angular limit
+      # optional, defaults to 0.0 which means no limit
+      # sets the steering angular limit of the front wheel (absolute, rad)
+      # the steering angle will not exceed this absolute limit
       max_steer_angle: 0.0
 
-      # optional, defaults to 0.0
-      # sets the steering angular velocity limit (absolute)
+      # optional, defaults to 0.0 which means no limit
+      # sets the steering angular velocity limit (absolute, rad/s)
+      # the steering angular velocity will not exceed this absolute limit
       max_angular_velocity: 0.0
 
-      # optional, defaults to 0.0
-      # sets the steering angular acceleration limit (absolute)
+      # optional, defaults to 0.0 which means no limit
+      # sets the steering angular acceleration limit (absolute, rad/s^2)
+      # the steering angular acceleration will not exceed this absolute limit
       max_steer_acceleration: 0.0

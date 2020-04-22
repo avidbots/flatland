@@ -118,8 +118,6 @@ class TricycleDrive : public flatland_server::ModelPlugin {
    *            References:
    *            Some notation and ideas borrowed from
    *            http://ai.stanford.edu/~gabeh/papers/hoffmann_stanley_control07.pdf
-   *
-   * @param[in] config The plugin YAML node
    */
   void BeforePhysicsStep(const Timekeeper& timekeeper) override;
 
