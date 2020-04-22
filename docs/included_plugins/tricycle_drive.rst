@@ -18,7 +18,7 @@ This plugin provides features for a specific implementation of tricycle robots.
 
 The plugins makes several assumptions about the robot drive train, and uses
 these assumptions to extract required geometry parameters such as wheel base
-and axel track from the robot.
+and axle track from the robot.
 
 * Twist yaw rate is the angle of the front wheel
 * Twist x velocity is the velocity at the front wheel
@@ -29,10 +29,10 @@ and axel track from the robot.
   point on the wheel is at the origin
 * The model has rear right wheel with a weld joint to the body, the anchor point
   on the wheel is at the origin
-* The perpendicular line from front wheel to rear axel (line segment from the
-  rear left wheel to the rear right wheel) bisects the rear axel
+* The perpendicular line from front wheel to rear axle (line segment from the
+  rear left wheel to the rear right wheel) bisects the rear axle
 * The x velocity and angle given are physically feasible, no additional checks
-  are applied, and the bicycle model is used directly
+  are applied, and the tricycle model is used directly
 * Kinematic limits can be specified for the steering angle, steering angular
   velocity, and steering angular acceleration, to model the tricycle model's
   front wheel steering response to commanded steering angle changes.
