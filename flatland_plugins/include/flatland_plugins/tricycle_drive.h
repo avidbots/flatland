@@ -70,10 +70,13 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double axel_track_;     ///< normal distrance between the rear two wheels
   double wheelbase_;      ///< distance between the front and rear wheel
   b2Vec2 rear_center_;    ///< middle point between the two rear wheels
-  bool invert_steering_angle_;   ///< whether to invert steering angle
-  double max_angular_velocity_;  ///< The max angular velocity
-  double target_wheel_angle_;    ///< The current target wheel angle
-  double theta_f_;  ///< The current angular offset of the front wheel
+  bool invert_steering_angle_;     ///< whether to invert steering angle
+  double max_steer_angle_;         ///< max abs. steering allowed [rad]
+  double max_steer_velocity_;      ///< max abs. steering velocity [rad/s]
+  double max_steer_acceleration_;  ///< max abs. steering acceleration [rad/s^2]
+  double delta_command_;  ///< The current target (commanded) wheel angle
+  double delta_;          ///< The current angular offset of the front wheel
+  double d_delta_;        ///< The current angular speed of the front wheel
 
   geometry_msgs::msg::Twist::SharedPtr twist_msg_;
   nav_msgs::msg::Odometry odom_msg_;
@@ -101,10 +104,22 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   void ComputeJoints();
 
   /**
-  * @name          BeforePhysicsStep
-  * @brief         override the BeforePhysicsStep method
-  * @param[in]     config The plugin YAML node
-  */
+   * @brief     Updates the vehicle state given the twist command;
+   *            overrides the BeforePhysicsStep method
+   * @details   Uses a 2nd-order approximation of the steering & drive systems.
+   *            Does not account for dynamics such as:
+   *            - Motor winding current/rpm/torque behaviour
+   *            - Other motor PID controllers in the loop
+   *            - Communication delays
+   *            - Any mechanical lag in the drive mechanism (chains, inertia)
+   *            - Measurement dynamics other than Gaussian noise
+   *            A separate plugin which subscribes to different messages
+   *            could be used for more accurate modelling.
+   *
+   *            References:
+   *            Some notation and ideas borrowed from
+   *            http://ai.stanford.edu/~gabeh/papers/hoffmann_stanley_control07.pdf
+   */
   void BeforePhysicsStep(const Timekeeper& timekeeper) override;
 
   /**
@@ -113,6 +128,15 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   * @param[in]     timestep how much the physics time will increment
   */
   void TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+
+  /**
+   * @brief     Saturates the input between the lower and upper limits
+   * @param[in] in: value to saturate
+   * @param[in] lower: lower limit of saturation bound
+   * @param[in] upper: upper limit of saturation bound
+   * @return    input value capped between lower and upper
+   */
+  double Saturate(double in, double lower, double upper);
 };
 }
 

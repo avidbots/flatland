@@ -6,3 +6,5 @@ docs/_build/*
 docs/_templates/*
 .vscode/*
 */.vscode
+.history
+*/.history

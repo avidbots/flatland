@@ -98,6 +98,6 @@ class DiffDrive : public flatland_server::ModelPlugin {
    */
   void TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
 };
-};
+}
 
 #endif
