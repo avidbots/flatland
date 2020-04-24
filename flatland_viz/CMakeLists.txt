@@ -143,6 +143,6 @@ install(FILES
 ## Testing ##
 #############
 
-if(CATKIN_ENABLE_TESTING)
+if(BUILD_TESTING )
 
 endif()

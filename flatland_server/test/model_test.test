@@ -1,9 +1,0 @@
-<!--
-Test launchfile for model_test
-
-This file is used so that rosmaster is running when the test is executed,
-in order to test publish/subscribe
--->
-<launch>
-  <test pkg="flatland_server" type="model_test" test-name="model_test"/>
-</launch>

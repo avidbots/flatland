@@ -124,7 +124,7 @@ install(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 if(FALSE) # fake a block comment
-if(CATKIN_ENABLE_TESTING)
+if(BUILD_TESTING )
 
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)

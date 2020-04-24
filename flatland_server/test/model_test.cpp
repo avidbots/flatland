@@ -52,14 +52,15 @@
 
 // Test the NameSpaceTF method
 TEST(TestSuite, testNameSpaceTF) {
-  flatland_server::Model has_ns(nullptr, nullptr, std::string("foo"),
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("testNameSpaceTF_node");
+  flatland_server::Model has_ns(node, nullptr, nullptr, std::string("foo"),
                                 std::string("has_ns"));
   // namespace "foo" onto tf "bar" => foo_bar
   EXPECT_EQ(has_ns.NameSpaceTF("bar"), "foo_bar");
   // namespace "foo" onto tf "/bar" => bar
   EXPECT_EQ(has_ns.NameSpaceTF("/bar"), "bar");
 
-  flatland_server::Model no_ns(nullptr, nullptr, std::string(""),
+  flatland_server::Model no_ns(node, nullptr, nullptr, std::string(""),
                                std::string("no_ns"));
   // namespace "" onto tf "bar" => bar
   EXPECT_EQ(no_ns.NameSpaceTF("bar"), "bar");
@@ -69,14 +70,15 @@ TEST(TestSuite, testNameSpaceTF) {
 
 // Test the NameSpaceTopic method
 TEST(TestSuite, testNameSpaceTopic) {
-  flatland_server::Model has_ns(nullptr, nullptr, std::string("foo"),
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("testNameSpaceTopic_node");
+  flatland_server::Model has_ns(node, nullptr, nullptr, std::string("foo"),
                                 std::string("has_ns"));
   // namespace "foo" onto tf "bar" => foo_bar
   EXPECT_EQ(has_ns.NameSpaceTopic("bar"), "foo/bar");
   // namespace "foo" onto tf "/bar" => bar
   EXPECT_EQ(has_ns.NameSpaceTopic("/bar"), "bar");
 
-  flatland_server::Model no_ns(nullptr, nullptr, std::string(""),
+  flatland_server::Model no_ns(node, nullptr, nullptr, std::string(""),
                                std::string("no_ns"));
   // namespace "" onto tf "bar" => bar
   EXPECT_EQ(no_ns.NameSpaceTopic("bar"), "bar");
@@ -86,7 +88,7 @@ TEST(TestSuite, testNameSpaceTopic) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "model_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

@@ -33,6 +33,9 @@
   <depend>libboost-filesystem-dev</depend>
   <depend>libboost-dev</depend>
 
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

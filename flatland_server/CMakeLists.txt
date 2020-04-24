@@ -128,65 +128,27 @@ ament_export_interfaces(export_flatland_lib HAS_LIBRARY_TARGET)
 ament_export_libraries(flatland_lib)
 ament_export_dependencies(rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
 ament_export_include_directories(include)
-ament_package()
 
-#############
-## Install ##
-#############
-
-pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
-
-install(
-  TARGETS flatland_lib
-  EXPORT export_flatland_lib
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)
-
-# Mark executables and/or libraries for installation
-install(TARGETS flatland_server
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-# Mark cpp header files for installation
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
-
-# Install launchfiles
-install(DIRECTORY launch
-    DESTINATION share/${PROJECT_NAME}/
-)
-
-install(DIRECTORY test/conestogo_office_test
-    DESTINATION share/${PROJECT_NAME}/test
-)
-
-# TODO
-# Install plugins file
-#install(FILES flatland_plugins.xml
-#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#)
 
 #############
 ## Testing ##
 #############
-if(FALSE) # fake a block comment
-if(CATKIN_ENABLE_TESTING)
 
-  catkin_add_gtest(null_test test/null.cpp)
+if(BUILD_TESTING)
+
+  # Include linting tests
+  find_package(ament_lint_auto REQUIRED)
+  ament_lint_auto_find_test_dependencies()
+
+  ament_add_gtest(${PROJECT_NAME}_null_test test/null.cpp)
   
-  add_rostest_gtest(load_world_test
-    test/load_world_test.test
-    test/load_world_test.cpp)
-  target_link_libraries(load_world_test
-    flatland_lib)
+  ament_add_gtest(load_world_test test/load_world_test.cpp)
+  target_link_libraries(load_world_test flatland_lib)
 
-  add_rostest_gtest(model_test test/model_test.test test/model_test.cpp)
+  ament_add_gtest(model_test test/model_test.cpp)
   target_link_libraries(model_test flatland_lib)
+
+if(FALSE) # fake a block comment
 
   catkin_add_gtest(geometry_test test/geometry_test.cpp)
   target_link_libraries(geometry_test
@@ -237,3 +199,47 @@ if(CATKIN_ENABLE_TESTING)
 
 endif()
 endif()
+
+
+ament_package()
+
+#############
+## Install ##
+#############
+
+pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
+
+install(
+  TARGETS flatland_lib
+  EXPORT export_flatland_lib
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# Mark executables and/or libraries for installation
+install(TARGETS flatland_server
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+# Mark cpp header files for installation
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+# Install launchfiles
+install(DIRECTORY launch
+    DESTINATION share/${PROJECT_NAME}/
+)
+
+install(DIRECTORY test/conestogo_office_test
+    DESTINATION share/${PROJECT_NAME}/test
+)
+
+# TODO
+# Install plugins file
+#install(FILES flatland_plugins.xml
+#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+#)
