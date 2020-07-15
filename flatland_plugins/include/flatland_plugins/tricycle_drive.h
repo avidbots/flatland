@@ -74,7 +74,7 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double max_steer_velocity_;      ///< max abs. steering velocity [rad/s]
   double max_steer_acceleration_;  ///< max abs. steering acceleration [rad/s^2]
   double delta_command_;  ///< The current target (commanded) wheel angle
-  double delta_;          ///< The current angular offset of the front wheel
+  double theta_f_;        ///< The current angular offset of the front wheel
   double d_delta_;        ///< The current angular speed of the front wheel
 
   geometry_msgs::Twist twist_msg_;

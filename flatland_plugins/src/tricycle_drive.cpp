@@ -104,7 +104,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   max_steer_velocity_ = r.Get<double>("max_angular_velocity", 0.0);
   max_steer_acceleration_ = r.Get<double>("max_steer_acceleration", 0.0);
   delta_command_ = 0.0;
-  delta_ = 0.0;
+  theta_f_ = 0.0;
   d_delta_ = 0.0;
 
   r.EnsureAccessedAllKeys();
@@ -363,10 +363,10 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   double d_delta_command = 0.0;
   double delta_max_one_step = d_delta_ * d_delta_ / 2 / max_steer_acceleration_;
   if (max_steer_acceleration_ == 0.0) {
-    delta_max_one_step = fabs(delta_command_ - delta_);
+    delta_max_one_step = fabs(delta_command_ - theta_f_);
   }
-  if (fabs(delta_command_ - delta_) >= delta_max_one_step) {
-    d_delta_command = (delta_command_ - delta_) / dt;
+  if (fabs(delta_command_ - theta_f_) >= delta_max_one_step) {
+    d_delta_command = (delta_command_ - theta_f_) / dt;
   }
   if (max_steer_velocity_ != 0.0) {
     // Saturating the command also saturates the steering velocity
@@ -385,9 +385,9 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   d_delta_ += d2_delta * dt;
 
   // (1) Update the new steering angle
-  delta_ += d_delta_ * dt;
+  theta_f_ += d_delta_ * dt;
   if (max_steer_angle_ != 0.0) {
-    delta_ = Saturate(delta_, -max_steer_angle_, max_steer_angle_);
+    theta_f_ = Saturate(theta_f_, -max_steer_angle_, max_steer_angle_);
   }
 
   ROS_DEBUG_THROTTLE(0.5,
@@ -402,17 +402,17 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
       dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
   j->EnableLimit(true);
   if (invert_steering_angle_) {
-    j->SetLimits(-delta_, -delta_);
+    j->SetLimits(-theta_f_, -theta_f_);
   } else {
-    j->SetLimits(delta_, delta_);
+    j->SetLimits(theta_f_, theta_f_);
   }
 
   // calculate the desired velocity using the bicycle model in the world frame
   // looking at the rear center, formulas obtained from avidbots robot systems
   // confluence page
-  double v_x = v_f * cos(delta_) * cos(theta);  // x velocity in world
-  double v_y = v_f * cos(delta_) * sin(theta);  // y velocity in world
-  double w = v_f * sin(delta_) / wheelbase_;    // angular velocity
+  double v_x = v_f * cos(theta_f_) * cos(theta);  // x velocity in world
+  double v_y = v_f * cos(theta_f_) * sin(theta);  // y velocity in world
+  double w = v_f * sin(theta_f_) / wheelbase_;    // angular velocity
 
   // Now we would like the rear center to move at v_x, v_y, and w, since Box2D
   // applies velocities at center of mass, we must use rigid body kinematics
