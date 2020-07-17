@@ -58,11 +58,11 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
-#ifndef CV_LOAD_IMAGE_GRAYSCALE
+#ifndef CV_MAJOR_VERSION < 3
+#define GREYSCALE CV_LOAD_IMAGE_GRAYSCALE
+#else
 #include <opencv2/imgcodecs.hpp>
 #define GREYSCALE cv::ImreadModes::IMREAD_GRAYSCALE
-#else
-#define GREYSCALE CV_LOAD_IMAGE_GRAYSCALE
 #endif
 #include <sstream>
 
