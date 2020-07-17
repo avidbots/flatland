@@ -60,7 +60,9 @@
 #include <opencv2/opencv.hpp>
 #ifndef CV_LOAD_IMAGE_GRAYSCALE
 #include <opencv2/imgcodecs.hpp>
-#define CV_LOAD_IMAGE_GRAYSCALE cv::ImreadModes::IMREAD_GRAYSCALE
+#define GREYSCALE cv::ImreadModes::IMREAD_GRAYSCALE
+#else
+#define GREYSCALE CV_LOAD_IMAGE_GRAYSCALE
 #endif
 #include <sstream>
 
@@ -166,7 +168,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
       ROS_INFO_NAMED("Layer", "layer \"%s\" loading image from path=\"%s\"",
                      names[0].c_str(), image_path.string().c_str());
 
-      cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+      cv::Mat map = cv::imread(image_path.string(), GREYSCALE);
       if (map.empty()) {
         throw YAMLException("Failed to load " + Q(image_path.string()) +
                             " in layer " + Q(names[0]));
