@@ -58,6 +58,12 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/opencv.hpp>
+#if CV_MAJOR_VERSION < 3
+#define GREYSCALE CV_LOAD_IMAGE_GRAYSCALE
+#else
+#include <opencv2/imgcodecs.hpp>
+#define GREYSCALE cv::ImreadModes::IMREAD_GRAYSCALE
+#endif
 #include <sstream>
 
 namespace flatland_server {
@@ -162,7 +168,7 @@ Layer *Layer::MakeLayer(b2World *physics_world, CollisionFilterRegistry *cfr,
       ROS_INFO_NAMED("Layer", "layer \"%s\" loading image from path=\"%s\"",
                      names[0].c_str(), image_path.string().c_str());
 
-      cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+      cv::Mat map = cv::imread(image_path.string(), GREYSCALE);
       if (map.empty()) {
         throw YAMLException("Failed to load " + Q(image_path.string()) +
                             " in layer " + Q(names[0]));
