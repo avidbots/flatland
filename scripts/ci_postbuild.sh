@@ -4,6 +4,7 @@
 cd ~/target_ws
 
 # run static analyzer
+source /opt/ros/*/setup.bash
 catkin clean -y
 catkin build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
