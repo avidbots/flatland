@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>flatland_viz</name>
-  <version>1.1.1</version>
+  <version>1.1.3</version>
   <description>The flatland gui and visualization</description>
   <license>BSD</license>
   <url type="website">https://bitbucket.org/avidbots/flatland</url>
