@@ -69,7 +69,7 @@ void SigintHandler(int sig) {
 
 int main(int argc, char** argv) {
   if (!ros::isInitialized()) {
-    ros::init(argc, argv, "flatland_viz", ros::init_options::NoSigintHandler);
+    rclcpp::init(argc, argv);
   }
 
   QApplication app(argc, argv);

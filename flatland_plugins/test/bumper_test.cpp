@@ -187,7 +187,8 @@ TEST_F(BumperPluginTest, collision_test) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.01);
-  w = World::MakeWorld(world_yaml.string());
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -287,7 +288,8 @@ TEST_F(BumperPluginTest, invalid_A) {
   world_yaml = this_file_dir / fs::path("bumper_tests/invalid_A/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
@@ -305,7 +307,7 @@ TEST_F(BumperPluginTest, invalid_A) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "bumper_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

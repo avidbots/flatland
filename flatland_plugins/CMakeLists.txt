@@ -93,7 +93,7 @@ ament_package()
 ## Install ##
 #############
 
-pluginlib_export_plugin_description_file(flatland_plugins_lib plugin_description.xml)
+pluginlib_export_plugin_description_file(flatland_server plugin_description.xml)
 
 install(
   TARGETS flatland_plugins_lib
