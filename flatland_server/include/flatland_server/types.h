@@ -95,7 +95,7 @@ struct Pose {
   Pose(const std::array<double, 3> &p) {
     this->x = p[0];
     this->y = p[1];
-    this->theta = p[3];
+    this->theta = p[2];
   }
 
   Pose() : x(0), y(0), theta(0) {}

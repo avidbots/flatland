@@ -100,13 +100,21 @@ World::~World() {
 
 void World::Update(Timekeeper &timekeeper) {
   if (!IsPaused()) {
+    START_PROFILE(timekeeper, "Before Physics Step");
     plugin_manager_.BeforePhysicsStep(timekeeper);
+    END_PROFILE(timekeeper, "Before Physics Step");
+
+    START_PROFILE(timekeeper, "Physics Step");
     physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
                          physics_position_iterations_);
+    END_PROFILE(timekeeper, "Physics Step");
+
     timekeeper.StepTime();
+
+    START_PROFILE(timekeeper, "After Physics Step");
     plugin_manager_.AfterPhysicsStep(timekeeper);
+    END_PROFILE(timekeeper, "After Physics Step");
   }
-  int_marker_manager_.update();
 }
 
 void World::BeginContact(b2Contact *contact) {
@@ -125,9 +133,15 @@ void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   plugin_manager_.PostSolve(contact, impulse);
 }
 
-World *World::MakeWorld(const std::string &yaml_path) {
-  YamlReader world_reader = YamlReader(yaml_path);
-  YamlReader prop_reader = world_reader.Subnode("properties", YamlReader::MAP);
+World *World::MakeWorld(const std::string &yaml_path,
+                        const std::string &models_path,
+                        const std::string &world_plugins_path) {
+  YamlReader world_settings_reader = YamlReader(world_plugins_path);
+  YamlReader prop_reader =
+      world_settings_reader.Subnode("properties", YamlReader::MAP);
+  YamlReader world_plugin_reader =
+      world_settings_reader.SubnodeOpt("plugins", YamlReader::LIST);
+
   int v = prop_reader.Get<int>("velocity_iterations", 10);
   int p = prop_reader.Get<int>("position_iterations", 10);
   prop_reader.EnsureAccessedAllKeys();
@@ -137,17 +151,14 @@ World *World::MakeWorld(const std::string &yaml_path) {
   w->world_yaml_dir_ = boost::filesystem::path(yaml_path).parent_path();
   w->physics_velocity_iterations_ = v;
   w->physics_position_iterations_ = p;
+  w->models_path_ = models_path;
+  w->yaml_path_ = yaml_path;
 
   try {
-    YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
-    YamlReader models_reader =
-        world_reader.SubnodeOpt("models", YamlReader::LIST);
-    YamlReader world_plugin_reader =
-        world_reader.SubnodeOpt("plugins", YamlReader::LIST);
-    world_reader.EnsureAccessedAllKeys();
-    w->LoadLayers(layers_reader);
-    w->LoadModels(models_reader);
-    w->LoadWorldPlugins(world_plugin_reader, w, world_reader);
+    w->LoadWorldPlugins(world_plugin_reader, w, world_settings_reader);
+
+    world_settings_reader.EnsureAccessedAllKeys();
+
   } catch (const YAMLException &e) {
     ROS_FATAL_NAMED("World", "Error loading from YAML");
     delete w;
@@ -164,7 +175,35 @@ World *World::MakeWorld(const std::string &yaml_path) {
   return w;
 }
 
+void World::LoadWorldEntities() {
+  try {
+    YamlReader map_info_reader = YamlReader(yaml_path_);
+    YamlReader layers_reader =
+        map_info_reader.Subnode("layers", YamlReader::LIST);
+    YamlReader models_reader =
+        map_info_reader.SubnodeOpt("models", YamlReader::LIST);
+
+    this->LoadLayers(layers_reader);
+    this->LoadModels(models_reader);
+
+  } catch (const YAMLException &e) {
+    ROS_WARN_STREAM_DELAYED_THROTTLE_NAMED(1, "World", yaml_path_
+                                                           << "not loaded yet");
+    throw e;
+  } catch (const PluginException &e) {
+    ROS_FATAL_NAMED("World", "Error loading plugins");
+    throw e;
+  } catch (const Exception &e) {
+    ROS_FATAL_NAMED("World", "Error loading world");
+    throw e;
+  }
+}
+
 void World::LoadLayers(YamlReader &layers_reader) {
+  layers_name_map_.clear();
+  layers_.clear();
+  cfr_.ClearAllLayers();
+
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
     YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
@@ -220,13 +259,29 @@ void World::LoadModels(YamlReader &models_reader) {
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
       YamlReader reader = models_reader.Subnode(i, YamlReader::MAP);
+      std::string name = reader.Get<std::string>("name");
+      models_.erase(
+          std::remove_if(models_.begin(), models_.end(),
+                         [&name](const Model *m) { return m->name_ == name; }),
+          models_.end());
+    }
+
+    for (int i = 0; i < models_reader.NodeSize(); i++) {
+      YamlReader reader = models_reader.Subnode(i, YamlReader::MAP);
 
       std::string name = reader.Get<std::string>("name");
       std::string ns = reader.Get<std::string>("namespace", "");
       Pose pose = reader.GetPose("pose", Pose(0, 0, 0));
       std::string path = reader.Get<std::string>("model");
       reader.EnsureAccessedAllKeys();
-      LoadModel(path, ns, name, pose);
+
+      if (std::find_if(models_.begin(), models_.end(), [&name](const Model *m) {
+            return m->name_ == name;
+          }) != models_.end()) {
+        throw YAMLException("Model with name " + Q(name) + " already exists");
+      }
+
+      LoadModel(models_path_ + "/" + path, ns, name, pose);
     }
   }
 }
@@ -243,10 +298,12 @@ void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
 }
 void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
                       const std::string &name, const Pose &pose) {
-  // ensure no duplicate model names
-  if (std::count_if(models_.begin(), models_.end(),
-                    [&](Model *m) { return m->name_ == name; }) >= 1) {
-    throw YAMLException("Model with name " + Q(name) + " already exists");
+  // If the model is already loaded, move the model instead
+  if (std::find_if(models_.begin(), models_.end(), [&name](const Model *m) {
+        return m->name_ == name;
+      }) != models_.end()) {
+    MoveModel(name, pose);
+    return;
   }
 
   boost::filesystem::path abs_path(model_yaml_path);
@@ -257,8 +314,8 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   ROS_INFO_NAMED("World", "Loading model from path=\"%s\"",
                  abs_path.string().c_str());
 
-  Model *m =
-      Model::MakeModel(physics_world_, &cfr_, abs_path.string(), ns, name);
+  Model *m = Model::MakeModel(this, physics_world_, &cfr_, abs_path.string(),
+                              ns, name);
   m->TransformAll(pose);
 
   try {
@@ -281,7 +338,9 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   visualization_msgs::MarkerArray body_markers;
   for (size_t i = 0; i < m->bodies_.size(); i++) {
     DebugVisualization::Get().BodyToMarkers(
-        body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
+        body_markers, m->bodies_[i]->physics_body_, m->bodies_[i]->color_.r,
+        m->bodies_[i]->color_.g, m->bodies_[i]->color_.b,
+        m->bodies_[i]->color_.a);
   }
   int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
 
@@ -309,6 +368,17 @@ void World::DeleteModel(const std::string &name) {
     throw Exception("Flatland World: failed to delete model, model with name " +
                     Q(name) + " does not exist");
   }
+}
+
+const Model *World::GetModel(const std::string &name) {
+  for (const auto &model : models_) {
+    if (model->GetName() == name) {
+      return model;
+    }
+  }
+
+  throw Exception("Flatland World: failed to find model, model with name " +
+                  Q(name) + " does not exist");
 }
 
 void World::MoveModel(const std::string &name, const Pose &pose) {

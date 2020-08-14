@@ -1,5 +1,5 @@
-#ifndef INTERACTIVEMARKERMANAGER_H
-#define INTERACTIVEMARKERMANAGER_H
+#ifndef FLATLAND_SERVER_INTERACTIVE_MARKER_MANAGER_H
+#define FLATLAND_SERVER_INTERACTIVE_MARKER_MANAGER_H
 
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>

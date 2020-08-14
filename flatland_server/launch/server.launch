@@ -9,7 +9,8 @@
   <arg name="step_size" default="0.005"/>
   <arg name="show_viz" default="true"/>
   <arg name="viz_pub_rate" default="30.0"/>
-  <arg name="use_rviz" default="false"/>  
+  <arg name="use_rviz" default="false"/>
+  <arg name="use_local_map" default="true" />
 
   <env name="ROSCONSOLE_FORMAT" value="[${severity} ${time} ${logger}]: ${message}" />
 
@@ -23,7 +24,8 @@
     <param name="step_size" value="$(arg step_size)" />
     <param name="show_viz" value="$(arg show_viz)" />
     <param name="viz_pub_rate" value="$(arg viz_pub_rate)" />
-    
+    <param name="use_local_map" value="$(arg use_local_map)" />
+
   </node>
 
 <group if="$(arg show_viz)">

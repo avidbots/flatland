@@ -1,6 +1,3 @@
-properties: 
-  velocity_iterations: 11
-  position_iterations: 12
 layers:
   - name: "2d"
     map: "map.yaml"

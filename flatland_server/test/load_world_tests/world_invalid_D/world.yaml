@@ -1,4 +1,3 @@
-properties: {}
 layers:
   - name: "layer"
     map: "../simple_test_A/map.yaml"

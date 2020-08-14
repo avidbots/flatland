@@ -60,6 +60,7 @@ namespace flatland_server {
 
 // forward declaration
 class World;
+class ModelPlugin;
 
 class PluginManager {
  public:

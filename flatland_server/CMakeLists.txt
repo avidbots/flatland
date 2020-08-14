@@ -103,7 +103,7 @@ add_library(flatland_lib
   src/dummy_model_plugin.cpp 
   src/dummy_world_plugin.cpp
   src/yaml_preprocessor.cpp
-)
+  src/message_server.cpp)
 
 add_dependencies(flatland_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(flatland_lib

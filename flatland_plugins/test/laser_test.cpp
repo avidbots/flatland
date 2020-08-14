@@ -60,7 +60,7 @@ using namespace flatland_plugins;
 class LaserPluginTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  boost::filesystem::path world_yaml_path;
   sensor_msgs::LaserScan scan_front, scan_center, scan_back;
   World* w;
 
@@ -166,11 +166,14 @@ class LaserPluginTest : public ::testing::Test {
  * Test the laser plugin for a given model and plugin configuration
  */
 TEST_F(LaserPluginTest, range_test) {
-  world_yaml = this_file_dir / fs::path("laser_tests/range_test/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/range_test/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml");
+  w->LoadWorldEntities();
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -192,18 +195,18 @@ TEST_F(LaserPluginTest, range_test) {
   }
 
   // check scan returns
-  EXPECT_TRUE(ScanEq(scan_front, "r_laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
+  EXPECT_TRUE(ScanEq(scan_front, "laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
                      0.0, 0.0, 0.0, 5.0, {4.5, 4.4, 4.3}, {}));
   EXPECT_TRUE(fltcmp(p1->update_rate_, std::numeric_limits<float>::infinity()))
       << "Actual: " << p1->update_rate_;
   EXPECT_EQ(p1->body_, w->models_[0]->bodies_[0]);
 
-  EXPECT_TRUE(ScanEq(scan_center, "r_center_laser", 0, 2 * M_PI, M_PI / 2, 0.0,
+  EXPECT_TRUE(ScanEq(scan_center, "center_laser", 0, 2 * M_PI, M_PI / 2, 0.0,
                      0.0, 0.0, 5.0, {4.8, 4.7, 4.6, 4.9, 4.8}, {}));
   EXPECT_TRUE(fltcmp(p2->update_rate_, 5000)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p2->body_, w->models_[0]->bodies_[0]);
 
-  EXPECT_TRUE(ScanEq(scan_back, "r_laser_back", 0, 2 * M_PI, M_PI / 2, 0.0, 0.0,
+  EXPECT_TRUE(ScanEq(scan_back, "laser_back", 0, 2 * M_PI, M_PI / 2, 0.0, 0.0,
                      0.0, 4, {NAN, 3.2, 3.5, NAN, NAN}, {}));
   EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
@@ -212,12 +215,14 @@ TEST_F(LaserPluginTest, range_test) {
  * Test the laser plugin for intensity configuration
  */
 TEST_F(LaserPluginTest, intensity_test) {
-  world_yaml =
-      this_file_dir / fs::path("laser_tests/intensity_test/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/intensity_test/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml");
+  w->LoadWorldEntities();
 
   ros::NodeHandle nh;
   ros::Subscriber sub_1, sub_2, sub_3;
@@ -239,17 +244,17 @@ TEST_F(LaserPluginTest, intensity_test) {
   }
 
   // check scan returns
-  EXPECT_TRUE(ScanEq(scan_front, "r_laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
+  EXPECT_TRUE(ScanEq(scan_front, "laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
                      0.0, 0.0, 0.0, 5.0, {4.5, 4.4, 4.3}, {0, 0, 0}));
   EXPECT_TRUE(fltcmp(p1->update_rate_, std::numeric_limits<float>::infinity()))
       << "Actual: " << p1->update_rate_;
   EXPECT_EQ(p1->body_, w->models_[0]->bodies_[0]);
-  EXPECT_TRUE(ScanEq(scan_center, "r_center_laser", 0, 2 * M_PI, M_PI / 2, 0.0,
+  EXPECT_TRUE(ScanEq(scan_center, "center_laser", 0, 2 * M_PI, M_PI / 2, 0.0,
                      0.0, 0.0, 5.0, {4.8, 4.7, 4.6, 4.9, 4.8},
                      {0, 255, 0, 0, 0}));
   EXPECT_TRUE(fltcmp(p2->update_rate_, 5000)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p2->body_, w->models_[0]->bodies_[0]);
-  EXPECT_TRUE(ScanEq(scan_back, "r_laser_back", 0, 2 * M_PI, M_PI / 2, 0.0, 0.0,
+  EXPECT_TRUE(ScanEq(scan_back, "laser_back", 0, 2 * M_PI, M_PI / 2, 0.0, 0.0,
                      0.0, 4, {NAN, 3.2, 3.5, NAN, NAN}, {0, 0, 0, 0, 0}));
   EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
@@ -260,10 +265,13 @@ TEST_F(LaserPluginTest, intensity_test) {
  * configurations
  */
 TEST_F(LaserPluginTest, invalid_A) {
-  world_yaml = this_file_dir / fs::path("laser_tests/invalid_A/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/invalid_A/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml");
+    w->LoadWorldEntities();
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -285,10 +293,13 @@ TEST_F(LaserPluginTest, invalid_A) {
  * configurations
  */
 TEST_F(LaserPluginTest, invalid_B) {
-  world_yaml = this_file_dir / fs::path("laser_tests/invalid_B/world.yaml");
+  world_yaml_path = this_file_dir / fs::path("laser_tests/invalid_B/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml");
+    w->LoadWorldEntities();
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
