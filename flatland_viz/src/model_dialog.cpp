@@ -78,7 +78,7 @@ QString ModelDialog::SelectFile() {
 }
 
 ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
-  ROS_ERROR_STREAM("ModelDialog::ModelDialog");
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "ModelDialog::ModelDialog");
 
   path_to_model_file = SelectFile();
   QVBoxLayout *v_layout = new QVBoxLayout;
@@ -125,11 +125,11 @@ ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
   static bool first_time = true;
   QColor color;
   if (first_time) {
-    ROS_ERROR_STREAM("firstTime");
+    RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "firstTime");
     first_time = false;
     color = Qt::blue;
   } else {
-    ROS_ERROR_STREAM("anotherTime");
+    RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "anotherTime");
     color = saved_color_;
   }
 
@@ -175,13 +175,13 @@ ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
 }
 
 void ModelDialog::CancelButtonClicked() {
-  ROS_ERROR_STREAM("Cancel clicked");
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Cancel clicked");
   this->close();
 }
 
 void ModelDialog::OkButtonClicked() {
-  ROS_ERROR_STREAM("Ok clicked");
-  ROS_ERROR_STREAM("connect to ROS model service");
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Ok clicked");
+  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "connect to ROS model service");
 
   ModelDialog::SpawnModelClient();
 }
