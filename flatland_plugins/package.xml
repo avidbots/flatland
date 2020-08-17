@@ -28,6 +28,11 @@
   <depend>flatland_msgs</depend>
   <depend>flatland_server</depend>
   <depend>lua-dev</depend>
+  <depend>visualization_msgs</depend>
+  <depend>interactive_markers</depend>
+  <depend>libboost-date-time-dev</depend>
+  <depend>libboost-filesystem-dev</depend>
+  <depend>libboost-dev</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

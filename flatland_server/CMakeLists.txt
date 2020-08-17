@@ -25,6 +25,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(flatland_msgs REQUIRED)
@@ -90,7 +91,7 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
+ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers sensor_msgs)
 
 target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
@@ -124,9 +125,9 @@ target_link_libraries(flatland_server
 )
 
 
-ament_export_interfaces(flatland_lib HAS_LIBRARY_TARGET)
+ament_export_targets(flatland_lib HAS_LIBRARY_TARGET)
 ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_dependencies(rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs sensor_msgs)
 ament_export_include_directories(include)
 
 
@@ -195,9 +196,6 @@ if(FALSE) # fake a block comment
 endif()
 endif()
 
-
-ament_package()
-
 #############
 ## Install ##
 #############
@@ -233,6 +231,4 @@ install(DIRECTORY test/conestogo_office_test
     DESTINATION share/${PROJECT_NAME}/test
 )
 
-
-# Install plugins file
-pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
+ament_package()

@@ -45,11 +45,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreException.h>
-#include <OGRE/OgreMaterial.h>
-#include <OGRE/OgreSubEntity.h>
-
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -60,18 +55,20 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include <boost/filesystem.hpp>
+#include "flatland_viz/spawn_model_tool.h"
 
-#include <flatland_msgs/msg/SpawnModel.hpp>
+
+#include <OGRE/OgreEntity.h>
+//#include <OGRE/OgreException.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreSubEntity.h>
+
+#include <boost/filesystem.hpp>
 
 #include <flatland_server/types.h>
 
 #include <yaml-cpp/yaml.h>
 
-#include "flatland_viz/load_model_dialog.h"
-#include "flatland_viz/spawn_model_tool.h"
-// #include "load_model_dialog.h"
-// #include "spawn_model_tool.h"
 
 class DialogOptionsWidget;
 
@@ -81,7 +78,7 @@ QString SpawnModelTool::model_name;
 
 // Set the "shortcut_key_" member variable defined in the
 // superclass to declare which key will activate the tool.
-SpawnModelTool::SpawnModelTool() : moving_model_node_(NULL) {
+SpawnModelTool::SpawnModelTool() : moving_model_node_(nullptr) {
   shortcut_key_ = 'm';
 }
 
@@ -110,7 +107,7 @@ void SpawnModelTool::onInitialize() {
   model_state = m_hidden;
 
   // make an arrow to show axis of rotation
-  arrow_ = new rviz::Arrow(scene_manager_, NULL, 2.0f, 0.2f, 0.3f, 0.35f);
+  arrow_ = new rviz_rendering::Arrow(scene_manager_, NULL, 2.0f, 0.2f, 0.3f, 0.35f);
   arrow_->setColor(0.0f, 0.0f, 1.0f, 1.0f);  // blue
   arrow_->getSceneNode()->setVisible(
       false);  // will only be visible during rotation phase
@@ -144,7 +141,7 @@ void SpawnModelTool::onInitialize() {
 void SpawnModelTool::activate() {
   RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::activate ");
 
-  LoadModelDialog *model_dialog = new LoadModelDialog(NULL, this);
+  LoadModelDialog *model_dialog = new LoadModelDialog(nullptr, this);
   model_dialog->setModal(true);
   model_dialog->show();
 }
@@ -173,34 +170,35 @@ void SpawnModelTool::deactivate() {
 }
 
 void SpawnModelTool::SpawnModelInFlatland() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),
       "SpawnModelTool::SpawnModelInFlatland name:" << model_name.toStdString());
-  flatland_msgs::msg::SpawnModel srv;
+  auto srv = std::make_shared<flatland_msgs::srv::SpawnModel::Request>();
 
   // model names can not have embeded period char
   model_name = model_name.replace(".", "_", Qt::CaseSensitive);
 
   // fill in the service request
-  srv.request.name = model_name.toStdString();
-  srv.request.ns = model_name.toStdString();
-  srv.request.yaml_path = path_to_model_file_.toStdString();
-  srv.request.pose.x = intersection[0];
-  srv.request.pose.y = intersection[1];
-  srv.request.pose.theta = initial_angle;
+  srv->name = model_name.toStdString();
+  srv->ns = model_name.toStdString();
+  srv->yaml_path = path_to_model_file_.toStdString();
+  srv->pose.x = intersection[0];
+  srv->pose.y = intersection[1];
+  srv->pose.theta = initial_angle;
 
-  client = nh.serviceClient<flatland_msgs::msg::SpawnModel>("spawn_model");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("spawn_model_tool");  // TODO
+  client = node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
 
   // make ros service call
-  bool client_is_running = client.call(srv);
+  bool client_is_running = client->call(srv);
 
   if (!client_is_running) {
     QMessageBox msgBox;
     msgBox.setText("Error: You must have a client running.");
     msgBox.exec();
   } else {
-    if (!srv.response.success) {
+      if (!srv->success) {
       QMessageBox msgBox;
-      msgBox.setText(srv.response.message.c_str());
+      msgBox.setText(srv->message.c_str());
       msgBox.exec();
     }
   }
@@ -217,14 +215,14 @@ void SpawnModelTool::SetMovingModelColor(QColor c) {
     m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
                                                     c.blueF(), 0);
   } catch (Ogre::InvalidParametersException e) {
-    ROS_WARN_STREAM("Invalid preview model");
+    //RCLCPP_WARN("Invalid preview model");
   }
 }
 
 // processMouseEvent() is sort of the main function of a Tool, because
 // mouse interactions are the point of Tools.
 //
-// We use the utility function rviz::getPointOnPlaneFromWindowXY() to
+// We use the utility function rviz_rendering::getPointOnPlaneFromWindowXY() to
 // see where on the ground plane the user's mouse is pointing, then
 // move the moving model to that point and update the VectorProperty.
 //
@@ -233,7 +231,7 @@ void SpawnModelTool::SetMovingModelColor(QColor c) {
 // place and drop the pointer to the VectorProperty.  Dropping the
 // pointer means when the tool is deactivated the VectorProperty won't
 // be deleted, which is what we want.
-int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
+int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
   if (!moving_model_node_) {
     return Render;
   }
@@ -242,7 +240,7 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
 
   if (model_state == m_dragging) {
-    if (rviz::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
+    if (rviz_rendering::getPointOnPlaneFromWindowXY (event.viewport, ground_plane, event.x,
                                           event.y, intersection)) {
       moving_model_node_->setVisible(true);
       moving_model_node_->setPosition(intersection);
@@ -262,7 +260,7 @@ int SpawnModelTool::processMouseEvent(rviz::ViewportMouseEvent &event) {
   }
   if (model_state == m_rotating) {  // model_state is m_rotating
 
-    if (rviz::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
+    if (rviz_rendering::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
                                           event.y, intersection2)) {
       if (event.leftDown()) {
         model_state = m_hidden;
@@ -293,8 +291,10 @@ void SpawnModelTool::LoadPreview() {
   moving_model_node_->removeAllChildren();
   lines_list_.clear();
 
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("spawn_model_tool");  // TODO
+
   // Load the bodies list into a model object
-  flatland_server::YamlReader reader(path_to_model_file_.toStdString());
+  flatland_server::YamlReader reader(node, path_to_model_file_.toStdString());
 
   try {
     flatland_server::YamlReader bodies_reader =
@@ -315,7 +315,7 @@ void SpawnModelTool::LoadPreview() {
         flatland_server::YamlReader footprint =
             footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
 
-        lines_list_.push_back(std::make_shared<rviz::BillboardLine>(
+        lines_list_.push_back(std::make_shared<rviz_rendering::BillboardLine>(
             context_->getSceneManager(), moving_model_node_));
         auto lines = lines_list_.back();
         lines->setColor(0.0, 1.0, 0.0, 0.75);  // Green
@@ -335,7 +335,7 @@ void SpawnModelTool::LoadPreview() {
       }
     }
   } catch (const flatland_server::YAMLException &e) {
-    ROS_ERROR_STREAM("Couldn't load model bodies for preview" << e.what());
+      RCLCPP_ERROR_STREAM(rclcpp::get_logger("SpawnModelTool"), "Couldn't load model bodies for preview" << e.what());
   }
 }
 
@@ -349,7 +349,7 @@ void SpawnModelTool::LoadPolygonFootprint(
   }
   if (points.size() > 0) {
     lines->addPoint(
-        Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
+    //    Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
   }
 }
 
@@ -358,6 +358,7 @@ void SpawnModelTool::LoadCircleFootprint(flatland_server::YamlReader &footprint,
   auto lines = lines_list_.back();
   auto center = footprint.GetVec2("center", flatland_server::Vec2());
   auto radius = footprint.Get<float>("radius", 1.0);
+
   for (float a = 0.; a < M_PI * 2.0; a += M_PI / 8.) {  // 16 point circle
     lines->addPoint(Ogre::Vector3(center.x + radius * cos(a),
                                   center.y + radius * sin(a), 0.));
@@ -380,4 +381,4 @@ void SpawnModelTool::SaveName(QString n) { model_name = n; }
 }  // end namespace flatland_viz
 
 #include <pluginlib/class_list_macros.hpp>
-PLUGINLIB_EXPORT_CLASS(flatland_viz::SpawnModelTool, rviz::Tool)
+PLUGINLIB_EXPORT_CLASS(flatland_viz::SpawnModelTool, rviz_common::Tool)

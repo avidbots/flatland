@@ -48,20 +48,6 @@
 #ifndef LOAD_MODEL_DIALOG_H
 #define LOAD_MODEL_DIALOG_H
 
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OgreVector3.h>
-
-#include <ros/console.h>
-
-#include <rviz/geometry.h>
-#include <rviz/mesh_loader.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/viewport_mouse_event.h>
-#include <rviz/visualization_manager.h>
-
 // #include <QColorDialog>
 #include <QCursor>
 #include <QFileDialog>
@@ -72,6 +58,20 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QString>
+#include <QDialog>
+
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
+//#include <OgreVector3.h>
+
+#include <rclcpp/rclcpp.hpp>
+
+#include <rviz_rendering/geometry.hpp>
+#include <rviz_rendering/mesh_loader.hpp>
+
 
 #include <boost/filesystem.hpp>
 
