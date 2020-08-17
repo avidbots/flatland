@@ -196,9 +196,6 @@ if(FALSE) # fake a block comment
 endif()
 endif()
 
-
-ament_package()
-
 #############
 ## Install ##
 #############
@@ -234,6 +231,4 @@ install(DIRECTORY test/conestogo_office_test
     DESTINATION share/${PROJECT_NAME}/test
 )
 
-
-# Install plugins file
-pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
+ament_package()
