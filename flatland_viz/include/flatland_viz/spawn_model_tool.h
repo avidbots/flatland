@@ -48,27 +48,34 @@
 #ifndef SPAWN_MODEL_TOOL_H
 #define SPAWN_MODEL_TOOL_H
 
-#include <rviz/tool.h>
+#include <rviz_common/tool.hpp>
 #include <memory>
 #include <vector>
+
+#include <rclcpp/rclcpp.hpp>
 
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
+//#include <OgreVector3.h>
 
 #include <flatland_server/yaml_reader.h>
+#include <flatland_msgs/srv/spawn_model.hpp>
+
 #include <rclcpp/rclcpp.hpp>
-#include <rviz/ogre_helpers/billboard_line.h>
-#include "rviz/ogre_helpers/arrow.h"
+#include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/objects/arrow.hpp>
+#include "flatland_viz/load_model_dialog.h"
+
 
 namespace flatland_viz {
 /**
  * @name                SpawnModelTool
  * @brief               Every tool which can be added to the tool bar is a
- * subclass of rviz::Tool.
+ * subclass of rviz_common::Tool.
  */
-class SpawnModelTool : public rviz::Tool {
+class SpawnModelTool : public rviz_common::Tool {
   Q_OBJECT
 
  public:
@@ -119,7 +126,7 @@ class SpawnModelTool : public rviz::Tool {
    * @brief               Main loop of tool
    * @param event         Mouse event
    */
-  virtual int processMouseEvent(rviz::ViewportMouseEvent &event);
+  virtual int processMouseEvent(rviz_common::ViewportMouseEvent &event);
   /**
   * @name                SetMovingModelColor
   * @brief               Set the color of the moving model
@@ -160,10 +167,9 @@ class SpawnModelTool : public rviz::Tool {
   static QString model_name;  // base file name with path and extension removed
 
  protected:
-  rviz::Arrow *arrow_;        // Rviz 3d arrow to show axis of rotation
-  ros::NodeHandle nh;         // ros service node handle
-  ros::ServiceClient client;  // ros service client
-  std::vector<std::shared_ptr<rviz::BillboardLine>> lines_list_;
+  rviz_rendering::Arrow *arrow_;        // Rviz 3d arrow to show axis of rotation
+  rclcpp::Client<flatland_msgs::srv::SpawnModel>::SharedPtr client;
+  std::vector<std::shared_ptr<rviz_rendering::BillboardLine>> lines_list_;
 };
 
 }  // end namespace flatland_viz

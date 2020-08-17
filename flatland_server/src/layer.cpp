@@ -162,7 +162,7 @@ Layer *Layer::MakeLayer(std::shared_ptr<rclcpp::Node> node, b2World *physics_wor
       RCLCPP_INFO(rclcpp::get_logger("Layer"), "layer \"%s\" loading image from path=\"%s\"",
                      names[0].c_str(), image_path.string().c_str());
 
-      cv::Mat map = cv::imread(image_path.string(), CV_LOAD_IMAGE_GRAYSCALE);
+      cv::Mat map = cv::imread(image_path.string(), cv::ImreadModes::IMREAD_GRAYSCALE );
       if (map.empty()) {
         throw YAMLException("Failed to load " + Q(image_path.string()) +
                             " in layer " + Q(names[0]));

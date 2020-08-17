@@ -86,7 +86,8 @@ TEST_F(TweenPluginTest, once_test) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(world_yaml.string());
+  World* std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -120,7 +121,8 @@ TEST_F(TweenPluginTest, yoyo_test) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(world_yaml.string());
+  World* std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -163,7 +165,8 @@ TEST_F(TweenPluginTest, loop_test) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(world_yaml.string());
+  World* std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -201,7 +204,7 @@ TEST_F(TweenPluginTest, loop_test) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "tween_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

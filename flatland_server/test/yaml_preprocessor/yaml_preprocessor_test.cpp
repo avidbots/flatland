@@ -129,7 +129,7 @@ TEST(YamlPreprocTest, testEvalStrings) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "yaml_preprocessor_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

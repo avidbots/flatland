@@ -125,7 +125,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -199,7 +200,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -260,7 +262,8 @@ TEST_F(ModelTfPublisherTest, invalid_A) {
       this_file_dir / fs::path("model_tf_publisher_tests/invalid_A/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -286,7 +289,8 @@ TEST_F(ModelTfPublisherTest, invalid_B) {
       this_file_dir / fs::path("model_tf_publisher_tests/invalid_B/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -306,7 +310,7 @@ TEST_F(ModelTfPublisherTest, invalid_B) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "model_tf_plugin_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

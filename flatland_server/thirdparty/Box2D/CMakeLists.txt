@@ -146,7 +146,7 @@ set_target_properties(flatland_Box2D PROPERTIES
 	GIT_COMMIT_HASH f655c603ba9d83f07fc566d38d2654ba35739102
 )
 
-ament_export_interfaces(export_flatland_Box2D HAS_LIBRARY_TARGET)
+ament_export_targets(export_flatland_Box2D HAS_LIBRARY_TARGET)
 install( 
   TARGETS flatland_Box2D
   EXPORT export_flatland_Box2D

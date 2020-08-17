@@ -60,13 +60,21 @@
 #include <map>
 #include <set>
 
-#include "flatland_msgs/DebugTopicList.h"
-#include "rviz/config.h"
-#include "rviz/panel.h"
-#include "rviz/properties/property_tree_widget.h"
-#include "rviz/tool.h"
-#include "rviz/tool_manager.h"
-#include "rviz/window_manager_interface.h"
+#include "flatland_msgs/msg/debug_topic_list.hpp"
+#include <rviz_common/config.hpp>
+#include <rviz_common/panel.hpp>
+#include <rviz_common/properties/property_tree_widget.hpp>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/window_manager_interface.hpp>
+
+
+#include <rviz_common/new_object_dialog.hpp"
+#include <rviz_common/display.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/view_manager.hpp>
+#include "rviz_common/load_resource.hpp"
+#include <rviz_common/visualization_manager.hpp>
 
 class QSplashScreen;
 class QAction;
@@ -76,7 +84,7 @@ class QDockWidget;
 class QLabel;
 class QToolButton;
 
-namespace rviz {
+namespace rviz_common {
 class PanelFactory;
 class Tool;
 class Display;
@@ -101,23 +109,23 @@ class FlatlandViz : public QWidget {
    *
    * @param msg The DebugTopicList message
    */
-  void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList& msg);
+  void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg);
 
   /**
    * @brief Destruct
    */
   virtual ~FlatlandViz();
 
-  rviz::VisualizationManager* manager_;
+  rviz_common::VisualizationManager* manager_;
 
  private:
-  rviz::RenderPanel* render_panel_;
+  rviz_common::RenderPanel* render_panel_;
 
-  rviz::Display* grid_;
-  rviz::Display* interactive_markers_;
-  std::map<std::string, rviz::Display*> debug_displays_;
+  rviz_common::Display* grid_;
+  rviz_common::Display* interactive_markers_;
+  std::map<std::string, rviz_common::Display*> debug_displays_;
   rclcpp::Subscription<flatland_msgs::msg::DebugTopicList>::SharedPtr debug_topic_subscriber_;
-  rviz::PropertyTreeWidget* tree_widget_;
+  rviz_common::properties::PropertyTreeWidget * tree_widget_;
   FlatlandWindow* parent_;
 
   QMenu* file_menu_;
@@ -129,8 +137,8 @@ class FlatlandViz : public QWidget {
   QToolBar* toolbar_;
 
   QActionGroup* toolbar_actions_;
-  std::map<QAction*, rviz::Tool*> action_to_tool_map_;
-  std::map<rviz::Tool*, QAction*> tool_to_action_map_;
+  std::map<QAction*, rviz_common::Tool*> action_to_tool_map_;
+  std::map<rviz_common::Tool*, QAction*> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
   QAction* add_tool_action_;
@@ -143,10 +151,10 @@ class FlatlandViz : public QWidget {
   void fullScreenChange(bool hidden);
 
   void setDisplayConfigModified();
-  void addTool(rviz::Tool*);
-  void removeTool(rviz::Tool*);
-  void refreshTool(rviz::Tool*);
-  void indicateToolIsCurrent(rviz::Tool*);
+  void addTool(rviz_common::Tool*);
+  void removeTool(rviz_common::Tool*);
+  void refreshTool(rviz_common::Tool*);
+  void indicateToolIsCurrent(rviz_common::Tool*);
   void onToolbarActionTriggered(QAction* action);
   void onToolbarRemoveTool(QAction* remove_tool_menu_action);
   void initToolbars();

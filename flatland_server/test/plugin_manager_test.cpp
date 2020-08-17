@@ -51,6 +51,7 @@
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <regex>
+#include <rclcpp/rclcpp.hpp>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -119,7 +120,6 @@ class PluginManagerTest : public ::testing::Test {
  protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
-  Timekeeper timekeeper;
   World *w;
 
   void SetUp() override {
@@ -180,8 +180,11 @@ class PluginManagerTest : public ::testing::Test {
 TEST_F(PluginManagerTest, collision_test) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/collision_test/world.yaml");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("PluginManagerTest_node");
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  
+  w = World::MakeWorld(node, world_yaml.string());
   Layer *l = w->layers_[0];
   Model *m0 = w->models_[0];
   Model *m1 = w->models_[1];
@@ -189,7 +192,7 @@ TEST_F(PluginManagerTest, collision_test) {
   Body *b1 = m1->bodies_[0];
   PluginManager *pm = &w->plugin_manager_;
   std::shared_ptr<TestModelPlugin> shared_p(new TestModelPlugin());
-  shared_p->Initialize("TestModelPlugin", "test_model_plugin", m0,
+  shared_p->Initialize(node, "TestModelPlugin", "test_model_plugin", m0,
                        YAML::Node());
   pm->model_plugins_.push_back(shared_p);
   TestModelPlugin *p = shared_p.get();
@@ -302,7 +305,8 @@ TEST_F(PluginManagerTest, load_dummy_test) {
   world_yaml = this_file_dir /
                fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
-  w = World::MakeWorld(world_yaml.string());
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
   ModelPlugin *p = w->plugin_manager_.model_plugins_[0].get();
 
@@ -316,7 +320,8 @@ TEST_F(PluginManagerTest, plugin_throws_exception) {
       fs::path("plugin_manager_tests/plugin_throws_exception/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+    w = World::MakeWorld(node,world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException &e) {
     // do a regex match against error message
@@ -340,7 +345,8 @@ TEST_F(PluginManagerTest, nonexistent_plugin) {
                fs::path("plugin_manager_tests/nonexistent_plugin/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+    w = World::MakeWorld(node,world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException &e) {
     std::cmatch match;
@@ -363,7 +369,8 @@ TEST_F(PluginManagerTest, invalid_plugin_yaml) {
                fs::path("plugin_manager_tests/invalid_plugin_yaml/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+    w = World::MakeWorld(node,world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(
@@ -382,7 +389,8 @@ TEST_F(PluginManagerTest, duplicate_plugin) {
                fs::path("plugin_manager_tests/duplicate_plugin/world.yaml");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+    w = World::MakeWorld(node,world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const YAMLException &e) {
     EXPECT_STREQ(
@@ -398,7 +406,7 @@ TEST_F(PluginManagerTest, duplicate_plugin) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "plugin_manager_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

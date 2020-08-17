@@ -108,7 +108,7 @@ void World::Update(Timekeeper &timekeeper) {
     timekeeper.StepTime();
     plugin_manager_.AfterPhysicsStep(timekeeper);
   }
-  //int_marker_manager_.update();
+  int_marker_manager_.update();
 }
 
 void World::BeginContact(b2Contact *contact) {
@@ -301,7 +301,7 @@ void World::DeleteModel(const std::string &name) {
       plugin_manager_.DeleteModelPlugin(models_[i]);
       delete models_[i];
       models_.erase(models_.begin() + i);
-      //int_marker_manager_.deleteInteractiveMarker(name);
+      int_marker_manager_.deleteInteractiveMarker(name);
       found = true;
       break;
     }

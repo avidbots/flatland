@@ -68,7 +68,7 @@ class DiffDrive : public flatland_server::ModelPlugin {
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr ground_truth_pub_;
   rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
   Body* body_;
-  geometry_msgs::msg::Twist::SharedPtr twist_msg_;
+  geometry_msgs::msg::Twist::SharedPtr twist_msg_ = std::make_shared<geometry_msgs::msg::Twist>();
   nav_msgs::msg::Odometry odom_msg_;
   nav_msgs::msg::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;

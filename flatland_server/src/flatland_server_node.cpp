@@ -66,8 +66,8 @@
 //     delete simulation_manager;
 //     simulation_manager = nullptr;
 //   }
-//   ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-//   ros::shutdown();
+//   RCLCPP_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
+//   rclcpp::shutdown();
 // }
 
 class FlatlandServerNode : public rclcpp::Node
@@ -90,7 +90,7 @@ class FlatlandServerNode : public rclcpp::Node
       }
       get_parameter_or("update_rate", update_rate_, 200.0f);
       get_parameter_or("step_size", step_size_, 1.0f/200.0f);
-      get_parameter_or("show_viz", show_viz_, 0.0f);
+      get_parameter_or("show_viz", show_viz_, false);
       get_parameter_or("viz_pub_rate", viz_pub_rate_, 30.0f);
     }
 
@@ -112,7 +112,7 @@ class FlatlandServerNode : public rclcpp::Node
     std::string world_path_; // The file path to the world.yaml file
     float update_rate_;  // The physics update rate (Hz)
     float step_size_;
-    float show_viz_;
+    bool show_viz_;
     float viz_pub_rate_;
     std::shared_ptr<flatland_server::SimulationManager> simulation_manager_;
 };

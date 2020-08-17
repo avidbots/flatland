@@ -45,19 +45,23 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flatland_viz/load_model_dialog.h"
+
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
+//#include <OgreVector3.h>
 
-#include <ros/console.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <rviz/geometry.h>
-#include <rviz/mesh_loader.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/viewport_mouse_event.h>
-#include <rviz/visualization_manager.h>
+#include <rviz_rendering/geometry.hpp>
+#include <rviz_rendering/mesh_loader.hpp>
+
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/vector_property.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_common/visualization_manager.h>
 
 #include <QCheckBox>
 #include <QCursor>
@@ -72,10 +76,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include "flatland_viz/load_model_dialog.h"
 #include "flatland_viz/spawn_model_tool.h"
-// #include "load_model_dialog.h"
-// #include "spawn_model_tool.h"
 
 QString LoadModelDialog::path_to_model_file;
 int LoadModelDialog::count;
@@ -177,6 +178,7 @@ void LoadModelDialog::AddNumberAndUpdateName() {
   std::string bsfn =
       boost::filesystem::basename(path_to_model_file.toStdString());
   QString name = QString::fromStdString(bsfn);
+
 
   if (numbering) {
     name = name.append(QString::number(count++));
