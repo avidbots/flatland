@@ -66,6 +66,7 @@ class SimulationManager {
   bool show_viz_;                ///< flag to determine if to show visualization
   double viz_pub_rate_;          ///< rate to publish visualization
   std::string world_yaml_file_;  ///< path to the world file
+  bool train_mode_;               ///< train_mode_ selection, when true ,update by step, else with fixed rate
 
   // add step_world_service in simulationManager
   Timekeeper timekeeper;
@@ -82,7 +83,7 @@ class SimulationManager {
    * behaving ones
    */
   SimulationManager(std::string world_yaml_file, double update_rate,
-                    double step_size, bool show_viz, double viz_pub_rate);
+                    double step_size, bool show_viz, double viz_pub_rate,bool train_mode);
 
   /**
    * This method contains the loop that runs the simulation

@@ -59,13 +59,14 @@ namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
                                      double update_rate, double step_size,
-                                     bool show_viz, double viz_pub_rate)
+                                     bool show_viz, double viz_pub_rate,bool train_mode)
     : world_(nullptr),
       update_rate_(update_rate),
       step_size_(step_size),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
-      world_yaml_file_(world_yaml_file) {
+      world_yaml_file_(world_yaml_file),
+      train_mode_(train_mode) {
       ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
@@ -79,7 +80,7 @@ void SimulationManager::Main() {
   run_simulator_ = true;
   
   ros::WallRate rate(update_rate_);
-  //rate=rate_set;	
+  
   try {
     world_ = World::MakeWorld(world_yaml_file_);
     ROS_INFO_NAMED("SimMan", "World loaded");
@@ -102,9 +103,10 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
   // advertise: step world service server
-  ros::NodeHandle nh;
-  step_world_service_ = nh.advertiseService("step_world", &SimulationManager::callback_StepWorld, this);
-
+  if(train_mode_){
+    ros::NodeHandle nh;
+    step_world_service_ = nh.advertiseService("step_world", &SimulationManager::callback_StepWorld, this);
+  }
   
   while (ros::ok() && run_simulator_) {
     // for updating visualization at a given rate
@@ -119,10 +121,9 @@ void SimulationManager::Main() {
     }
     bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
 
-    if((ros::WallTime::now().toSec()-last_update_time_)>viz_update_period){
-      update_viz=true;
+    if(train_mode_==false){
+      world_->Update(timekeeper);  // Step physics by ros cycle time
     }
-    //world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);  // no need to update layer

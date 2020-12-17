@@ -98,9 +98,12 @@ int main(int argc, char **argv) {
   float viz_pub_rate = 30.0;
   node_handle.getParam("viz_pub_rate", viz_pub_rate);
 
+  bool train_mode = false;
+  node_handle.getParam("train_mode", train_mode);
+
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
-      world_path, update_rate, step_size, show_viz, viz_pub_rate);
+      world_path, update_rate, step_size, show_viz, viz_pub_rate,train_mode);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
