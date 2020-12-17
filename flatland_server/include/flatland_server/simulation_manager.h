@@ -70,6 +70,7 @@ class SimulationManager {
   // add step_world_service in simulationManager
   Timekeeper timekeeper;
   ros::ServiceServer step_world_service_; 
+  double last_update_time_;
 
   /**
    * @name  Simulation Manager constructor

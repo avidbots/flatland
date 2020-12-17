@@ -66,17 +66,20 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
       world_yaml_file_(world_yaml_file) {
-  ROS_INFO_NAMED("SimMan",
+      ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
                  world_yaml_file_.c_str(), update_rate_, step_size_,
                  show_viz_ ? "true" : "false", viz_pub_rate_);
+    timekeeper.SetMaxStepSize(step_size_);
 }
 
 void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Initializing...");
   run_simulator_ = true;
-
+  
+  ros::WallRate rate(update_rate_);
+  //rate=rate_set;	
   try {
     world_ = World::MakeWorld(world_yaml_file_);
     ROS_INFO_NAMED("SimMan", "World loaded");
@@ -95,15 +98,14 @@ void SimulationManager::Main() {
   ServiceManager service_manager(this, world_);
   //Timekeeper timekeeper;
 
-  ros::WallRate rate(update_rate_);
-  timekeeper.SetMaxStepSize(step_size_);
+  
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
 
   // advertise: step world service server
   ros::NodeHandle nh;
   step_world_service_ = nh.advertiseService("step_world", &SimulationManager::callback_StepWorld, this);
 
-
+  
   while (ros::ok() && run_simulator_) {
     // for updating visualization at a given rate
     // see flatland_plugins/update_timer.cpp for this formula
@@ -117,6 +119,9 @@ void SimulationManager::Main() {
     }
     bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
 
+    if((ros::WallTime::now().toSec()-last_update_time_)>viz_update_period){
+      update_viz=true;
+    }
     //world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
@@ -137,7 +142,6 @@ void SimulationManager::Main() {
     min_cycle_util = std::min(cycle_util, min_cycle_util);
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
-
     ROS_INFO_THROTTLE_NAMED(
         1, "SimMan",
         "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
@@ -156,7 +160,17 @@ void SimulationManager::Shutdown() {
 bool SimulationManager::callback_StepWorld(flatland_msgs::StepWorld::Request &request,flatland_msgs::StepWorld::Response &response){
   
   try {
+    // ros::WallRate rate_set(update_rate_);
+    // double required_duration=request.step_time.data;
+    // int num_of_steps;
+    // num_of_steps=(int)(required_duration/step_size_);
+    // for(int i=0;i<num_of_steps;i++){
+    //   world_->Update(timekeeper);  // Step physics by ros cycle time
+    //   ros::spinOnce();
+    //   rate_set.sleep();
+    // }
     world_->Update(timekeeper);  // Step physics by ros cycle time
+    last_update_time_=ros::WallTime::now().toSec();
     response.success = true;
     response.message = "";
   } catch (const std::exception &e) {
