@@ -93,11 +93,16 @@ void SimulationManager::Main() {
   double max_cycle_util = 0;
   double viz_update_period = 1.0f / viz_pub_rate_;
   ServiceManager service_manager(this, world_);
-  Timekeeper timekeeper;
+  //Timekeeper timekeeper;
 
   ros::WallRate rate(update_rate_);
   timekeeper.SetMaxStepSize(step_size_);
   ROS_INFO_NAMED("SimMan", "Simulation loop started");
+
+  // advertise: step world service server
+  ros::NodeHandle nh;
+  step_world_service_ = nh.advertiseService("step_world", &SimulationManager::callback_StepWorld, this);
+
 
   while (ros::ok() && run_simulator_) {
     // for updating visualization at a given rate
@@ -112,7 +117,7 @@ void SimulationManager::Main() {
     }
     bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
 
-    world_->Update(timekeeper);  // Step physics by ros cycle time
+    //world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);  // no need to update layer
@@ -147,5 +152,22 @@ void SimulationManager::Shutdown() {
   ROS_INFO_NAMED("SimMan", "Shutdown called");
   run_simulator_ = false;
 }
+
+bool SimulationManager::callback_StepWorld(flatland_msgs::StepWorld::Request &request,flatland_msgs::StepWorld::Response &response){
+  
+  try {
+    world_->Update(timekeeper);  // Step physics by ros cycle time
+    response.success = true;
+    response.message = "";
+  } catch (const std::exception &e) {
+    response.success = false;
+    response.message = std::string(e.what());
+    ROS_ERROR_NAMED("Service", "Failed to step world! Exception: %s",
+                    e.what());
+  }
+  return true;
+
+}
+
 
 };  // namespace flatland_server

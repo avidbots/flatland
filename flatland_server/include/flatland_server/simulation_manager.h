@@ -53,6 +53,8 @@
 #include <flatland_server/world.h>
 #include <string>
 
+#include <flatland_msgs/StepWorld.h>
+
 namespace flatland_server {
 
 class SimulationManager {
@@ -64,6 +66,10 @@ class SimulationManager {
   bool show_viz_;                ///< flag to determine if to show visualization
   double viz_pub_rate_;          ///< rate to publish visualization
   std::string world_yaml_file_;  ///< path to the world file
+
+  // add step_world_service in simulationManager
+  Timekeeper timekeeper;
+  ros::ServiceServer step_world_service_; 
 
   /**
    * @name  Simulation Manager constructor
@@ -86,6 +92,13 @@ class SimulationManager {
    * Kill the world
    */
   void Shutdown();
+
+  /**
+   * callback function for step_world, 
+   * update the world by a step,  
+  */
+  bool callback_StepWorld(flatland_msgs::StepWorld::Request &request,flatland_msgs::StepWorld::Response &response);
+
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_SIMULATION_MANAGER_H
