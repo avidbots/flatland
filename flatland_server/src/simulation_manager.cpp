@@ -173,7 +173,10 @@ bool SimulationManager::callback_StepWorld(flatland_msgs::StepWorld::Request &re
     world_->Update(timekeeper);  // Step physics by ros cycle time
     last_update_time_=ros::WallTime::now().toSec();
     response.success = true;
-    response.message = "";
+    std::string current_time = std::to_string(timekeeper.GetSimTime().toSec());
+    response.message = "current sim time(s):  "+current_time;
+    //ros::Time current_time=timekeeper.GetSimTime();
+    
   } catch (const std::exception &e) {
     response.success = false;
     response.message = std::string(e.what());
