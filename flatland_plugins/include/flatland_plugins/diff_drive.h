@@ -96,6 +96,14 @@ class DiffDrive : public flatland_server::ModelPlugin {
    * @param[in]   timestep how much the physics time will increment
    */
   void TwistCallback(const geometry_msgs::Twist& msg);
+
+   /**
+   * @name          AfterPhysicsStep
+   * @brief         override the BeforePhysicsStep method
+   * @param[in]     config The plugin YAML node
+   */
+
+  void AfterPhysicsStep(const Timekeeper& timekeeper) override;
 };
 };
 

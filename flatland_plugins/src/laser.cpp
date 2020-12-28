@@ -127,7 +127,7 @@ void Laser::OnInitialize(const YAML::Node &config) {
   laser_tf_.transform.rotation.w = q.w();
 }
 
-void Laser::BeforePhysicsStep(const Timekeeper &timekeeper) {
+void Laser::AfterPhysicsStep(const Timekeeper &timekeeper) {
   // keep the update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;

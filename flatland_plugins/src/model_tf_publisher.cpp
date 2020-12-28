@@ -106,7 +106,7 @@ void ModelTfPublisher::OnInitialize(const YAML::Node &config) {
       boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
-void ModelTfPublisher::BeforePhysicsStep(const Timekeeper &timekeeper) {
+void ModelTfPublisher::AfterPhysicsStep(const Timekeeper &timekeeper) {
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
   }

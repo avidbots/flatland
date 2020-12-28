@@ -160,7 +160,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
                   odom_twist_noise[1], odom_twist_noise[2], pub_rate);
 }
 
-void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
+void DiffDrive::AfterPhysicsStep(const Timekeeper& timekeeper) {
   bool publish = update_timer_.CheckUpdate(timekeeper);
 
   b2Body* b2body = body_->physics_body_;
@@ -231,6 +231,14 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_tf.transform.rotation = odom_msg_.pose.pose.orientation;
     tf_broadcaster.sendTransform(odom_tf);
   }
+
+}
+
+void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
+  b2Body* b2body = body_->physics_body_;
+
+  b2Vec2 position = b2body->GetPosition();
+  float angle = b2body->GetAngle();
 
   // we apply the twist velocities, this must be done every physics step to make
   // sure Box2D solver applies the correct velocity through out. The velocity
