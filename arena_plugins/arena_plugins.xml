@@ -1,5 +1,8 @@
 <library path="lib/libarena_plugins_lib">
   <class type="flatland_plugins::RandomMove" base_class_type="flatland_server::ModelPlugin">
-    <description>Move the objects randomly</description>
+    <description>Move the object randomly</description>
+  </class>
+  <class type="flatland_plugins::Tween2" base_class_type="flatland_server::ModelPlugin">
+    <description>Move the object with a given trajectory</description>
   </class>
 </library>
