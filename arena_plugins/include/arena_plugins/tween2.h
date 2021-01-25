@@ -1,12 +1,10 @@
 #ifndef ARENA_PLUGINS_TWEEN2
 #define ARENA_PLUGINS_TWEEN2
-#include<ros/ros.h>
 #include <flatland_plugins/tween.h>
-#include <std_msgs/Empty.h>
 #include <nav_msgs/Odometry.h>
-// #include <Box2D/Common/b2Math.h>
+#include <ros/ros.h>
+#include <std_msgs/Empty.h>
 using namespace flatland_server;
-
 namespace flatland_plugins {
 // If Tween2 inherited from Tween1 then it can not be loaded which is very
 // weired.
@@ -27,9 +25,9 @@ class Tween2 : public ModelPlugin {
 
   // The three different operating modes
   enum class ModeType_ {
-    YOYO,    // tween up to delta_, then down again, and repeat
-    LOOP,    // tween up to delta_, then teleport back to start_
-    ONCE,    // tween up to delta_ then stay there
+    YOYO,  // tween up to delta_, then down again, and repeat
+    LOOP,  // tween up to delta_, then teleport back to start_
+    ONCE,  // tween up to delta_ then stay there
   };
   ModeType_ mode_;
   static std::map<std::string, ModeType_> mode_strings_;
@@ -84,12 +82,14 @@ class Tween2 : public ModelPlugin {
   /**
    * @brief  move the object to the start position.
    */
-  inline void MoveToStartPosCallback(const std_msgs::Empty &msg){
+  inline void MoveToStartPosCallback(const std_msgs::Empty& msg) {
     tween_.seek(0);
+    body_->physics_body_->SetTransform(b2Vec2(start_.x, start_.y),
+                                       start_.theta);
     // if no watcher added robot can move right after reset.
-    if(watcher_zones_.size()==0){
+    if (watcher_zones_.size() == 0) {
       triggered_ = true;
-    }else{
+    } else {
       triggered_ = false;
     }
   };
