@@ -51,7 +51,7 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
-
+#include<flatland_msgs/StepWorld.h>
 #include <string>
 
 namespace flatland_server {

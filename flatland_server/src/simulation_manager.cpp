@@ -144,29 +144,29 @@ void SimulationManager::Main() {
     ros::spinOnce();
     rate.sleep();
 
-    iterations++;
-    if (iterations > 100) {
-      //
-      iterations--;
-      double cycle_time = rate.cycleTime().toSec() * 1000;
-      double expected_cycle_time = rate.expectedCycleTime().toSec() * 1000;
-      double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
-      double factor = timekeeper.GetStepSize() * 1000 / expected_cycle_time;
-      min_cycle_util = std::min(cycle_util, min_cycle_util);
-      max_cycle_util = std::max(cycle_util, max_cycle_util);
-      filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
-      ROS_INFO_THROTTLE_NAMED(
-          5, "SimMan",
-          "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
-          min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
-      if(iterations>200){
-        iterations--;
-        ROS_INFO_COND_NAMED(
-            train_mode_, "SimMan",
-            "Suggested number of environments for training: %4d",
-            static_cast<int8>(1 / filtered_cycle_util));
-      }
-    }
+    // iterations++;
+    // if (iterations > 100) {
+    //   //
+    //   iterations--;
+    //   double cycle_time = rate.cycleTime().toSec() * 1000;
+    //   double expected_cycle_time = rate.expectedCycleTime().toSec() * 1000;
+    //   double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
+    //   double factor = timekeeper.GetStepSize() * 1000 / expected_cycle_time;
+    //   min_cycle_util = std::min(cycle_util, min_cycle_util);
+    //   max_cycle_util = std::max(cycle_util, max_cycle_util);
+    //   filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
+    //   ROS_INFO_THROTTLE_NAMED(
+    //       5, "SimMan",
+    //       "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
+    //       min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
+    //   if(iterations>200){
+    //     iterations--;
+    //     ROS_INFO_COND_NAMED(
+    //         train_mode_, "SimMan",
+    //         "Suggested number of environments for training: %4d",
+    //         static_cast<int8>(1 / filtered_cycle_util));
+    //   }
+    // }
   }
   ROS_INFO_NAMED("SimMan", "Simulation loop ended");
 
