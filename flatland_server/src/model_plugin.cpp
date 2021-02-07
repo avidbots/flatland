@@ -56,7 +56,9 @@ void ModelPlugin::Initialize(const std::string &type, const std::string &name,
   name_ = name;
   model_ = model;
   plugin_type_ = PluginType::Model;
-  nh_ = ros::NodeHandle(model_->namespace_);
+  // model_->namespace_ will only be used as tf_prefix
+  // nh_ = ros::NodeHandle(model_->namespace_);
+  nh_ = ros::NodeHandle();
   OnInitialize(config);
 }
 
