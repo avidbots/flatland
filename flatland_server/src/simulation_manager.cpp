@@ -86,7 +86,7 @@ void SimulationManager::Main() {
   // the map topic at simulation time 1s.
   // so we make flatland update the world multiple steps to send out /clock
   // signal.
-  int pre_run_steps = fmin(1 / step_size_, 1000);
+  int pre_run_steps = fmin(5 / step_size_, 1000);
 
   ros::WallRate rate(update_rate_);
 
