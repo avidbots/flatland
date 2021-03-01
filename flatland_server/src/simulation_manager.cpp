@@ -191,7 +191,19 @@ bool SimulationManager::callback_StepWorld(
     //   ros::spinOnce();
     //   rate_set.sleep();
     // }
-    world_->Update(timekeeper);  // Step physics by ros cycle time
+    int required_steps;
+    float t = request.required_time;
+    if(request == flatland_msgs::StepWorldRequest{})
+    {
+      required_steps = 1;
+    }else 
+    {
+      required_steps = ceil(t/step_size_);
+    };
+    for (int i = 0; i < required_steps; i++)
+    {
+      world_->Update(timekeeper);  // Step physics by ros cycle time
+    };
     last_update_time_ = ros::WallTime::now().toSec();
     response.success = true;
     std::string current_time = std::to_string(timekeeper.GetSimTime().toSec());

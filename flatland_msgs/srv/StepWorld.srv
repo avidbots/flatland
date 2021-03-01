@@ -1,5 +1,6 @@
 # Added by Xinlin Zhao
 # Triggers taking a step step_time sec in flatland
+float32 required_time
 ---
 bool success
 string message
