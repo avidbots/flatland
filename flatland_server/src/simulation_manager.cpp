@@ -52,6 +52,7 @@
 #include <flatland_server/service_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
 
 #include <exception>
 #include <limits>
@@ -59,8 +60,8 @@
 
 namespace flatland_server {
 
-SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     double update_rate, double step_size,
+SimulationManager::SimulationManager(std::string world_yaml_file, std::string map_layer_yaml_file,
+                                     std::string map_file, double update_rate, double step_size,
                                      bool show_viz, double viz_pub_rate,
                                      bool train_mode)
     : world_(nullptr),
@@ -69,11 +70,14 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
       world_yaml_file_(world_yaml_file),
-      train_mode_(train_mode) {
+      map_layer_yaml_file_(map_layer_yaml_file),
+      map_file_(map_file),
+      train_mode_(train_mode),
+      current_episode(-1) {
   ROS_INFO_NAMED("SimMan",
-                 "Simulation params: world_yaml_file(%s) update_rate(%f), "
+                 "Simulation params: world_yaml_file(%s), map_layer_yaml_file(%s), map_file(%s), update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
-                 world_yaml_file_.c_str(), update_rate_, step_size_,
+                 world_yaml_file_.c_str(), map_layer_yaml_file_.c_str(), map_file_.c_str(), update_rate_, step_size_,
                  show_viz_ ? "true" : "false", viz_pub_rate_);
   timekeeper.SetMaxStepSize(step_size_);
 }
@@ -97,6 +101,9 @@ void SimulationManager::Main() {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
   }
+
+  // delete world_;
+  // world_ = World::MakeWorld(map_layer_yaml_file_);
 
   if (show_viz_) world_->DebugVisualize();
 
@@ -134,6 +141,14 @@ void SimulationManager::Main() {
       world_->Update(timekeeper);  // Step physics by ros cycle time
       pre_run_steps = fmax(--pre_run_steps, 0);
     }
+
+    // updating the map
+    if (train_mode_ && map_file_ == "random_map") {
+      ros::NodeHandle n;
+      ros::Subscriber goal_sub = n.subscribe("goal", 1, &SimulationManager::callback_goal, this);
+    }
+    
+
 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);  // no need to update layer
@@ -217,4 +232,31 @@ bool SimulationManager::callback_StepWorld(
   }
   return true;
 }
+
+// void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
+//     YamlReader world_reader = YamlReader(map_layer_yaml_file_);
+//     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
+//     world_->LoadLayers(layers_reader);
+//     world_->DebugVisualize();
+//     ROS_INFO_NAMED("World", "Loading Map Layer");
+//   }
+
+void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
+  bool is_new_episode = current_episode != goal_msg.header.seq; // self.nr starts with -1 so 0 will be the first new episode
+  if (is_new_episode){
+    current_episode = goal_msg.header.seq;
+    delete world_;
+    world_ = World::MakeWorld(map_layer_yaml_file_);
+    ROS_INFO_NAMED("World", "New World loaded.");
+    ServiceManager service_manager(this, world_);
+  }
+  }
+
+
+
+
+
+
+
+
 };  // namespace flatland_server
