@@ -53,6 +53,7 @@
 #include <flatland_server/world.h>
 #include<flatland_msgs/StepWorld.h>
 #include <string>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace flatland_server {
 
@@ -65,6 +66,9 @@ class SimulationManager {
   bool show_viz_;                ///< flag to determine if to show visualization
   double viz_pub_rate_;          ///< rate to publish visualization
   std::string world_yaml_file_;  ///< path to the world file
+  std::string map_layer_yaml_file_; ///< path to the map layer file
+  std::string map_file_;  ///< name of map file
+  int current_episode; ///< set to -1 as counter for current_episode
   bool train_mode_;  ///< train_mode_ selection, when true ,update by step, else
 
   // add step_world_service in simulationManager
@@ -75,13 +79,16 @@ class SimulationManager {
   /**
    * @name  Simulation Manager constructor
    * @param[in] world_file The path to the world.yaml file we wish to load
+   * @param[in] map_layer_file The path to the map_layer.yaml file we wish to load
+   * @param[in] map_file map file that is used (only relevant if random_map)
    * @param[in] update_rate Simulator loop rate
    * @param[in] step_size Time to step each iteration
    * @param[in] show_viz if to show visualization
    * @param[in] viz_pub_rate rate to publish visualization
    * behaving ones
    */
-  SimulationManager(std::string world_yaml_file, double update_rate,
+  SimulationManager(std::string world_yaml_file, std::string map_layer_yaml_file, 
+                    std::string map_file, double update_rate,
                     double step_size, bool show_viz, double viz_pub_rate,
                     bool train_mode);
 
@@ -99,8 +106,13 @@ class SimulationManager {
    * callback function for step_world,
    * update the world by a step,
    */
+
   bool callback_StepWorld(flatland_msgs::StepWorld::Request &request,
                           flatland_msgs::StepWorld::Response &response);
+
+  void callback_goal(geometry_msgs::PoseStamped goal_msg);
+
+
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_SIMULATION_MANAGER_H
