@@ -85,6 +85,11 @@ int main(int argc, char **argv) {
     ros::shutdown();
     return 1;
   }
+  std::string map_layer_path;
+  node_handle.getParam("/map_layer_path", map_layer_path);
+
+  std::string map_file;
+  node_handle.getParam("/map_file", map_file);
 
   float update_rate = 200.0;  // The physics update rate (Hz)
   node_handle.getParam("/update_rate", update_rate);
@@ -103,7 +108,7 @@ int main(int argc, char **argv) {
 
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
-      world_path, update_rate, step_size, show_viz, viz_pub_rate,train_mode);
+      world_path, map_layer_path, map_file, update_rate, step_size, show_viz, viz_pub_rate,train_mode);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
