@@ -54,6 +54,7 @@
 #include<flatland_msgs/StepWorld.h>
 #include <string>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/String.h>
 
 namespace flatland_server {
 
@@ -111,7 +112,7 @@ class SimulationManager {
                           flatland_msgs::StepWorld::Response &response);
 
   void callback_goal(geometry_msgs::PoseStamped goal_msg);
-
+  // void callback_goal(const std_msgs::String::ConstPtr& msg);
 
 };
 };      // namespace flatland_server

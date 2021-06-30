@@ -53,10 +53,12 @@
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/String.h>
 
 #include <exception>
 #include <limits>
 #include <string>
+#include <iostream>
 
 namespace flatland_server {
 
@@ -124,7 +126,16 @@ void SimulationManager::Main() {
         "step_world", &SimulationManager::callback_StepWorld, this);
   }
 
+  // updating the map
+  // if (train_mode_ && map_file_ == "random_map") {
+  // if (train_mode_) {
+  ros::NodeHandle n;
+  ros::Subscriber goal_sub = n.subscribe("/goal", 1, &SimulationManager::callback_goal, this);
+  // }
+
   while (ros::ok() && run_simulator_) {
+
+
     // for updating visualization at a given rate
     // see flatland_plugins/update_timer.cpp for this formula
     double f = 0.0;
@@ -141,15 +152,7 @@ void SimulationManager::Main() {
       world_->Update(timekeeper);  // Step physics by ros cycle time
       pre_run_steps = fmax(--pre_run_steps, 0);
     }
-
-    // updating the map
-    if (train_mode_ && map_file_ == "random_map") {
-      ros::NodeHandle n;
-      ros::Subscriber goal_sub = n.subscribe("goal", 1, &SimulationManager::callback_goal, this);
-    }
-    
-
-
+ 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);  // no need to update layer
       DebugVisualization::Get().Publish(
@@ -233,25 +236,38 @@ bool SimulationManager::callback_StepWorld(
   return true;
 }
 
+void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
+    YamlReader world_reader = YamlReader(map_layer_yaml_file_);
+    YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
+    // for (auto &layer : world_->layers_) {
+    //   if (layer->body_ != nullptr) {
+    //     layer->body_->physics_body_ = nullptr;
+    //   }
+    //   delete layer;
+    //   ROS_INFO_NAMED("World", "Layer deleted");
+    // }
+    ROS_INFO_NAMED("World", "Begin clearing layer id table");
+    world_->cfr_.layer_id_table_.clear();
+    ROS_INFO_NAMED("World", "Begin loading map layer");
+    world_->LoadLayers(layers_reader);
+    world_->DebugVisualize();
+    ROS_INFO_NAMED("World", "Map Layer loaded");
+  }
+
 // void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
-//     YamlReader world_reader = YamlReader(map_layer_yaml_file_);
-//     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
-//     world_->LoadLayers(layers_reader);
-//     world_->DebugVisualize();
-//     ROS_INFO_NAMED("World", "Loading Map Layer");
+//   // bool is_new_episode = current_episode != goal_msg.header.seq; // self.nr starts with -1 so 0 will be the first new episode
+//   // if (is_new_episode){
+//   //   current_episode = goal_msg.header.seq;
+//   delete world_;
+//   world_ = World::MakeWorld(map_layer_yaml_file_);
+//   world_ -> DebugVisualize();
+//   ROS_INFO_NAMED("World", "New World loaded.");
+//   // }
 //   }
 
-void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
-  bool is_new_episode = current_episode != goal_msg.header.seq; // self.nr starts with -1 so 0 will be the first new episode
-  if (is_new_episode){
-    current_episode = goal_msg.header.seq;
-    delete world_;
-    world_ = World::MakeWorld(map_layer_yaml_file_);
-    ROS_INFO_NAMED("World", "New World loaded.");
-    ServiceManager service_manager(this, world_);
-  }
-  }
-
+// void SimulationManager::callback_goal(const std_msgs::String::ConstPtr& msg) {
+//   ROS_INFO("I heard: [%s]", msg->data.c_str());
+//   }
 
 
 
