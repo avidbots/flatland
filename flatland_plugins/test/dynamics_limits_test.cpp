@@ -239,7 +239,7 @@ TEST(DynamicsLimitsTest, test_Saturate) {
 }
 
 /**
- * Test Limit function wrt. acceleration asnd decelleration
+ * Test Limit function wrt. acceleration and decelleration
  */
 TEST(DynamicsLimitsTest, test_Limit_deceleration) {
   auto dynamics_limits = DynamicsLimits();
@@ -272,6 +272,82 @@ TEST(DynamicsLimitsTest, test_Limit_deceleration) {
   EXPECT_NEAR(1.05, result, 1e-3);
   result = dynamics_limits.Limit(3.0, -1.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(2.55, result, 1e-3);
+}
+
+/**
+ * Test Limit function wrt. acceleration and decelleration
+ */
+TEST(DynamicsLimitsTest, test_Limit_zero_crossing) {
+  auto dynamics_limits = DynamicsLimits();
+
+  YAML::Node config = YAML::Node();
+  config["acceleration_limit"] = 1.0;
+  config["deceleration_limit"] = 2.0;
+  dynamics_limits.Configure(config);
+
+  EXPECT_NEAR(1.0, dynamics_limits.acceleration_limit_, 1e-3);
+  EXPECT_NEAR(2.0, dynamics_limits.deceleration_limit_, 1e-3);
+  EXPECT_NEAR(0.0, dynamics_limits.velocity_limit_, 1e-3);
+
+  double result;
+  result = dynamics_limits.Limit(2.0, 0.0, 0.05);  // Decelerate, without zero crossing inside the timestep
+  EXPECT_NEAR(1.9, result, 1e-3);
+
+  result = dynamics_limits.Limit(0.08, -1.0, 0.05);  // Decelerate, with zero crossing inside the timestep
+  // the deceletion from 0.08 -> 0m/s is done at 2m/s/s, taking 0.04s, 80% of the timestep
+  // then the acceleration from 0 -> -1 has the accleration constraints applied given the remainder of the timestep (0.01s)
+  // resulting in an effective acceleration limit of 1.8m/s/s over the timestep
+  EXPECT_NEAR(-0.01, result, 1e-3);
+}
+
+
+/**
+ * Test Limit function wrt. acceleration and decelleration corner case around zero crossing
+ */
+TEST(DynamicsLimitsTest, test_Limit_zero_crossing_corner_case1) {
+  auto dynamics_limits = DynamicsLimits();
+
+  YAML::Node config = YAML::Node();
+  config["acceleration_limit"] = 0.0;
+  config["deceleration_limit"] = 2.0;
+  dynamics_limits.Configure(config);
+
+  EXPECT_NEAR(0.0, dynamics_limits.acceleration_limit_, 1e-3);
+  EXPECT_NEAR(2.0, dynamics_limits.deceleration_limit_, 1e-3);
+  EXPECT_NEAR(0.0, dynamics_limits.velocity_limit_, 1e-3);
+
+  double result;
+  result = dynamics_limits.Limit(2.0, 0.0, 0.05);  // Decelerate, without zero crossing inside the timestep
+  EXPECT_NEAR(1.9, result, 1e-3);
+
+  result = dynamics_limits.Limit(0.08, -1.0, 0.05);  // Decelerate, with zero crossing inside the timestep
+  // The first 80% decelerates at 2m/s/s, then the remaining 20% of the timestep accelerates from 0 to -1m/s without acceleration limit
+  EXPECT_NEAR(-1.0, result, 1e-3);
+}
+
+/**
+ * Test Limit function wrt. acceleration and decelleration corner case around zero crossing
+ */
+TEST(DynamicsLimitsTest, test_Limit_zero_crossing_corner_case2) {
+  auto dynamics_limits = DynamicsLimits();
+
+  YAML::Node config = YAML::Node();
+  config["acceleration_limit"] = 2.0;
+  config["deceleration_limit"] = 0.0;
+  dynamics_limits.Configure(config);
+
+  EXPECT_NEAR(2.0, dynamics_limits.acceleration_limit_, 1e-3);
+  EXPECT_NEAR(0.0, dynamics_limits.deceleration_limit_, 1e-3);
+  EXPECT_NEAR(0.0, dynamics_limits.velocity_limit_, 1e-3);
+
+  double result;
+  result = dynamics_limits.Limit(2.0, 0.0, 0.05);  // Decelerate, without zero crossing inside the timestep
+  EXPECT_NEAR(0.0, result, 1e-3);
+
+  result = dynamics_limits.Limit(1.0, -1.0, 0.05);  // Decelerate, with zero crossing inside the timestep (no limit)
+  // The portion from 1m/s to 0m/s has no limit, however the timestep is used to accelerate under limits
+  // 0.05 sec at -2m/s/s acceleration = -0.1m/s final velocity
+  EXPECT_NEAR(-0.1, result, 1e-3);
 }
 
 /**
