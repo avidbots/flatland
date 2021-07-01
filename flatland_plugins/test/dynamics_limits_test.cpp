@@ -190,15 +190,15 @@ TEST(DynamicsLimitsTest, test_Limit_acceleration) {
   double result;
   result = dynamics_limits.Limit(0, 1.0, 0.05);  // Try to accelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(0.45, result, 1e-3);
-  result = dynamics_limits.Limit(1.0, 0.0, 0.05);  // Try to deccelerate at -20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(1.0, 0.0, 0.05);  // Try to decelerate at -20m/s/s, when the limit is 9
   EXPECT_NEAR(0.55, result, 1e-3);
-  result = dynamics_limits.Limit(10.0, 0.0, 0.05);  // Try to deccelerate at -20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(10.0, 0.0, 0.05);  // Try to decelerate at -20m/s/s, when the limit is 9
   EXPECT_NEAR(9.55, result, 1e-3);
-  result = dynamics_limits.Limit(-10.0, 0.0, 0.05);  // Try to deccelerate at 20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(-10.0, 0.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(-9.55, result, 1e-3);
-  result = dynamics_limits.Limit(5, -5, 0.05);  // Try to deccelerate at 20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(5, -5, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(4.55, result, 1e-3);
-  result = dynamics_limits.Limit(-3, -2, 0.05);  // Try to deccelerate at 20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(-3, -2, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(-2.55, result, 1e-3);
 }
 
@@ -256,21 +256,21 @@ TEST(DynamicsLimitsTest, test_Limit_deceleration) {
   double result;
   result = dynamics_limits.Limit(0, 1.0, 0.05);  // Try to accelerate at 20m/s/s, when the limit is 1 (acceleration)
   EXPECT_NEAR(0.05, result, 1e-3);
-  result = dynamics_limits.Limit(0.97, 1.0, 0.05);  // Try to accelerate at <1m/s/s, when the limit is 1
+  result = dynamics_limits.Limit(0.97, 1.0, 0.05);  // Try to accelerate at 1m/s/s, when the limit is 1
   EXPECT_NEAR(1.0, result, 1e-3);
-  result = dynamics_limits.Limit(1.0, 0.0, 0.05);  // Try to deccelerate at <20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(1.0, 0.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(0.55, result, 1e-3);
-  result = dynamics_limits.Limit(-1.0, -2.0, 0.05);  // Try to acccelerate at <20m/s/s, when the limit is 1
+  result = dynamics_limits.Limit(-1.0, -2.0, 0.05);  // Try to acccelerate at 20m/s/s, when the limit is 1
   EXPECT_NEAR(-1.05, result, 1e-3);
-  result = dynamics_limits.Limit(-2.0, -1.0, 0.05);  // Try to decccelerate at <20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(-2.0, -1.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(-1.55, result, 1e-3);
-  result = dynamics_limits.Limit(-2.0, 1.0, 0.05);  // Try to decccelerate at <20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(-2.0, 1.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(-1.55, result, 1e-3);
-  result = dynamics_limits.Limit(-1.0, 2.0, 0.05);  // Try to decccelerate at <20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(-1.0, 2.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(-0.55, result, 1e-3);
-  result = dynamics_limits.Limit(1.0, 3.0, 0.05);  // Try to acccelerate at <20m/s/s, when the limit is 1
+  result = dynamics_limits.Limit(1.0, 3.0, 0.05);  // Try to acccelerate at 20m/s/s, when the limit is 1
   EXPECT_NEAR(1.05, result, 1e-3);
-  result = dynamics_limits.Limit(3.0, -1.0, 0.05);  // Try to decccelerate at <20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(3.0, -1.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(2.55, result, 1e-3);
 }
 
