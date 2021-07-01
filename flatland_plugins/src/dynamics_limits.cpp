@@ -76,7 +76,7 @@ double DynamicsLimits::Limit(double velocity, double target_velocity, double tim
   // if enabled, apply velocity limit
   if (velocity_limit_ != 0.0) {
     // Saturating the command also saturates the steering velocity
-    target_velocity = Saturate(target_velocity, -velocity_limit_, velocity_limit_);
+    target_velocity = DynamicsLimits::Saturate(target_velocity, -velocity_limit_, velocity_limit_);
   }
 
   // if the target velocity magnitude is larger, and in the same direction, we're accelerating
@@ -97,7 +97,7 @@ double DynamicsLimits::Limit(double velocity, double target_velocity, double tim
   double acceleration = (target_velocity - velocity) / timestep;
   if (acceleration_limit != 0.0) {
     acceleration =
-        Saturate(acceleration, -acceleration_limit, acceleration_limit);
+        DynamicsLimits::Saturate(acceleration, -acceleration_limit, acceleration_limit);
   }
 
   // (2) Update the new steering velocity

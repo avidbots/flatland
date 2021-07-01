@@ -7,7 +7,7 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2021 Avidbots Corp.
- * @name	DYNAMICS_LIMITS.h
+ * @name	Dynamics_Limits.h
  * @brief   A generic acceleration, deceleration and velocity bounding utility class
  * @author  Joseph Duchesne
  *
@@ -81,7 +81,7 @@ class DynamicsLimits {
    * @brief         Apply dynamics limits
    * @param[in]     config The plugin YAML node
    */
-   double Saturate(double in, double lower, double upper);
+   static double Saturate(double in, double lower, double upper);
 
   /**
    * @name          Apply

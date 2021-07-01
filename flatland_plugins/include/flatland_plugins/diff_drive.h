@@ -46,6 +46,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
+#include <flatland_plugins/dynamics_limits.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
@@ -74,6 +75,10 @@ class DiffDrive : public flatland_server::ModelPlugin {
   tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
   bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
   bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
+  DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
+  DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
+  double angular_velocity_ = 0.0;
+  double linear_velocity_ = 0.0;
 
   std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 6> noise_gen_;

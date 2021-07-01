@@ -206,35 +206,35 @@ TEST(DynamicsLimitsTest, test_Saturate) {
   auto dynamics_limits = DynamicsLimits();
   double result;
   // Useless, strict bounds
-  result = dynamics_limits.Saturate(0, 0, 0);  // Bound between 0 and 0, 0
+  result = DynamicsLimits::Saturate(0, 0, 0);  // Bound between 0 and 0, 0
   EXPECT_NEAR(0, result, 1e-3);
-  result = dynamics_limits.Saturate(1, 0, 0);  // Bound between 1 and 0, 0
+  result = DynamicsLimits::Saturate(1, 0, 0);  // Bound between 1 and 0, 0
   EXPECT_NEAR(0, result, 1e-3);
-  result = dynamics_limits.Saturate(-1, 0, 0);  // Bound between -1 and 0, 0
+  result = DynamicsLimits::Saturate(-1, 0, 0);  // Bound between -1 and 0, 0
   EXPECT_NEAR(0, result, 1e-3);
 
   // Valid bounds
-  result = dynamics_limits.Saturate(0, -1.1, 2.2);
+  result = DynamicsLimits::Saturate(0, -1.1, 2.2);
   EXPECT_NEAR(0, result, 1e-3);
-  result = dynamics_limits.Saturate(1, -1.1, 2.2);
+  result = DynamicsLimits::Saturate(1, -1.1, 2.2);
   EXPECT_NEAR(1, result, 1e-3);
-  result = dynamics_limits.Saturate(-1,  -1.1, 2.2);
+  result = DynamicsLimits::Saturate(-1,  -1.1, 2.2);
   EXPECT_NEAR(-1, result, 1e-3);
-  result = dynamics_limits.Saturate(3, -1.1, 2.2);
+  result = DynamicsLimits::Saturate(3, -1.1, 2.2);
   EXPECT_NEAR(2.2, result, 1e-3);
-  result = dynamics_limits.Saturate(-3,  -1.1, 2.2);
+  result = DynamicsLimits::Saturate(-3,  -1.1, 2.2);
   EXPECT_NEAR(-1.1, result, 1e-3);
 
   // Invalid bounds, input not changed
-  result = dynamics_limits.Saturate(0, 1.1, -2.2);
+  result = DynamicsLimits::Saturate(0, 1.1, -2.2);
   EXPECT_NEAR(0, result, 1e-3);
-  result = dynamics_limits.Saturate(1, 1.1, -2.2);
+  result = DynamicsLimits::Saturate(1, 1.1, -2.2);
   EXPECT_NEAR(1, result, 1e-3);
-  result = dynamics_limits.Saturate(-1,  1.1, -2.2);
+  result = DynamicsLimits::Saturate(-1,  1.1, -2.2);
   EXPECT_NEAR(-1, result, 1e-3);
-  result = dynamics_limits.Saturate(3, 1.1, -2.2);
+  result = DynamicsLimits::Saturate(3, 1.1, -2.2);
   EXPECT_NEAR(3, result, 1e-3);
-  result = dynamics_limits.Saturate(-3,  1.1, -2.2);
+  result = DynamicsLimits::Saturate(-3,  1.1, -2.2);
   EXPECT_NEAR(-3, result, 1e-3);
 }
 
