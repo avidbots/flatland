@@ -92,7 +92,7 @@ TEST(DynamicsLimitsTest, test_Configure_two_params) {
 
   // Ensure defaults are zero
   EXPECT_NEAR(0.1, dynamics_limits.acceleration_limit_, 1e-3);
-  // deccelleration cap defaults to accleration cap if not set
+  // deceleration cap defaults to accleration cap if not set
   EXPECT_NEAR(0.1, dynamics_limits.deceleration_limit_, 1e-3);
   EXPECT_NEAR(2.0, dynamics_limits.velocity_limit_, 1e-3);
 }
@@ -192,9 +192,9 @@ TEST(DynamicsLimitsTest, test_Limit_acceleration) {
   EXPECT_NEAR(0.45, result, 1e-3);
   result = dynamics_limits.Limit(1.0, 0.0, 0.05);  // Try to decelerate at -20m/s/s, when the limit is 9
   EXPECT_NEAR(0.55, result, 1e-3);
-  result = dynamics_limits.Limit(10.0, 0.0, 0.05);  // Try to decelerate at -20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(10.0, 0.0, 0.05);  // Try to decelerate at -200m/s/s, when the limit is 9
   EXPECT_NEAR(9.55, result, 1e-3);
-  result = dynamics_limits.Limit(-10.0, 0.0, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
+  result = dynamics_limits.Limit(-10.0, 0.0, 0.05);  // Try to decelerate at 200m/s/s, when the limit is 9
   EXPECT_NEAR(-9.55, result, 1e-3);
   result = dynamics_limits.Limit(5, -5, 0.05);  // Try to decelerate at 20m/s/s, when the limit is 9
   EXPECT_NEAR(4.55, result, 1e-3);
