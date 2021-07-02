@@ -45,20 +45,19 @@
  */
 
 #include "flatland_server/simulation_manager.h"
-
+#include <Box2D/Box2D.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
 #include <flatland_server/service_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <std_msgs/String.h>
 
 #include <exception>
 #include <limits>
 #include <string>
-#include <iostream>
 
 namespace flatland_server {
 
@@ -130,7 +129,7 @@ void SimulationManager::Main() {
   // if (train_mode_ && map_file_ == "random_map") {
   // if (train_mode_) {
   ros::NodeHandle n;
-  ros::Subscriber goal_sub = n.subscribe("/goal", 1, &SimulationManager::callback_goal, this);
+  ros::Subscriber goal_sub = n.subscribe("/map", 1, &SimulationManager::callback, this);
   // }
 
   while (ros::ok() && run_simulator_) {
@@ -236,21 +235,24 @@ bool SimulationManager::callback_StepWorld(
   return true;
 }
 
-void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
+void SimulationManager::callback(nav_msgs::OccupancyGrid msg) {
     YamlReader world_reader = YamlReader(map_layer_yaml_file_);
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
     // for (auto &layer : world_->layers_) {
-    //   if (layer->body_ != nullptr) {
-    //     layer->body_->physics_body_ = nullptr;
-    //   }
+    //   // if (layer->body_ != nullptr) {
+    //   //   layer->body_->physics_body_ = nullptr;
+    //   // }
     //   delete layer;
     //   ROS_INFO_NAMED("World", "Layer deleted");
     // }
-    ROS_INFO_NAMED("World", "Begin clearing layer id table");
+    // world_->physics_world_ = new b2World(world_->gravity_);
+    // world_->physics_world_->SetContactListener(world_);
+    world_->layers_.clear();
+    ROS_INFO_NAMED("World", "Layer cleared");
     world_->cfr_.layer_id_table_.clear();
-    ROS_INFO_NAMED("World", "Begin loading map layer");
+    ROS_INFO_NAMED("World", "Layer ID table cleared");
     world_->LoadLayers(layers_reader);
-    world_->DebugVisualize();
+    world_->DebugVisualize(true);
     ROS_INFO_NAMED("World", "Map Layer loaded");
   }
 

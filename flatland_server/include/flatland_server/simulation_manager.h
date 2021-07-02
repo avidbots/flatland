@@ -53,7 +53,7 @@
 #include <flatland_server/world.h>
 #include<flatland_msgs/StepWorld.h>
 #include <string>
-#include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/OccupancyGrid.h>
 #include <std_msgs/String.h>
 
 namespace flatland_server {
@@ -111,8 +111,9 @@ class SimulationManager {
   bool callback_StepWorld(flatland_msgs::StepWorld::Request &request,
                           flatland_msgs::StepWorld::Response &response);
 
-  void callback_goal(geometry_msgs::PoseStamped goal_msg);
-  // void callback_goal(const std_msgs::String::ConstPtr& msg);
+  void callback(nav_msgs::OccupancyGrid msg);  
+  // void callback(geometry_msgs::PoseStamped msg);
+  // void callback(const std_msgs::String::ConstPtr& msg);
 
 };
 };      // namespace flatland_server
