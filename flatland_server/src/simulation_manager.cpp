@@ -129,7 +129,7 @@ void SimulationManager::Main() {
   // if (train_mode_ && map_file_ == "random_map") {
   // if (train_mode_) {
   ros::NodeHandle n;
-  ros::Subscriber goal_sub = n.subscribe("/map", 1, &SimulationManager::callback, this);
+  ros::Subscriber goal_sub = n.subscribe("/chatter2", 1, &SimulationManager::callback, this);
   // }
 
   while (ros::ok() && run_simulator_) {
@@ -235,18 +235,11 @@ bool SimulationManager::callback_StepWorld(
   return true;
 }
 
-void SimulationManager::callback(nav_msgs::OccupancyGrid msg) {
+// void SimulationManager::callback(nav_msgs::OccupancyGrid msg) {
+// void SimulationManager::callback(geometry_msgs::PoseStamped msg) {
+void SimulationManager::callback(const std_msgs::String::ConstPtr& msg) {
     YamlReader world_reader = YamlReader(map_layer_yaml_file_);
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
-    // for (auto &layer : world_->layers_) {
-    //   // if (layer->body_ != nullptr) {
-    //   //   layer->body_->physics_body_ = nullptr;
-    //   // }
-    //   delete layer;
-    //   ROS_INFO_NAMED("World", "Layer deleted");
-    // }
-    // world_->physics_world_ = new b2World(world_->gravity_);
-    // world_->physics_world_->SetContactListener(world_);
     world_->layers_.clear();
     ROS_INFO_NAMED("World", "Layer cleared");
     world_->cfr_.layer_id_table_.clear();
@@ -255,26 +248,5 @@ void SimulationManager::callback(nav_msgs::OccupancyGrid msg) {
     world_->DebugVisualize(true);
     ROS_INFO_NAMED("World", "Map Layer loaded");
   }
-
-// void SimulationManager::callback_goal(geometry_msgs::PoseStamped goal_msg) {
-//   // bool is_new_episode = current_episode != goal_msg.header.seq; // self.nr starts with -1 so 0 will be the first new episode
-//   // if (is_new_episode){
-//   //   current_episode = goal_msg.header.seq;
-//   delete world_;
-//   world_ = World::MakeWorld(map_layer_yaml_file_);
-//   world_ -> DebugVisualize();
-//   ROS_INFO_NAMED("World", "New World loaded.");
-//   // }
-//   }
-
-// void SimulationManager::callback_goal(const std_msgs::String::ConstPtr& msg) {
-//   ROS_INFO("I heard: [%s]", msg->data.c_str());
-//   }
-
-
-
-
-
-
 
 };  // namespace flatland_server

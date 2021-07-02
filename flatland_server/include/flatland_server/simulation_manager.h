@@ -111,9 +111,9 @@ class SimulationManager {
   bool callback_StepWorld(flatland_msgs::StepWorld::Request &request,
                           flatland_msgs::StepWorld::Response &response);
 
-  void callback(nav_msgs::OccupancyGrid msg);  
+  // void callback(nav_msgs::OccupancyGrid msg);  
   // void callback(geometry_msgs::PoseStamped msg);
-  // void callback(const std_msgs::String::ConstPtr& msg);
+  void callback(const std_msgs::String::ConstPtr& msg);
 
 };
 };      // namespace flatland_server
