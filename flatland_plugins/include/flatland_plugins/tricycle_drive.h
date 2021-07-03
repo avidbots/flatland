@@ -46,6 +46,7 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
+#include <flatland_plugins/dynamics_limits.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
@@ -73,9 +74,12 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double max_steer_angle_;         ///< max abs. steering allowed [rad]
   double max_steer_velocity_;      ///< max abs. steering velocity [rad/s]
   double max_steer_acceleration_;  ///< max abs. steering acceleration [rad/s^2]
+  DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
+  DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
   double delta_command_;  ///< The current target (commanded) wheel angle
   double theta_f_;        ///< The current angular offset of the front wheel
   double d_delta_;        ///< The current angular speed of the front wheel
+  double v_f_ = 0.0;      ///< The current velocity at the front wheel
 
   geometry_msgs::Twist twist_msg_;
   nav_msgs::Odometry odom_msg_;

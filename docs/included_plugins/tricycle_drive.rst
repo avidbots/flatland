@@ -122,11 +122,28 @@ has no effect on the actual motion of the robot.
       # the steering angle will not exceed this absolute limit
       max_steer_angle: 0.0
 
+      # optional, defaults each parameter to 0.0 which means "no limit"
+      # sets dynamics constraints on angular velocity, acceleration (in rads/sec; rads/sec/sec)
+      angular_dynamics:
+        acceleration_limit: 0.0   # max acceleration (away from 0), in rads/s/s; 0.0 means "no limit"
+        deceleration_limit: 0.0   # max deceleration (towards 0), in rads/s/s; 0.0 means "no limit"; left blank, will default to acceleration_limit value
+        velocity_limit: 0.0       # max absolute velocity in rads/s; 0.0 means "no limit"
+
+      # optional, defaults each parameter to 0.0 which means "no limit"
+      # sets dynamics constraints on linear velocity, acceleration (in m/s; m/s/s)
+      linear_dynamics:
+        acceleration_limit: 0.0   # max acceleration (away from 0), in m/s/s; 0.0 means "no limit"
+        deceleration_limit: 0.0   # max deceleration (towards 0), in m/s/s; 0.0 means "no limit"; left blank, will default to acceleration_limit value
+        velocity_limit: 0.0       # max absolute velocity in m/s; 0.0 means "no limit"
+        
+
+      # DEPRECATED; Use angular_dynamics.velocity_limit instead
       # optional, defaults to 0.0 which means no limit
       # sets the steering angular velocity limit (absolute, rad/s)
       # the steering angular velocity will not exceed this absolute limit
       max_angular_velocity: 0.0
 
+      # DEPRECATED; Use angular_dynamics.acceleration_limit instead
       # optional, defaults to 0.0 which means no limit
       # sets the steering angular acceleration limit (absolute, rad/s^2)
       # the steering angular acceleration will not exceed this absolute limit
