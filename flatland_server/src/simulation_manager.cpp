@@ -240,6 +240,7 @@ bool SimulationManager::callback_StepWorld(
 void SimulationManager::callback(const std_msgs::String::ConstPtr& msg) {
     YamlReader world_reader = YamlReader(map_layer_yaml_file_);
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
+    world_->layers_name_map_.clear();
     world_->layers_.clear();
     ROS_INFO_NAMED("World", "Layer cleared");
     world_->cfr_.layer_id_table_.clear();
