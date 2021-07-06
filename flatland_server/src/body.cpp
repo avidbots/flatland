@@ -66,7 +66,13 @@ Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
 }
 
 Body::~Body() {
+  ROS_INFO_NAMED("Body",
+                 "body  \"%s\" destructor called",
+                 name_.c_str());
   if (physics_body_) {
+    ROS_INFO_NAMED("Body",
+                   "Deleting physics body for \"%s\"",
+                   name_.c_str());
     physics_body_->GetWorld()->DestroyBody(physics_body_);
   }
 }

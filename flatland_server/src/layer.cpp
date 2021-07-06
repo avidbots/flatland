@@ -118,7 +118,12 @@ Layer::Layer(b2World *physics_world, CollisionFilterRegistry *cfr,
       cfr_(cfr),
       viz_name_("layer/" + names[0]) {}
 
-Layer::~Layer() { delete body_; }
+Layer::~Layer() { 
+  ROS_INFO_NAMED("Layer",
+                 "layer \"%s\" destructor called",
+                 names_[0].c_str());
+  delete body_; 
+}
 
 const std::vector<std::string> &Layer::GetNames() const { return names_; }
 

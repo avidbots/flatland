@@ -238,13 +238,11 @@ bool SimulationManager::callback_StepWorld(
 // void SimulationManager::callback(nav_msgs::OccupancyGrid msg) {
 // void SimulationManager::callback(geometry_msgs::PoseStamped msg) {
 void SimulationManager::callback(const std_msgs::String::ConstPtr& msg) {
+    std::string map_layer_yaml_file_(msg->data);
     YamlReader world_reader = YamlReader(map_layer_yaml_file_);
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
-    world_->layers_name_map_.clear();
-    world_->layers_.clear();
-    ROS_INFO_NAMED("World", "Layer cleared");
-    world_->cfr_.layer_id_table_.clear();
-    ROS_INFO_NAMED("World", "Layer ID table cleared");
+
+    // replace the existing world layers with layers loaded from the provided yaml file
     world_->LoadLayers(layers_reader);
     world_->DebugVisualize(true);
     ROS_INFO_NAMED("World", "Map Layer loaded");
