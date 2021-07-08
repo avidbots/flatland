@@ -22,7 +22,7 @@
   <depend>tf2</depend>
   <depend>tf2_geometry_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>yaml-cpp</depend>
+  <depend>yaml_cpp_catkin</depend>
   <depend>visualization_msgs</depend>
   <depend>interactive_markers</depend>
   <depend>flatland_msgs</depend>
