@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <package>
   <name>flatland</name>
-  <version>1.1.1</version>
+  <version>1.1.3</version>
   <description>
     This is the metapackage for flatland.
   </description>

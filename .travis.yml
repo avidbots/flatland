@@ -1,14 +1,15 @@
-sudo: required 
-dist: trusty 
 language: generic 
-compiler:
-  - gcc
+services:
+  - docker
+cache:
+  directories:
+    - $HOME/.ccache
 env:
-  global:
-    - CCACHE_DIR=$HOME/.ccache
   matrix:
-    - ROS_DISTRO="kinetic" ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu BEFORE_SCRIPT='./scripts/ci_prebuild.sh' AFTER_SCRIPT='./scripts/ci_postbuild.sh'
+    - ROS_DISTRO="kinetic" ROS_REPO=ros AFTER_SETUP_TARGET_WORKSPACE='./scripts/ci_prebuild.sh' AFTER_SCRIPT='./scripts/ci_postbuild.sh'
+    - ROS_DISTRO="noetic" ROS_REPO=ros AFTER_SETUP_TARGET_WORKSPACE='./scripts/ci_prebuild.sh'
 install:
-  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config  
+  - git clone --quiet --depth 1 https://github.com/ros-industrial/industrial_ci.git .industrial_ci -b master
+
 script: 
-  - source .ci_config/travis.sh
+  - .industrial_ci/travis.sh
