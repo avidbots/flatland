@@ -83,7 +83,7 @@ class ServiceManagerTest : public ::testing::Test {
     sim_man = new SimulationManager(world_path.string() + "world.yaml",
                                     world_path.string(),
                                     world_path.string() + "world_plugins.yaml",
-                                    true, 1000, 1 / 1000.0, false, 0);
+                                    1000, 1 / 1000.0 , false, 0);
     simulation_thread = std::thread(&ServiceManagerTest::SimulationThread,
                                     dynamic_cast<ServiceManagerTest*>(this));
   }

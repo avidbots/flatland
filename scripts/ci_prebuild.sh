@@ -7,7 +7,7 @@ function print_er {
 }
 
 
-apt-get install clang-3.8 clang-format-3.8 clang-tidy-3.8 -y 
+apt-get install clang clang-format clang-tidy -y 
 
 # change to the file's directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

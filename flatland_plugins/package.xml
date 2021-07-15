@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>flatland_plugins</name>
-  <version>1.1.1</version>
+  <version>1.1.3</version>
   <description>Default plugins for flatland</description>
   <license>BSD</license>
   <url type="website">https://bitbucket.org/avidbots/flatland</url>
@@ -22,6 +22,7 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>flatland_msgs</depend>
+  <depend>nav_msgs</depend>
 
   <export>
     <flatland_server plugin="${prefix}/flatland_plugins.xml" />
