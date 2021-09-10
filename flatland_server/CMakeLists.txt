@@ -178,6 +178,10 @@ install(FILES flatland_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
+install(PROGRAMS scripts/map_to_lines.py
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 #############
 ## Testing ##
 #############
