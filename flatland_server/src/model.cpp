@@ -207,7 +207,7 @@ std::string Model::NameSpaceTF(const std::string &frame_id) const {
                        std::string::npos);  // Strip the leading '/'
   } else {  // case: "local" namespace: prepend namespace
     if (namespace_.length() > 0) {
-      return namespace_ + "_" + frame_id;
+      return namespace_  + frame_id;
     } else {
       return frame_id;
     }
