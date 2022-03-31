@@ -68,7 +68,7 @@ class WorldPlugin : public FlatlandPlugin {
   * @brief WorldPlugin default constructor
   */
   WorldPlugin() = default;
-
+  World *GetWorld() const;
   /*
   * @brief initialize the plugin
   * @param[in] world, the World the plugin is attached to

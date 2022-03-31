@@ -52,6 +52,9 @@
 #include <string>
 
 namespace flatland_server {
+
+World *WorldPlugin::GetWorld() const { return world_; }
+
 void WorldPlugin::Initialize(World *world, std::string name, std::string type,
                              YAML::Node &plugin_reader,
                              YamlReader &world_config) {
