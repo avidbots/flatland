@@ -75,6 +75,7 @@ class UpdateTimer {
    * update timers get the simulation as well as step size for calculation
    */
   bool CheckUpdate(const flatland_server::Timekeeper &timekeeper);
+  bool CheckUpdate(const double max_step_size, const ros::Time& ros_time);
 };
 };
 

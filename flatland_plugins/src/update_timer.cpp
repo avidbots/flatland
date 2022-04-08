@@ -88,4 +88,22 @@ bool UpdateTimer::CheckUpdate(const flatland_server::Timekeeper &timekeeper) {
 
   return false;
 }
+
+bool UpdateTimer::CheckUpdate(const double max_step_size, const ros::Time& ros_time) {
+  if (fabs(period_.toSec()) < 1e-5) {
+    return true;
+  }
+  // Method obtained from Hector Gazebo Plugins
+  // hector_gazebo/hector_gazebo_plugins/include/hector_gazebo_plugins/update_timer.h
+  double step = max_step_size;
+  double fraction =
+      fmod(ros_time.toSec() + (step / 2.0), period_.toSec());
+
+  if ((fraction >= 0.0) && (fraction < step)) {
+    last_update_time_ = ros_time;
+    return true;
+  }
+
+  return false;
+}
 };
