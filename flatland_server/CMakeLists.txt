@@ -4,6 +4,8 @@ project(flatland_server)
 # Ensure we're using c++11
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+set(CMAKE_BUILD_TYPE RelWithDebInfo)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -174,6 +176,10 @@ install(DIRECTORY test/conestogo_office_test
 # Install plugins file
 install(FILES flatland_plugins.xml
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(PROGRAMS scripts/map_to_lines.py
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 #############

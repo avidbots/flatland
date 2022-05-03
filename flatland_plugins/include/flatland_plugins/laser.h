@@ -73,14 +73,15 @@ class Laser : public ModelPlugin {
   std::string topic_;     ///< topic name to publish the laser scan
   Body *body_;            ///<  body the laser frame attaches to
   Pose origin_;           ///< laser frame w.r.t the body
-  double range_;          ///< laser max range
-  double noise_std_dev_;  ///< noise std deviation
-  double max_angle_;      /// < laser max angle
-  double min_angle_;      ///< laser min angle
-  double increment_;      ///< laser angle increment
-  double update_rate_;    ///< the rate laser scan will be published
+  float range_;           ///< laser max range
+  float noise_std_dev_;   ///< noise std deviation
+  float max_angle_;       /// < laser max angle
+  float min_angle_;       ///< laser min angle
+  float increment_;       ///< laser angle increment
+  float update_rate_;     ///< the rate laser scan will be published
   std::string frame_id_;  ///< laser frame id name
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
+  bool flipped_;          ///< whether the lidar is flipped
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
   ThreadPool pool_;       ///< ThreadPool for managing concurrent scan threads
 
@@ -90,17 +91,19 @@ class Laser : public ModelPlugin {
    */
   uint16_t reflectance_layers_bits_;
 
-  std::default_random_engine rng_;              ///< random generator
-  std::normal_distribution<double> noise_gen_;  ///< gaussian noise generator
+  std::default_random_engine rng_;             ///< random generator
+  std::normal_distribution<float> noise_gen_;  ///< gaussian noise generator
 
-  Eigen::Matrix3f m_body_to_laser_;       ///< tf from body to laser
-  Eigen::Matrix3f m_world_to_body_;       ///< tf  from world to body
-  Eigen::Matrix3f m_world_to_laser_;      ///< tf from world to laser
-  Eigen::MatrixXf m_laser_points_;        ///< laser points in the laser' frame
-  Eigen::MatrixXf m_world_laser_points_;  /// laser point in the world frame
-  Eigen::Vector3f v_zero_point_;          ///< point representing (0,0)
-  Eigen::Vector3f v_world_laser_origin_;  ///< (0,0) in the laser frame
-  sensor_msgs::LaserScan laser_scan_;     ///< for publishing laser scan
+  Eigen::Matrix3f m_body_to_laser_;        ///< tf from body to laser
+  Eigen::Matrix3f m_world_to_body_;        ///< tf  from world to body
+  Eigen::Matrix3f m_world_to_laser_;       ///< tf from world to laser
+  Eigen::MatrixXf m_laser_points_;         ///< laser points in the laser' frame
+  Eigen::MatrixXf m_world_laser_points_;   /// laser point in the world frame
+  Eigen::Vector3f v_zero_point_;           ///< point representing (0,0)
+  Eigen::Vector3f v_world_laser_origin_;   ///< (0,0) in the laser frame
+  sensor_msgs::LaserScan laser_scan_;      ///< for publishing laser scan
+  std::vector<float> m_lastMaxFractions_;  ///< the robot move slowly when
+                                           /// comparing with to the scan rate
 
   ros::Publisher scan_publisher_;             ///< ros laser topic publisher
   tf::TransformBroadcaster tf_broadcaster_;   ///< broadcast laser frame

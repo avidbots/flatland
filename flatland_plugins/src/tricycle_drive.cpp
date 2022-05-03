@@ -105,8 +105,8 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   angular_dynamics_.Configure(r.SubnodeOpt("angular_dynamics", YamlReader::MAP).Node());
 
   // Accept old configuration location for angular dynamics constraints if present
-  if (angular_dynamics_.velocity_limit_ != 0.0) angular_dynamics_.velocity_limit_ = r.Get<double>("max_angular_velocity", 0.0);
-  if (angular_dynamics_.acceleration_limit_ != 0.0) {
+  if (angular_dynamics_.velocity_limit_ == 0.0) angular_dynamics_.velocity_limit_ = r.Get<double>("max_angular_velocity", 0.0);
+  if (angular_dynamics_.acceleration_limit_ == 0.0) {
     angular_dynamics_.acceleration_limit_ = r.Get<double>("max_steer_acceleration", 0.0);
     angular_dynamics_.deceleration_limit_ = angular_dynamics_.acceleration_limit_ ;
   }
