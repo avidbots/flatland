@@ -71,13 +71,13 @@ catkin_package(
 ###########
 
 include_directories(
+  thirdparty
   include
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${LUA_INCLUDE_DIR}
-  thirdparty
 )
 
 add_subdirectory("thirdparty/Box2D")
