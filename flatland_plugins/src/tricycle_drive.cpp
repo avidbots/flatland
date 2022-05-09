@@ -358,8 +358,8 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   //          otherwise
   // subject to:
   //   |δ[t]| <= max_steer_angle_
-  //   |dδ[t]| <= max_steer_velocity_
-  //   |d2δ[t]| <= max_steer_acceleration_
+  //   |dδ[t]| <= angular_dynamics_.velocity_limit_
+  //   |d2δ[t]| <= angular_dynamics_.acceleration_limit_ 
 
   // twist message contains the speed and angle of the front wheel
   delta_command_ = twist_msg_.angular.z;  // target steering angle
@@ -368,11 +368,12 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
   // In the simulation, the equations of motion have to be computed backwards
   // (4) Update the new commanded steering velocity
+  
   //     Note: Set target steer velocity = 0 rad/s to avoid overshooting, when
   //           it is possible to reach the commanded steering angle in 1 step
   double d_delta_command = 0.0;
-  double delta_max_one_step = d_delta_ * d_delta_ / 2 / max_steer_acceleration_;
-  if (max_steer_acceleration_ == 0.0) {
+  double delta_max_one_step = d_delta_ * d_delta_ / 2 / angular_dynamics_.acceleration_limit_;
+  if (angular_dynamics_.acceleration_limit_ == 0.0) {
     delta_max_one_step = fabs(delta_command_ - theta_f_);
   }
 

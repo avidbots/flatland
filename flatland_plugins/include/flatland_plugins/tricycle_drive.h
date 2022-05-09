@@ -72,8 +72,6 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   b2Vec2 rear_center_;    ///< middle point between the two rear wheels
   bool invert_steering_angle_;     ///< whether to invert steering angle
   double max_steer_angle_;         ///< max abs. steering allowed [rad]
-  double max_steer_velocity_;      ///< max abs. steering velocity [rad/s]
-  double max_steer_acceleration_;  ///< max abs. steering acceleration [rad/s^2]
   DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
   DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
   double delta_command_;  ///< The current target (commanded) wheel angle
