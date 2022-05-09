@@ -148,3 +148,5 @@ has no effect on the actual motion of the robot.
       # sets the steering angular acceleration limit (absolute, rad/s^2)
       # the steering angular acceleration will not exceed this absolute limit
       max_steer_acceleration: 0.0
+
+      ground_truth_frame_id: map  # The name of the ground truth origin TF frame

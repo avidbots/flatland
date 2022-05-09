@@ -106,3 +106,5 @@ velocities and odometries are w.r.t. the robot origin
         acceleration_limit: 0.0   # max acceleration (away from 0), in m/s/s; 0.0 means "no limit"
         deceleration_limit: 0.0   # max deceleration (towards 0), in m/s/s; 0.0 means "no limit"; left blank, will default to acceleration_limit value
         velocity_limit: 0.0       # max absolute velocity in m/s; 0.0 means "no limit"
+
+      ground_truth_frame_id: map  # The name of the ground truth origin TF frame

@@ -69,6 +69,8 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   string odom_topic = r.Get<string>("odom_pub", "odometry/filtered");
   string ground_truth_topic =
       r.Get<string>("ground_truth_pub", "odometry/ground_truth");
+  string ground_truth_frame_id =
+      r.Get<string>("ground_truth_frame_id", "map");
 
   // noise are in the form of linear x, linear y, angular variances
   vector<double> odom_twist_noise =
@@ -155,7 +157,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   ground_truth_pub_ = nh_.advertise<nav_msgs::Odometry>(ground_truth_topic, 1);
 
   // init the values for the messages
-  ground_truth_msg_.header.frame_id = odom_frame_id;
+  ground_truth_msg_.header.frame_id = ground_truth_frame_id;
   ground_truth_msg_.child_frame_id =
       tf::resolve("", GetModel()->NameSpaceTF(body_->name_));
 

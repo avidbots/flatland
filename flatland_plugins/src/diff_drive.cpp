@@ -66,7 +66,7 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
   std::string ground_truth_frame_id =
-      reader.Get<std::string>("ground_truth_frame_id", odom_frame_id);
+      reader.Get<std::string>("ground_truth_frame_id", "map");
 
   std::string twist_topic = reader.Get<std::string>("twist_sub", "cmd_vel");
   std::string odom_topic =
