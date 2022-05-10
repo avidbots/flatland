@@ -122,7 +122,7 @@ TEST_F(TricycleDrivePluginTest, drive_test_simple) {
     ros::spinOnce();
   }
 
-  // TODO: Check odom is 0 linear, 0 angular
+  // Check odom is 0 linear, 0 angular
   EXPECT_NEAR(0, odom.twist.twist.linear.x, 0.01);
   EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
   EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);
