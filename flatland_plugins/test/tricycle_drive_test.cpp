@@ -182,10 +182,10 @@ TEST_F(TricycleDrivePluginTest, drive_test_vel_limit) {
     ros::spinOnce();
   }
 
-  // TODO: Check odom is 0 linear, 0 angular
+  // Check odom is 0 linear, 0 angular
   EXPECT_NEAR(0, odom.twist.twist.linear.x, 0.01);
   EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
-  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);
+  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);  // start position is 12m on x
 
   // directly set the Twist message for velocity input
   geometry_msgs::Twist cmd_vel;
@@ -201,7 +201,7 @@ TEST_F(TricycleDrivePluginTest, drive_test_vel_limit) {
   }
   EXPECT_NEAR(0.2, odom.twist.twist.linear.x, 0.01);  // verify that we're being capped at 0.2m/s
   EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
-  EXPECT_NEAR(12.2, odom.pose.pose.position.x, 0.01);  // should have driven 0.5m from the start
+  EXPECT_NEAR(12.2, odom.pose.pose.position.x, 0.01);  // should have driven 0.2m from the start
 
 
   // Stop
@@ -214,7 +214,7 @@ TEST_F(TricycleDrivePluginTest, drive_test_vel_limit) {
 
   EXPECT_NEAR(0.0, odom.twist.twist.linear.x, 0.01);
   EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
-  EXPECT_NEAR(12.2, odom.pose.pose.position.x, 0.01);  // should have driven 0.5m from the start
+  EXPECT_NEAR(12.2, odom.pose.pose.position.x, 0.01);  // should have driven 0.2m from the start
 
 }
 
@@ -242,15 +242,13 @@ TEST_F(TricycleDrivePluginTest, drive_test_angular_limit) {
     ros::spinOnce();
   }
 
-  // TODO: Check odom is 0 linear, 0 angular
+  // Check odom is 0 linear, 0 angular
   EXPECT_NEAR(0, odom.twist.twist.linear.x, 0.01);
   EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
   EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);
 
   // directly set the Twist message for velocity input
   geometry_msgs::Twist cmd_vel;
-  cmd_vel.angular.x = 0;  //m/s
-
 
   // rotate front wheel for 1 seconds
   cmd_vel.angular.z = 0.5;  // rad/s, but the limit is 0.2m/s
@@ -262,7 +260,7 @@ TEST_F(TricycleDrivePluginTest, drive_test_angular_limit) {
   // front wheel should have rotated to 0.2 radians, but we didn't move
   EXPECT_NEAR(0.0, odom.twist.twist.linear.x, 0.01);
   EXPECT_NEAR(0.0, odom.twist.twist.angular.z, 0.01);
-  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);  // should have driven 0.5m from the start
+  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);  // should not have moved
 
 
   // drive, rotating based on front wheel angle for 0.1 seconds
