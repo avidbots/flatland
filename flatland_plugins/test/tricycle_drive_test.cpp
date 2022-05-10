@@ -251,7 +251,7 @@ TEST_F(TricycleDrivePluginTest, drive_test_angular_limit) {
   geometry_msgs::Twist cmd_vel;
 
   // rotate front wheel for 1 seconds
-  cmd_vel.angular.z = 0.5;  // rad/s, but the limit is 0.2m/s
+  cmd_vel.angular.z = 0.5;  // rad/s, but the limit is 0.2rad/s
   td->TwistCallback(cmd_vel);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
