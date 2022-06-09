@@ -99,7 +99,8 @@ class UpdateTimerTest : public ::testing::Test {
 
   void ExecuteRateTest() {
     Timekeeper timekeeper;
-    w = World::MakeWorld(world_yaml.string());
+    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  w = World::MakeWorld(node,world_yaml.string());
 
     // artificially load a plugin
     boost::shared_ptr<TestPlugin> p(new TestPlugin());
@@ -216,7 +217,7 @@ TEST_F(UpdateTimerTest, rate_test_E) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "model_tf_plugin_test");
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

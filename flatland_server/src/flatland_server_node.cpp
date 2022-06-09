@@ -66,8 +66,8 @@
 //     delete simulation_manager;
 //     simulation_manager = nullptr;
 //   }
-//   ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
-//   ros::shutdown();
+//   RCLCPP_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
+//   rclcpp::shutdown();
 // }
 
 class FlatlandServerNode : public rclcpp::Node

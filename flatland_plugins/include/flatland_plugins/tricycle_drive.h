@@ -78,7 +78,7 @@ class TricycleDrive : public flatland_server::ModelPlugin {
   double delta_;          ///< The current angular offset of the front wheel
   double d_delta_;        ///< The current angular speed of the front wheel
 
-  geometry_msgs::msg::Twist::SharedPtr twist_msg_;
+  geometry_msgs::msg::Twist::SharedPtr twist_msg_ = std::make_shared<geometry_msgs::msg::Twist>();
   nav_msgs::msg::Odometry odom_msg_;
   nav_msgs::msg::Odometry ground_truth_msg_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_sub_;

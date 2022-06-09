@@ -57,19 +57,19 @@ FlatlandWindow* window = nullptr;
  * @param[in]   sig: signal itself
  */
 void SigintHandler(int sig) {
-  RCLCPP_WARN(rclcpp::get_logger("Node", "*** Shutting down... ***"));
+  RCLCPP_WARN(rclcpp::get_logger("Node"), "*** Shutting down... ***");
 
   if (window != nullptr) {
     delete window;
     window = nullptr;
   }
   RCLCPP_INFO_STREAM(rclcpp::get_logger("Flatland Viz"), "Beginning ros shutdown");
-  ros::shutdown();
+  rclcpp::shutdown();
 }
 
 int main(int argc, char** argv) {
-  if (!ros::isInitialized()) {
-    ros::init(argc, argv, "flatland_viz", ros::init_options::NoSigintHandler);
+  if (!rclcpp::isInitialized()) {
+    rclcpp::init(argc, argv);
   }
 
   QApplication app(argc, argv);

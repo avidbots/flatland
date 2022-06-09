@@ -25,6 +25,7 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(flatland_msgs REQUIRED)
@@ -88,7 +89,7 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
+ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers sensor_msgs)
 
 target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
@@ -144,22 +145,17 @@ if(BUILD_TESTING)
   ament_add_gtest(model_test test/model_test.cpp)
   target_link_libraries(model_test flatland_lib)
 
+  ament_add_gtest(geometry_test test/geometry_test.cpp)
+  target_link_libraries(geometry_test flatland_lib)
+
+  ament_add_gtest(collision_filter_registry_test test/collision_filter_registry_test.cpp)
+  target_link_libraries(collision_filter_registry_test flatland_lib)
+
+  ament_add_gtest(plugin_manager_test test/plugin_manager_test.cpp)
+  target_link_libraries(plugin_manager_test flatland_lib)
+
+
 if(FALSE) # fake a block comment
-
-  catkin_add_gtest(geometry_test test/geometry_test.cpp)
-  target_link_libraries(geometry_test
-    flatland_lib)
-
-  catkin_add_gtest(collision_filter_registry_test
-    test/collision_filter_registry_test.cpp)
-  target_link_libraries(collision_filter_registry_test
-    flatland_lib)
-
-  add_rostest_gtest(plugin_manager_test
-    test/plugin_manager_test.test
-    test/plugin_manager_test.cpp)
-  target_link_libraries(plugin_manager_test
-    flatland_lib)
 
   add_rostest_gtest(service_manager_test
     test/service_manager_test.test
@@ -196,18 +192,15 @@ if(FALSE) # fake a block comment
 endif()
 endif()
 
-
-ament_package()
-
 #############
 ## Install ##
 #############
 
-pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
+pluginlib_export_plugin_description_file(flatland_server plugin_description.xml)
 
 install(
   TARGETS flatland_lib
-  EXPORT export_flatland_lib
+  EXPORT flatland_lib
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
@@ -234,8 +227,4 @@ install(DIRECTORY test/conestogo_office_test
     DESTINATION share/${PROJECT_NAME}/test
 )
 
-# TODO
-# Install plugins file
-#install(FILES flatland_plugins.xml
-#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#)
+ament_package()

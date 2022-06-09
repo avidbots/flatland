@@ -2,8 +2,8 @@
 #define PAUSE_SIM_TOOL_H
 
 #include <rclcpp/rclcpp.hpp>
-#include <rviz/tool.h>
-#include <std_srvs/Empty.h>
+#include <rviz_common/tool.hpp>
+#include <std_srvs/srv/empty.hpp>
 
 namespace flatland_viz {
 
@@ -12,7 +12,7 @@ namespace flatland_viz {
  * @brief               Rviz tool to support pausing and unpausing the
  * simulation.
  */
-class PauseSimTool : public rviz::Tool {
+class PauseSimTool : public rviz_common::Tool {
  public:
   PauseSimTool();
   ~PauseSimTool();
@@ -37,9 +37,7 @@ class PauseSimTool : public rviz::Tool {
    */
   virtual void deactivate();
 
-  ros::NodeHandle nh_;  ///< NodeHandle to call the pause toggle service
-  ros::ServiceClient
-      pause_service_;  ///< ServiceClient that calls the pause toggle service
+  rclcpp::Client<std_srvs::srv::Empty>::SharedPtr pause_service_;
 };
 }
 

@@ -86,19 +86,19 @@ target_include_directories(flatland_plugins_lib PUBLIC
 target_link_libraries(flatland_plugins_lib
   ${Eigen3_LIBRARIES}
   ${LUA_LIBRARIES}
+  ${OpenCV_LIBRARIES}
   yaml-cpp
 )
 
 ament_export_targets(export_flatland_plugins_lib HAS_LIBRARY_TARGET)
 # ament_export_libraries(flatland_lib)
 ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib geometry_msgs tf2 tf2_ros tf2_geometry_msgs yaml_cpp_vendor)
-ament_package()
 
 #############
 ## Install ##
 #############
 
-pluginlib_export_plugin_description_file(flatland_plugins_lib plugin_description.xml)
+pluginlib_export_plugin_description_file(flatland_server plugin_description.xml)
 
 install(
   TARGETS flatland_plugins_lib
@@ -165,3 +165,5 @@ if(BUILD_TESTING )
 
 endif()
 endif()
+
+ament_package()
