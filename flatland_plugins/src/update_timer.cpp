@@ -50,7 +50,7 @@
 namespace flatland_plugins {
 
 UpdateTimer::UpdateTimer()
-    : period_(rclcpp::Duration(0)), last_update_time_(rclcpp::Time(0, 0)) {}
+    : period_(rclcpp::Duration(0,0)), last_update_time_(rclcpp::Time(0, 0)) {}
 
 void UpdateTimer::SetRate(double rate) {
   if (rate == 0.0)

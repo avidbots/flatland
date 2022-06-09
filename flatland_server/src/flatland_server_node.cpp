@@ -76,11 +76,11 @@ class FlatlandServerNode : public rclcpp::Node
     FlatlandServerNode()
     : Node("flatland_server")
     {
-      declare_parameter("world_path");
-      declare_parameter("update_rate");
-      declare_parameter("step_size");
-      declare_parameter("show_viz");
-      declare_parameter("viz_pub_rate");
+      declare_parameter<std::string>("world_path");
+      declare_parameter<float>("update_rate");
+      declare_parameter<float>("step_size");
+      declare_parameter<bool>("show_viz");
+      declare_parameter<float>("viz_pub_rate");
 
       // Load parameters
       if (!get_parameter("world_path", world_path_)) {
@@ -88,10 +88,10 @@ class FlatlandServerNode : public rclcpp::Node
         rclcpp::shutdown();
         return;
       }
-      get_parameter_or("update_rate", update_rate_, 200.0f);
-      get_parameter_or("step_size", step_size_, 1.0f/200.0f);
-      get_parameter_or("show_viz", show_viz_, 0.0f);
-      get_parameter_or("viz_pub_rate", viz_pub_rate_, 30.0f);
+      get_parameter_or<float>("update_rate", update_rate_, 200.0f);
+      get_parameter_or<float>("step_size", step_size_, 1.0f/200.0f);
+      get_parameter_or<bool>("show_viz", show_viz_, false);
+      get_parameter_or<float>("viz_pub_rate", viz_pub_rate_, 30.0f);
     }
 
   void Run() {
@@ -112,7 +112,7 @@ class FlatlandServerNode : public rclcpp::Node
     std::string world_path_; // The file path to the world.yaml file
     float update_rate_;  // The physics update rate (Hz)
     float step_size_;
-    float show_viz_;
+    bool show_viz_;
     float viz_pub_rate_;
     std::shared_ptr<flatland_server::SimulationManager> simulation_manager_;
 };

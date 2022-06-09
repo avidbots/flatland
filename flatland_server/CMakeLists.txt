@@ -29,15 +29,13 @@ find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(flatland_box2d REQUIRED)
 
 # lua5.1
 find_package(Lua 5.1 QUIET)
 
 # OpenCV
 find_package(OpenCV REQUIRED)
-
-# Box2D
-find_package(Box2D REQUIRED)
 
 # Boost
 find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
@@ -90,20 +88,19 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
+ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
   ${LUA_LIBRARIES}
-  ${BOX2D_LIBRARIES}
   yaml-cpp
 )
 
 ## Declare a C++ executable
 add_executable(flatland_server src/flatland_server_node.cpp)
-ament_target_dependencies(flatland_server rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
+ament_target_dependencies(flatland_server flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_include_directories(flatland_server
   PUBLIC
@@ -118,15 +115,14 @@ target_link_libraries(flatland_server
   ${Boost_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
   ${LUA_LIBRARIES}
-  ${BOX2D_LIBRARIES}
   yaml-cpp
   flatland_lib
 )
 
 
-ament_export_interfaces(export_flatland_lib HAS_LIBRARY_TARGET)
+ament_export_targets(export_flatland_lib HAS_LIBRARY_TARGET)
 ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_dependencies(rclcpp flatland_box2d flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
 ament_export_include_directories(include)
 
 

@@ -21,6 +21,8 @@ find_package(ament_cmake REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+find_package(interactive_markers REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -29,11 +31,14 @@ find_package(tf2_geometry_msgs REQUIRED)
 find_package(flatland_server REQUIRED)
 find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(OpenCV REQUIRED)
 #  rostest
 
 
 find_package(Eigen3 REQUIRED)# lua5.1
 find_package(Lua 5.1 QUIET)
+
+find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 
 ##############
 ## coverage ##
@@ -84,7 +89,7 @@ target_link_libraries(flatland_plugins_lib
   yaml-cpp
 )
 
-ament_export_interfaces(export_flatland_plugins_lib HAS_LIBRARY_TARGET)
+ament_export_targets(export_flatland_plugins_lib HAS_LIBRARY_TARGET)
 # ament_export_libraries(flatland_lib)
 ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib geometry_msgs tf2 tf2_ros tf2_geometry_msgs yaml_cpp_vendor)
 ament_package()
