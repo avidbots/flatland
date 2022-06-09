@@ -200,7 +200,7 @@ pluginlib_export_plugin_description_file(flatland_server plugin_description.xml)
 
 install(
   TARGETS flatland_lib
-  EXPORT flatland_lib
+  EXPORT export_flatland_lib
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin

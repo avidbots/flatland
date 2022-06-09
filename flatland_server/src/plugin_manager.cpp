@@ -60,15 +60,15 @@ PluginManager::PluginManager(rclcpp::Node::SharedPtr node) : node_(node) {
           "flatland_server", "flatland_server::ModelPlugin");
   RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), "Declared Classes:");
   for(auto a : model_plugin_loader_->getDeclaredClasses()) {
-    RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a);
+    RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a.c_str());
   }
   RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), "Registered Libraries:");
   for(auto a : model_plugin_loader_->getRegisteredLibraries()) {
-    RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a);
+    RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a.c_str());
   }
   RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), "XML Paths:");
   for(auto a : model_plugin_loader_->getPluginXmlPaths()) {
-    RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a);
+    RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a.c_str());
   }
   world_plugin_loader_ =
       new pluginlib::ClassLoader<flatland_server::WorldPlugin>(
