@@ -44,19 +44,20 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/diff_drive.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 TEST(DiffDrivePluginTest, load_test) {
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_diff_drive_plugin");
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
-        loader.createInstance("flatland_plugins::DiffDrive");
+    std::shared_ptr<flatland_server::ModelPlugin> plugin =
+        loader.createSharedInstance("flatland_plugins::DiffDrive");
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load diff drive Drive plugin. " << e.what();
   }
