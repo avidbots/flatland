@@ -134,14 +134,13 @@ if(BUILD_TESTING)
   ament_add_gtest(diff_drive_test test/diff_drive_test.cpp)
   target_link_libraries(diff_drive_test flatland_plugins_lib)
 
+  ament_add_gtest(tricycle_drive_test test/tricycle_drive_test.cpp)
+  target_link_libraries(tricycle_drive_test flatland_plugins_lib)
+
 if(FALSE) # fake a block comment
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib)
-
-  add_rostest_gtest(tricycle_drive_test test/tricycle_drive_test.test
-                    test/tricycle_drive_test.cpp)
-  target_link_libraries(tricycle_drive_test flatland_plugins_lib)
 
   add_rostest_gtest(bumper_test test/bumper_test.test
                     test/bumper_test.cpp)

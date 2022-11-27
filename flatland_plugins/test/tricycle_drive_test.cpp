@@ -44,19 +44,20 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_plugins/tricycle_drive.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
-#include <pluginlib/class_loader.h>
+#include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 TEST(TricycleDrivePluginTest, load_test) {
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_tricycle_drive_plugin");
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
   try {
-    boost::shared_ptr<flatland_server::ModelPlugin> plugin =
-        loader.createInstance("flatland_plugins::TricycleDrive");
+    std::shared_ptr<flatland_server::ModelPlugin> plugin =
+        loader.createSharedInstance("flatland_plugins::TricycleDrive");
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Tricycle Drive plugin. " << e.what();
   }
