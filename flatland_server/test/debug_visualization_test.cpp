@@ -45,13 +45,15 @@
  */
 
 #include "flatland_server/debug_visualization.h"
+
 #include <Box2D/Box2D.h>
 #include <flatland_server/timekeeper.h>
 #include <gtest/gtest.h>
+
+#include <cmath>
 #include <rclcpp/rclcpp.hpp>
 #include <utility>
 #include <visualization_msgs/msg/marker_array.hpp>
-#include <cmath>
 
 using std::placeholders::_1;
 
@@ -75,9 +77,10 @@ TEST(DebugVizTest, testBodyToMarkersPolygon) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersPolygon");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0,
-                                                           0.0, 0.5, 0.7);
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
+      "test_debug_visualization_BodyToMarkersPolygon");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body, 1.0, 0.0, 0.5, 0.7);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -138,9 +141,10 @@ TEST(DebugVizTest, testBodyToMarkersCircle) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersCircle");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0,
-                                                           0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersCircle");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -167,9 +171,10 @@ TEST(DebugVizTest, testBodyToMarkersEdge) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersEdge");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0,
-                                                           0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersEdge");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -202,9 +207,10 @@ TEST(DebugVizTest, testBodyToMarkersUnsupported) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersUnsupported");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0,
-                                                           0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
+      "test_debug_visualization_BodyToMarkersUnsupported");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that marker was not created
   ASSERT_EQ(markers.markers.size(), 0UL);
 }
@@ -232,9 +238,10 @@ TEST(DebugVizTest, testBodyToMarkersMultifixture) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersMultifixture");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0,
-                                                           0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
+      "test_debug_visualization_BodyToMarkersMultifixture");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that one marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -276,11 +283,12 @@ TEST(DebugVizTest, testBodyToMarkersMultibody) {
   body2->CreateFixture(&fixtureDef2);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersMultibody");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0,
-                                                           0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body2, 1.0,
-                                                           0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
+      "test_debug_visualization_BodyToMarkersMultibody");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body, 1.0, 0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
+      markers, body2, 1.0, 0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -322,11 +330,12 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
   b2Joint* j2 = world.CreateJoint(&jd2);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_JointToMarkersMultiJoint");
-  flatland_server::DebugVisualization::Get(node)->JointToMarkers(markers, j1, 0.1,
-                                                            0.2, 0.3, 0.4);
-  flatland_server::DebugVisualization::Get(node)->JointToMarkers(markers, j2, 0.5,
-                                                            0.6, 0.7, 0.8);
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
+      "test_debug_visualization_JointToMarkersMultiJoint");
+  flatland_server::DebugVisualization::Get(node)->JointToMarkers(
+      markers, j1, 0.1, 0.2, 0.3, 0.4);
+  flatland_server::DebugVisualization::Get(node)->JointToMarkers(
+      markers, j2, 0.5, 0.6, 0.7, 0.8);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 4UL);
 
@@ -390,14 +399,15 @@ struct MarkerArraySubscriptionHelper {
   visualization_msgs::msg::MarkerArray markers_;
   int count_;
 
-  explicit MarkerArraySubscriptionHelper(std::shared_ptr<rclcpp::Node> node) : node_(std::move(node)), count_(0) {}
+  explicit MarkerArraySubscriptionHelper(std::shared_ptr<rclcpp::Node> node)
+      : node_(std::move(node)), count_(0) {}
 
   /**
    * @brief callback that stores the last message and total message count
    * @param msg The input message pointer
    */
   void callback(const visualization_msgs::msg::MarkerArray& msg) {
-  //void callback(const visualization_msgs::msg::MarkerArrayConstPtr& msg) {
+    // void callback(const visualization_msgs::msg::MarkerArrayConstPtr& msg) {
     ++count_;
     RCLCPP_INFO(rclcpp::get_logger("Debug Visualization Test"), "GOT ONE");
     markers_ = visualization_msgs::msg::MarkerArray(msg);  // Copy the message
@@ -423,7 +433,8 @@ struct MarkerArraySubscriptionHelper {
 
 // Test the bodyToMarkers method on an unsupported shape
 TEST(DebugVizTest, testPublishMarkers) {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_debug_visualization_PublishMarkers");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_debug_visualization_PublishMarkers");
   flatland_server::Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.01);
 
@@ -451,10 +462,9 @@ TEST(DebugVizTest, testPublishMarkers) {
   // Set up helper class subscribing to rostopic
   MarkerArraySubscriptionHelper helper(node);
   std::string topicName = "example";
-  auto sub =
-      node->create_subscription<visualization_msgs::msg::MarkerArray>(
-          topicName, 0,
-          std::bind(&MarkerArraySubscriptionHelper::callback, &helper, _1));
+  auto sub = node->create_subscription<visualization_msgs::msg::MarkerArray>(
+      topicName, 0,
+      std::bind(&MarkerArraySubscriptionHelper::callback, &helper, _1));
 
   auto debugVis = flatland_server::DebugVisualization::Get(node);
   debugVis->Visualize(topicName, body, 1.0, 0.0, 0.0, 1.0);
@@ -490,7 +500,7 @@ TEST(DebugVizTest, testPublishMarkers) {
   debugVis->Publish(timekeeper);
 
   // Verify that message was published
-  EXPECT_TRUE(helper.waitForMessageCount(2));    // Published twice
+  EXPECT_TRUE(helper.waitForMessageCount(2));      // Published twice
   EXPECT_EQ(5UL, helper.markers_.markers.size());  // 5 markers in latest msg
 
   // Reset marker list, this empties the markers array, and topics having

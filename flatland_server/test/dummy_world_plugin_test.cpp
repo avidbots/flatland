@@ -48,14 +48,16 @@
 #include <flatland_server/world_plugin.h>
 #include <flatland_server/yaml_reader.h>
 #include <gtest/gtest.h>
+#include <yaml-cpp/yaml.h>
+
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <yaml-cpp/yaml.h>
 
 using namespace flatland_server;
 
 TEST(DummyWorldPluginTest, pluginlib_load_test) {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_dummy_world");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_dummy_world");
   pluginlib::ClassLoader<flatland_server::WorldPlugin> loader(
       "flatland_server", "flatland_server::WorldPlugin");
 
@@ -65,7 +67,8 @@ TEST(DummyWorldPluginTest, pluginlib_load_test) {
 
     YAML::Node n = YAML::Node();
     YamlReader reader = YamlReader(node);
-    plugin->Initialize(node, nullptr, "DummyWorldPluginName", "DummyWorldPluginType", n, reader);
+    plugin->Initialize(node, nullptr, "DummyWorldPluginName",
+                       "DummyWorldPluginType", n, reader);
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy World Plugin. " << e.what();
   }

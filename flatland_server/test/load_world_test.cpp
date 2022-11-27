@@ -51,9 +51,10 @@
 #include <flatland_server/geometry.h>
 #include <flatland_server/types.h>
 #include <flatland_server/world.h>
-#include <rclcpp/rclcpp.hpp>
 #include <gtest/gtest.h>
+
 #include <boost/filesystem.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <regex>
 #include <string>
 
@@ -85,7 +86,8 @@ class LoadWorldTest : public ::testing::Test {
     std::regex regex(regex_str);
 
     try {
-      std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_yaml_fail_node");
+      std::shared_ptr<rclcpp::Node> node =
+          rclcpp::Node::make_shared("test_yaml_fail_node");
       w = World::MakeWorld(node, world_yaml.string());
       ADD_FAILURE() << "Expected an exception, but none were raised";
     } catch (const Exception &e) {
@@ -381,7 +383,8 @@ class LoadWorldTest : public ::testing::Test {
 
     if (j->GetBodyA() != body_A->physics_body_) {
       printf("BodyA ptr Actual %p != Expected:%p\n",
-             (void *)joint->physics_joint_->GetBodyA(), (void *)body_A->physics_body_);
+             (void *)joint->physics_joint_->GetBodyA(),
+             (void *)body_A->physics_body_);
       return false;
     }
 
@@ -516,7 +519,8 @@ class LoadWorldTest : public ::testing::Test {
 TEST_F(LoadWorldTest, simple_test_A) {
   world_yaml =
       this_file_dir / fs::path("load_world_tests/simple_test_A/world.yaml");
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("simple_test_A_node");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("simple_test_A_node");
   w = World::MakeWorld(node, world_yaml.string());
 
   EXPECT_EQ(w->physics_velocity_iterations_, 11);

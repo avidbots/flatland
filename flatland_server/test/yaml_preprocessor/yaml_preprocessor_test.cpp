@@ -46,8 +46,9 @@
 
 #include <flatland_server/yaml_preprocessor.h>
 #include <gtest/gtest.h>
-#include <rclcpp/rclcpp.hpp>
+
 #include <cmath>
+#include <rclcpp/rclcpp.hpp>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -89,7 +90,8 @@ TEST(YamlPreprocTest, testEvalStrings) {
   setenv("VALIDSTRING", "Bar", 1);
   setenv("VALIDNUMBER", "123.4", 1);
 
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_yaml_preprocessor");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_yaml_preprocessor");
   // ros params
   node->declare_parameter("/string", "Foo");
   node->declare_parameter("/int", 7);

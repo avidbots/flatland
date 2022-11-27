@@ -46,6 +46,7 @@
 
 #include <flatland_server/collision_filter_registry.h>
 #include <gtest/gtest.h>
+
 #include <algorithm>
 #include <vector>
 

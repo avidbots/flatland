@@ -48,16 +48,18 @@
 #include <flatland_server/model.h>
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
+#include <yaml-cpp/yaml.h>
+
 #include <pluginlib/class_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <yaml-cpp/yaml.h>
 
 /**
  * Test the pluginlib is configured correctly so that the model can be
  * discovered
  */
 TEST(DummyModelPluginTest, pluginlib_load_test) {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_dummy_model");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_dummy_model");
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
@@ -73,7 +75,8 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
     flatland_server::CollisionFilterRegistry cfr;
     flatland_server::Model model(node, nullptr, &cfr, "", "");
 
-    plugin->Initialize(node, "DummyModelPlugin", "DummyModelPluginTest", &model, n);
+    plugin->Initialize(node, "DummyModelPlugin", "DummyModelPluginTest", &model,
+                       n);
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }
