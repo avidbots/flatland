@@ -57,7 +57,7 @@
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
-using namespace std::chrono;
+using namespace std::chrono_literals;
 
 class ServiceManagerTest : public ::testing::Test {
  public:
