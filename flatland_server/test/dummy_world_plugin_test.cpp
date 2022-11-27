@@ -44,7 +44,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_server/dummy_world_plugin.h>
 #include <flatland_server/world.h>
 #include <flatland_server/world_plugin.h>
 #include <flatland_server/yaml_reader.h>
@@ -56,17 +55,17 @@
 using namespace flatland_server;
 
 TEST(DummyWorldPluginTest, pluginlib_load_test) {
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_dummy_world");
   pluginlib::ClassLoader<flatland_server::WorldPlugin> loader(
       "flatland_server", "flatland_server::WorldPlugin");
 
   try {
     std::shared_ptr<flatland_server::WorldPlugin> plugin =
-        loader.createInstance("flatland_plugins::DummyWorldPlugin");
+        loader.createSharedInstance("flatland_plugins::DummyWorldPlugin");
 
     YAML::Node n = YAML::Node();
-    YamlReader reader = YamlReader();
-    plugin->Initialize(NULL, "DummyWorldPluginName", "DummyWorldPluginType", n,
-                       reader);
+    YamlReader reader = YamlReader(node);
+    plugin->Initialize(node, nullptr, "DummyWorldPluginName", "DummyWorldPluginType", n, reader);
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Dummy World Plugin. " << e.what();
   }

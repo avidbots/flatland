@@ -157,6 +157,9 @@ if(BUILD_TESTING)
   ament_add_gtest(yaml_preprocessor_test test/yaml_preprocessor/yaml_preprocessor_test.cpp)
   target_link_libraries(yaml_preprocessor_test flatland_lib yaml-cpp)
 
+  ament_add_gtest(dummy_world_plugin_test test/dummy_world_plugin_test.cpp)
+  target_link_libraries(dummy_world_plugin_test flatland_lib yaml-cpp)
+
 if(FALSE) # fake a block comment
 
   add_rostest_gtest(service_manager_test
@@ -177,12 +180,6 @@ if(FALSE) # fake a block comment
                     test/dummy_model_plugin_test.cpp) 
   target_link_libraries(dummy_model_plugin_test
                         flatland_lib) 
-                        
-  add_rostest_gtest(dummy_world_plugin_test 
-                    test/dummy_world_plugin_test.test 
-                    test/dummy_world_plugin_test.cpp) 
-  target_link_libraries(dummy_world_plugin_test
-                        flatland_lib yaml-cpp) 
 
 endif()
 endif()
