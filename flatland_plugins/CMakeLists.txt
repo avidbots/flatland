@@ -143,6 +143,9 @@ if(BUILD_TESTING)
   ament_add_gtest(tween_test test/tween_test.cpp)
   target_link_libraries(tween_test flatland_plugins_lib)
 
+  ament_add_gtest(gps_test test/gps_test.cpp)
+  target_link_libraries(gps_test flatland_plugins_lib)
+
 if(FALSE) # fake a block comment
   add_rostest_gtest(laser_test test/laser_test.test
                     test/laser_test.cpp)
@@ -155,10 +158,6 @@ if(FALSE) # fake a block comment
   add_rostest_gtest(update_timer_test test/update_timer_test.test
                     test/update_timer_test.cpp)
   target_link_libraries(update_timer_test flatland_plugins_lib)
-
-  add_rostest_gtest(gps_test test/gps_test.test
-                    test/gps_test.cpp)
-  target_link_libraries(gps_test flatland_plugins_lib)
 endif()
 endif()
 
