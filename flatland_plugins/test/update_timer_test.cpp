@@ -54,6 +54,7 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
+using namespace std::chrono_literals;
 
 class TestPlugin : public ModelPlugin {
  public:
@@ -83,8 +84,11 @@ class UpdateTimerTest : public ::testing::Test {
   double actual_rate;
   double wall_rate;
   double step_size;
-  double sim_test_time;
+  int64_t sim_test_time;
   World* w;
+  std::shared_ptr<rclcpp::Node> node;
+
+  UpdateTimerTest() : node(rclcpp::Node::make_shared("test_update_timer")) {}
 
   void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
@@ -92,34 +96,32 @@ class UpdateTimerTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (w != nullptr) {
-      delete w;
-    }
+    delete w;
   }
 
   void ExecuteRateTest() {
-    Timekeeper timekeeper;
-    std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+    Timekeeper timekeeper(node);
+    w = World::MakeWorld(node,world_yaml.string());
 
     // artificially load a plugin
-    boost::shared_ptr<TestPlugin> p(new TestPlugin());
-    p->Initialize("TestPlugin", "test_plugin", w->models_[0], YAML::Node());
+    std::shared_ptr<TestPlugin> p(new TestPlugin());
+    p->Initialize(node, "TestPlugin", "test_plugin", w->models_[0], YAML::Node());
     w->plugin_manager_.model_plugins_.push_back(p);
 
     p->update_timer_.SetRate(set_rate);
 
     timekeeper.SetMaxStepSize(step_size);
-    ros::WallRate rate(wall_rate);
+    rclcpp::WallRate rate(wall_rate);
 
     // run for two seconds
-    while (timekeeper.GetSimTime() < rclcpp::Time(sim_test_time)) {
+    auto timeLimit = rclcpp::Time(sim_test_time);
+    while (timekeeper.GetSimTime() < timeLimit) {
       w->Update(timekeeper);
-      ros::spinOnce();
+      rclcpp::spin_some(node);
       rate.sleep();
     }
 
-    actual_rate = p->update_counter_ / timekeeper.GetSimTime().toSec();
+    actual_rate = p->update_counter_ / timekeeper.GetSimTime().seconds();
 
     printf("Actual Rate: %f, Expected Rate: %f\n", actual_rate, expected_rate);
   }
