@@ -63,7 +63,7 @@ TEST_F(CollisionFilterRegistryTest, empty_test) {
   EXPECT_EQ(cfr.LookUpLayerId("random_layer"), CFR::LAYER_NOT_EXIST);
 
   std::vector<std::string> layer_names = cfr.GetAllLayers();
-  EXPECT_EQ(layer_names.size(), 0);
+  EXPECT_EQ(layer_names.size(), 0UL);
 }
 
 TEST_F(CollisionFilterRegistryTest, register_collide_test) {
