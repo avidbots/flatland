@@ -46,7 +46,6 @@
 
 #include <flatland_plugins/model_tf_publisher.h>
 #include <flatland_server/exceptions.h>
-#include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -60,7 +59,6 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
-using namespace std::chrono_literals;
 
 class ModelTfPublisherTest : public ::testing::Test {
  public:
@@ -145,7 +143,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   geometry_msgs::msg::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
-  rclcpp::WallRate rate(500ns);
+  rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
     rclcpp::spin_some(node);
@@ -221,7 +219,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   geometry_msgs::msg::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
-  rclcpp::WallRate rate(500ns);
+  rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
     rclcpp::spin_some(node);
