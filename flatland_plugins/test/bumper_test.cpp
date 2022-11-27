@@ -44,9 +44,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/msg/Collisions.hpp>
+#include <flatland_msgs/msg/collisions.hpp>
 #include <flatland_plugins/bumper.h>
-#include <flatland_server/debug_visualization.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
@@ -57,7 +56,8 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
-using namespace flatland_msgs;
+using namespace flatland_msgs::msg;
+using std::placeholders::_1;
 
 class BumperPluginTest : public ::testing::Test {
  public:
@@ -65,6 +65,9 @@ class BumperPluginTest : public ::testing::Test {
   boost::filesystem::path world_yaml;
   flatland_msgs::msg::Collisions msg1, msg2;
   World* w;
+  std::shared_ptr<rclcpp::Node> node;
+
+  BumperPluginTest() : node(rclcpp::Node::make_shared("test_bumper_plugin")) {}
 
   void SetUp() override {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
@@ -112,12 +115,12 @@ class BumperPluginTest : public ::testing::Test {
   }
 
   bool CollisionsEq(const Collisions& collisions, const std::string& frame_id,
-                    int num_collisions) {
+                    size_t num_collisions) {
     if (!StringEq("frame_id", collisions.header.frame_id, frame_id))
       return false;
 
     if (num_collisions != collisions.collisions.size()) {
-      printf("Num collisions Actual:%lu != Expected:%d\n",
+      printf("Num collisions Actual:%lu != Expected:%lu\n",
              collisions.collisions.size(), num_collisions);
       return false;
     }
@@ -128,7 +131,7 @@ class BumperPluginTest : public ::testing::Test {
   // check the received scan data is as expected
   bool CollisionEq(const Collision& collision, const std::string& entity_a,
                    const std::string& body_A, const std::string& entity_b,
-                   const std::string& body_B, int return_size,
+                   const std::string& body_B, size_t return_size,
                    const std::pair<float, float>& normal) {
     if (!StringEq("entity_a", collision.entity_a, entity_a)) return false;
     if (!StringEq("body_A", collision.body_a, body_A)) return false;
@@ -142,7 +145,7 @@ class BumperPluginTest : public ::testing::Test {
           collision.contact_positions.size() == return_size &&
           collision.contact_normals.size() == return_size)) {
       printf(
-          "Vector sizes are expected to be all the same and have sizes %d, "
+          "Vector sizes are expected to be all the same and have sizes %lu, "
           "magnitude_forces=%lu contact_positions=%lu contact_normals=%lu\n",
           return_size, collision.magnitude_forces.size(),
           collision.contact_positions.size(), collision.contact_normals.size());
@@ -165,14 +168,14 @@ class BumperPluginTest : public ::testing::Test {
     return true;
   }
 
-  void CollisionCb_A(const flatland_msgs::msg::Collisions& msg) { msg1 = msg; }
+  void CollisionCb_A(const Collisions& msg) { msg1 = msg; }
 
-  void CollisionCb_B(const flatland_msgs::msg::Collisions& msg) { msg2 = msg; }
+  void CollisionCb_B(const Collisions& msg) { msg2 = msg; }
 
-  void SpinRos(float hz, int iterations) {
-    ros::WallRate rate(hz);
+  void SpinRos(float hz, unsigned iterations) {
+    rclcpp::WallRate rate(hz);
     for (unsigned int i = 0; i < iterations; i++) {
-      ros::spinOnce();
+      rclcpp::spin_some(node);
       rate.sleep();
     }
   }
@@ -185,27 +188,28 @@ TEST_F(BumperPluginTest, collision_test) {
   world_yaml =
       this_file_dir / fs::path("bumper_tests/collision_test/world.yaml");
 
-  Timekeeper timekeeper;
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.01);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
   w = World::MakeWorld(node,world_yaml.string());
 
-  ros::NodeHandle nh;
-  ros::Subscriber sub_1, sub_2, sub_3;
   BumperPluginTest* obj = dynamic_cast<BumperPluginTest*>(this);
-  sub_1 = nh.subscribe("collisions", 1, &BumperPluginTest::CollisionCb_A, obj);
-  sub_2 =
-      nh.subscribe("collisions_B", 1, &BumperPluginTest::CollisionCb_B, obj);
+  auto sub_1 = node->create_subscription<Collisions>(
+      "collisions", 1,
+      std::bind(&BumperPluginTest::CollisionCb_A, obj, _1));
+  auto sub_2 = node->create_subscription<Collisions>(
+      "collisions_B", 1,
+      std::bind(&BumperPluginTest::CollisionCb_B, obj, _1));
 
   Bumper* p = dynamic_cast<Bumper*>(w->plugin_manager_.model_plugins_[0].get());
 
   Body* b0 = p->GetModel()->bodies_[0];
   Body* b1 = p->GetModel()->bodies_[1];
 
-  // check that there are no collision at the begining
+  // check that there are no collision at the beginning
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
   }
   SpinRos(500, 10);  // make sure the messages gets through
 
@@ -220,7 +224,7 @@ TEST_F(BumperPluginTest, collision_test) {
     // moving at the desired velocity
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
   }
   SpinRos(500, 10);  // makes sure the ros message gets through
 
@@ -233,7 +237,7 @@ TEST_F(BumperPluginTest, collision_test) {
   for (unsigned int i = 0; i < 50; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
   }
   SpinRos(500, 10);
   ASSERT_TRUE(CollisionsEq(msg1, "map", 2));
@@ -249,7 +253,7 @@ TEST_F(BumperPluginTest, collision_test) {
   for (unsigned int i = 0; i < 300; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0.0));
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
   }
   SpinRos(500, 10);
 
@@ -264,7 +268,7 @@ TEST_F(BumperPluginTest, collision_test) {
   for (unsigned int i = 0; i < 300; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0.0));
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
   }
   SpinRos(500, 10);
 
