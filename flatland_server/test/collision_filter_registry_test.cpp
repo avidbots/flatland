@@ -128,7 +128,7 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
   EXPECT_TRUE(cfr.IsLayersFull());
   layer_names = cfr.GetAllLayers();
 
-  EXPECT_EQ(layer_names.size(), 16);
+  EXPECT_EQ(layer_names.size(), 16UL);
 }
 
 // Run all the tests that were declared with TEST()
