@@ -84,10 +84,11 @@ class TweenPluginTest : public ::testing::Test {
 TEST_F(TweenPluginTest, once_test) {
   world_yaml = this_file_dir / fs::path("tween_tests/once.world.yaml");
 
-  Timekeeper timekeeper;
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_tween_once_test");
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+  World *w = World::MakeWorld(node, world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -119,10 +120,11 @@ TEST_F(TweenPluginTest, once_test) {
 TEST_F(TweenPluginTest, yoyo_test) {
   world_yaml = this_file_dir / fs::path("tween_tests/yoyo.world.yaml");
 
-  Timekeeper timekeeper;
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_tween_yoyo_test");
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+  World *w = World::MakeWorld(node, world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -163,10 +165,11 @@ TEST_F(TweenPluginTest, yoyo_test) {
 TEST_F(TweenPluginTest, loop_test) {
   world_yaml = this_file_dir / fs::path("tween_tests/loop.world.yaml");
 
-  Timekeeper timekeeper;
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_tween_loop_test");
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+  World* w = World::MakeWorld(node,world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
