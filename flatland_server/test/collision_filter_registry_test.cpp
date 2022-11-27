@@ -98,7 +98,7 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
   EXPECT_EQ(cfr.LookUpLayerId("layer5"), 4);
 
   std::vector<std::string> layer_names = cfr.GetAllLayers();
-  EXPECT_EQ(layer_names.size(), 5);
+  EXPECT_EQ(layer_names.size(), 5UL);
 
   EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer1") !=
               layer_names.end());
