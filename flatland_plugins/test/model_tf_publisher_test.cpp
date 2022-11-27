@@ -53,11 +53,14 @@
 #include <gtest/gtest.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <regex>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
+using namespace std::chrono_literals;
 
 class ModelTfPublisherTest : public ::testing::Test {
  public:
@@ -71,9 +74,7 @@ class ModelTfPublisherTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    if (w != nullptr) {
-      delete w;
-    }
+    delete w;
   }
 
   static bool fltcmp(const double& n1, const double& n2) {
@@ -93,8 +94,8 @@ class ModelTfPublisherTest : public ::testing::Test {
   bool TfEq(const geometry_msgs::msg::TransformStamped& tf, float x, float y,
             float a) {
     tf2::Quaternion q;
-    tf::quaternionMsgToTF(tf.transform.rotation, q);
-    tf::Matrix3x3 rot_matrix(q);
+    tf2::fromMsg(tf.transform.rotation, q);
+    tf2::Matrix3x3 rot_matrix(q);
     double roll, pitch, yaw;
     rot_matrix.getRPY(roll, pitch, yaw);
 
@@ -123,17 +124,18 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
       this_file_dir /
       fs::path("model_tf_publisher_tests/tf_publish_test_A/world.yaml");
 
-  Timekeeper timekeeper;
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_A");
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
   w = World::MakeWorld(node,world_yaml.string());
-  ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
+  auto* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
   EXPECT_DOUBLE_EQ(5000.0, p->update_rate_);
   EXPECT_STREQ("antenna", p->reference_body_->name_.c_str());
 
-  tf2_ros::Buffer tf_buffer;
+  tf2_ros::Buffer tf_buffer(node->get_clock());
   tf2_ros::TransformListener tf_listener(tf_buffer);
   geometry_msgs::msg::TransformStamped tf_world_to_base;
   geometry_msgs::msg::TransformStamped tf_world_to_antenna;
@@ -143,10 +145,10 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
   geometry_msgs::msg::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
-  ros::WallRate rate(500);
+  rclcpp::WallRate rate(500ns);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
     rate.sleep();
   }
 
@@ -198,9 +200,10 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
       this_file_dir /
       fs::path("model_tf_publisher_tests/tf_publish_test_B/world.yaml");
 
-  Timekeeper timekeeper;
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_B");
+  Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
   w = World::MakeWorld(node,world_yaml.string());
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
@@ -208,7 +211,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   EXPECT_DOUBLE_EQ(std::numeric_limits<double>::infinity(), p->update_rate_);
   EXPECT_STREQ("base", p->reference_body_->name_.c_str());
 
-  tf2_ros::Buffer tf_buffer;
+  tf2_ros::Buffer tf_buffer(node->get_clock());
   tf2_ros::TransformListener tf_listener(tf_buffer);
   geometry_msgs::msg::TransformStamped tf_map_to_base;
   geometry_msgs::msg::TransformStamped tf_base_to_antenna;
@@ -218,10 +221,10 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
   geometry_msgs::msg::TransformStamped tf_base_to_rear_bumper;
 
   // let it spin for 10 times to make sure the message gets through
-  ros::WallRate rate(500);
+  rclcpp::WallRate rate(500ns);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    ros::spinOnce();
+    rclcpp::spin_some(node);
     rate.sleep();
   }
 
