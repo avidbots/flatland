@@ -149,11 +149,9 @@ if(BUILD_TESTING)
   ament_add_gtest(bumper_test test/bumper_test.cpp)
   target_link_libraries(bumper_test flatland_plugins_lib)
 
-if(FALSE) # fake a block comment
-  add_rostest_gtest(laser_test test/laser_test.test
-                    test/laser_test.cpp)
+  ament_add_gtest(laser_test test/laser_test.cpp)
   target_link_libraries(laser_test flatland_plugins_lib)
-
+if(FALSE) # fake a block comment
   add_rostest_gtest(update_timer_test test/update_timer_test.test
                     test/update_timer_test.cpp)
   target_link_libraries(update_timer_test flatland_plugins_lib)
