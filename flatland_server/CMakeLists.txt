@@ -166,17 +166,8 @@ if(BUILD_TESTING)
   ament_add_gtest(service_manager_test test/service_manager_test.cpp)
   target_link_libraries(service_manager_test flatland_lib)
 
-if(FALSE) # fake a block comment
-
-
-  add_rostest_gtest(debug_visualization_test
-    test/debug_visualization.test
-    test/debug_visualization_test.cpp)
-  target_link_libraries(debug_visualization_test
-    flatland_lib)
-
-
-endif()
+  ament_add_gtest(debug_visualization_test test/debug_visualization_test.cpp)
+  target_link_libraries(debug_visualization_test flatland_lib)
 endif()
 
 #############
