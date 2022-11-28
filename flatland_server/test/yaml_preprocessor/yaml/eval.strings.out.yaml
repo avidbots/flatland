@@ -27,7 +27,7 @@ testParam:
   param3: Foo
   param4: 10.5
   param5: ""
-  param6: 223.0
+  param6: 223
   param7: BBBC
   param8: true
   param9: true
