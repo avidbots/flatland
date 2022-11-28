@@ -46,6 +46,7 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_msgs/msg/collisions.hpp>
 #include <rclcpp/rclcpp.hpp>
 
 #ifndef FLATLAND_PLUGINS_BUMPER_H
