@@ -48,13 +48,14 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
-#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <gtest/gtest.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
-#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+#include <tf2_ros/transform_listener.h>
+
+#include <geometry_msgs/msg/transform_stamped.hpp>
 #include <regex>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -71,9 +72,7 @@ class ModelTfPublisherTest : public ::testing::Test {
     w = nullptr;
   }
 
-  void TearDown() override {
-    delete w;
-  }
+  void TearDown() override { delete w; }
 
   static bool fltcmp(const double& n1, const double& n2) {
     if (std::isinf(n1) && std::isinf(n2)) {
@@ -126,7 +125,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
       rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_A");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(node,world_yaml.string());
+  w = World::MakeWorld(node, world_yaml.string());
   auto* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -202,7 +201,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
       rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_B");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(node,world_yaml.string());
+  w = World::MakeWorld(node, world_yaml.string());
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -264,7 +263,7 @@ TEST_F(ModelTfPublisherTest, invalid_A) {
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+    w = World::MakeWorld(node, world_yaml.string());
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -291,7 +290,7 @@ TEST_F(ModelTfPublisherTest, invalid_B) {
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+    w = World::MakeWorld(node, world_yaml.string());
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {

@@ -49,8 +49,9 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <sensor_msgs/msg/laser_scan.hpp>
+
 #include <regex>
+#include <sensor_msgs/msg/laser_scan.hpp>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -72,9 +73,7 @@ class LaserPluginTest : public ::testing::Test {
     w = nullptr;
   }
 
-  void TearDown() override {
-    delete w;
-  }
+  void TearDown() override { delete w; }
 
   static bool fltcmp(const double& n1, const double& n2) {
     if (std::isinf(n1) && std::isinf(n2)) {
@@ -108,10 +107,10 @@ class LaserPluginTest : public ::testing::Test {
   }
 
   // check the received scan data is as expected
-  bool ScanEq(const sensor_msgs::msg::LaserScan& scan, const std::string& frame_id,
-              float angle_min, float angle_max, float angle_increment,
-              float time_increment, float scan_time, float range_min,
-              float range_max, std::vector<float> ranges,
+  bool ScanEq(const sensor_msgs::msg::LaserScan& scan,
+              const std::string& frame_id, float angle_min, float angle_max,
+              float angle_increment, float time_increment, float scan_time,
+              float range_min, float range_max, std::vector<float> ranges,
               std::vector<float> intensities) {
     if (scan.header.frame_id != frame_id) {
       printf("frame_id Actual:%s != Expected:%s\n",
@@ -158,8 +157,12 @@ class LaserPluginTest : public ::testing::Test {
     return true;
   }
 
-  void ScanFrontCb(const sensor_msgs::msg::LaserScan& msg) { scan_front = msg; };
-  void ScanCenterCb(const sensor_msgs::msg::LaserScan& msg) { scan_center = msg; };
+  void ScanFrontCb(const sensor_msgs::msg::LaserScan& msg) {
+    scan_front = msg;
+  };
+  void ScanCenterCb(const sensor_msgs::msg::LaserScan& msg) {
+    scan_center = msg;
+  };
   void ScanBackCb(const sensor_msgs::msg::LaserScan& msg) { scan_back = msg; };
 };
 
@@ -172,18 +175,15 @@ TEST_F(LaserPluginTest, range_test) {
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+  w = World::MakeWorld(node, world_yaml.string());
 
   auto* obj = dynamic_cast<LaserPluginTest*>(this);
   auto sub_1 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan", 1,
-      std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
+      "scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
   auto sub_2 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan_center", 1,
-      std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
+      "scan_center", 1, std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
   auto sub_3 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan_back", 1,
-      std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
+      "scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
 
   auto* p1 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[0].get());
   auto* p2 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[1].get());
@@ -224,18 +224,15 @@ TEST_F(LaserPluginTest, intensity_test) {
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+  w = World::MakeWorld(node, world_yaml.string());
 
   auto* obj = dynamic_cast<LaserPluginTest*>(this);
   auto sub_1 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan", 1,
-      std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
+      "scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
   auto sub_2 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan_center", 1,
-      std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
+      "scan_center", 1, std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
   auto sub_3 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-      "scan_back", 1,
-      std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
+      "scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
 
   auto* p1 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[0].get());
   auto* p2 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[1].get());
@@ -275,7 +272,7 @@ TEST_F(LaserPluginTest, invalid_A) {
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+    w = World::MakeWorld(node, world_yaml.string());
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -301,7 +298,7 @@ TEST_F(LaserPluginTest, invalid_B) {
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+    w = World::MakeWorld(node, world_yaml.string());
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {

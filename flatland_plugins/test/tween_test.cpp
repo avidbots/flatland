@@ -49,6 +49,7 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
+
 #include <regex>
 
 namespace fs = boost::filesystem;
@@ -88,7 +89,7 @@ TEST_F(TweenPluginTest, once_test) {
       rclcpp::Node::make_shared("test_tween_once_test");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World *w = World::MakeWorld(node, world_yaml.string());
+  World* w = World::MakeWorld(node, world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -124,7 +125,7 @@ TEST_F(TweenPluginTest, yoyo_test) {
       rclcpp::Node::make_shared("test_tween_yoyo_test");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World *w = World::MakeWorld(node, world_yaml.string());
+  World* w = World::MakeWorld(node, world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
@@ -169,7 +170,7 @@ TEST_F(TweenPluginTest, loop_test) {
       rclcpp::Node::make_shared("test_tween_loop_test");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(node,world_yaml.string());
+  World* w = World::MakeWorld(node, world_yaml.string());
 
   Tween* tween =
       dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());

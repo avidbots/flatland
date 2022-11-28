@@ -44,13 +44,14 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/msg/collisions.hpp>
 #include <flatland_plugins/bumper.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
+
+#include <flatland_msgs/msg/collisions.hpp>
 #include <regex>
 
 namespace fs = boost::filesystem;
@@ -191,15 +192,13 @@ TEST_F(BumperPluginTest, collision_test) {
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.01);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+  w = World::MakeWorld(node, world_yaml.string());
 
   BumperPluginTest* obj = dynamic_cast<BumperPluginTest*>(this);
   auto sub_1 = node->create_subscription<Collisions>(
-      "collisions", 1,
-      std::bind(&BumperPluginTest::CollisionCb_A, obj, _1));
+      "collisions", 1, std::bind(&BumperPluginTest::CollisionCb_A, obj, _1));
   auto sub_2 = node->create_subscription<Collisions>(
-      "collisions_B", 1,
-      std::bind(&BumperPluginTest::CollisionCb_B, obj, _1));
+      "collisions_B", 1, std::bind(&BumperPluginTest::CollisionCb_B, obj, _1));
 
   Bumper* p = dynamic_cast<Bumper*>(w->plugin_manager_.model_plugins_[0].get());
 
@@ -293,7 +292,7 @@ TEST_F(BumperPluginTest, invalid_A) {
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
-  w = World::MakeWorld(node,world_yaml.string());
+    w = World::MakeWorld(node, world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
     std::cmatch match;
