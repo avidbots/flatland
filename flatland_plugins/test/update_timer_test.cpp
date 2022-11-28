@@ -49,6 +49,7 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
+
 #include <regex>
 
 namespace fs = boost::filesystem;
@@ -61,12 +62,12 @@ class TestPlugin : public ModelPlugin {
   UpdateTimer update_timer_;
   int update_counter_;
 
-  void OnInitialize(const YAML::Node& config) override {
+  void OnInitialize(const YAML::Node &config) override {
     update_timer_.SetRate(0);
     update_counter_ = 0;
   }
 
-  void BeforePhysicsStep(const Timekeeper& timekeeper) override {
+  void BeforePhysicsStep(const Timekeeper &timekeeper) override {
     // keeps this function updating at a specific rate
     if (!update_timer_.CheckUpdate(timekeeper)) {
       return;
@@ -85,7 +86,7 @@ class UpdateTimerTest : public ::testing::Test {
   double wall_rate;
   double step_size;
   int64_t sim_test_time;
-  World* w;
+  World *w;
   std::shared_ptr<rclcpp::Node> node;
 
   UpdateTimerTest() : node(rclcpp::Node::make_shared("test_update_timer")) {}
@@ -95,17 +96,16 @@ class UpdateTimerTest : public ::testing::Test {
     w = nullptr;
   }
 
-  void TearDown() override {
-    delete w;
-  }
+  void TearDown() override { delete w; }
 
   void ExecuteRateTest() {
     Timekeeper timekeeper(node);
-    w = World::MakeWorld(node,world_yaml.string());
+    w = World::MakeWorld(node, world_yaml.string());
 
     // artificially load a plugin
     std::shared_ptr<TestPlugin> p(new TestPlugin());
-    p->Initialize(node, "TestPlugin", "test_plugin", w->models_[0], YAML::Node());
+    p->Initialize(node, "TestPlugin", "test_plugin", w->models_[0],
+                  YAML::Node());
     w->plugin_manager_.model_plugins_.push_back(p);
 
     p->update_timer_.SetRate(set_rate);
@@ -114,7 +114,7 @@ class UpdateTimerTest : public ::testing::Test {
     rclcpp::WallRate rate(wall_rate);
 
     // run for two seconds
-    auto timeLimit = rclcpp::Time(sim_test_time);
+    auto timeLimit = rclcpp::Time(sim_test_time, 0);
     while (timekeeper.GetSimTime() < timeLimit) {
       w->Update(timekeeper);
       rclcpp::spin_some(node);
@@ -218,7 +218,7 @@ TEST_F(UpdateTimerTest, rate_test_E) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
