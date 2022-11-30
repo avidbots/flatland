@@ -31,7 +31,7 @@ find_package(visualization_msgs REQUIRED)
 
 set(flatland_rviz_plugins_headers_to_moc
   include/flatland_rviz_plugins/pause_tool.hpp
-)
+        src/interactive_tool.cpp include/flatland_rviz_plugins/interactive_tool.hpp)
 
 include_directories(
   include
