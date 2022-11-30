@@ -45,22 +45,27 @@
  */
 
 #include "flatland_server/debug_visualization.h"
+
 #include <Box2D/Box2D.h>
-#include <rclcpp/rclcpp.hpp>
+#include <rmw/qos_profiles.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 #include <map>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
 namespace flatland_server {
 
-DebugVisualization::DebugVisualization(rclcpp::Node::SharedPtr node) : node_(node) {
+DebugVisualization::DebugVisualization(rclcpp::Node::SharedPtr node)
+    : node_(node) {
   topic_list_publisher_ =
       node_->create_publisher<flatland_msgs::msg::DebugTopicList>("topics", 1);
 }
 
-std::shared_ptr<DebugVisualization> DebugVisualization::Get(rclcpp::Node::SharedPtr node) {
+std::shared_ptr<DebugVisualization> DebugVisualization::Get(
+    rclcpp::Node::SharedPtr node) {
   static std::shared_ptr<DebugVisualization> instance;
   // todo: fix this? How should singletons work with shared pointers?
   if (!instance) {
@@ -70,13 +75,13 @@ std::shared_ptr<DebugVisualization> DebugVisualization::Get(rclcpp::Node::Shared
 }
 
 void DebugVisualization::JointToMarkers(
-    visualization_msgs::msg::MarkerArray& markers, b2Joint* joint, float r, float g,
-    float b, float a) {
+    visualization_msgs::msg::MarkerArray& markers, b2Joint* joint, float r,
+    float g, float b, float a) {
   if (joint->GetType() == e_distanceJoint ||
       joint->GetType() == e_pulleyJoint || joint->GetType() == e_mouseJoint) {
     RCLCPP_ERROR(rclcpp::get_logger("DebugVis"),
-                    "Unimplemented visualization joints. See b2World.cpp for "
-                    "implementation");
+                 "Unimplemented visualization joints. See b2World.cpp for "
+                 "implementation");
     return;
   }
 
@@ -122,9 +127,9 @@ void DebugVisualization::JointToMarkers(
   markers.markers.push_back(marker);
 }
 
-void DebugVisualization::BodyToMarkers(visualization_msgs::msg::MarkerArray& markers,
-                                       b2Body* body, float r, float g, float b,
-                                       float a) {
+void DebugVisualization::BodyToMarkers(
+    visualization_msgs::msg::MarkerArray& markers, b2Body* body, float r,
+    float g, float b, float a) {
   b2Fixture* fixture = body->GetFixtureList();
 
   while (fixture != NULL) {  // traverse fixture linked list
@@ -175,7 +180,7 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::msg::MarkerArray& mar
 
       } break;
 
-      case b2Shape::e_edge: {    // Convert b2Edge -> LINE_LIST
+      case b2Shape::e_edge: {         // Convert b2Edge -> LINE_LIST
         geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
         b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
 
@@ -207,8 +212,9 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::msg::MarkerArray& mar
 
       default:  // Unsupported shape
         rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
-        RCLCPP_WARN_THROTTLE(rclcpp::get_logger("Debug Visualization"), steady_clock, 1000, "Unsupported Box2D shape %d",
-                                static_cast<int>(fixture->GetType()));
+        RCLCPP_WARN_THROTTLE(rclcpp::get_logger("Debug Visualization"),
+                             steady_clock, 1000, "Unsupported Box2D shape %d",
+                             static_cast<int>(fixture->GetType()));
         fixture = fixture->GetNext();
         continue;  // Do not add broken marker
         break;
@@ -247,7 +253,8 @@ void DebugVisualization::Publish(const Timekeeper& timekeeper) {
 
   if (to_delete.size() > 0) {
     for (const auto& topic : to_delete) {
-      RCLCPP_WARN(rclcpp::get_logger("DebugVis"), "Deleting topic %s", topic.c_str());
+      RCLCPP_WARN(rclcpp::get_logger("DebugVis"), "Deleting topic %s",
+                  topic.c_str());
       topics_.erase(topic);
     }
     PublishTopicList();
@@ -276,8 +283,9 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
     marker.pose.position.y = body->physics_body_->GetPosition().y;
 
     tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
-    q.setRPY(0, 0, body->physics_body_
-                       ->GetAngle());  // from euler angles: roll, pitch, yaw
+    q.setRPY(0, 0,
+             body->physics_body_
+                 ->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
     marker.type = marker.TRIANGLE_LIST;
 
@@ -348,13 +356,26 @@ void DebugVisualization::Reset(std::string name) {
 }
 
 void DebugVisualization::AddTopicIfNotExist(const std::string& name) {
+  static const rmw_qos_profile_t qos_profile = {
+      RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+      1,
+      RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+      RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+      RMW_QOS_DEADLINE_DEFAULT,
+      RMW_QOS_LIFESPAN_DEFAULT,
+      RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+      RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+      false};
+
   // If the topic doesn't exist yet, create it
   if (topics_.count(name) == 0) {
     topics_[name] = {
-        node_->create_publisher<visualization_msgs::msg::MarkerArray>(name, 1), true,
-        visualization_msgs::msg::MarkerArray()};
+        node_->create_publisher<visualization_msgs::msg::MarkerArray>(
+            name, rclcpp::QoS(rclcpp::KeepLast(1), qos_profile)),
+        true, visualization_msgs::msg::MarkerArray()};
 
-    RCLCPP_INFO_ONCE(rclcpp::get_logger("Debug Visualization"), "Visualizing %s", name.c_str());
+    RCLCPP_INFO_ONCE(rclcpp::get_logger("Debug Visualization"),
+                     "Visualizing %s", name.c_str());
     PublishTopicList();
   }
 }
@@ -365,4 +386,4 @@ void DebugVisualization::PublishTopicList() {
     topic_list.topics.push_back(topic_pair.first);
   topic_list_publisher_->publish(topic_list);
 }
-}  //namespace flatland_server
+}  // namespace flatland_server
