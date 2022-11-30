@@ -10,7 +10,7 @@ namespace flatland_rviz_plugins
 
 PauseTool::PauseTool()
 {
-  shortcut_key_ = 'p';
+  shortcut_key_ = ' ';
 }
 
 PauseTool::~PauseTool()
