@@ -28,10 +28,19 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
+find_package(flatland_server REQUIRED)
+find_package(flatland_msgs REQUIRED)
+
+# lua5.1
+find_package(Lua 5.1 REQUIRED)
+
+# Boost
+find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 
 set(flatland_rviz_plugins_headers_to_moc
   include/flatland_rviz_plugins/pause_tool.hpp
-        src/interactive_tool.cpp include/flatland_rviz_plugins/interactive_tool.hpp)
+  include/flatland_rviz_plugins/interactive_tool.hpp
+  include/flatland_rviz_plugins/spawn_model_tool.hpp)
 
 include_directories(
   include
@@ -41,6 +50,9 @@ set(library_name ${PROJECT_NAME})
 
 add_library(${library_name} SHARED
   src/pause_tool.cpp
+  src/interactive_tool.cpp
+  src/spawn_model_tool.cpp
+  src/load_model_dialog.cpp
   ${flatland_rviz_plugins_headers_to_moc}
 )
 
@@ -57,6 +69,8 @@ set(dependencies
   std_msgs
   std_srvs
   tf2_geometry_msgs
+  flatland_server
+  flatland_msgs
 )
 
 ament_target_dependencies(${library_name}
@@ -69,6 +83,8 @@ target_include_directories(${library_name} PUBLIC
 )
 
 target_link_libraries(${library_name}
+  ${Boost_LIBRARIES}
+  ${Boost_FILESYSTEM_LIBRARY}
   rviz_common::rviz_common
 )
 

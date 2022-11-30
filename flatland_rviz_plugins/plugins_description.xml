@@ -16,7 +16,17 @@
           base_class_type="rviz_common::Tool"
   >
     <description>
-      Toggle the pause state of the simulation
+      Allows interacting with interactive markers
+    </description>
+  </class>
+
+  <class
+          name="flatland_rviz_plugins/SpawnModel"
+          type="flatland_rviz_plugins::SpawnModelTool"
+          base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Spawns a model
     </description>
   </class>
 
