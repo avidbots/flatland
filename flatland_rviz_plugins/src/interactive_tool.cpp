@@ -8,15 +8,6 @@
 namespace flatland_rviz_plugins {
 
 InteractiveTool::InteractiveTool() : rviz_default_plugins::tools::InteractionTool() {
-  /*
-  hide_inactive_property_ = std::make_unique<rviz_common::properties::BoolProperty>(
-      "Hide Inactive Objects",
-      true,
-      "While holding down a mouse button, hide all other Interactive Objects.",
-      getPropertyContainer(),
-      SLOT(hideInactivePropertyChanged()),
-      this);
-      */
 }
 
 void InteractiveTool::enableMarkers(bool is_enabled) {
