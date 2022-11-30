@@ -1,29 +1,23 @@
 #include "flatland_rviz_plugins/pause_tool.hpp"
 
 #include <memory>
-#include <rviz_common/load_resource.hpp>
 #include <rviz_common/display_context.hpp>
+#include <rviz_common/load_resource.hpp>
 #include <rviz_common/tool_manager.hpp>
 
-namespace flatland_rviz_plugins
-{
+namespace flatland_rviz_plugins {
 
-PauseTool::PauseTool()
-{
-  shortcut_key_ = ' ';
-}
+PauseTool::PauseTool() { shortcut_key_ = ' '; }
 
-PauseTool::~PauseTool()
-{
-}
+PauseTool::~PauseTool() {}
 
-void PauseTool::onInitialize()
-{
+void PauseTool::onInitialize() {
   node_ = rclcpp::Node::make_shared("pause_sim_tool");
   pause_service_ = node_->create_client<std_srvs::srv::Empty>("toggle_pause");
 
   setName("Toggle Pause");
-  setIcon(rviz_common::loadPixmap("package://flatland_rviz_plugins/icons/pause.svg"));
+  setIcon(rviz_common::loadPixmap(
+      "package://flatland_rviz_plugins/icons/pause.svg"));
 }
 
 void PauseTool::activate() {

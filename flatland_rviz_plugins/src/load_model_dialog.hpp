@@ -48,29 +48,26 @@
 #ifndef FLATLAND_RVIZ_PLUGINS__LOAD_MODEL_DIALOG_HPP_
 #define FLATLAND_RVIZ_PLUGINS__LOAD_MODEL_DIALOG_HPP_
 
+#include <OgreEntity.h>
+#include <OgreSceneManager.h>
+#include <OgreSceneNode.h>
+#include <OgreVector3.h>
+
 #include <QCursor>
+#include <QDialog>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QString>
-#include <QDialog>
-
-#include <OgreEntity.h>
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-#include <OgreVector3.h>
-
+#include <boost/filesystem.hpp>
 #include <rclcpp/rclcpp.hpp>
-
 #include <rviz_rendering/geometry.hpp>
 #include <rviz_rendering/mesh_loader.hpp>
-
-#include <boost/filesystem.hpp>
 
 #include "flatland_rviz_plugins/spawn_model_tool.hpp"
 
@@ -83,19 +80,19 @@ class LoadModelDialog : public QDialog {
    * @brief               Launch load model dialog
    * @param               parent, parent widget pointer
    * @param               tool, pointer to this so dialog can call methods
- */
+   */
   LoadModelDialog(QWidget *parent, SpawnModelTool *tool);
 
  private:
   /**
    * @name                ChooseFile
    * @brief               Launch file selection dialog
- */
+   */
   QString ChooseFile();
   /**
    * @name                AddNumberAndUpdateName
    * @brief               Add numbering to name and show in the name widget
- */
+   */
   void AddNumberAndUpdateName();
 
   static QString path_to_model_file;  // full path to model file
@@ -130,6 +127,6 @@ class LoadModelDialog : public QDialog {
   void on_PathButtonClicked();
 };
 
-}
+}  // namespace flatland_rviz_plugins
 
 #endif  // FLATLAND_RVIZ_PLUGINS__LOAD_MODEL_DIALOG_HPP_

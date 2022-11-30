@@ -49,12 +49,6 @@
 
 #include <OgreVector3.h>
 
-#include <rclcpp/rclcpp.hpp>
-
-#include <rviz_common/properties/float_property.hpp>
-#include <rviz_common/viewport_mouse_event.hpp>
-#include <rviz_common/visualization_manager.hpp>
-
 #include <QCheckBox>
 #include <QCursor>
 #include <QFileDialog>
@@ -64,8 +58,11 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
-
 #include <boost/filesystem.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_common/visualization_manager.hpp>
 
 namespace flatland_rviz_plugins {
 
@@ -73,10 +70,10 @@ QString LoadModelDialog::path_to_model_file;
 int LoadModelDialog::count;
 bool LoadModelDialog::numbering;
 
-LoadModelDialog::LoadModelDialog(QWidget *parent,
-                                 SpawnModelTool *tool)
+LoadModelDialog::LoadModelDialog(QWidget *parent, SpawnModelTool *tool)
     : QDialog(parent), tool_(tool) {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "ModelDialog::ModelDialog");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
+                     "ModelDialog::ModelDialog");
   auto *v_layout = new QVBoxLayout;
   setLayout(v_layout);
 
@@ -149,12 +146,14 @@ LoadModelDialog::LoadModelDialog(QWidget *parent,
 }
 
 void LoadModelDialog::CancelButtonClicked() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::CancelButtonClicked");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
+                     "LoadModelDialog::CancelButtonClicked");
   this->close();
 }
 
 void LoadModelDialog::OkButtonClicked() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::OkButtonClicked");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
+                     "LoadModelDialog::OkButtonClicked");
 
   QString name = n_edit->displayText();
 
@@ -170,7 +169,6 @@ void LoadModelDialog::AddNumberAndUpdateName() {
       boost::filesystem::basename(path_to_model_file.toStdString());
   QString name = QString::fromStdString(bsfn);
 
-
   if (numbering) {
     name = name.append(QString::number(count++));
   }
@@ -180,7 +178,8 @@ void LoadModelDialog::AddNumberAndUpdateName() {
 }
 
 void LoadModelDialog::on_PathButtonClicked() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::on_PathButtonClicked");
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
+                     "LoadModelDialog::on_PathButtonClicked");
   path_to_model_file = ChooseFile();
 
   AddNumberAndUpdateName();
@@ -189,7 +188,8 @@ void LoadModelDialog::on_PathButtonClicked() {
 }
 
 void LoadModelDialog::NumberCheckBoxChanged(bool i) {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "NumberCheckBoxChanged " << i);
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
+                     "NumberCheckBoxChanged " << i);
   numbering = !numbering;
   AddNumberAndUpdateName();
 }
@@ -213,4 +213,4 @@ QString LoadModelDialog::ChooseFile() {
   }
 }
 
-}
+}  // namespace flatland_rviz_plugins

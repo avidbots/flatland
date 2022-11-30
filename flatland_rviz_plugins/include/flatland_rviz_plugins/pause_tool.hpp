@@ -1,23 +1,20 @@
 #ifndef FLATLAND_RVIZ_PLUGINS__PAUSE_TOOL_HPP_
 #define FLATLAND_RVIZ_PLUGINS__PAUSE_TOOL_HPP_
 
-#include <rviz_common/tool.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/empty.hpp>
 #include <QObject>
-
 #include <memory>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/tool.hpp>
+#include <std_srvs/srv/empty.hpp>
 
 #include "rviz_default_plugins/visibility_control.hpp"
 
-namespace flatland_rviz_plugins
-{
+namespace flatland_rviz_plugins {
 
-class RVIZ_DEFAULT_PLUGINS_PUBLIC PauseTool : public rviz_common::Tool
-{
+class RVIZ_DEFAULT_PLUGINS_PUBLIC PauseTool : public rviz_common::Tool {
   Q_OBJECT
 
-public:
+ public:
   PauseTool();
   ~PauseTool() override;
 
@@ -26,7 +23,7 @@ public:
   void activate() override;
   void deactivate() override;
 
-private:
+ private:
   std::shared_ptr<rclcpp::Node> node_;
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr pause_service_;
 };
