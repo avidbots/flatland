@@ -63,6 +63,7 @@
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_common/visualization_manager.hpp>
+#include <rviz_common/tool_manager.hpp>
 
 namespace flatland_rviz_plugins {
 
@@ -70,8 +71,8 @@ QString LoadModelDialog::path_to_model_file;
 int LoadModelDialog::count;
 bool LoadModelDialog::numbering;
 
-LoadModelDialog::LoadModelDialog(QWidget *parent, SpawnModelTool *tool)
-    : QDialog(parent), tool_(tool) {
+LoadModelDialog::LoadModelDialog(QWidget *parent, rviz_common::DisplayContext *context, SpawnModelTool *tool)
+    : QDialog(parent), context_(context), tool_(tool) {
   RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
                      "ModelDialog::ModelDialog");
   auto *v_layout = new QVBoxLayout;
@@ -148,6 +149,11 @@ LoadModelDialog::LoadModelDialog(QWidget *parent, SpawnModelTool *tool)
 void LoadModelDialog::CancelButtonClicked() {
   RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),
                      "LoadModelDialog::CancelButtonClicked");
+
+  auto tool_man = context_->getToolManager();
+  auto dflt_tool = tool_man->getDefaultTool();
+  tool_man->setCurrentTool(dflt_tool);
+
   this->close();
 }
 

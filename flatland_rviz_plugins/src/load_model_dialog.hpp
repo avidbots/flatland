@@ -64,8 +64,12 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
+
 #include <boost/filesystem.hpp>
+
 #include <rclcpp/rclcpp.hpp>
+
+#include <rviz_common/display_context.hpp>
 #include <rviz_rendering/geometry.hpp>
 #include <rviz_rendering/mesh_loader.hpp>
 
@@ -81,9 +85,11 @@ class LoadModelDialog : public QDialog {
    * @param               parent, parent widget pointer
    * @param               tool, pointer to this so dialog can call methods
    */
-  LoadModelDialog(QWidget *parent, SpawnModelTool *tool);
+  LoadModelDialog(QWidget *parent, rviz_common::DisplayContext *context, SpawnModelTool *tool);
 
  private:
+  rviz_common::DisplayContext * context_;
+
   /**
    * @name                ChooseFile
    * @brief               Launch file selection dialog

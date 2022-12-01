@@ -147,7 +147,7 @@ void SpawnModelTool::activate() {
   RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),
                      "SpawnModelTool::activate ");
 
-  LoadModelDialog *model_dialog = new LoadModelDialog(nullptr, this);
+  LoadModelDialog *model_dialog = new LoadModelDialog(nullptr, context_, this);
   model_dialog->setModal(true);
   model_dialog->show();
 }
