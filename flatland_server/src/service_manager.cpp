@@ -54,6 +54,8 @@ ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
     : world_(world), node_(world->node_), sim_man_(sim_man)  {
   
   using namespace std::placeholders;  // for _1, _2, ... etc
+  change_rate_service_ = node_->create_service<flatland_msgs::srv::ChangeRate>(
+    "change_rate", std::bind(&ServiceManager::ChangeRate, this, _1, _2, _3));
   spawn_model_service_ =  node_->create_service<flatland_msgs::srv::SpawnModel>(
     "spawn_model", std::bind(&ServiceManager::SpawnModel, this, _1, _2, _3));
   delete_model_service_ = node_->create_service<flatland_msgs::srv::DeleteModel>(
@@ -84,6 +86,25 @@ ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
   } else {
     RCLCPP_ERROR(rclcpp::get_logger("Service Manager"), "Error starting model moving service");
   }
+}
+
+bool ServiceManager::ChangeRate(
+    const std::shared_ptr<rmw_request_id_t> request_header,
+    const std::shared_ptr<flatland_msgs::srv::ChangeRate::Request> request,
+    std::shared_ptr<flatland_msgs::srv::ChangeRate::Response> response) {
+  RCLCPP_DEBUG(rclcpp::get_logger("ServiceManager"), "Change rate requested with rate(\"%f\")",
+                  request->rate);
+
+  try {
+    sim_man_->setUpdateRate(request->rate);
+    response->success = true;
+    response->message = "";
+  } catch (const std::exception &e) {
+    response->success = false;
+    response->message = std::string(e.what());
+  }
+
+  return true;
 }
 
 bool ServiceManager::SpawnModel(const std::shared_ptr<rmw_request_id_t> request_header,

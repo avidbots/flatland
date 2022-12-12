@@ -44,6 +44,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_msgs/srv/change_rate.hpp>
 #include <flatland_msgs/srv/delete_model.hpp>
 #include <flatland_msgs/srv/move_model.hpp>
 #include <flatland_msgs/srv/spawn_model.hpp>
@@ -65,10 +66,11 @@ class SimulationManager;
  */
 class ServiceManager {
  public:
-  World *world_;                ///< aaa handle to the simulation world
+  World *world_;                ///< a handle to the simulation world
   rclcpp::Node::SharedPtr node_;
   SimulationManager *sim_man_;  ///< a handle to the simulation manager
 
+  rclcpp::Service<flatland_msgs::srv::ChangeRate>::SharedPtr change_rate_service_;   ///< service for changing the simulation rate
   rclcpp::Service<flatland_msgs::srv::SpawnModel>::SharedPtr spawn_model_service_;    ///< service for spawning models
   rclcpp::Service<flatland_msgs::srv::DeleteModel>::SharedPtr  delete_model_service_; ///< service for deleting models
   rclcpp::Service<flatland_msgs::srv::MoveModel>::SharedPtr  move_model_service_;     ///< service for moving models
@@ -83,6 +85,16 @@ class ServiceManager {
    * @param[in] world A handle to the simulation world
    */
   ServiceManager(SimulationManager *sim_man, World *world);
+
+  /**
+   * @brief Callback for the change rate service
+   * @param[in] request_header The ros middleware service header
+   * @param[in] request Contains the request data for the service
+   * @param[in/out] response Contains the response for the service
+   */
+  bool ChangeRate(const std::shared_ptr<rmw_request_id_t> request_header,
+                   const std::shared_ptr<flatland_msgs::srv::ChangeRate::Request> request,
+                   std::shared_ptr<flatland_msgs::srv::ChangeRate::Response> response);
 
   /**
    * @brief Callback for the spawn model service
