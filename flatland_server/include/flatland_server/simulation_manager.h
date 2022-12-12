@@ -79,6 +79,8 @@ class SimulationManager {
   SimulationManager(std::shared_ptr<rclcpp::Node> node, std::string world_yaml_file, double update_rate,
                     double step_size, bool show_viz, double viz_pub_rate);
 
+  ~SimulationManager();
+
   /**
    * This method contains the loop that runs the simulation
    */

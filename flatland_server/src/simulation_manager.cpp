@@ -75,6 +75,10 @@ SimulationManager::SimulationManager(std::shared_ptr<rclcpp::Node> node, std::st
                  show_viz_ ? "true" : "false", viz_pub_rate_);
 }
 
+SimulationManager::~SimulationManager() {
+  delete rate_;
+}
+
 void SimulationManager::setUpdateRate(double update_rate) {
   update_rate_ = update_rate;
   delete rate_;
