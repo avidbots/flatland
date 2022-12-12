@@ -66,12 +66,19 @@ SimulationManager::SimulationManager(std::shared_ptr<rclcpp::Node> node, std::st
       step_size_(step_size),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
-      world_yaml_file_(world_yaml_file) {
+      world_yaml_file_(world_yaml_file),
+      rate_(new rclcpp::WallRate(update_rate)) {
   RCLCPP_INFO(rclcpp::get_logger("SimMan"),
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
                  world_yaml_file_.c_str(), update_rate_, step_size_,
                  show_viz_ ? "true" : "false", viz_pub_rate_);
+}
+
+void SimulationManager::setUpdateRate(double update_rate) {
+  update_rate_ = update_rate;
+  delete rate_;
+  rate_ = new rclcpp::WallRate(update_rate_);
 }
 
 void SimulationManager::Main() {
@@ -96,7 +103,6 @@ void SimulationManager::Main() {
   ServiceManager service_manager(this, world_);
   Timekeeper timekeeper(node_);
 
-  rclcpp::WallRate rate(update_rate_);
   rclcpp::Clock wall_clock(RCL_STEADY_TIME);
   timekeeper.SetMaxStepSize(step_size_);
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop started");
@@ -125,7 +131,7 @@ void SimulationManager::Main() {
 
     rclcpp::spin_some(node_);
     double cycle_time = wall_clock.now().seconds()-start_time;
-    rate.sleep();
+    rate_->sleep();
 
     iterations++;
 

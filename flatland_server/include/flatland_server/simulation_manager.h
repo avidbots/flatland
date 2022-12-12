@@ -88,6 +88,11 @@ class SimulationManager {
    * Kill the world
    */
   void Shutdown();
+
+  void setUpdateRate(double update_rate);
+
+private:
+  rclcpp::WallRate* rate_;
 };
 }       // namespace flatland_server
 #endif  // FLATLAND_SERVER_SIMULATION_MANAGER_H
