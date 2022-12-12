@@ -1,10 +1,10 @@
 #include "flatland_rviz_plugins/change_rate_tool.hpp"
 
+#include <flatland_msgs/srv/change_rate.hpp>
 #include <memory>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/tool_manager.hpp>
-#include <flatland_msgs/srv/change_rate.hpp>
 
 #include "change_rate_dialog.hpp"
 
@@ -20,9 +20,9 @@ void ChangeRateTool::onInitialize() {
       node_->create_client<flatland_msgs::srv::ChangeRate>("change_rate");
 
   setName("Change Simulation Rate");
-  setIcon(rviz_common::loadPixmap("package://flatland_rviz_plugins/icons/time.png"));
+  setIcon(rviz_common::loadPixmap(
+      "package://flatland_rviz_plugins/icons/time.png"));
 }
-
 
 void ChangeRateTool::setRate(double rate) {
   auto request = std::make_shared<flatland_msgs::srv::ChangeRate::Request>();

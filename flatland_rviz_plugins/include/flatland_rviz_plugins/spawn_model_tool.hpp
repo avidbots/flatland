@@ -146,7 +146,7 @@ class SpawnModelTool : public rviz_common::Tool {
 
   Ogre::Vector3 intersection;  // location cursor intersects ground plane, ie
                                // the location to create the model
-  float initial_angle;                  // the angle to create the model at
+  float initial_angle;         // the angle to create the model at
   Ogre::SceneNode *moving_model_node_;  // the node for the 3D object
   enum ModelState { m_hidden, m_dragging, m_rotating };
   ModelState model_state;  // model state, first hidden, then dragging to
