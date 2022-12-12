@@ -30,6 +30,7 @@ set(msg_files
 )
 
 set(srv_files
+  "srv/ChangeRate.srv"
   "srv/SpawnModel.srv"
   "srv/DeleteModel.srv"
   "srv/MoveModel.srv"
