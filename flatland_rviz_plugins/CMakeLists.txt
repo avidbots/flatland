@@ -38,6 +38,7 @@ find_package(Lua 5.1 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 
 set(flatland_rviz_plugins_headers_to_moc
+  include/flatland_rviz_plugins/change_rate_tool.hpp
   include/flatland_rviz_plugins/pause_tool.hpp
   include/flatland_rviz_plugins/interactive_tool.hpp
   include/flatland_rviz_plugins/spawn_model_tool.hpp)
@@ -49,6 +50,8 @@ include_directories(
 set(library_name ${PROJECT_NAME})
 
 add_library(${library_name} SHARED
+  src/change_rate_tool.cpp
+  src/change_rate_dialog.cpp
   src/pause_tool.cpp
   src/interactive_tool.cpp
   src/spawn_model_tool.cpp
