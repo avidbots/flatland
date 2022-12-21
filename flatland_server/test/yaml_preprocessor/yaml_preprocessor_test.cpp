@@ -44,10 +44,11 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/yaml_preprocessor.h"
+#include <flatland_server/yaml_preprocessor.h>
 #include <gtest/gtest.h>
-#include <rclcpp/rclcpp.hpp>
+
 #include <cmath>
+#include <rclcpp/rclcpp.hpp>
 
 namespace fs = boost::filesystem;
 using namespace flatland_server;
@@ -85,12 +86,24 @@ void compareNodes(const char *p1, const char *p2, YAML::Node &a,
 
 // Test the bodyToMarkers method on a polygon shape
 TEST(YamlPreprocTest, testEvalStrings) {
+  // env vars
+  setenv("VALIDSTRING", "Bar", 1);
+  setenv("VALIDNUMBER", "123.4", 1);
+
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("test_yaml_preprocessor");
+  // ros params
+  node->declare_parameter("/string", "Foo");
+  node->declare_parameter("/int", 7);
+  node->declare_parameter("/float", 10.5);
+
+  YamlPreprocessor yamlPreprocessor(node);
   boost::filesystem::path cwd = fs::path(__FILE__).parent_path();
 
-  YAML::Node in = YamlPreprocessor::LoadParse(
+  YAML::Node in = yamlPreprocessor.LoadParse(
       (cwd / fs::path("/yaml/eval.strings.yaml")).string());
 
-  YAML::Node out = YamlPreprocessor::LoadParse(
+  YAML::Node out = yamlPreprocessor.LoadParse(
       (cwd / fs::path("/yaml/eval.strings.out.yaml")).string());
 
   // check that the two strings match

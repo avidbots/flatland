@@ -45,14 +45,18 @@
  */
 
 #include "flatland_server/model.h"
+
 #include <gtest/gtest.h>
+
 #include <rclcpp/rclcpp.hpp>
 #include <string>
+
 #include "flatland_server/collision_filter_registry.h"
 
 // Test the NameSpaceTF method
 TEST(TestSuite, testNameSpaceTF) {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("testNameSpaceTF_node");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("testNameSpaceTF_node");
   flatland_server::Model has_ns(node, nullptr, nullptr, std::string("foo"),
                                 std::string("has_ns"));
   // namespace "foo" onto tf "bar" => foo_bar
@@ -70,7 +74,8 @@ TEST(TestSuite, testNameSpaceTF) {
 
 // Test the NameSpaceTopic method
 TEST(TestSuite, testNameSpaceTopic) {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("testNameSpaceTopic_node");
+  std::shared_ptr<rclcpp::Node> node =
+      rclcpp::Node::make_shared("testNameSpaceTopic_node");
   flatland_server::Model has_ns(node, nullptr, nullptr, std::string("foo"),
                                 std::string("has_ns"));
   // namespace "foo" onto tf "bar" => foo_bar

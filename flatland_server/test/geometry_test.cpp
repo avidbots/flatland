@@ -45,7 +45,9 @@
  */
 
 #include "flatland_server/geometry.h"
+
 #include <gtest/gtest.h>
+
 #include <cmath>
 
 // Test the CreateTransform method

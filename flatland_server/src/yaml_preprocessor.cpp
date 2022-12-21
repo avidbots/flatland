@@ -84,7 +84,7 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
 }
 
 void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
-  std::string value = node.as<std::string>().substr(5);  // omit the $parse
+  std::string value = node.as<std::string>().substr(5);  // omit the $eval
   boost::algorithm::trim(value);                         // trim whitespace
   RCLCPP_INFO_STREAM(rclcpp::get_logger("YAML Preprocessor"), "Attempting to parse lua " << value);
 
@@ -125,8 +125,8 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
         RCLCPP_ERROR_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "No lua output for " << value);
       }
     }
-  } catch (
-      ...) { /* Something went wrong parsing the lua, or gettings its results */
+  } catch (...) {
+    /* Something went wrong parsing the lua, or gettings its results */
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Lua error in: " << value);
   }
 }
@@ -180,12 +180,10 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
 
 int YamlPreprocessor::LuaGetParam(lua_State *L) {
   const char *name = lua_tostring(L, 1);
-  std::string param_s;
-  double param_d;
-  bool param_b;
+  rclcpp::Parameter param;
 
   lua_getglobal(L, "class_pointer");  // push class pointer to the stack
-  // grab the class pointer and cast it so we can use it
+  // grab the class pointer and cast it, so we can use it
   YamlPreprocessor *class_pointer = reinterpret_cast<YamlPreprocessor*>(lua_touserdata(L, lua_gettop(L)));
   lua_pop(L, 1);  // pop that class pointer from the stack
 
@@ -206,12 +204,19 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
       RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "No rosparam found for: " << name);
       lua_pushnil(L);
     } else {
-      if (class_pointer->ros_node_->get_parameter(name, param_d)) {
-        lua_pushnumber(L, param_d);
-      } else if (class_pointer->ros_node_->get_parameter(name, param_s)) {
-        lua_pushstring(L, param_s.c_str());
-      } else if (class_pointer->ros_node_->get_parameter(name, param_b)) {
-        lua_pushstring(L, param_b ? "true" : "false");
+      if (!class_pointer->ros_node_->get_parameter(name, param)) {
+        RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Couldn't find a param with name "
+            << name);
+        lua_pushnil(L);
+      }
+      if (param.get_type() == rclcpp::PARAMETER_DOUBLE) {
+        lua_pushnumber(L, param.as_double());
+      } else if (param.get_type() == rclcpp::PARAMETER_INTEGER) {
+          lua_pushinteger(L, param.as_int());
+      } else if (param.get_type() == rclcpp::PARAMETER_STRING) {
+        lua_pushstring(L, param.as_string().c_str());
+      } else if (param.get_type() == rclcpp::PARAMETER_BOOL) {
+        lua_pushstring(L, param.as_bool() ? "true" : "false");
       } else {
         RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Couldn't load int/double/string value at param "
                         << name);
