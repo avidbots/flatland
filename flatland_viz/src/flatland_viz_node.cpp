@@ -44,19 +44,22 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <rclcpp/rclcpp.hpp>
 #include <signal.h>
+
 #include <QApplication>
+#include <rclcpp/rclcpp.hpp>
+
 #include "flatland_viz/flatland_window.h"
 
-FlatlandWindow* window = nullptr;
+FlatlandWindow * window = nullptr;
 
 /**
  * @name        SigintHandler
  * @brief       Interrupt handler - sends shutdown signal to simulation_manager
  * @param[in]   sig: signal itself
  */
-void SigintHandler(int sig) {
+void SigintHandler(int sig)
+{
   RCLCPP_WARN(rclcpp::get_logger("Node"), "*** Shutting down... ***");
 
   if (window != nullptr) {
@@ -67,7 +70,8 @@ void SigintHandler(int sig) {
   rclcpp::shutdown();
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   if (!rclcpp::isInitialized()) {
     rclcpp::init(argc, argv);
   }

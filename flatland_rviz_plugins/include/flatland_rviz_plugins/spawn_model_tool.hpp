@@ -62,16 +62,18 @@
 #include <rviz_rendering/objects/billboard_line.hpp>
 #include <vector>
 
-namespace flatland_rviz_plugins {
+namespace flatland_rviz_plugins
+{
 /**
  * @name                SpawnModelTool
  * @brief               Every tool which can be added to the tool bar is a
  * subclass of rviz_common::Tool.
  */
-class SpawnModelTool : public rviz_common::Tool {
+class SpawnModelTool : public rviz_common::Tool
+{
   Q_OBJECT
 
- public:
+public:
   SpawnModelTool();
   ~SpawnModelTool() override;
 
@@ -97,7 +99,7 @@ class SpawnModelTool : public rviz_common::Tool {
    */
   void SpawnModelInFlatland();
 
- private:
+private:
   /**
    * @name                onInitialize
    * @brief               Initializes tools currently loaded when rviz starts
@@ -119,7 +121,7 @@ class SpawnModelTool : public rviz_common::Tool {
    * @brief               Main loop of tool
    * @param event         Mouse event
    */
-  int processMouseEvent(rviz_common::ViewportMouseEvent &event) override;
+  int processMouseEvent(rviz_common::ViewportMouseEvent & event) override;
   /**
    * @name                SetMovingModelColor
    * @brief               Set the color of the moving model
@@ -136,26 +138,26 @@ class SpawnModelTool : public rviz_common::Tool {
    * @brief              Load a vector preview of the model's polygon footprint
    * @param footprint    The footprint yaml node
    */
-  void LoadPolygonFootprint(flatland_server::YamlReader &footprint);
+  void LoadPolygonFootprint(flatland_server::YamlReader & footprint);
   /**
    * @name               LoadCircleFootprint
    * @brief              Load a vector preview of the model's circle footprint
    * @param footprint    The footprint yaml node
    */
-  void LoadCircleFootprint(flatland_server::YamlReader &footprint);
+  void LoadCircleFootprint(flatland_server::YamlReader & footprint);
 
-  Ogre::Vector3 intersection;  // location cursor intersects ground plane, ie
-                               // the location to create the model
-  float initial_angle;         // the angle to create the model at
-  Ogre::SceneNode *moving_model_node_;  // the node for the 3D object
+  Ogre::Vector3 intersection;            // location cursor intersects ground plane, ie
+                                         // the location to create the model
+  float initial_angle;                   // the angle to create the model at
+  Ogre::SceneNode * moving_model_node_;  // the node for the 3D object
   enum ModelState { m_hidden, m_dragging, m_rotating };
-  ModelState model_state;  // model state, first hidden, then dragging to
-                           // intersection point, then rotating to desired angle
+  ModelState model_state;              // model state, first hidden, then dragging to
+                                       // intersection point, then rotating to desired angle
   static QString path_to_model_file_;  // full path to model file (yaml)
-  static QString model_name;  // base file name with path and extension removed
+  static QString model_name;           // base file name with path and extension removed
 
- protected:
-  rviz_rendering::Arrow *arrow_;  // Rviz 3d arrow to show axis of rotation
+protected:
+  rviz_rendering::Arrow * arrow_;  // Rviz 3d arrow to show axis of rotation
   rclcpp::Client<flatland_msgs::srv::SpawnModel>::SharedPtr client;
   std::vector<std::shared_ptr<rviz_rendering::BillboardLine>> lines_list_;
 };

@@ -45,6 +45,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flatland_viz/model_dialog.h"
+
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -53,22 +55,19 @@
 #include <QMessageBox>
 #include <QVBoxLayout>
 
-#include "flatland_viz/model_dialog.h"
-
 // Initialize static variables
 QColor ModelDialog::saved_color_;
 
-QString ModelDialog::SelectFile() {
-  QString fileName =
-      QFileDialog::getOpenFileName(this, tr("Open model file"), "", "");
+QString ModelDialog::SelectFile()
+{
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open model file"), "", "");
   if (fileName.isEmpty())
     return fileName;
   else {
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly)) {
-      QMessageBox::information(this, tr("Unable to open file"),
-                               file.errorString());
+      QMessageBox::information(this, tr("Unable to open file"), file.errorString());
       return fileName;
     }
     file.close();
@@ -77,30 +76,30 @@ QString ModelDialog::SelectFile() {
   }
 }
 
-ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
+ModelDialog::ModelDialog(QWidget * parent) : QDialog(parent)
+{
   RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "ModelDialog::ModelDialog");
 
   path_to_model_file = SelectFile();
-  QVBoxLayout *v_layout = new QVBoxLayout;
+  QVBoxLayout * v_layout = new QVBoxLayout;
 
   // we are injecting horizontal layouts into the master vertical layout
-  QHBoxLayout *h1_layout = new QHBoxLayout;
-  QHBoxLayout *h2_layout = new QHBoxLayout;
-  QHBoxLayout *h3_layout = new QHBoxLayout;
-  QHBoxLayout *h4_layout = new QHBoxLayout;
-  QHBoxLayout *h5_layout = new QHBoxLayout;
+  QHBoxLayout * h1_layout = new QHBoxLayout;
+  QHBoxLayout * h2_layout = new QHBoxLayout;
+  QHBoxLayout * h3_layout = new QHBoxLayout;
+  QHBoxLayout * h4_layout = new QHBoxLayout;
+  QHBoxLayout * h5_layout = new QHBoxLayout;
 
-  QLabel *colorLabel = new QLabel;
+  QLabel * colorLabel = new QLabel;
   int frameStyle = QFrame::Sunken | QFrame::Panel;
   colorLabel->setFrameStyle(frameStyle);
   color_button = new QPushButton("");
-  QPushButton *okButton = new QPushButton("ok");
-  QPushButton *cancelButton = new QPushButton("cancel");
-  connect(color_button, &QAbstractButton::clicked, this,
-          &ModelDialog::SetColor);
+  QPushButton * okButton = new QPushButton("ok");
+  QPushButton * cancelButton = new QPushButton("cancel");
+  connect(color_button, &QAbstractButton::clicked, this, &ModelDialog::SetColor);
 
   // path label and path
-  QLabel *path = new QLabel;
+  QLabel * path = new QLabel;
   path->setText(path_to_model_file);
   h1_layout->addWidget(new QLabel("path:"));
   h1_layout->addWidget(path);
@@ -111,8 +110,7 @@ ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
   h2_layout->addWidget(n_edit);
 
   // set the default name to the filename parsed using boost
-  std::string bsfn =
-      boost::filesystem::basename(path_to_model_file.toStdString());
+  std::string bsfn = boost::filesystem::basename(path_to_model_file.toStdString());
   QString fn = QString::fromStdString(bsfn);
   n_edit->setText(fn);
 
@@ -150,15 +148,13 @@ ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
 
   // ok button
   h5_layout->addWidget(okButton);
-  connect(okButton, &QAbstractButton::clicked, this,
-          &ModelDialog::OkButtonClicked);
+  connect(okButton, &QAbstractButton::clicked, this, &ModelDialog::OkButtonClicked);
 
   ModelDialog::SetButtonColor(&color, color_button);
 
   // cancel button
   h5_layout->addWidget(cancelButton);
-  connect(cancelButton, &QAbstractButton::clicked, this,
-          &ModelDialog::CancelButtonClicked);
+  connect(cancelButton, &QAbstractButton::clicked, this, &ModelDialog::CancelButtonClicked);
 
   // add the horizontal layouts to the vertical layout
   v_layout->addLayout(h1_layout);
@@ -174,24 +170,25 @@ ModelDialog::ModelDialog(QWidget *parent) : QDialog(parent) {
   this->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-void ModelDialog::CancelButtonClicked() {
+void ModelDialog::CancelButtonClicked()
+{
   RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Cancel clicked");
   this->close();
 }
 
-void ModelDialog::OkButtonClicked() {
+void ModelDialog::OkButtonClicked()
+{
   RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Ok clicked");
   RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "connect to ROS model service");
 
   ModelDialog::SpawnModelClient();
 }
 
-void ModelDialog::SetColor() {
-  const QColorDialog::ColorDialogOptions options =
-      (QColorDialog::ShowAlphaChannel);
+void ModelDialog::SetColor()
+{
+  const QColorDialog::ColorDialogOptions options = (QColorDialog::ShowAlphaChannel);
 
-  const QColor color =
-      QColorDialog::getColor(Qt::green, this, "Select Color", options);
+  const QColor color = QColorDialog::getColor(Qt::green, this, "Select Color", options);
   if (color.isValid()) {
     color_button->setText(color.name());
   }
@@ -200,7 +197,8 @@ void ModelDialog::SetColor() {
   saved_color_ = color;
 }
 
-void ModelDialog::SetButtonColor(const QColor *c, QPushButton *b) {
+void ModelDialog::SetButtonColor(const QColor * c, QPushButton * b)
+{
   b->setText(c->name());
   b->setPalette(QPalette(*c));
   b->setAutoFillBackground(true);
@@ -210,7 +208,8 @@ void ModelDialog::SetButtonColor(const QColor *c, QPushButton *b) {
   color_button->setStyleSheet(qs);
 }
 
-void ModelDialog::SpawnModelClient() {
+void ModelDialog::SpawnModelClient()
+{
   srv.request.name = "service_manager_test_robot";
   srv.request.ns = n_edit->text().toStdString();
   srv.request.yaml_path = path_to_model_file.toStdString();

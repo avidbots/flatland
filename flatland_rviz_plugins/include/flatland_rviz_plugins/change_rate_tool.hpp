@@ -1,14 +1,19 @@
 /*
- * @copyright Copyright 2022 FEUP
- * @name change_rate_tool.hpp
- * @brief changes simulation rate
- * @author Ana Barros
- * @author Henrique Ribeiro
- * @author João Costa
+ *  ______                   __  __              __
+ * /\  _  \           __    /\ \/\ \            /\ \__
+ * \ \ \L\ \  __  __ /\_\   \_\ \ \ \____    ___\ \ ,_\   ____
+ *  \ \  __ \/\ \/\ \\/\ \  /'_` \ \ '__`\  / __`\ \ \/  /',__\
+ *   \ \ \/\ \ \ \_/ |\ \ \/\ \L\ \ \ \L\ \/\ \L\ \ \ \_/\__, `\
+ *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
+ *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
+ * @copyright Copyright 2017 Avidbots Corp.
+ * @name	 joint.h
+ * @brief	 Defines Joint
+ * @author   Chunshang Li
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2022, FEUP
+ *  Copyright (c) 2017, Avidbots Corp.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -39,7 +44,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #ifndef FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_TOOL_HPP_
 #define FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_TOOL_HPP_
 
@@ -52,12 +56,14 @@
 
 #include "rviz_default_plugins/visibility_control.hpp"
 
-namespace flatland_rviz_plugins {
+namespace flatland_rviz_plugins
+{
 
-class RVIZ_DEFAULT_PLUGINS_PUBLIC ChangeRateTool : public rviz_common::Tool {
+class RVIZ_DEFAULT_PLUGINS_PUBLIC ChangeRateTool : public rviz_common::Tool
+{
   Q_OBJECT
 
- public:
+public:
   ChangeRateTool();
   ~ChangeRateTool() override;
 
@@ -68,10 +74,9 @@ class RVIZ_DEFAULT_PLUGINS_PUBLIC ChangeRateTool : public rviz_common::Tool {
 
   void setRate(double rate);
 
- private:
+private:
   std::shared_ptr<rclcpp::Node> node_;
-  rclcpp::Client<flatland_msgs::srv::ChangeRate>::SharedPtr
-      change_rate_service_;
+  rclcpp::Client<flatland_msgs::srv::ChangeRate>::SharedPtr change_rate_service_;
 };
 
 }  // namespace flatland_rviz_plugins

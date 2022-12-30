@@ -56,16 +56,16 @@
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-DebugVisualization::DebugVisualization(rclcpp::Node::SharedPtr node)
-    : node_(node) {
-  topic_list_publisher_ =
-      node_->create_publisher<flatland_msgs::msg::DebugTopicList>("topics", 1);
+DebugVisualization::DebugVisualization(rclcpp::Node::SharedPtr node) : node_(node)
+{
+  topic_list_publisher_ = node_->create_publisher<flatland_msgs::msg::DebugTopicList>("topics", 1);
 }
 
-std::shared_ptr<DebugVisualization> DebugVisualization::Get(
-    rclcpp::Node::SharedPtr node) {
+std::shared_ptr<DebugVisualization> DebugVisualization::Get(rclcpp::Node::SharedPtr node)
+{
   static std::shared_ptr<DebugVisualization> instance;
   // todo: fix this? How should singletons work with shared pointers?
   if (!instance) {
@@ -75,13 +75,16 @@ std::shared_ptr<DebugVisualization> DebugVisualization::Get(
 }
 
 void DebugVisualization::JointToMarkers(
-    visualization_msgs::msg::MarkerArray& markers, b2Joint* joint, float r,
-    float g, float b, float a) {
-  if (joint->GetType() == e_distanceJoint ||
-      joint->GetType() == e_pulleyJoint || joint->GetType() == e_mouseJoint) {
-    RCLCPP_ERROR(rclcpp::get_logger("DebugVis"),
-                 "Unimplemented visualization joints. See b2World.cpp for "
-                 "implementation");
+  visualization_msgs::msg::MarkerArray & markers, b2Joint * joint, float r, float g, float b,
+  float a)
+{
+  if (
+    joint->GetType() == e_distanceJoint || joint->GetType() == e_pulleyJoint ||
+    joint->GetType() == e_mouseJoint) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("DebugVis"),
+      "Unimplemented visualization joints. See b2World.cpp for "
+      "implementation");
     return;
   }
 
@@ -128,9 +131,9 @@ void DebugVisualization::JointToMarkers(
 }
 
 void DebugVisualization::BodyToMarkers(
-    visualization_msgs::msg::MarkerArray& markers, b2Body* body, float r,
-    float g, float b, float a) {
-  b2Fixture* fixture = body->GetFixtureList();
+  visualization_msgs::msg::MarkerArray & markers, b2Body * body, float r, float g, float b, float a)
+{
+  b2Fixture * fixture = body->GetFixtureList();
 
   while (fixture != NULL) {  // traverse fixture linked list
     visualization_msgs::msg::Marker marker;
@@ -142,7 +145,7 @@ void DebugVisualization::BodyToMarkers(
     marker.color.a = a;
     marker.pose.position.x = body->GetPosition().x;
     marker.pose.position.y = body->GetPosition().y;
-    tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
+    tf2::Quaternion q;                 // use tf2 to convert 2d yaw -> 3d quaternion
     q.setRPY(0, 0, body->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
     bool add_marker = true;
@@ -150,7 +153,7 @@ void DebugVisualization::BodyToMarkers(
     // Get the shape from the fixture
     switch (fixture->GetType()) {
       case b2Shape::e_circle: {
-        b2CircleShape* circle = (b2CircleShape*)fixture->GetShape();
+        b2CircleShape * circle = (b2CircleShape *)fixture->GetShape();
 
         marker.type = marker.SPHERE_LIST;
         float diameter = circle->m_radius * 2.0;
@@ -166,7 +169,7 @@ void DebugVisualization::BodyToMarkers(
       } break;
 
       case b2Shape::e_polygon: {  // Convert b2Polygon -> LINE_STRIP
-        b2PolygonShape* poly = (b2PolygonShape*)fixture->GetShape();
+        b2PolygonShape * poly = (b2PolygonShape *)fixture->GetShape();
         marker.type = marker.LINE_STRIP;
         marker.scale.x = 0.03;  // 3cm wide lines
 
@@ -182,11 +185,10 @@ void DebugVisualization::BodyToMarkers(
 
       case b2Shape::e_edge: {         // Convert b2Edge -> LINE_LIST
         geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
-        b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
+        b2EdgeShape * edge = (b2EdgeShape *)fixture->GetShape();
 
         // If the last marker is a line list, extend it
-        if (markers.markers.size() > 0 &&
-            markers.markers.back().type == marker.LINE_LIST) {
+        if (markers.markers.size() > 0 && markers.markers.back().type == marker.LINE_LIST) {
           add_marker = false;
           p.x = edge->m_vertex1.x;
           p.y = edge->m_vertex1.y;
@@ -212,9 +214,9 @@ void DebugVisualization::BodyToMarkers(
 
       default:  // Unsupported shape
         rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
-        RCLCPP_WARN_THROTTLE(rclcpp::get_logger("Debug Visualization"),
-                             steady_clock, 1000, "Unsupported Box2D shape %d",
-                             static_cast<int>(fixture->GetType()));
+        RCLCPP_WARN_THROTTLE(
+          rclcpp::get_logger("Debug Visualization"), steady_clock, 1000,
+          "Unsupported Box2D shape %d", static_cast<int>(fixture->GetType()));
         fixture = fixture->GetNext();
         continue;  // Do not add broken marker
         break;
@@ -227,12 +229,13 @@ void DebugVisualization::BodyToMarkers(
   }
 }
 
-void DebugVisualization::Publish(const Timekeeper& timekeeper) {
+void DebugVisualization::Publish(const Timekeeper & timekeeper)
+{
   // Iterate over the topics_ map as pair(name, topic)
 
   std::vector<std::string> to_delete;
 
-  for (auto& topic : topics_) {
+  for (auto & topic : topics_) {
     if (!topic.second.needs_publishing) {
       continue;
     }
@@ -252,19 +255,19 @@ void DebugVisualization::Publish(const Timekeeper& timekeeper) {
   }
 
   if (to_delete.size() > 0) {
-    for (const auto& topic : to_delete) {
-      RCLCPP_WARN(rclcpp::get_logger("DebugVis"), "Deleting topic %s",
-                  topic.c_str());
+    for (const auto & topic : to_delete) {
+      RCLCPP_WARN(rclcpp::get_logger("DebugVis"), "Deleting topic %s", topic.c_str());
       topics_.erase(topic);
     }
     PublishTopicList();
   }
 }
 
-void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
+void DebugVisualization::VisualizeLayer(std::string name, Body * body)
+{
   AddTopicIfNotExist(name);
 
-  b2Fixture* fixture = body->physics_body_->GetFixtureList();
+  b2Fixture * fixture = body->physics_body_->GetFixtureList();
 
   visualization_msgs::msg::Marker marker;
   if (fixture == NULL) return;  // Nothing to visualize, empty linked list
@@ -284,21 +287,19 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
 
     tf2::Quaternion q;  // use tf2 to convert 2d yaw -> 3d quaternion
     q.setRPY(0, 0,
-             body->physics_body_
-                 ->GetAngle());  // from euler angles: roll, pitch, yaw
+             body->physics_body_->GetAngle());  // from euler angles: roll, pitch, yaw
     marker.pose.orientation = tf2::toMsg(q);
     marker.type = marker.TRIANGLE_LIST;
 
     YamlReader reader(node_, body->properties_);
-    YamlReader debug_reader =
-        reader.SubnodeOpt("debug", YamlReader::NodeTypeCheck::MAP);
+    YamlReader debug_reader = reader.SubnodeOpt("debug", YamlReader::NodeTypeCheck::MAP);
     float min_z = debug_reader.Get<float>("min_z", 0.0);
     float max_z = debug_reader.Get<float>("max_z", 1.0);
 
     // Get the shape from the fixture
     if (fixture->GetType() == b2Shape::e_edge) {
       geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
-      b2EdgeShape* edge = (b2EdgeShape*)fixture->GetShape();
+      b2EdgeShape * edge = (b2EdgeShape *)fixture->GetShape();
 
       p.x = edge->m_vertex1.x;
       p.y = edge->m_vertex1.y;
@@ -334,56 +335,59 @@ void DebugVisualization::VisualizeLayer(std::string name, Body* body) {
   topics_[name].needs_publishing = true;
 }
 
-void DebugVisualization::Visualize(std::string name, b2Body* body, float r,
-                                   float g, float b, float a) {
+void DebugVisualization::Visualize(
+  std::string name, b2Body * body, float r, float g, float b, float a)
+{
   AddTopicIfNotExist(name);
   BodyToMarkers(topics_[name].markers, body, r, g, b, a);
   topics_[name].needs_publishing = true;
 }
 
-void DebugVisualization::Visualize(std::string name, b2Joint* joint, float r,
-                                   float g, float b, float a) {
+void DebugVisualization::Visualize(
+  std::string name, b2Joint * joint, float r, float g, float b, float a)
+{
   AddTopicIfNotExist(name);
   JointToMarkers(topics_[name].markers, joint, r, g, b, a);
   topics_[name].needs_publishing = true;
 }
 
-void DebugVisualization::Reset(std::string name) {
+void DebugVisualization::Reset(std::string name)
+{
   if (topics_.count(name) > 0) {  // If the topic exists, clear it
     topics_[name].markers.markers.clear();
     topics_[name].needs_publishing = true;
   }
 }
 
-void DebugVisualization::AddTopicIfNotExist(const std::string& name) {
+void DebugVisualization::AddTopicIfNotExist(const std::string & name)
+{
   static const rmw_qos_profile_t qos_profile = {
-      RMW_QOS_POLICY_HISTORY_KEEP_LAST,
-      1,
-      RMW_QOS_POLICY_RELIABILITY_RELIABLE,
-      RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
-      RMW_QOS_DEADLINE_DEFAULT,
-      RMW_QOS_LIFESPAN_DEFAULT,
-      RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
-      RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
-      false};
+    RMW_QOS_POLICY_HISTORY_KEEP_LAST,
+    1,
+    RMW_QOS_POLICY_RELIABILITY_RELIABLE,
+    RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL,
+    RMW_QOS_DEADLINE_DEFAULT,
+    RMW_QOS_LIFESPAN_DEFAULT,
+    RMW_QOS_POLICY_LIVELINESS_SYSTEM_DEFAULT,
+    RMW_QOS_LIVELINESS_LEASE_DURATION_DEFAULT,
+    false};
 
   // If the topic doesn't exist yet, create it
   if (topics_.count(name) == 0) {
     topics_[name] = {
-        node_->create_publisher<visualization_msgs::msg::MarkerArray>(
-            name, rclcpp::QoS(rclcpp::KeepLast(1), qos_profile)),
-        true, visualization_msgs::msg::MarkerArray()};
+      node_->create_publisher<visualization_msgs::msg::MarkerArray>(
+        name, rclcpp::QoS(rclcpp::KeepLast(1), qos_profile)),
+      true, visualization_msgs::msg::MarkerArray()};
 
-    RCLCPP_INFO_ONCE(rclcpp::get_logger("Debug Visualization"),
-                     "Visualizing %s", name.c_str());
+    RCLCPP_INFO_ONCE(rclcpp::get_logger("Debug Visualization"), "Visualizing %s", name.c_str());
     PublishTopicList();
   }
 }
 
-void DebugVisualization::PublishTopicList() {
+void DebugVisualization::PublishTopicList()
+{
   flatland_msgs::msg::DebugTopicList topic_list;
-  for (auto const& topic_pair : topics_)
-    topic_list.topics.push_back(topic_pair.first);
+  for (auto const & topic_pair : topics_) topic_list.topics.push_back(topic_pair.first);
   topic_list_publisher_->publish(topic_list);
 }
 }  // namespace flatland_server

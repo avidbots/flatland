@@ -46,6 +46,7 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
+
 #include <flatland_msgs/msg/collisions.hpp>
 #include <rclcpp/rclcpp.hpp>
 
@@ -54,25 +55,28 @@
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
 /**
  * This class defines a bumper plugin that is used to publish the collisions
  * states of bodies in the model
  */
-class Bumper : public ModelPlugin {
- public:
-  struct ContactState {
-    int num_count;  ///< stores number of times post solve is called
+class Bumper : public ModelPlugin
+{
+public:
+  struct ContactState
+  {
+    int num_count;                      ///< stores number of times post solve is called
     double sum_normal_impulses[2];      ///< sum of impulses for averaging later
     double sum_tangential_impulses[2];  ///< sum of impulses for averaging later
-    b2Vec2 points[2];  ///< Box2D collision points, max of 2 from Box2D
-    b2Vec2 normal;  ///< normal of collision points, all points have same normal
-    int normal_sign;  ///< for flipping direction of normal when necessary
+    b2Vec2 points[2];                   ///< Box2D collision points, max of 2 from Box2D
+    b2Vec2 normal;                      ///< normal of collision points, all points have same normal
+    int normal_sign;                    ///< for flipping direction of normal when necessary
 
-    Body *body_A;      ///< the body of the model involved in the collision
-    Body *body_B;      ///< the other body involved in the collision
-    Entity *entity_b;  /// the entity the other body belongs to
+    Body * body_A;      ///< the body of the model involved in the collision
+    Body * body_B;      ///< the other body involved in the collision
+    Entity * entity_b;  /// the entity the other body belongs to
 
     ContactState();  ///< initializes counters and sums
     void Reset();    ///< Reset counter and sums
@@ -89,45 +93,46 @@ class Bumper : public ModelPlugin {
 
   /// For keeping track of contacts
   std::map<b2Contact *, ContactState> contact_states_;
-  rclcpp::Publisher<flatland_msgs::msg::Collisions>::SharedPtr collisions_publisher_;  ///< For publishing the collisions
+  rclcpp::Publisher<flatland_msgs::msg::Collisions>::SharedPtr
+    collisions_publisher_;  ///< For publishing the collisions
 
   /**
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
    */
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node & config) override;
 
   /**
    * @brief Called when just before physics update
    * @param[in] timekeeper Object managing the simulation time
    */
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override;
+  void BeforePhysicsStep(const Timekeeper & timekeeper) override;
 
   /**
    * @brief Called when just after physics update
    * @param[in] timekeeper Object managing the simulation time
    */
-  void AfterPhysicsStep(const Timekeeper &timekeeper) override;
+  void AfterPhysicsStep(const Timekeeper & timekeeper) override;
 
   /**
    * @brief A method that is called for all Box2D begin contacts
    * @param[in] contact Box2D contact
    */
-  void BeginContact(b2Contact *contact) override;
+  void BeginContact(b2Contact * contact) override;
 
   /**
    * @brief A method that is called for all Box2D end contacts
    * @param[in] contact Box2D contact
    */
-  void EndContact(b2Contact *contact) override;
+  void EndContact(b2Contact * contact) override;
 
   /*
    * @brief A method that is called for Box2D presolve
    * @param[in] contact Box2D contact
    * @param[in] oldManifold Manifold from the previous iteration
    */
-  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
+  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse) override;
 };
-};
+};  // namespace flatland_plugins
 
 #endif

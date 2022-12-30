@@ -57,15 +57,15 @@
  * Test the pluginlib is configured correctly so that the model can be
  * discovered
  */
-TEST(DummyModelPluginTest, pluginlib_load_test) {
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_dummy_model");
+TEST(DummyModelPluginTest, pluginlib_load_test)
+{
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_dummy_model");
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
-      "flatland_server", "flatland_server::ModelPlugin");
+    "flatland_server", "flatland_server::ModelPlugin");
 
   try {
     std::shared_ptr<flatland_server::ModelPlugin> plugin =
-        loader.createSharedInstance("flatland_plugins::DummyModelPlugin");
+      loader.createSharedInstance("flatland_plugins::DummyModelPlugin");
 
     YAML::Node n = YAML::Node();
     n["dummy_param_float"] = 0.123456;
@@ -75,15 +75,15 @@ TEST(DummyModelPluginTest, pluginlib_load_test) {
     flatland_server::CollisionFilterRegistry cfr;
     flatland_server::Model model(node, nullptr, &cfr, "", "");
 
-    plugin->Initialize(node, "DummyModelPlugin", "DummyModelPluginTest", &model,
-                       n);
-  } catch (pluginlib::PluginlibException& e) {
+    plugin->Initialize(node, "DummyModelPlugin", "DummyModelPluginTest", &model, n);
+  } catch (pluginlib::PluginlibException & e) {
     FAIL() << "Failed to load Dummy Model Plugin. " << e.what();
   }
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

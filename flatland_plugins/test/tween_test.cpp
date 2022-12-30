@@ -56,16 +56,16 @@ namespace fs = boost::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
 
-class TweenPluginTest : public ::testing::Test {
- public:
+class TweenPluginTest : public ::testing::Test
+{
+public:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
 
-  void SetUp() override {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
-  }
+  void SetUp() override { this_file_dir = boost::filesystem::path(__FILE__).parent_path(); }
 
-  static bool fltcmp(const float& n1, const float& n2, float epsilon = 1e-5) {
+  static bool fltcmp(const float & n1, const float & n2, float epsilon = 1e-5)
+  {
     if (std::isinf(n1) && std::isinf(n2)) {
       return true;
     }
@@ -82,19 +82,18 @@ class TweenPluginTest : public ::testing::Test {
 /**
  * Test the tween plugin handles oneshot
  */
-TEST_F(TweenPluginTest, once_test) {
+TEST_F(TweenPluginTest, once_test)
+{
   world_yaml = this_file_dir / fs::path("tween_tests/once.world.yaml");
 
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_tween_once_test");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_tween_once_test");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(node, world_yaml.string());
+  World * w = World::MakeWorld(node, world_yaml.string());
 
-  Tween* tween =
-      dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
+  Tween * tween = dynamic_cast<Tween *>(w->plugin_manager_.model_plugins_[0].get());
 
-  Body* b = tween->body_;
+  Body * b = tween->body_;
 
   ASSERT_TRUE(fltcmp(b->physics_body_->GetPosition().x, 2.0));
   ASSERT_TRUE(fltcmp(b->physics_body_->GetPosition().y, 1.0));
@@ -118,19 +117,18 @@ TEST_F(TweenPluginTest, once_test) {
 /**
  * Test that the tween plugin yoyos
  */
-TEST_F(TweenPluginTest, yoyo_test) {
+TEST_F(TweenPluginTest, yoyo_test)
+{
   world_yaml = this_file_dir / fs::path("tween_tests/yoyo.world.yaml");
 
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_tween_yoyo_test");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_tween_yoyo_test");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(node, world_yaml.string());
+  World * w = World::MakeWorld(node, world_yaml.string());
 
-  Tween* tween =
-      dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
+  Tween * tween = dynamic_cast<Tween *>(w->plugin_manager_.model_plugins_[0].get());
 
-  Body* b = tween->body_;
+  Body * b = tween->body_;
 
   ASSERT_TRUE(fltcmp(b->physics_body_->GetPosition().x, 0.0));
   ASSERT_TRUE(fltcmp(b->physics_body_->GetPosition().y, 0.0));
@@ -163,19 +161,18 @@ TEST_F(TweenPluginTest, yoyo_test) {
 /**
  * Test that the tween plugin loops
  */
-TEST_F(TweenPluginTest, loop_test) {
+TEST_F(TweenPluginTest, loop_test)
+{
   world_yaml = this_file_dir / fs::path("tween_tests/loop.world.yaml");
 
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_tween_loop_test");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_tween_loop_test");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.5);
-  World* w = World::MakeWorld(node, world_yaml.string());
+  World * w = World::MakeWorld(node, world_yaml.string());
 
-  Tween* tween =
-      dynamic_cast<Tween*>(w->plugin_manager_.model_plugins_[0].get());
+  Tween * tween = dynamic_cast<Tween *>(w->plugin_manager_.model_plugins_[0].get());
 
-  Body* b = tween->body_;
+  Body * b = tween->body_;
 
   ASSERT_TRUE(fltcmp(b->physics_body_->GetPosition().x, 0.0));
   ASSERT_TRUE(fltcmp(b->physics_body_->GetPosition().y, 0.0));
@@ -207,7 +204,8 @@ TEST_F(TweenPluginTest, loop_test) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

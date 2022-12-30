@@ -49,31 +49,33 @@
 
 #include "change_rate_dialog.hpp"
 
-namespace flatland_rviz_plugins {
+namespace flatland_rviz_plugins
+{
 
-ChangeRateTool::ChangeRateTool() { shortcut_key_ = 'R'; }
+ChangeRateTool::ChangeRateTool() {shortcut_key_ = 'R';}
 
 ChangeRateTool::~ChangeRateTool() {}
 
-void ChangeRateTool::onInitialize() {
+void ChangeRateTool::onInitialize()
+{
   node_ = rclcpp::Node::make_shared("change_rate_tool");
-  change_rate_service_ =
-      node_->create_client<flatland_msgs::srv::ChangeRate>("change_rate");
+  change_rate_service_ = node_->create_client<flatland_msgs::srv::ChangeRate>("change_rate");
 
   setName("Change Simulation Rate");
-  setIcon(rviz_common::loadPixmap(
-      "package://flatland_rviz_plugins/icons/time.png"));
+  setIcon(rviz_common::loadPixmap("package://flatland_rviz_plugins/icons/time.png"));
 }
 
-void ChangeRateTool::setRate(double rate) {
+void ChangeRateTool::setRate(double rate)
+{
   auto request = std::make_shared<flatland_msgs::srv::ChangeRate::Request>();
   request->rate = rate;
   auto result = change_rate_service_->async_send_request(request);
   rclcpp::spin_until_future_complete(node_, result);
 }
 
-void ChangeRateTool::activate() {
-  auto *model_dialog = new ChangeRateDialog(nullptr, context_, this);
+void ChangeRateTool::activate()
+{
+  auto * model_dialog = new ChangeRateDialog(nullptr, context_, this);
   model_dialog->setModal(true);
   model_dialog->show();
 }

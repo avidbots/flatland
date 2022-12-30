@@ -46,6 +46,7 @@
 
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
+
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/bool.hpp>
 
@@ -54,15 +55,17 @@
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
 /**
  * This class defines a bumper plugin that is used to publish the collisions
  * states of bodies in the model
  */
-class BoolSensor : public ModelPlugin {
- public:
-  Body *body_;          ///< The body to check collisions with
+class BoolSensor : public ModelPlugin
+{
+public:
+  Body * body_;         ///< The body to check collisions with
   double update_rate_;  ///< rate to publish message at
 
   UpdateTimer update_timer_;    ///< for managing update rate
@@ -75,26 +78,26 @@ class BoolSensor : public ModelPlugin {
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
    */
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node & config) override;
 
   /**
    * @brief Called when just after physics update to publish state
    * @param[in] timekeeper Object managing the simulation time
    */
-  void AfterPhysicsStep(const Timekeeper &timekeeper) override;
+  void AfterPhysicsStep(const Timekeeper & timekeeper) override;
 
   /**
    * @brief A method that is called for all Box2D begin contacts
    * @param[in] contact Box2D contact
    */
-  void BeginContact(b2Contact *contact) override;
+  void BeginContact(b2Contact * contact) override;
 
   /**
    * @brief A method that is called for all Box2D end contacts
    * @param[in] contact Box2D contact
    */
-  void EndContact(b2Contact *contact) override;
+  void EndContact(b2Contact * contact) override;
 };
-};
+};  // namespace flatland_plugins
 
 #endif

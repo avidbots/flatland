@@ -49,17 +49,22 @@
 #include <flatland_server/geometry.h>
 #include <flatland_server/model.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-Model::Model(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
-             const std::string &ns, const std::string &name)
-    : Entity(node, physics_world, name),
-      namespace_(ns),
-      cfr_(cfr),
-      plugins_reader_(node),
-      viz_name_("models/m_" + name_) {}
+Model::Model(
+  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  const std::string & ns, const std::string & name)
+: Entity(node, physics_world, name),
+  namespace_(ns),
+  cfr_(cfr),
+  plugins_reader_(node),
+  viz_name_("models/m_" + name_)
+{
+}
 
-Model::~Model() {
+Model::~Model()
+{
   for (unsigned int i = 0; i < joints_.size(); i++) {
     delete joints_[i];
   }
@@ -75,13 +80,14 @@ Model::~Model() {
   DebugVisualization::Get(node_)->Reset(viz_name_);
 }
 
-Model *Model::MakeModel(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
-                        const std::string &model_yaml_path,
-                        const std::string &ns, const std::string &name) {
+Model * Model::MakeModel(
+  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  const std::string & model_yaml_path, const std::string & ns, const std::string & name)
+{
   YamlReader reader(node, model_yaml_path);
   reader.SetErrorInfo("model " + Q(name));
 
-  Model *m = new Model(node, physics_world, cfr, ns, name);
+  Model * m = new Model(node, physics_world, cfr, ns, name);
 
   m->plugins_reader_ = reader.SubnodeOpt("plugins", YamlReader::LIST);
 
@@ -92,7 +98,7 @@ Model *Model::MakeModel(std::shared_ptr<rclcpp::Node> node, b2World *physics_wor
 
     m->LoadBodies(bodies_reader);
     m->LoadJoints(joints_reader);
-  } catch (const YAMLException &e) {
+  } catch (const YAMLException & e) {
     delete m;
     throw e;
   }
@@ -100,61 +106,64 @@ Model *Model::MakeModel(std::shared_ptr<rclcpp::Node> node, b2World *physics_wor
   return m;
 }
 
-void Model::LoadBodies(YamlReader &bodies_reader) {
+void Model::LoadBodies(YamlReader & bodies_reader)
+{
   if (bodies_reader.NodeSize() <= 0) {
-    throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
-                        " model, must a be list of bodies of at least size 1");
+    throw YAMLException(
+      "Invalid \"bodies\" in " + Q(name_) + " model, must a be list of bodies of at least size 1");
   } else {
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
       YamlReader body_reader = bodies_reader.Subnode(i, YamlReader::MAP);
       if (!body_reader.Get<bool>("enabled", "true")) {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("Model"), "Body "
-                        << Q(name_) << "."
-                        << body_reader.Get<std::string>("name", "unnamed")
-                        << " disabled");
+        RCLCPP_INFO_STREAM(
+          rclcpp::get_logger("Model"), "Body " << Q(name_) << "."
+                                               << body_reader.Get<std::string>("name", "unnamed")
+                                               << " disabled");
         continue;
       }
-      ModelBody *b =
-          ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
+      ModelBody * b = ModelBody::MakeBody(physics_world_, cfr_, this, body_reader);
       bodies_.push_back(b);
 
       // ensure body is not a duplicate
-      if (std::count_if(bodies_.begin(), bodies_.end(),
-                        [&](Body *i) { return i->name_ == b->name_; }) > 1) {
-        throw YAMLException("Invalid \"bodies\" in " + Q(name_) +
-                            " model, body with name " + Q(b->name_) +
-                            " already exists");
+      if (std::count_if(bodies_.begin(), bodies_.end(), [&](Body * i) {
+            return i->name_ == b->name_;
+          }) > 1) {
+        throw YAMLException(
+          "Invalid \"bodies\" in " + Q(name_) + " model, body with name " + Q(b->name_) +
+          " already exists");
       }
     }
   }
 }
 
-void Model::LoadJoints(YamlReader &joints_reader) {
+void Model::LoadJoints(YamlReader & joints_reader)
+{
   if (!joints_reader.IsNodeNull()) {
     for (int i = 0; i < joints_reader.NodeSize(); i++) {
       YamlReader joint_reader = joints_reader.Subnode(i, YamlReader::MAP);
       if (!joint_reader.Get<bool>("enabled", "true")) {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("YAML Preprocessor"), ""
-                        << Q(name_) << "."
-                        << joint_reader.Get<std::string>("name", "unnamed")
-                        << " disabled");
+        RCLCPP_INFO_STREAM(
+          rclcpp::get_logger("YAML Preprocessor"),
+          "" << Q(name_) << "." << joint_reader.Get<std::string>("name", "unnamed") << " disabled");
         continue;
       }
-      Joint *j = Joint::MakeJoint(physics_world_, this, joint_reader);
+      Joint * j = Joint::MakeJoint(physics_world_, this, joint_reader);
       joints_.push_back(j);
 
       // ensure joint is not a duplicate
-      if (std::count_if(joints_.begin(), joints_.end(),
-                        [&](Joint *i) { return i->name_ == j->name_; }) > 1) {
-        throw YAMLException("Invalid \"joints\" in " + Q(name_) +
-                            " model, joint with name " + Q(j->name_) +
-                            " already exists");
+      if (std::count_if(joints_.begin(), joints_.end(), [&](Joint * i) {
+            return i->name_ == j->name_;
+          }) > 1) {
+        throw YAMLException(
+          "Invalid \"joints\" in " + Q(name_) + " model, joint with name " + Q(j->name_) +
+          " already exists");
       }
     }
   }
 }
 
-ModelBody *Model::GetBody(const std::string &name) {
+ModelBody * Model::GetBody(const std::string & name)
+{
   for (unsigned int i = 0; i < bodies_.size(); i++) {
     if (bodies_[i]->name_ == name) {
       return bodies_[i];
@@ -163,7 +172,8 @@ ModelBody *Model::GetBody(const std::string &name) {
   return nullptr;
 }
 
-Joint *Model::GetJoint(const std::string &name) {
+Joint * Model::GetJoint(const std::string & name)
+{
   for (unsigned int i = 0; i < joints_.size(); i++) {
     if (joints_[i]->name_ == name) {
       return joints_[i];
@@ -172,18 +182,19 @@ Joint *Model::GetJoint(const std::string &name) {
   return nullptr;
 }
 
-const std::vector<ModelBody *> &Model::GetBodies() { return bodies_; }
+const std::vector<ModelBody *> & Model::GetBodies() { return bodies_; }
 
-const std::vector<Joint *> &Model::GetJoints() { return joints_; }
+const std::vector<Joint *> & Model::GetJoints() { return joints_; }
 
-const std::string &Model::GetNameSpace() const { return namespace_; }
+const std::string & Model::GetNameSpace() const { return namespace_; }
 
-std::string Model::NameSpaceTF(const std::string &frame_id) const {
+std::string Model::NameSpaceTF(const std::string & frame_id) const
+{
   // case: "global" namespace: don't prefix, strip leading slash
   if (frame_id.substr(0, 1) == "/") {
     return std::string(frame_id, 1,
                        std::string::npos);  // Strip the leading '/'
-  } else {  // case: "local" namespace: prepend namespace
+  } else {                                  // case: "local" namespace: prepend namespace
     if (namespace_.length() > 0) {
       return namespace_ + "_" + frame_id;
     } else {
@@ -192,12 +203,13 @@ std::string Model::NameSpaceTF(const std::string &frame_id) const {
   }
 }
 
-std::string Model::NameSpaceTopic(const std::string &topic) const {
+std::string Model::NameSpaceTopic(const std::string & topic) const
+{
   // We don't actually want the topic to be "global" in case flatland is itself
   // namespaced, so strip leading slash
   if (topic.substr(0, 1) == "/") {
     return std::string(topic, 1, std::string::npos);  // Strip the leading '/'
-  } else {  // case: "local" namespace: prepend namespace/
+  } else {                                            // case: "local" namespace: prepend namespace/
     if (namespace_.length() > 0) {
       return namespace_ + "/" + topic;
     } else {
@@ -206,30 +218,30 @@ std::string Model::NameSpaceTopic(const std::string &topic) const {
   }
 }
 
-const std::string &Model::GetName() const { return name_; }
+const std::string & Model::GetName() const { return name_; }
 
-const CollisionFilterRegistry *Model::GetCfr() const { return cfr_; }
+const CollisionFilterRegistry * Model::GetCfr() const { return cfr_; }
 
-void Model::SetPose(const Pose &pose) {
+void Model::SetPose(const Pose & pose)
+{
   // Grab first (root?) body transform
-  RotateTranslate root_body_transform =
-      Geometry::CreateTransform(bodies_[0]->physics_body_->GetPosition().x,
-                                bodies_[0]->physics_body_->GetPosition().y,
-                                bodies_[0]->physics_body_->GetAngle());
+  RotateTranslate root_body_transform = Geometry::CreateTransform(
+    bodies_[0]->physics_body_->GetPosition().x, bodies_[0]->physics_body_->GetPosition().y,
+    bodies_[0]->physics_body_->GetAngle());
 
   // Inverse transform all bodies by this to reset their poses
   for (unsigned int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
-        Geometry::InverseTransform(bodies_[i]->physics_body_->GetPosition(),
-                                   root_body_transform),
-        0.0);
+      Geometry::InverseTransform(bodies_[i]->physics_body_->GetPosition(), root_body_transform),
+      0.0);
   }
 
   // Apply new desired pose in world coordinates
   TransformAll(pose);
 }
 
-void Model::TransformAll(const Pose &pose_delta) {
+void Model::TransformAll(const Pose & pose_delta)
+{
   //     --                --   --                --
   //     | cos(a) -sin(a) x |   | cos(b) -sin(b) u |
   //     | sin(a)  cos(a) y | x | sin(b)  cos(b) v |
@@ -241,66 +253,67 @@ void Model::TransformAll(const Pose &pose_delta) {
   //       | 0         0        1                       |
   //       --                                          --
 
-  RotateTranslate tf =
-      Geometry::CreateTransform(pose_delta.x, pose_delta.y, pose_delta.theta);
+  RotateTranslate tf = Geometry::CreateTransform(pose_delta.x, pose_delta.y, pose_delta.theta);
 
   for (unsigned int i = 0; i < bodies_.size(); i++) {
     bodies_[i]->physics_body_->SetTransform(
-        Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
-        bodies_[i]->physics_body_->GetAngle() + pose_delta.theta);
+      Geometry::Transform(bodies_[i]->physics_body_->GetPosition(), tf),
+      bodies_[i]->physics_body_->GetAngle() + pose_delta.theta);
   }
 }
 
-void Model::DebugVisualize() const {
+void Model::DebugVisualize() const
+{
   DebugVisualization::Get(node_)->Reset(viz_name_);
 
-  for (const auto &body : bodies_) {
-    DebugVisualization::Get(node_)->Visualize(viz_name_, body->physics_body_,
-                                        body->color_.r, body->color_.g,
-                                        body->color_.b, body->color_.a);
+  for (const auto & body : bodies_) {
+    DebugVisualization::Get(node_)->Visualize(
+      viz_name_, body->physics_body_, body->color_.r, body->color_.g, body->color_.b,
+      body->color_.a);
   }
 
-  for (const auto &joint : joints_) {
-    DebugVisualization::Get(node_)->Visualize(viz_name_, joint->physics_joint_,
-                                        joint->color_.r, joint->color_.g,
-                                        joint->color_.b, joint->color_.a);
+  for (const auto & joint : joints_) {
+    DebugVisualization::Get(node_)->Visualize(
+      viz_name_, joint->physics_joint_, joint->color_.r, joint->color_.g, joint->color_.b,
+      joint->color_.a);
   }
 }
 
-void Model::DebugOutput() const {
-  RCLCPP_DEBUG(rclcpp::get_logger("Model"),
-                  "Model %p: physics_world(%p) name(%s) namespace(%s) "
-                  "num_bodies(%lu) num_joints(%lu)",
-                  this, physics_world_, name_.c_str(), namespace_.c_str(),
-                  bodies_.size(), joints_.size());
+void Model::DebugOutput() const
+{
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("Model"),
+    "Model %p: physics_world(%p) name(%s) namespace(%s) "
+    "num_bodies(%lu) num_joints(%lu)",
+    this, physics_world_, name_.c_str(), namespace_.c_str(), bodies_.size(), joints_.size());
 
-  for (const auto &body : bodies_) {
+  for (const auto & body : bodies_) {
     body->DebugOutput();
   }
 
-  for (const auto &joint : joints_) {
+  for (const auto & joint : joints_) {
     joint->DebugOutput();
   }
 }
 
-void Model::DumpBox2D() const {
-  for (const auto &body : bodies_) {
-    b2Log("BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", body,
-          body->name_.c_str(), body->physics_body_, this, name_.c_str());
+void Model::DumpBox2D() const
+{
+  for (const auto & body : bodies_) {
+    b2Log(
+      "BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", body, body->name_.c_str(),
+      body->physics_body_, this, name_.c_str());
     body->physics_body_->Dump();
   }
 
-  for (const auto &joint : joints_) {
-    Body *body_A =
-        static_cast<Body *>(joint->physics_joint_->GetBodyA()->GetUserData());
-    Body *body_B =
-        static_cast<Body *>(joint->physics_joint_->GetBodyB()->GetUserData());
+  for (const auto & joint : joints_) {
+    Body * body_A = static_cast<Body *>(joint->physics_joint_->GetBodyA()->GetUserData());
+    Body * body_B = static_cast<Body *>(joint->physics_joint_->GetBodyB()->GetUserData());
     b2Log(
-        "JOINT %p name=%s  box2d_joint=%p model=%p model_name=%s "
-        "body_A(%p %s) body_B(%p %s)\n",
-        joint, joint->name_.c_str(), joint->physics_joint_, this, name_.c_str(),
-        body_A, body_A->name_.c_str(), body_B, body_B->name_.c_str());
+      "JOINT %p name=%s  box2d_joint=%p model=%p model_name=%s "
+      "body_A(%p %s) body_B(%p %s)\n",
+      joint, joint->name_.c_str(), joint->physics_joint_, this, name_.c_str(), body_A,
+      body_A->name_.c_str(), body_B, body_B->name_.c_str());
     joint->physics_joint_->Dump();
   }
 }
-}  //namespace flatland_server
+}  // namespace flatland_server

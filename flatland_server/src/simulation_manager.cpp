@@ -57,43 +57,47 @@
 #include <limits>
 #include <string>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-SimulationManager::SimulationManager(std::shared_ptr<rclcpp::Node> node,
-                                     std::string world_yaml_file,
-                                     double update_rate, double step_size,
-                                     bool show_viz, double viz_pub_rate)
-    : node_(node),
-      world_(nullptr),
-      update_rate_(update_rate),
-      step_size_(step_size),
-      show_viz_(show_viz),
-      viz_pub_rate_(viz_pub_rate),
-      world_yaml_file_(world_yaml_file),
-      rate_(new rclcpp::WallRate(update_rate)) {
-  RCLCPP_INFO(rclcpp::get_logger("SimMan"),
-              "Simulation params: world_yaml_file(%s) update_rate(%f), "
-              "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
-              world_yaml_file_.c_str(), update_rate_, step_size_,
-              show_viz_ ? "true" : "false", viz_pub_rate_);
+SimulationManager::SimulationManager(
+  std::shared_ptr<rclcpp::Node> node, std::string world_yaml_file, double update_rate,
+  double step_size, bool show_viz, double viz_pub_rate)
+: node_(node),
+  world_(nullptr),
+  update_rate_(update_rate),
+  step_size_(step_size),
+  show_viz_(show_viz),
+  viz_pub_rate_(viz_pub_rate),
+  world_yaml_file_(world_yaml_file),
+  rate_(new rclcpp::WallRate(update_rate))
+{
+  RCLCPP_INFO(
+    rclcpp::get_logger("SimMan"),
+    "Simulation params: world_yaml_file(%s) update_rate(%f), "
+    "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
+    world_yaml_file_.c_str(), update_rate_, step_size_, show_viz_ ? "true" : "false",
+    viz_pub_rate_);
 }
 
 SimulationManager::~SimulationManager() { delete rate_; }
 
-void SimulationManager::setUpdateRate(double update_rate) {
+void SimulationManager::setUpdateRate(double update_rate)
+{
   update_rate_ = update_rate;
   delete rate_;
   rate_ = new rclcpp::WallRate(update_rate_);
 }
 
-void SimulationManager::Main() {
+void SimulationManager::Main()
+{
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Initializing...");
   run_simulator_ = true;
 
   try {
     world_ = World::MakeWorld(node_, world_yaml_file_);
     RCLCPP_INFO(rclcpp::get_logger("SimMan"), "World loaded");
-  } catch (const std::exception& e) {
+  } catch (const std::exception & e) {
     RCLCPP_FATAL(rclcpp::get_logger("SimMan"), "%s", e.what());
     return;
   }
@@ -118,20 +122,17 @@ void SimulationManager::Main() {
     double start_time = wall_clock.now().seconds();
     double f = 0.0;
     try {
-      f = std::fmod(wall_clock.now().seconds() + (update_rate_ / 2.0),
-                    viz_update_period);
-    } catch (std::runtime_error& ex) {
-      RCLCPP_ERROR(rclcpp::get_logger("SimMan"), "Flatland runtime error: [%s]",
-                   ex.what());
+      f = std::fmod(wall_clock.now().seconds() + (update_rate_ / 2.0), viz_update_period);
+    } catch (std::runtime_error & ex) {
+      RCLCPP_ERROR(rclcpp::get_logger("SimMan"), "Flatland runtime error: [%s]", ex.what());
     }
     bool update_viz = ((f >= 0.0) && (f < 1.0f / update_rate_));
 
     world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
-      world_->DebugVisualize(false);  // no need to update layer
-      DebugVisualization::Get(node_)->Publish(
-          timekeeper);  // publish debug visualization
+      world_->DebugVisualize(false);                        // no need to update layer
+      DebugVisualization::Get(node_)->Publish(timekeeper);  // publish debug visualization
     }
 
     rclcpp::spin_some(node_);
@@ -148,16 +149,17 @@ void SimulationManager::Main() {
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
 
     RCLCPP_INFO_THROTTLE(
-        rclcpp::get_logger("SimMan"), wall_clock, 1000,
-        "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
-        min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
+      rclcpp::get_logger("SimMan"), wall_clock, 1000,
+      "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f", min_cycle_util, max_cycle_util,
+      filtered_cycle_util, factor);
   }
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop ended");
 
   delete world_;
 }
 
-void SimulationManager::Shutdown() {
+void SimulationManager::Shutdown()
+{
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Shutdown called");
   run_simulator_ = false;
 }

@@ -52,30 +52,31 @@
 #include <flatland_server/world_plugin.h>
 #include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-PluginManager::PluginManager(rclcpp::Node::SharedPtr node) : node_(node) {
-  model_plugin_loader_ =
-      new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
-          "flatland_server", "flatland_server::ModelPlugin");
+PluginManager::PluginManager(rclcpp::Node::SharedPtr node) : node_(node)
+{
+  model_plugin_loader_ = new pluginlib::ClassLoader<flatland_server::ModelPlugin>(
+    "flatland_server", "flatland_server::ModelPlugin");
   RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), "Declared Classes:");
-  for(auto a : model_plugin_loader_->getDeclaredClasses()) {
+  for (auto a : model_plugin_loader_->getDeclaredClasses()) {
     RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a.c_str());
   }
   RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), "Registered Libraries:");
-  for(auto a : model_plugin_loader_->getRegisteredLibraries()) {
+  for (auto a : model_plugin_loader_->getRegisteredLibraries()) {
     RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a.c_str());
   }
   RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), "XML Paths:");
-  for(auto a : model_plugin_loader_->getPluginXmlPaths()) {
+  for (auto a : model_plugin_loader_->getPluginXmlPaths()) {
     RCLCPP_INFO(rclcpp::get_logger("Plugin Manager"), a.c_str());
   }
-  world_plugin_loader_ =
-      new pluginlib::ClassLoader<flatland_server::WorldPlugin>(
-          "flatland_server", "flatland_server::WorldPlugin");
+  world_plugin_loader_ = new pluginlib::ClassLoader<flatland_server::WorldPlugin>(
+    "flatland_server", "flatland_server::WorldPlugin");
 }
 
-PluginManager::~PluginManager() {
+PluginManager::~PluginManager()
+{
   for (unsigned int i = 0; i < model_plugins_.size(); i++) {
     model_plugins_[i].reset();  // deletes a shared pointer
   }
@@ -87,60 +88,65 @@ PluginManager::~PluginManager() {
   delete world_plugin_loader_;
 }
 
-void PluginManager::BeforePhysicsStep(const Timekeeper &timekeeper_) {
-  for (const auto &model_plugin : model_plugins_) {
+void PluginManager::BeforePhysicsStep(const Timekeeper & timekeeper_)
+{
+  for (const auto & model_plugin : model_plugins_) {
     model_plugin->BeforePhysicsStep(timekeeper_);
   }
-  for (const auto &world_plugin : world_plugins_) {
+  for (const auto & world_plugin : world_plugins_) {
     world_plugin->BeforePhysicsStep(timekeeper_);
   }
 }
 
-void PluginManager::AfterPhysicsStep(const Timekeeper &timekeeper_) {
-  for (const auto &model_plugin : model_plugins_) {
+void PluginManager::AfterPhysicsStep(const Timekeeper & timekeeper_)
+{
+  for (const auto & model_plugin : model_plugins_) {
     model_plugin->AfterPhysicsStep(timekeeper_);
   }
-  for (const auto &world_plugin : world_plugins_) {
+  for (const auto & world_plugin : world_plugins_) {
     world_plugin->AfterPhysicsStep(timekeeper_);
   }
 }
 
-void PluginManager::DeleteModelPlugin(Model *model) {
+void PluginManager::DeleteModelPlugin(Model * model)
+{
   model_plugins_.erase(
-      std::remove_if(model_plugins_.begin(), model_plugins_.end(),
-                     [&](std::shared_ptr<ModelPlugin> p) {
-                       return p->GetModel() == model;
-                     }),
-      model_plugins_.end());
+    std::remove_if(
+      model_plugins_.begin(), model_plugins_.end(),
+      [&](std::shared_ptr<ModelPlugin> p) { return p->GetModel() == model; }),
+    model_plugins_.end());
 }
 
-void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
+void PluginManager::LoadModelPlugin(Model * model, YamlReader & plugin_reader)
+{
   std::string name = plugin_reader.Get<std::string>("name");
   std::string type = plugin_reader.Get<std::string>("type");
 
   // ensure no plugin with the same model and name
-  if (std::count_if(model_plugins_.begin(), model_plugins_.end(),
-                    [&](std::shared_ptr<ModelPlugin> i) {
-                      return i->GetName() == name && i->GetModel() == model;
-                    }) >= 1) {
-    throw YAMLException("Invalid \"plugins\" in " + Q(model->name_) +
-                        " model, plugin with name " + Q(name) +
-                        " already exists");
+  if (
+    std::count_if(
+      model_plugins_.begin(), model_plugins_.end(), [&](std::shared_ptr<ModelPlugin> i) {
+        return i->GetName() == name && i->GetModel() == model;
+      }) >= 1) {
+    throw YAMLException(
+      "Invalid \"plugins\" in " + Q(model->name_) + " model, plugin with name " + Q(name) +
+      " already exists");
   }
 
   try {
     if (!plugin_reader.Get<bool>("enabled", "true")) {
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("Plugin Manager"), "Plugin "
-                      << Q(model->name_) << "."
-                      << plugin_reader.Get<std::string>("name", "unnamed")
-                      << " disabled");
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("Plugin Manager"),
+        "Plugin " << Q(model->name_) << "." << plugin_reader.Get<std::string>("name", "unnamed")
+                  << " disabled");
       return;
     }
   } catch (...) {
-    RCLCPP_WARN_STREAM(rclcpp::get_logger("Plugin Manager"), "Body " << Q(model->name_) << "."
-                            << plugin_reader.Get<std::string>("name", "unnamed")
-                            << " enabled because flag failed to parse: "
-                            << plugin_reader.Get<std::string>("enabled"));
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("Plugin Manager"),
+      "Body " << Q(model->name_) << "." << plugin_reader.Get<std::string>("name", "unnamed")
+              << " enabled because flag failed to parse: "
+              << plugin_reader.Get<std::string>("enabled"));
   }
 
   // remove the name, type and enabled of the YAML Node, the plugin does not
@@ -148,33 +154,31 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   // about these parameters, remove method is broken in yaml cpp 5.2, so we
   // create a new node and add everything
   YAML::Node yaml_node;
-  for (const auto &k : plugin_reader.Node()) {
-    if (k.first.as<std::string>() != "name" &&
-        k.first.as<std::string>() != "type" &&
-        k.first.as<std::string>() != "enabled") {
+  for (const auto & k : plugin_reader.Node()) {
+    if (
+      k.first.as<std::string>() != "name" && k.first.as<std::string>() != "type" &&
+      k.first.as<std::string>() != "enabled") {
       yaml_node[k.first] = k.second;
     }
   }
 
   std::shared_ptr<ModelPlugin> model_plugin;
 
-  std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) + " model " +
-                    Q(model->name_);
+  std::string msg = "Model Plugin " + Q(name) + " type " + Q(type) + " model " + Q(model->name_);
 
   try {
     if (type.find("::") != std::string::npos) {
       model_plugin = model_plugin_loader_->createSharedInstance(type);
     } else {
-      model_plugin =
-          model_plugin_loader_->createSharedInstance("flatland_plugins::" + type);
+      model_plugin = model_plugin_loader_->createSharedInstance("flatland_plugins::" + type);
     }
-  } catch (pluginlib::PluginlibException &e) {
+  } catch (pluginlib::PluginlibException & e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
 
   try {
     model_plugin->Initialize(node_, type, name, model, yaml_node);
-  } catch (const std::exception &e) {
+  } catch (const std::exception & e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
   model_plugins_.push_back(model_plugin);
@@ -182,16 +186,17 @@ void PluginManager::LoadModelPlugin(Model *model, YamlReader &plugin_reader) {
   RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "%s loaded", msg.c_str());
 }
 
-void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
-                                    YamlReader &world_config) {
+void PluginManager::LoadWorldPlugin(
+  World * world, YamlReader & plugin_reader, YamlReader & world_config)
+{
   std::string name = plugin_reader.Get<std::string>("name");
   std::string type = plugin_reader.Get<std::string>("type");
   RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "finished load name and type");
   // first check for duplicate plugins
-  for (auto &it : world_plugins_) {
+  for (auto & it : world_plugins_) {
     if (it->GetName() == name && it->GetType() == type) {
-      throw YAMLException("Invalid \"world plugins\" with name " + Q(name) +
-                          ", type " + Q(type) + " already exists");
+      throw YAMLException(
+        "Invalid \"world plugins\" with name " + Q(name) + ", type " + Q(type) + " already exists");
     }
   }
 
@@ -199,9 +204,8 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
   std::string msg = "World Plugin " + Q(name) + " type " + Q(type);
 
   YAML::Node yaml_node;
-  for (const auto &k : plugin_reader.Node()) {
-    if (k.first.as<std::string>() != "name" &&
-        k.first.as<std::string>() != "type") {
+  for (const auto & k : plugin_reader.Node()) {
+    if (k.first.as<std::string>() != "name" && k.first.as<std::string>() != "type") {
       yaml_node[k.first] = k.second;
     }
   }
@@ -211,10 +215,9 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
     if (type.find("::") != std::string::npos) {
       world_plugin = world_plugin_loader_->createSharedInstance(type);
     } else {
-      world_plugin =
-          world_plugin_loader_->createSharedInstance("flatland_plugins::" + type);
+      world_plugin = world_plugin_loader_->createSharedInstance("flatland_plugins::" + type);
     }
-  } catch (pluginlib::PluginlibException &e) {
+  } catch (pluginlib::PluginlibException & e) {
     throw PluginException(msg + ": " + std::string(e.what()));
   }
 
@@ -222,7 +225,7 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
 
   try {
     world_plugin->Initialize(node_, world, name, type, yaml_node, world_config);
-  } catch (const std::exception &e) {
+  } catch (const std::exception & e) {
     RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "exception happened!");
     throw PluginException(msg + ": " + std::string(e.what()));
   }
@@ -231,30 +234,32 @@ void PluginManager::LoadWorldPlugin(World *world, YamlReader &plugin_reader,
   RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "%s loaded ", msg.c_str());
 }
 
-void PluginManager::BeginContact(b2Contact *contact) {
-  for (auto &model_plugin : model_plugins_) {
+void PluginManager::BeginContact(b2Contact * contact)
+{
+  for (auto & model_plugin : model_plugins_) {
     model_plugin->BeginContact(contact);
   }
 }
 
-void PluginManager::EndContact(b2Contact *contact) {
-  for (auto &model_plugin : model_plugins_) {
+void PluginManager::EndContact(b2Contact * contact)
+{
+  for (auto & model_plugin : model_plugins_) {
     model_plugin->EndContact(contact);
   }
 }
 
-void PluginManager::PreSolve(b2Contact *contact,
-                             const b2Manifold *oldManifold) {
-  for (auto &model_plugin : model_plugins_) {
+void PluginManager::PreSolve(b2Contact * contact, const b2Manifold * oldManifold)
+{
+  for (auto & model_plugin : model_plugins_) {
     model_plugin->PreSolve(contact, oldManifold);
   }
 }
 
-void PluginManager::PostSolve(b2Contact *contact,
-                              const b2ContactImpulse *impulse) {
-  for (auto &model_plugin : model_plugins_) {
+void PluginManager::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
+{
+  for (auto & model_plugin : model_plugins_) {
     model_plugin->PostSolve(contact, impulse);
   }
 }
 
-}  //namespace flatland_server
+}  // namespace flatland_server

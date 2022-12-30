@@ -39,7 +39,6 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include "include/flatland_rviz_plugins/interactive_tool.hpp"
 
 #include <rviz_common/display_context.hpp>
@@ -47,12 +46,13 @@
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/view_manager.hpp>
 
-namespace flatland_rviz_plugins {
+namespace flatland_rviz_plugins
+{
 
-InteractiveTool::InteractiveTool()
-    : rviz_default_plugins::tools::InteractionTool() {}
+InteractiveTool::InteractiveTool() : rviz_default_plugins::tools::InteractionTool() {}
 
-void InteractiveTool::enableMarkers(bool is_enabled) {
+void InteractiveTool::enableMarkers(bool is_enabled)
+{
   auto root_display = context_->getRootDisplayGroup();
   for (int i = 0; i < root_display->numDisplays(); ++i) {
     auto display = root_display->getDisplayAt(i);
@@ -62,23 +62,25 @@ void InteractiveTool::enableMarkers(bool is_enabled) {
   }
 }
 
-void InteractiveTool::onInitialize() {
+void InteractiveTool::onInitialize()
+{
   rviz_default_plugins::tools::InteractionTool::onInitialize();
 
   this->enableMarkers(false);
 
   setName("Interact");
-  setIcon(rviz_common::loadPixmap(
-      "package://rviz_default_plugins/icons/classes/Interact.png"));
+  setIcon(rviz_common::loadPixmap("package://rviz_default_plugins/icons/classes/Interact.png"));
 }
 
-void InteractiveTool::activate() {
+void InteractiveTool::activate()
+{
   rviz_default_plugins::tools::InteractionTool::activate();
 
   this->enableMarkers(true);
 }
 
-void InteractiveTool::deactivate() {
+void InteractiveTool::deactivate()
+{
   rviz_default_plugins::tools::InteractionTool::deactivate();
 
   this->enableMarkers(false);
@@ -87,5 +89,4 @@ void InteractiveTool::deactivate() {
 }  // namespace flatland_rviz_plugins
 
 #include <pluginlib/class_list_macros.hpp>  // NOLINT
-PLUGINLIB_EXPORT_CLASS(flatland_rviz_plugins::InteractiveTool,
-                       rviz_common::Tool)
+PLUGINLIB_EXPORT_CLASS(flatland_rviz_plugins::InteractiveTool, rviz_common::Tool)

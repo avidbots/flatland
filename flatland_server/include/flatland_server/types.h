@@ -50,13 +50,16 @@
 #ifndef FLATLAND_SERVER_TYPES_H
 #define FLATLAND_SERVER_TYPES_H
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-struct Vec2 {
+struct Vec2
+{
   double x;
   double y;
 
-  Vec2(double x, double y) {
+  Vec2(double x, double y)
+  {
     this->x = x;
     this->y = y;
   }
@@ -66,33 +69,39 @@ struct Vec2 {
   b2Vec2 Box2D() const { return b2Vec2(x, y); }
 };
 
-struct LineSegment {
+struct LineSegment
+{
   Vec2 start;
   Vec2 end;
 
-  LineSegment(const Vec2 &start, const Vec2 &end) {
+  LineSegment(const Vec2 & start, const Vec2 & end)
+  {
     this->start = start;
     this->end = end;
   }
 
-  LineSegment() {
+  LineSegment()
+  {
     this->start = Vec2(0, 0);
     this->end = Vec2(0, 0);
   }
 };
 
-struct Pose {
+struct Pose
+{
   double x;
   double y;
   double theta;  ///< theta
 
-  Pose(double x, double y, double theta) {
+  Pose(double x, double y, double theta)
+  {
     this->x = x;
     this->y = y;
     this->theta = theta;
   }
 
-  Pose(const std::array<double, 3> &p) {
+  Pose(const std::array<double, 3> & p)
+  {
     this->x = p[0];
     this->y = p[1];
     this->theta = p[3];
@@ -100,38 +109,37 @@ struct Pose {
 
   Pose() : x(0), y(0), theta(0) {}
 
-  bool operator==(const Pose &p) const {
-    return x == p.x && y == p.y && theta == p.theta;
-  }
+  bool operator==(const Pose & p) const { return x == p.x && y == p.y && theta == p.theta; }
 
-  bool operator!=(const Pose &p) const { return !operator==(p); }
+  bool operator!=(const Pose & p) const { return !operator==(p); }
 };
 
-struct Color {
+struct Color
+{
   double r, g, b, a;
 
   Color() : r(0), g(0), b(0), a(0) {}
 
-  Color(double r, double g, double b, double a) {
+  Color(double r, double g, double b, double a)
+  {
     this->r = r;
     this->g = g;
     this->b = b;
     this->a = a;
   }
 
-  Color(const std::array<double, 4> &c) {
+  Color(const std::array<double, 4> & c)
+  {
     this->r = c[0];
     this->g = c[1];
     this->b = c[2];
     this->a = c[3];
   }
 
-  bool operator==(const Color &c) const {
-    return r == c.r && g == c.g && b == c.b && a == c.a;
-  }
+  bool operator==(const Color & c) const { return r == c.r && g == c.g && b == c.b && a == c.a; }
 
-  bool operator!=(const Color &c) const { return !operator==(c); }
+  bool operator!=(const Color & c) const { return !operator==(c); }
 };
-}
+}  // namespace flatland_server
 
 #endif

@@ -46,22 +46,24 @@
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/tool_manager.hpp>
 
-namespace flatland_rviz_plugins {
+namespace flatland_rviz_plugins
+{
 
-PauseTool::PauseTool() { shortcut_key_ = ' '; }
+PauseTool::PauseTool() {shortcut_key_ = ' ';}
 
 PauseTool::~PauseTool() {}
 
-void PauseTool::onInitialize() {
+void PauseTool::onInitialize()
+{
   node_ = rclcpp::Node::make_shared("pause_sim_tool");
   pause_service_ = node_->create_client<std_srvs::srv::Empty>("toggle_pause");
 
   setName("Toggle Pause");
-  setIcon(rviz_common::loadPixmap(
-      "package://flatland_rviz_plugins/icons/pause.svg"));
+  setIcon(rviz_common::loadPixmap("package://flatland_rviz_plugins/icons/pause.svg"));
 }
 
-void PauseTool::activate() {
+void PauseTool::activate()
+{
   auto request = std::make_shared<std_srvs::srv::Empty::Request>();
   auto result = pause_service_->async_send_request(request);
   rclcpp::spin_until_future_complete(node_, result);

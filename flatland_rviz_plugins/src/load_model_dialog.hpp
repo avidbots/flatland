@@ -72,21 +72,22 @@
 
 #include "flatland_rviz_plugins/spawn_model_tool.hpp"
 
-namespace flatland_rviz_plugins {
+namespace flatland_rviz_plugins
+{
 
-class LoadModelDialog : public QDialog {
- public:
+class LoadModelDialog : public QDialog
+{
+public:
   /**
    * @name                LoadModelDialog
    * @brief               Launch load model dialog
    * @param               parent, parent widget pointer
    * @param               tool, pointer to this so dialog can call methods
    */
-  LoadModelDialog(QWidget *parent, rviz_common::DisplayContext *context,
-                  SpawnModelTool *tool);
+  LoadModelDialog(QWidget * parent, rviz_common::DisplayContext * context, SpawnModelTool * tool);
 
- private:
-  rviz_common::DisplayContext *context_;
+private:
+  rviz_common::DisplayContext * context_;
 
   /**
    * @name                ChooseFile
@@ -100,15 +101,15 @@ class LoadModelDialog : public QDialog {
   void AddNumberAndUpdateName();
 
   static QString path_to_model_file;  // full path to model file
-  static int count;       // counter for adding unique number to filename
-  static bool numbering;  // flag to use unique numbering
+  static int count;                   // counter for adding unique number to filename
+  static bool numbering;              // flag to use unique numbering
 
-  SpawnModelTool *tool_;
-  QLineEdit *n_edit;      // name lineEdit widget
-  QLabel *p_label;        // path label widget
-  QCheckBox *n_checkbox;  // checkbox widget
+  SpawnModelTool * tool_;
+  QLineEdit * n_edit;      // name lineEdit widget
+  QLabel * p_label;        // path label widget
+  QCheckBox * n_checkbox;  // checkbox widget
 
- public Q_SLOTS:
+public Q_SLOTS:
   /**
    * @name                NumberCheckBoxChanged
    * @brief               Checkbox was clicked, toggle numbering of names

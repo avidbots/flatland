@@ -55,27 +55,27 @@
 
 using namespace flatland_server;
 
-TEST(DummyWorldPluginTest, pluginlib_load_test) {
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_dummy_world");
+TEST(DummyWorldPluginTest, pluginlib_load_test)
+{
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_dummy_world");
   pluginlib::ClassLoader<flatland_server::WorldPlugin> loader(
-      "flatland_server", "flatland_server::WorldPlugin");
+    "flatland_server", "flatland_server::WorldPlugin");
 
   try {
     std::shared_ptr<flatland_server::WorldPlugin> plugin =
-        loader.createSharedInstance("flatland_plugins::DummyWorldPlugin");
+      loader.createSharedInstance("flatland_plugins::DummyWorldPlugin");
 
     YAML::Node n = YAML::Node();
     YamlReader reader = YamlReader(node);
-    plugin->Initialize(node, nullptr, "DummyWorldPluginName",
-                       "DummyWorldPluginType", n, reader);
-  } catch (pluginlib::PluginlibException& e) {
+    plugin->Initialize(node, nullptr, "DummyWorldPluginName", "DummyWorldPluginType", n, reader);
+  } catch (pluginlib::PluginlibException & e) {
     FAIL() << "Failed to load Dummy World Plugin. " << e.what();
   }
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

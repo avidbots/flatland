@@ -57,17 +57,20 @@ using namespace flatland_server;
 using namespace flatland_plugins;
 using namespace std::chrono_literals;
 
-class TestPlugin : public ModelPlugin {
- public:
+class TestPlugin : public ModelPlugin
+{
+public:
   UpdateTimer update_timer_;
   int update_counter_;
 
-  void OnInitialize(const YAML::Node &config) override {
+  void OnInitialize(const YAML::Node & config) override
+  {
     update_timer_.SetRate(0);
     update_counter_ = 0;
   }
 
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override {
+  void BeforePhysicsStep(const Timekeeper & timekeeper) override
+  {
     // keeps this function updating at a specific rate
     if (!update_timer_.CheckUpdate(timekeeper)) {
       return;
@@ -76,8 +79,9 @@ class TestPlugin : public ModelPlugin {
   }
 };
 
-class UpdateTimerTest : public ::testing::Test {
- public:
+class UpdateTimerTest : public ::testing::Test
+{
+public:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
   double set_rate;
@@ -86,26 +90,27 @@ class UpdateTimerTest : public ::testing::Test {
   double wall_rate;
   double step_size;
   int64_t sim_test_time;
-  World *w;
+  World * w;
   std::shared_ptr<rclcpp::Node> node;
 
   UpdateTimerTest() : node(rclcpp::Node::make_shared("test_update_timer")) {}
 
-  void SetUp() override {
+  void SetUp() override
+  {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
     w = nullptr;
   }
 
   void TearDown() override { delete w; }
 
-  void ExecuteRateTest() {
+  void ExecuteRateTest()
+  {
     Timekeeper timekeeper(node);
     w = World::MakeWorld(node, world_yaml.string());
 
     // artificially load a plugin
     std::shared_ptr<TestPlugin> p(new TestPlugin());
-    p->Initialize(node, "TestPlugin", "test_plugin", w->models_[0],
-                  YAML::Node());
+    p->Initialize(node, "TestPlugin", "test_plugin", w->models_[0], YAML::Node());
     w->plugin_manager_.model_plugins_.push_back(p);
 
     p->update_timer_.SetRate(set_rate);
@@ -130,7 +135,8 @@ class UpdateTimerTest : public ::testing::Test {
 /**
  * Test update rate at real time factor > 1
  */
-TEST_F(UpdateTimerTest, rate_test_A) {
+TEST_F(UpdateTimerTest, rate_test_A)
+{
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
   set_rate = 141.56;
   expected_rate = set_rate;
@@ -148,7 +154,8 @@ TEST_F(UpdateTimerTest, rate_test_A) {
 /**
  * Test update rate at real time factor < 1
  */
-TEST_F(UpdateTimerTest, rate_test_B) {
+TEST_F(UpdateTimerTest, rate_test_B)
+{
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
   set_rate = 564.56;
   expected_rate = set_rate;
@@ -166,7 +173,8 @@ TEST_F(UpdateTimerTest, rate_test_B) {
 /**
  * Test update rate at real time factor >> 1
  */
-TEST_F(UpdateTimerTest, rate_test_C) {
+TEST_F(UpdateTimerTest, rate_test_C)
+{
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
   set_rate = 47.4;
   expected_rate = set_rate;
@@ -184,7 +192,8 @@ TEST_F(UpdateTimerTest, rate_test_C) {
 /**
  * Test update rate at update rate = inf, which will update as fast as possible
  */
-TEST_F(UpdateTimerTest, rate_test_D) {
+TEST_F(UpdateTimerTest, rate_test_D)
+{
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
   set_rate = std::numeric_limits<double>::infinity();
   expected_rate = 100.0;
@@ -202,7 +211,8 @@ TEST_F(UpdateTimerTest, rate_test_D) {
 /**
  * Test update rate at update rate = 0, which will never update
  */
-TEST_F(UpdateTimerTest, rate_test_E) {
+TEST_F(UpdateTimerTest, rate_test_E)
+{
   world_yaml = this_file_dir / fs::path("update_timer_test/world.yaml");
   set_rate = 0;
   expected_rate = 0;
@@ -218,7 +228,8 @@ TEST_F(UpdateTimerTest, rate_test_E) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

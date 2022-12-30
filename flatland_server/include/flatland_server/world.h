@@ -54,36 +54,38 @@
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
-#include <rclcpp/rclcpp.hpp>
+
 #include <map>
-#include <string>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 /**
  * This class defines a world in the simulation. A world contains layers
  * that can represent environments at multiple levels, and models which are
  * can be robots or obstacles.
  */
-class World : public b2ContactListener {
- public:
-  boost::filesystem::path world_yaml_dir_;  ///<directory containing world file
+class World : public b2ContactListener
+{
+public:
+  boost::filesystem::path world_yaml_dir_;  ///< directory containing world file
   std::shared_ptr<rclcpp::Node> node_;
-  b2World *physics_world_;                  ///< Box2D physics world
-  b2Vec2 gravity_;  ///< Box2D world gravity, always (0, 0)
+  b2World * physics_world_;  ///< Box2D physics world
+  b2Vec2 gravity_;           ///< Box2D world gravity, always (0, 0)
   std::map<std::vector<std::string>, Layer *>
-      layers_name_map_;           ///< map of all layers and thier name
-  std::vector<Layer *> layers_;   ///< list of layers
-  std::vector<Model *> models_;   ///< list of models
-  CollisionFilterRegistry cfr_;   ///< collision registry for layers and models
-  PluginManager plugin_manager_;  ///< for loading and updating plugins
-  bool service_paused_;  ///< indicates if simulation is paused by a service
-                         /// call or not
-  InteractiveMarkerManager     int_marker_manager_;  ///< for dynamically moving models from Rviz
-  int physics_position_iterations_;  ///< Box2D solver param
-  int physics_velocity_iterations_;  ///< Box2D solver param
+    layers_name_map_;                            ///< map of all layers and thier name
+  std::vector<Layer *> layers_;                  ///< list of layers
+  std::vector<Model *> models_;                  ///< list of models
+  CollisionFilterRegistry cfr_;                  ///< collision registry for layers and models
+  PluginManager plugin_manager_;                 ///< for loading and updating plugins
+  bool service_paused_;                          ///< indicates if simulation is paused by a service
+                                                 /// call or not
+  InteractiveMarkerManager int_marker_manager_;  ///< for dynamically moving models from Rviz
+  int physics_position_iterations_;              ///< Box2D solver param
+  int physics_velocity_iterations_;              ///< Box2D solver param
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -101,53 +103,52 @@ class World : public b2ContactListener {
    * @brief trigger world update include all physics and plugins
    * @param[in] timekeeper The time keeping object
    */
-  void Update(Timekeeper &timekeeper);
+  void Update(Timekeeper & timekeeper);
 
   /**
    * @brief Box2D inherited begin contact
    * @param[in] contact Box2D contact information
    */
-  void BeginContact(b2Contact *contact) override;
+  void BeginContact(b2Contact * contact) override;
 
   /**
    * @brief Box2D inherited end contact
    * @param[in] contact Box2D contact information
    */
-  void EndContact(b2Contact *contact) override;
+  void EndContact(b2Contact * contact) override;
 
   /**
    * @brief Box2D inherited presolve
    * @param[in] contact Box2D contact information
    * @param[in] oldManifold The manifold from the previous timestep
    */
-  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
+  void PreSolve(b2Contact * contact, const b2Manifold * oldManifold);
 
   /**
    * @brief Box2D inherited pre solve
    * @param[in] contact Box2D contact information
    * @param[in] impulse The calculated impulse from the collision resolute
    */
-  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
+  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse);
 
   /*
    * @brief Load world plugins
    * @param[in] world_plugin_reader, readin the info about the plugin
    * @param[in] world, the world where the plugin will be applied to
    * @param[in] world config, the yaml reader of world.yaml
-  */
-  void LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
-                        YamlReader &world_config);
+   */
+  void LoadWorldPlugins(YamlReader & world_plugin_reader, World * world, YamlReader & world_config);
   /**
    * @brief load layers into the world. Throws YAMLException.
    * @param[in] layers_reader Yaml reader for node that has list of layers
    */
-  void LoadLayers(YamlReader &layers_reader);
+  void LoadLayers(YamlReader & layers_reader);
 
   /**
    * @brief load models into the world. Throws YAMLException.
    * @param[in] layers_reader Yaml reader for node that has a list of models
    */
-  void LoadModels(YamlReader &models_reader);
+  void LoadModels(YamlReader & models_reader);
 
   /**
    * @brief load models into the world. Throws YAMLException.
@@ -156,21 +157,22 @@ class World : public b2ContactListener {
    * @param[in] name Name of the model
    * @param[in] pose Initial pose of the model in x, y, yaw
    */
-  void LoadModel(const std::string &model_yaml_path, const std::string &ns,
-                 const std::string &name, const Pose &pose);
+  void LoadModel(
+    const std::string & model_yaml_path, const std::string & ns, const std::string & name,
+    const Pose & pose);
 
   /**
    * @brief remove model with a given name
    * @param[in] name The name of the model to remove
    */
-  void DeleteModel(const std::string &name);
+  void DeleteModel(const std::string & name);
 
   /**
    * @brief move model with a given name
    * @param[in] name The name of the model to move
    * @param[in] pose The desired new pose of the model
    */
-  void MoveModel(const std::string &name, const Pose &pose);
+  void MoveModel(const std::string & name, const Pose & pose);
 
   /**
    * @brief set the paused state of the simulation to true
@@ -200,7 +202,7 @@ class World : public b2ContactListener {
    * @param[in] yaml_path Path to the world yaml file
    * @return pointer to a new world
    */
-  static World *MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &yaml_path);
+  static World * MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string & yaml_path);
 
   /**
    * @brief Publish debug visualizations for everything
@@ -209,5 +211,5 @@ class World : public b2ContactListener {
    */
   void DebugVisualize(bool update_layers = true);
 };
-}       // namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

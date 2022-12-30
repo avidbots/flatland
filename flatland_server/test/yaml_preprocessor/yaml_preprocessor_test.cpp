@@ -53,45 +53,43 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-void compareNodes(const char *p1, YAML::Node &a, YAML::Node &b) {
+void compareNodes(const char * p1, YAML::Node & a, YAML::Node & b)
+{
   try {
-    EXPECT_STREQ(b[p1].as<std::string>().c_str(),
-                 a[p1].as<std::string>().c_str())
-        << "at " << p1;
+    EXPECT_STREQ(b[p1].as<std::string>().c_str(), a[p1].as<std::string>().c_str()) << "at " << p1;
   } catch (...) {
     ADD_FAILURE() << "Failure to compare " << p1;
   }
 }
 
-void compareNodes(const char *p1, int p2, YAML::Node &a, YAML::Node &b) {
+void compareNodes(const char * p1, int p2, YAML::Node & a, YAML::Node & b)
+{
   try {
-    EXPECT_STREQ(b[p1][p2].as<std::string>().c_str(),
-                 a[p1][p2].as<std::string>().c_str())
-        << "at " << p1 << ":" << p2;
+    EXPECT_STREQ(b[p1][p2].as<std::string>().c_str(), a[p1][p2].as<std::string>().c_str())
+      << "at " << p1 << ":" << p2;
   } catch (...) {
     ADD_FAILURE() << "Failure to compare " << p1 << ":" << p2;
   }
 }
 
-void compareNodes(const char *p1, const char *p2, YAML::Node &a,
-                  YAML::Node &b) {
+void compareNodes(const char * p1, const char * p2, YAML::Node & a, YAML::Node & b)
+{
   try {
-    EXPECT_STREQ(b[p1][p2].as<std::string>().c_str(),
-                 a[p1][p2].as<std::string>().c_str())
-        << "at " << p1 << ":" << p2;
+    EXPECT_STREQ(b[p1][p2].as<std::string>().c_str(), a[p1][p2].as<std::string>().c_str())
+      << "at " << p1 << ":" << p2;
   } catch (...) {
     ADD_FAILURE() << "Failure to compare " << p1 << ":" << p2;
   }
 }
 
 // Test the bodyToMarkers method on a polygon shape
-TEST(YamlPreprocTest, testEvalStrings) {
+TEST(YamlPreprocTest, testEvalStrings)
+{
   // env vars
   setenv("VALIDSTRING", "Bar", 1);
   setenv("VALIDNUMBER", "123.4", 1);
 
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_yaml_preprocessor");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_yaml_preprocessor");
   // ros params
   node->declare_parameter("/string", "Foo");
   node->declare_parameter("/int", 7);
@@ -100,11 +98,10 @@ TEST(YamlPreprocTest, testEvalStrings) {
   YamlPreprocessor yamlPreprocessor(node);
   boost::filesystem::path cwd = fs::path(__FILE__).parent_path();
 
-  YAML::Node in = yamlPreprocessor.LoadParse(
-      (cwd / fs::path("/yaml/eval.strings.yaml")).string());
+  YAML::Node in = yamlPreprocessor.LoadParse((cwd / fs::path("/yaml/eval.strings.yaml")).string());
 
-  YAML::Node out = yamlPreprocessor.LoadParse(
-      (cwd / fs::path("/yaml/eval.strings.out.yaml")).string());
+  YAML::Node out =
+    yamlPreprocessor.LoadParse((cwd / fs::path("/yaml/eval.strings.out.yaml")).string());
 
   // check that the two strings match
   compareNodes("foo", in, out);
@@ -141,7 +138,8 @@ TEST(YamlPreprocTest, testEvalStrings) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

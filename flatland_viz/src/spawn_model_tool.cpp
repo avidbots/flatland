@@ -45,6 +45,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flatland_viz/spawn_model_tool.h"
+
+#include <OGRE/OgreEntity.h>
+
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -54,39 +58,31 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
-
-#include "flatland_viz/spawn_model_tool.h"
-
-
-#include <OGRE/OgreEntity.h>
 //#include <OGRE/OgreException.h>
 #include <OGRE/OgreMaterial.h>
 #include <OGRE/OgreSubEntity.h>
+#include <flatland_server/types.h>
+#include <yaml-cpp/yaml.h>
 
 #include <boost/filesystem.hpp>
 
-#include <flatland_server/types.h>
-
-#include <yaml-cpp/yaml.h>
-
-
 class DialogOptionsWidget;
 
-namespace flatland_viz {
+namespace flatland_viz
+{
 QString SpawnModelTool::path_to_model_file_;
 QString SpawnModelTool::model_name;
 
 // Set the "shortcut_key_" member variable defined in the
 // superclass to declare which key will activate the tool.
-SpawnModelTool::SpawnModelTool() : moving_model_node_(nullptr) {
-  shortcut_key_ = 'm';
-}
+SpawnModelTool::SpawnModelTool() : moving_model_node_(nullptr) { shortcut_key_ = 'm'; }
 
 // The destructor destroys the Ogre scene nodes for the models so they
 // disappear from the 3D scene.  The destructor for a Tool subclass is
 // only called when the tool is removed from the toolbar with the "-"
 // button.
-SpawnModelTool::~SpawnModelTool() {
+SpawnModelTool::~SpawnModelTool()
+{
   scene_manager_->destroySceneNode(arrow_->getSceneNode());
   scene_manager_->destroySceneNode(moving_model_node_);
 }
@@ -102,23 +98,22 @@ SpawnModelTool::~SpawnModelTool() {
 // In this case we load a mesh object with the shape and appearance of
 // the model, create an Ogre::SceneNode for the moving model, and then
 // set it invisible.
-void SpawnModelTool::onInitialize() {
+void SpawnModelTool::onInitialize()
+{
   // hide 3d model until the user clicks the span model tool button
   model_state = m_hidden;
 
   // make an arrow to show axis of rotation
   arrow_ = new rviz_rendering::Arrow(scene_manager_, NULL, 2.0f, 0.2f, 0.3f, 0.35f);
-  arrow_->setColor(0.0f, 0.0f, 1.0f, 1.0f);  // blue
-  arrow_->getSceneNode()->setVisible(
-      false);  // will only be visible during rotation phase
+  arrow_->setColor(0.0f, 0.0f, 1.0f, 1.0f);   // blue
+  arrow_->getSceneNode()->setVisible(false);  // will only be visible during rotation phase
 
   // set arrow to point up (along z)
   Ogre::Quaternion orientation(Ogre::Radian(M_PI), Ogre::Vector3(1, 0, 0));
   arrow_->setOrientation(orientation);
 
   // create an Ogre child scene node for rendering the preview outline
-  moving_model_node_ =
-      scene_manager_->getRootSceneNode()->createChildSceneNode();
+  moving_model_node_ = scene_manager_->getRootSceneNode()->createChildSceneNode();
   moving_model_node_->setVisible(false);
 
   SetMovingModelColor(Qt::green);
@@ -138,16 +133,18 @@ void SpawnModelTool::onInitialize() {
 // if it were writable the model should really change position when the
 // user edits the property.  This is a fine idea, and is possible, but
 // is left as an exercise for the reader.
-void SpawnModelTool::activate() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::activate ");
+void SpawnModelTool::activate()
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"), "SpawnModelTool::activate ");
 
-  LoadModelDialog *model_dialog = new LoadModelDialog(nullptr, this);
+  LoadModelDialog * model_dialog = new LoadModelDialog(nullptr, this);
   model_dialog->setModal(true);
   model_dialog->show();
 }
 
-void SpawnModelTool::BeginPlacement() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::BeginPlacement");
+void SpawnModelTool::BeginPlacement()
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"), "SpawnModelTool::BeginPlacement");
   model_state = m_dragging;
 
   if (moving_model_node_) {
@@ -163,15 +160,18 @@ void SpawnModelTool::BeginPlacement() {
 // property, so that doesn't need to be done in a separate step.  If
 // we didn't delete it here, it would stay in the list of models when
 // we switch to another tool.
-void SpawnModelTool::deactivate() {
+void SpawnModelTool::deactivate()
+{
   if (moving_model_node_) {
     moving_model_node_->setVisible(false);
   }
 }
 
-void SpawnModelTool::SpawnModelInFlatland() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),
-      "SpawnModelTool::SpawnModelInFlatland name:" << model_name.toStdString());
+void SpawnModelTool::SpawnModelInFlatland()
+{
+  RCLCPP_INFO_STREAM(
+    rclcpp::get_logger("SpawnModelTool"),
+    "SpawnModelTool::SpawnModelInFlatland name:" << model_name.toStdString());
   auto srv = std::make_shared<flatland_msgs::srv::SpawnModel::Request>();
 
   // model names can not have embeded period char
@@ -196,7 +196,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
     msgBox.setText("Error: You must have a client running.");
     msgBox.exec();
   } else {
-      if (!srv->success) {
+    if (!srv->success) {
       QMessageBox msgBox;
       msgBox.setText(srv->message.c_str());
       msgBox.exec();
@@ -204,18 +204,18 @@ void SpawnModelTool::SpawnModelInFlatland() {
   }
 }
 
-void SpawnModelTool::SetMovingModelColor(QColor c) {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"),  "SpawnModelTool::SetMovingModelColor");
+void SpawnModelTool::SetMovingModelColor(QColor c)
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("SpawnModelTool"), "SpawnModelTool::SetMovingModelColor");
 
   try {
-    Ogre::Entity *m_pEntity =
-        static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
+    Ogre::Entity * m_pEntity =
+      static_cast<Ogre::Entity *>(moving_model_node_->getAttachedObject(0));
     const Ogre::MaterialPtr m_pMat = m_pEntity->getSubEntity(0)->getMaterial();
     m_pMat->getTechnique(0)->getPass(0)->setAmbient(1, 0, 0);
-    m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(),
-                                                    c.blueF(), 0);
+    m_pMat->getTechnique(0)->getPass(0)->setDiffuse(c.redF(), c.greenF(), c.blueF(), 0);
   } catch (Ogre::InvalidParametersException e) {
-    //RCLCPP_WARN("Invalid preview model");
+    // RCLCPP_WARN("Invalid preview model");
   }
 }
 
@@ -231,7 +231,8 @@ void SpawnModelTool::SetMovingModelColor(QColor c) {
 // place and drop the pointer to the VectorProperty.  Dropping the
 // pointer means when the tool is deactivated the VectorProperty won't
 // be deleted, which is what we want.
-int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
+int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent & event)
+{
   if (!moving_model_node_) {
     return Render;
   }
@@ -240,8 +241,8 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
   Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
 
   if (model_state == m_dragging) {
-    if (rviz_rendering::getPointOnPlaneFromWindowXY (event.viewport, ground_plane, event.x,
-                                          event.y, intersection)) {
+    if (rviz_rendering::getPointOnPlaneFromWindowXY(
+          event.viewport, ground_plane, event.x, event.y, intersection)) {
       moving_model_node_->setVisible(true);
       moving_model_node_->setPosition(intersection);
 
@@ -253,15 +254,14 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
         return Render;
       }
     } else {
-      moving_model_node_->setVisible(
-          false);  // If the mouse is not pointing at the
-                   // ground plane, don't show the model.
+      moving_model_node_->setVisible(false);  // If the mouse is not pointing at the
+                                              // ground plane, don't show the model.
     }
   }
   if (model_state == m_rotating) {  // model_state is m_rotating
 
-    if (rviz_rendering::getPointOnPlaneFromWindowXY(event.viewport, ground_plane, event.x,
-                                          event.y, intersection2)) {
+    if (rviz_rendering::getPointOnPlaneFromWindowXY(
+          event.viewport, ground_plane, event.x, event.y, intersection2)) {
       if (event.leftDown()) {
         model_state = m_hidden;
         arrow_->getSceneNode()->setVisible(false);
@@ -278,15 +278,15 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent &event) {
       moving_model_node_->setPosition(intersection);
       Ogre::Vector3 dir = intersection2 - intersection;
       initial_angle = atan2(dir.y, dir.x);
-      Ogre::Quaternion orientation(Ogre::Radian(initial_angle),
-                                   Ogre::Vector3(0, 0, 1));
+      Ogre::Quaternion orientation(Ogre::Radian(initial_angle), Ogre::Vector3(0, 0, 1));
       moving_model_node_->setOrientation(orientation);
     }
   }
   return Render;
 }
 
-void SpawnModelTool::LoadPreview() {
+void SpawnModelTool::LoadPreview()
+{
   // Clear the old preview, if there is one
   moving_model_node_->removeAllChildren();
   lines_list_.clear();
@@ -298,11 +298,11 @@ void SpawnModelTool::LoadPreview() {
 
   try {
     flatland_server::YamlReader bodies_reader =
-        reader.Subnode("bodies", flatland_server::YamlReader::LIST);
+      reader.Subnode("bodies", flatland_server::YamlReader::LIST);
     // Iterate each body and add to the preview
     for (int i = 0; i < bodies_reader.NodeSize(); i++) {
       flatland_server::YamlReader body_reader =
-          bodies_reader.Subnode(i, flatland_server::YamlReader::MAP);
+        bodies_reader.Subnode(i, flatland_server::YamlReader::MAP);
       if (!body_reader.Get<bool>("enabled", "true")) {  // skip if disabled
         continue;
       }
@@ -310,18 +310,17 @@ void SpawnModelTool::LoadPreview() {
       auto pose = body_reader.GetPose("pose", flatland_server::Pose());
 
       flatland_server::YamlReader footprints_node =
-          body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
+        body_reader.Subnode("footprints", flatland_server::YamlReader::LIST);
       for (int j = 0; j < footprints_node.NodeSize(); j++) {
         flatland_server::YamlReader footprint =
-            footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
+          footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
 
         lines_list_.push_back(std::make_shared<rviz_rendering::BillboardLine>(
-            context_->getSceneManager(), moving_model_node_));
+          context_->getSceneManager(), moving_model_node_));
         auto lines = lines_list_.back();
         lines->setColor(0.0, 1.0, 0.0, 0.75);  // Green
         lines->setLineWidth(0.05);
-        lines->setOrientation(
-            Ogre::Quaternion(Ogre::Radian(pose.theta), Ogre::Vector3(0, 0, 1)));
+        lines->setOrientation(Ogre::Quaternion(Ogre::Radian(pose.theta), Ogre::Vector3(0, 0, 1)));
         lines->setPosition(Ogre::Vector3(pose.x, pose.y, 0));
 
         std::string type = footprint.Get<std::string>("type");
@@ -334,16 +333,17 @@ void SpawnModelTool::LoadPreview() {
         }
       }
     }
-  } catch (const flatland_server::YAMLException &e) {
-      RCLCPP_ERROR_STREAM(rclcpp::get_logger("SpawnModelTool"), "Couldn't load model bodies for preview" << e.what());
+  } catch (const flatland_server::YAMLException & e) {
+    RCLCPP_ERROR_STREAM(
+      rclcpp::get_logger("SpawnModelTool"), "Couldn't load model bodies for preview" << e.what());
   }
 }
 
 void SpawnModelTool::LoadPolygonFootprint(
-    flatland_server::YamlReader &footprint, const flatland_server::Pose pose) {
+  flatland_server::YamlReader & footprint, const flatland_server::Pose pose)
+{
   auto lines = lines_list_.back();
-  auto points = footprint.GetList<flatland_server::Vec2>("points", 3,
-                                                         b2_maxPolygonVertices);
+  auto points = footprint.GetList<flatland_server::Vec2>("points", 3, b2_maxPolygonVertices);
   for (auto p : points) {
     lines->addPoint(Ogre::Vector3(p.x, p.y, 0.));
   }
@@ -353,21 +353,21 @@ void SpawnModelTool::LoadPolygonFootprint(
   }
 }
 
-void SpawnModelTool::LoadCircleFootprint(flatland_server::YamlReader &footprint,
-                                         const flatland_server::Pose pose) {
+void SpawnModelTool::LoadCircleFootprint(
+  flatland_server::YamlReader & footprint, const flatland_server::Pose pose)
+{
   auto lines = lines_list_.back();
   auto center = footprint.GetVec2("center", flatland_server::Vec2());
   auto radius = footprint.Get<float>("radius", 1.0);
 
   for (float a = 0.; a < M_PI * 2.0; a += M_PI / 8.) {  // 16 point circle
-    lines->addPoint(Ogre::Vector3(center.x + radius * cos(a),
-                                  center.y + radius * sin(a), 0.));
+    lines->addPoint(Ogre::Vector3(center.x + radius * cos(a), center.y + radius * sin(a), 0.));
   }
-  lines->addPoint(
-      Ogre::Vector3(center.x + radius, center.y, 0.));  // close the loop
+  lines->addPoint(Ogre::Vector3(center.x + radius, center.y, 0.));  // close the loop
 }
 
-void SpawnModelTool::SavePath(QString p) {
+void SpawnModelTool::SavePath(QString p)
+{
   path_to_model_file_ = p;
   LoadPreview();
 }

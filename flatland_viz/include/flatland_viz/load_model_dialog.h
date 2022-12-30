@@ -49,68 +49,67 @@
 #define LOAD_MODEL_DIALOG_H
 
 // #include <QColorDialog>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreVector3.h>
+
 #include <QCursor>
+#include <QDialog>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <QString>
-#include <QDialog>
-
-#include <OGRE/OgreEntity.h>
-#include <OGRE/OgreSceneManager.h>
-#include <OGRE/OgreSceneNode.h>
-#include <OGRE/OgreVector3.h>
 //#include <OgreVector3.h>
 
+#include <boost/filesystem.hpp>
 #include <rclcpp/rclcpp.hpp>
-
 #include <rviz_rendering/geometry.hpp>
 #include <rviz_rendering/mesh_loader.hpp>
 
-
-#include <boost/filesystem.hpp>
-
-namespace flatland_viz {
+namespace flatland_viz
+{
 class SpawnModelTool;
 }
 
-class LoadModelDialog : public QDialog {
- public:
+class LoadModelDialog : public QDialog
+{
+public:
   /**
    * @name                LoadModelDialog
    * @brief               Launch load model dialog
    * @param               parent, parent widget pointer
    * @param               tool, pointer to this so dialog can call methods
- */
-  LoadModelDialog(QWidget *parent, flatland_viz::SpawnModelTool *tool);
+   */
+  LoadModelDialog(QWidget * parent, flatland_viz::SpawnModelTool * tool);
 
- private:
+private:
   /**
    * @name                ChooseFile
    * @brief               Launch file selection dialog
- */
+   */
   QString ChooseFile();
   /**
    * @name                AddNumberAndUpdateName
    * @brief               Add numbering to name and show in the name widget
- */
+   */
   void AddNumberAndUpdateName();
 
   static QString path_to_model_file;  // full path to model file
-  static int count;       // counter for adding unique number to filename
-  static bool numbering;  // flag to use unique numbering
+  static int count;                   // counter for adding unique number to filename
+  static bool numbering;              // flag to use unique numbering
 
-  flatland_viz::SpawnModelTool *tool_;
-  QLineEdit *n_edit;      // name lineEdit widget
-  QLabel *p_label;        // path label widget
-  QCheckBox *n_checkbox;  // checkbox widget
+  flatland_viz::SpawnModelTool * tool_;
+  QLineEdit * n_edit;      // name lineEdit widget
+  QLabel * p_label;        // path label widget
+  QCheckBox * n_checkbox;  // checkbox widget
 
- public Q_SLOTS:
+public Q_SLOTS:
   /**
    * @name                NumberCheckBoxChanged
    * @brief               Checkbox was clicked, toggle numbering of names

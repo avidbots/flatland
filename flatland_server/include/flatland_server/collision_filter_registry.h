@@ -51,7 +51,8 @@
 #include <string>
 #include <vector>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 /**
  * This class defines a collision filter registry. It allows layers to register
@@ -60,12 +61,13 @@ namespace flatland_server {
  * the correct collision category. It also hands out unique collide (positive
  * numbers) and no collide (negative numbers) Box2D collision groups.
  */
-class CollisionFilterRegistry {
- public:
+class CollisionFilterRegistry
+{
+public:
   static const int LAYER_NOT_EXIST = -1;      ///< No such layer
   static const int LAYER_ALREADY_EXIST = -2;  ///< Layer exists
   static const int LAYERS_FULL = -3;          ///< Cannot add more layers
-  static const int MAX_LAYERS = 16;  ///< 16 is the maximum as defined by Box2D
+  static const int MAX_LAYERS = 16;           ///< 16 is the maximum as defined by Box2D
 
   /// internal counter to keep track of no collides groups
   int no_collide_group_cnt_;
@@ -129,8 +131,8 @@ class CollisionFilterRegistry {
    * this list, optional
    */
   uint16_t GetCategoryBits(
-      const std::vector<std::string> &layers,
-      std::vector<std::string> *invalid_layers = nullptr) const;
+    const std::vector<std::string> & layers,
+    std::vector<std::string> * invalid_layers = nullptr) const;
 };
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
