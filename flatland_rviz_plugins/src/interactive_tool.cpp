@@ -49,7 +49,8 @@
 namespace flatland_rviz_plugins
 {
 
-InteractiveTool::InteractiveTool() : rviz_default_plugins::tools::InteractionTool() {}
+InteractiveTool::InteractiveTool()
+: rviz_default_plugins::tools::InteractionTool() {}
 
 void InteractiveTool::enableMarkers(bool is_enabled)
 {

@@ -1,19 +1,14 @@
 /*
- *  ______                   __  __              __
- * /\  _  \           __    /\ \/\ \            /\ \__
- * \ \ \L\ \  __  __ /\_\   \_\ \ \ \____    ___\ \ ,_\   ____
- *  \ \  __ \/\ \/\ \\/\ \  /'_` \ \ '__`\  / __`\ \ \/  /',__\
- *   \ \ \/\ \ \ \_/ |\ \ \/\ \L\ \ \ \L\ \/\ \L\ \ \ \_/\__, `\
- *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
- *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
- * @copyright Copyright 2017 Avidbots Corp.
- * @name	 joint.h
- * @brief	 Defines Joint
- * @author   Chunshang Li
+ * @copyright Copyright 2022 FEUP
+ * @name change_rate_tool.hpp
+ * @brief changes simulation rate
+ * @author Ana Barros
+ * @author Henrique Ribeiro
+ * @author João Costa
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2017, Avidbots Corp.
+ *  Copyright (c) 2022, FEUP
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -48,8 +43,8 @@
 #define FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_TOOL_HPP_
 
 #include <QObject>
-#include <flatland_msgs/srv/change_rate.hpp>
 #include <memory>
+#include <flatland_msgs/srv/change_rate.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/tool.hpp>
 #include <std_srvs/srv/empty.hpp>

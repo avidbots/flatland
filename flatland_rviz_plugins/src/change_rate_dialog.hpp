@@ -39,8 +39,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_DIALOG_HPP_
-#define FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_DIALOG_HPP_
+#ifndef CHANGE_RATE_DIALOG_HPP_
+#define CHANGE_RATE_DIALOG_HPP_
 
 #include <QCursor>
 #include <QDialog>
@@ -87,4 +87,4 @@ public Q_SLOTS:
 
 }  // namespace flatland_rviz_plugins
 
-#endif  // FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_DIALOG_HPP_
+#endif  // CHANGE_RATE_DIALOG_HPP_

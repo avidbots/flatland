@@ -45,8 +45,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLATLAND_RVIZ_PLUGINS__LOAD_MODEL_DIALOG_HPP_
-#define FLATLAND_RVIZ_PLUGINS__LOAD_MODEL_DIALOG_HPP_
+#ifndef LOAD_MODEL_DIALOG_HPP_
+#define LOAD_MODEL_DIALOG_HPP_
 
 #include <OgreEntity.h>
 #include <OgreSceneManager.h>
@@ -134,4 +134,4 @@ public Q_SLOTS:
 
 }  // namespace flatland_rviz_plugins
 
-#endif  // FLATLAND_RVIZ_PLUGINS__LOAD_MODEL_DIALOG_HPP_
+#endif  // LOAD_MODEL_DIALOG_HPP_
