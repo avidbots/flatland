@@ -194,7 +194,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
   srv->pose.theta = initial_angle;
 
   std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("spawn_model_tool");  // TODO
+      rclcpp::Node::make_shared("spawn_model_tool");
   client = node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
 
   // make ros service call
@@ -309,7 +309,7 @@ void SpawnModelTool::LoadPreview() {
   lines_list_.clear();
 
   std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("spawn_model_tool");  // TODO
+      rclcpp::Node::make_shared("spawn_model_tool");
 
   // Load the bodies list into a model object
   flatland_server::YamlReader reader(node, path_to_model_file_.toStdString());

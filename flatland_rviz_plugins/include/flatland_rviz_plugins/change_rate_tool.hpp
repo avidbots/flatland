@@ -43,9 +43,9 @@
 #ifndef FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_TOOL_HPP_
 #define FLATLAND_RVIZ_PLUGINS__CHANGE_RATE_TOOL_HPP_
 
+#include <memory>
 #include <QObject>
 #include <flatland_msgs/srv/change_rate.hpp>
-#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/tool.hpp>
 #include <std_srvs/srv/empty.hpp>

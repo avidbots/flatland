@@ -48,6 +48,8 @@
 #ifndef FLATLAND_RVIZ_PLUGINS__SPAWN_MODEL_TOOL_HPP_
 #define FLATLAND_RVIZ_PLUGINS__SPAWN_MODEL_TOOL_HPP_
 
+#include <memory>
+#include <vector>
 #include <OgreEntity.h>
 #include <OgreSceneManager.h>
 #include <OgreSceneNode.h>
@@ -55,12 +57,10 @@
 #include <flatland_server/yaml_reader.h>
 
 #include <flatland_msgs/srv/spawn_model.hpp>
-#include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/tool.hpp>
 #include <rviz_rendering/objects/arrow.hpp>
 #include <rviz_rendering/objects/billboard_line.hpp>
-#include <vector>
 
 namespace flatland_rviz_plugins {
 /**
