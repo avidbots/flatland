@@ -48,9 +48,46 @@
 #include <flatland_server/model_plugin.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.h>
+#include <flatland_server/timekeeper.h>
+#include <flatland_server/world.h>
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 
-TEST(TricycleDrivePluginTest, load_test) {
+namespace fs = boost::filesystem;
+using namespace flatland_server;
+using namespace flatland_plugins;
+
+class TricycleDrivePluginTest : public ::testing::Test {
+ public:
+  boost::filesystem::path this_file_dir;
+  boost::filesystem::path world_yaml;
+  nav_msgs::Odometry odom;
+  World* w;
+
+  void SetUp() override {
+    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    w = nullptr;
+  }
+
+  void TearDown() override {
+    if (w != nullptr) {
+      delete w;
+    }
+  }
+
+  void GroundTruthSubscriberCB(const nav_msgs::Odometry& msg) { odom = msg; }
+
+  void SpinRos(float hz, int iterations) {
+    ros::WallRate rate(hz);
+    for (unsigned int i = 0; i < iterations; i++) {
+      ros::spinOnce();
+      rate.sleep();
+    }
+  }
+};
+
+TEST_F(TricycleDrivePluginTest, load_test) {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
       "flatland_server", "flatland_server::ModelPlugin");
 
@@ -60,6 +97,185 @@ TEST(TricycleDrivePluginTest, load_test) {
   } catch (pluginlib::PluginlibException& e) {
     FAIL() << "Failed to load Tricycle Drive plugin. " << e.what();
   }
+}
+
+TEST_F(TricycleDrivePluginTest, drive_test_simple) {
+  world_yaml =
+      this_file_dir / fs::path("tricycle_drive_tests/world.yaml");
+
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(0.01);
+  w = World::MakeWorld(world_yaml.string());
+
+  ros::NodeHandle nh;
+  ros::Subscriber sub_1;
+  TricycleDrivePluginTest* obj = dynamic_cast<TricycleDrivePluginTest*>(this);
+  sub_1 = nh.subscribe("odometry/ground_truth", 1, &TricycleDrivePluginTest::GroundTruthSubscriberCB, obj);
+
+  // This unit test's world+model file specifically loads the tricycle drive plugin first to make this easy
+  TricycleDrive* td = dynamic_cast<TricycleDrive*>(w->plugin_manager_.model_plugins_[0].get());
+
+
+  // Give ros a moment to set up subscribers/publishers
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  // Check odom is 0 linear, 0 angular
+  EXPECT_NEAR(0, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);
+
+  // directly set the Twist message for velocity input
+  geometry_msgs::Twist cmd_vel;
+  cmd_vel.angular.z = 0;  // rad/s
+
+
+  // drive forward for 1 second
+  cmd_vel.linear.x = 0.5;  // m/s
+  td->TwistCallback(cmd_vel);
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+  EXPECT_NEAR(0.5, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.5, odom.pose.pose.position.x, 0.01);  // should have driven 0.5m from the start
+
+
+  // Stop
+  cmd_vel.linear.x = 0.0;  // m/s
+  td->TwistCallback(cmd_vel);
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  EXPECT_NEAR(0.0, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.5, odom.pose.pose.position.x, 0.01);  // should have driven 0.5m from the start
+
+}
+
+
+TEST_F(TricycleDrivePluginTest, drive_test_vel_limit) {
+  world_yaml =
+      this_file_dir / fs::path("tricycle_drive_tests/world2.yaml");
+
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(0.01);
+  w = World::MakeWorld(world_yaml.string());
+
+  ros::NodeHandle nh;
+  ros::Subscriber sub_1;
+  TricycleDrivePluginTest* obj = dynamic_cast<TricycleDrivePluginTest*>(this);
+  sub_1 = nh.subscribe("odometry/ground_truth", 1, &TricycleDrivePluginTest::GroundTruthSubscriberCB, obj);
+
+  // This unit test's world+model file specifically loads the tricycle drive plugin first to make this easy
+  TricycleDrive* td = dynamic_cast<TricycleDrive*>(w->plugin_manager_.model_plugins_[0].get());
+
+
+  // Give ros a moment to set up subscribers/publishers
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  // Check odom is 0 linear, 0 angular
+  EXPECT_NEAR(0, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);  // start position is 12m on x
+
+  // directly set the Twist message for velocity input
+  geometry_msgs::Twist cmd_vel;
+  cmd_vel.angular.z = 0;  // rad/s
+
+
+  // drive forward for 1 second
+  cmd_vel.linear.x = 0.5;  // m/s, but the limit is 0.2m/s
+  td->TwistCallback(cmd_vel);
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+  EXPECT_NEAR(0.2, odom.twist.twist.linear.x, 0.01);  // verify that we're being capped at 0.2m/s
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.2, odom.pose.pose.position.x, 0.01);  // should have driven 0.2m from the start
+
+
+  // Stop
+  cmd_vel.linear.x = 0.0;  // m/s
+  td->TwistCallback(cmd_vel);
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  EXPECT_NEAR(0.0, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.2, odom.pose.pose.position.x, 0.01);  // should have driven 0.2m from the start
+
+}
+
+
+TEST_F(TricycleDrivePluginTest, drive_test_angular_limit) {
+  world_yaml =
+      this_file_dir / fs::path("tricycle_drive_tests/world3.yaml");
+
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(0.01);
+  w = World::MakeWorld(world_yaml.string());
+
+  ros::NodeHandle nh;
+  ros::Subscriber sub_1;
+  TricycleDrivePluginTest* obj = dynamic_cast<TricycleDrivePluginTest*>(this);
+  sub_1 = nh.subscribe("odometry/ground_truth", 1, &TricycleDrivePluginTest::GroundTruthSubscriberCB, obj);
+
+  // This unit test's world+model file specifically loads the tricycle drive plugin first to make this easy
+  TricycleDrive* td = dynamic_cast<TricycleDrive*>(w->plugin_manager_.model_plugins_[0].get());
+
+
+  // Give ros a moment to set up subscribers/publishers
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  // Check odom is 0 linear, 0 angular
+  EXPECT_NEAR(0, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);
+
+  // directly set the Twist message for velocity input
+  geometry_msgs::Twist cmd_vel;
+
+  // rotate front wheel for 1 seconds
+  cmd_vel.angular.z = 0.5;  // rad/s, but the limit is 0.2rad/s
+  td->TwistCallback(cmd_vel);
+  for (unsigned int i = 0; i < 100; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+  // front wheel should have rotated to 0.2 radians, but we didn't move
+  EXPECT_NEAR(0.0, odom.twist.twist.linear.x, 0.01);
+  EXPECT_NEAR(0.0, odom.twist.twist.angular.z, 0.01);
+  EXPECT_NEAR(12.0, odom.pose.pose.position.x, 0.01);  // should not have moved
+
+
+  // drive, rotating based on front wheel angle for 0.1 seconds
+  cmd_vel.angular.z = 0.0;  // rad/s
+  cmd_vel.linear.x = 0.5;  // m/s
+  td->TwistCallback(cmd_vel);
+  for (unsigned int i = 0; i < 10; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+  }
+
+  EXPECT_NEAR(0.5, odom.twist.twist.linear.x, 0.01);  //driving forward
+  EXPECT_NEAR(0.11, odom.twist.twist.angular.z, 0.01);   // robot body rotation due to wheel angle
+  EXPECT_NEAR(12+cos(0.2)*0.5*0.1, odom.pose.pose.position.x, 0.01);  // drive
+  EXPECT_NEAR(0+sin(0.2)*0.5*0.1, odom.pose.pose.position.y, 0.01);  // drive
 }
 
 // Run all the tests that were declared with TEST()

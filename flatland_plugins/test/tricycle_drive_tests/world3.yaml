@@ -1,0 +1,13 @@
+properties: {} # For later use
+layers:  # Support for arbitrary number of layers
+  - name: "2d"  # layer 0 named "2d"
+    map: "map.yaml"  # leading / denotes absolute file path, otherwise relative
+    color: [0, 1, 0, 1]  # List of floats [r,g,b,a] to color debug boundary
+  - name: "3d"  # layer 1 named "3d"
+    map: "map3d.yaml"
+    color: [1.0, 0.0, 0.0, 0.5]  # red 50% transparent
+models:
+  - name: cleaner1 
+    pose: [12, 0, 0]
+    model: "cleaner3.model.yaml"
+    
