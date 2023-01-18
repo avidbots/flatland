@@ -6,3 +6,9 @@ e:
   foo: bar
   spam: 2
   eggs: this is a technically a YAML string.
+f:
+  - parent first element
+  - first element
+  - second element
+  - third element
+  - parent last element

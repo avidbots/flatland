@@ -3,3 +3,7 @@ b: 52
 c: $include include.string.yaml
 d: $include /tmp/9aaafd40-2083-49d9-a300-9d01f94d6671.yaml
 e: $include include.child.yaml
+f:
+  - parent first element
+  - $[include] include.sequence.yaml
+  - parent last element

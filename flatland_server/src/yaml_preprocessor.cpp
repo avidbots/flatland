@@ -49,6 +49,8 @@
 #include <ros/ros.h>
 #include <yaml-cpp/exceptions.h>
 #include <yaml-cpp/node/parse.h>
+#include <yaml-cpp/node/type.h>
+#include <yaml-cpp/null.h>
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/filesystem/path.hpp>
@@ -62,6 +64,7 @@ namespace flatland_server {
 
 static const char *kEvalMarker = "$eval";
 static const char *kIncludeMarker = "$include";
+static const char *kSequenceIncludeMarker = "$[include]";
 
 void YamlPreprocessor::Parse(YAML::Node &node, const std::string &ref_path) {
   YamlPreprocessor::ProcessNodes(node, ref_path);
@@ -70,11 +73,31 @@ void YamlPreprocessor::Parse(YAML::Node &node, const std::string &ref_path) {
 void YamlPreprocessor::ProcessNodes(YAML::Node &node,
                                     const std::string &ref_path) {
   switch (node.Type()) {
-    case YAML::NodeType::Sequence:
+    case YAML::NodeType::Sequence: {
+      // copy the elements to a new sequence, checking for $[include] expressions
+      // as we go. If an include is found, replace it with one or more nodes
+      // parsed from the included file.
+      YAML::Node new_sequence;
       for (YAML::Node child : node) {
-        YamlPreprocessor::ProcessNodes(child, ref_path);
+        std::vector<YAML::Node> included_nodes = {};
+        if (ProcessSequenceIncludeNode(included_nodes, child, ref_path)) {
+          ROS_INFO_STREAM("Sequence include yielded " << included_nodes.size()
+                                                      << " nodes");
+          // node was an $include
+          for (auto &include_child : included_nodes) {
+            // ProcessSequenceIncludeNode handles processing of children itself.
+            new_sequence.push_back(include_child);
+          }
+        } else {
+          // not an include, just process and copy over normally.
+          // the sequence itself is the parent.
+          YamlPreprocessor::ProcessNodes(child, ref_path);
+          new_sequence.push_back(child);
+        }
       }
+      node = new_sequence;
       break;
+    }
     case YAML::NodeType::Map:
       for (YAML::iterator it = node.begin(); it != node.end(); ++it) {
         YamlPreprocessor::ProcessNodes(it->second, ref_path);
@@ -170,8 +193,8 @@ std::string YamlPreprocessor::ResolveIncludeFilePath(
 }
 void YamlPreprocessor::ProcessIncludeNode(YAML::Node &node,
                                           const std::string &ref_path) {
-  std::string value = node.as<std::string>().substr(
-      strlen(kIncludeMarker));  // omit the $include
+  // omit the $include
+  std::string value = node.as<std::string>().substr(strlen(kIncludeMarker));
   ROS_INFO_STREAM("Attempting to parse include: " << value);
   boost::algorithm::trim(value);  // remove whitespace
 
@@ -182,9 +205,9 @@ void YamlPreprocessor::ProcessIncludeNode(YAML::Node &node,
 
   try {
     auto path = ResolveIncludeFilePath(value, ref_path);
-    // replace string node with parsed contents of file
     node = YAML::LoadFile(path);
-    ProcessNodes(node, path);  // recursively process the included file, too
+    // recursively process the included file, too
+    ProcessNodes(node, path);
     ROS_INFO_STREAM("Successfully loaded include file " + path);
   } catch (const YAML::BadFile &) {
     throw YAMLException("File specified in $include does not exist," +
@@ -193,8 +216,58 @@ void YamlPreprocessor::ProcessIncludeNode(YAML::Node &node,
     throw YAMLException(
         "Malformatted file specified as include, " + format_error_info(), e);
   } catch (const YAML::Exception &e) {
-    throw YAMLException("Error loading include file, " + format_error_info(), e);
+    throw YAMLException("Error loading include file, " + format_error_info(),
+                        e);
   }
+}
+
+bool YamlPreprocessor::ProcessSequenceIncludeNode(
+    std::vector<YAML::Node> &out_elems, YAML::Node &node,
+    const std::string &ref_path) {
+  if (node.Type() != YAML::NodeType::Scalar) {
+    return false;
+  }
+  auto node_string = node.as<std::string>();
+  // check for the actual sequence include marker
+  if (node_string.compare(0, strlen(kSequenceIncludeMarker),
+                          kSequenceIncludeMarker) != 0) {
+    return false;
+  }
+  // omit the $include
+  std::string value = node_string.substr(strlen(kSequenceIncludeMarker));
+  boost::algorithm::trim(value);
+  out_elems.clear();
+
+  ROS_INFO_STREAM("Attempting to parse sequence include: " << value);
+
+  // format the common file & include info for any thrown exceptions.
+  const auto format_error_info = [&]() {
+    return "path=" + ref_path + ", include=" + value;
+  };
+
+  try {
+    auto path = ResolveIncludeFilePath(value, ref_path);
+    out_elems = YAML::LoadAllFromFile(path);
+
+    // recursively process the included nodes, too
+    for (auto &included_node : out_elems) {
+      ProcessNodes(included_node, path);
+    }
+    ROS_INFO_STREAM("Successfully loaded sequence include file " + path);
+
+  } catch (const YAML::BadFile &) {
+    throw YAMLException("File specified in $[include] does not exist," +
+                        format_error_info());
+  } catch (const YAML::ParserException &e) {
+    throw YAMLException(
+        "Malformatted file specified as include, " + format_error_info(), e);
+  } catch (const YAML::Exception &e) {
+    throw YAMLException("Error loading include file, " + format_error_info(),
+                        e);
+  }
+
+  // parsed include successfully
+  return true;
 }
 
 YAML::Node YamlPreprocessor::LoadParse(const std::string &path) {

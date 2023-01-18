@@ -152,6 +152,12 @@ TEST(YamlPreprocTest, testIncludeStrings) {
   compareNodes("e", "foo", in, out);
   compareNodes("e", "spam", in, out);
   compareNodes("e", "eggs", in, out);
+
+  compareNodes("f", 0, in, out);
+  compareNodes("f", 1, in, out);
+  compareNodes("f", 2, in, out);
+  compareNodes("f", 3, in, out);
+  compareNodes("f", 4, in, out);
 }
 
 // Run all the tests that were declared with TEST()
