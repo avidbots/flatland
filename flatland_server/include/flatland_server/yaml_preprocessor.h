@@ -65,9 +65,11 @@ namespace YamlPreprocessor {
 /**
  * @brief Preprocess with a given node
  * @param[in/out] node A Yaml node to parse
+ * @param[in] ref_path The path the file was loaded from; used to locate
+ * include files with relative filenames.
  * @return The parsed YAML::Node
  */
-void Parse(YAML::Node &node);
+void Parse(YAML::Node &node, const std::string &ref_path);
 
 /**
  * @brief Constructor with a given path to a yaml file, throws exception on
@@ -80,25 +82,47 @@ YAML::Node LoadParse(const std::string &path);
 /**
  * @brief Find and run any $eval nodes
  * @param[in/out] node A Yaml node to recursively parse
+ * @param[in] ref_path The path the file was loaded from; used to locate
+ * include files with relative filenames.
  */
-void ProcessNodes(YAML::Node &node);
+void ProcessNodes(YAML::Node &node, const std::string &ref_path);
 
 /**
  * @brief Find and run any $eval expressions
  * @param[in/out] node A Yaml string node to parse
  */
-void ProcessScalarNode(YAML::Node &node);
+void ProcessEvalNode(YAML::Node &node);
 
 /**
-  * @brief Get an environment variable with an optional default value
-  * @param[in/out] lua_State The lua state/stack to read/write to/from
-  */
+ * @brief Resolve a given filename to an absolute path, resolving relative
+ * filenames relative to ref_path
+ * @param filename The filename to find.
+ * @param ref_path Filename of the YAML file containing the `$include`, used to
+ * locate relative filenames
+ * @return The absolute path of the file to be included.
+ */
+std::string ResolveIncludeFilePath(const std::string &filename,
+                                   const std::string &ref_path);
+
+/**
+ * @brief Find and process any $include expressions
+ * @param[in/out] node A Yaml string node to parse. If an include is processed,
+ * the node is replaced with the contents of the specified file.
+ * @param[in] ref_path The path the file was loaded from; used to locate
+ * include files with relative filenames.
+ */
+void ProcessIncludeNode(YAML::Node &node, const std::string &ref_path);
+
+/**
+ * @brief Get an environment variable with an optional default value
+ * @param[in/out] lua_State The lua state/stack to read/write to/from
+ */
 int LuaGetEnv(lua_State *L);
 
 /**
-  * @brief Get a rosparam with an optional default value
-  * @param[in/out] lua_State The lua state/stack to read/write to/from
-  */
+ * @brief Get a rosparam with an optional default value
+ * @param[in/out] lua_State The lua state/stack to read/write to/from
+ */
 int LuaGetParam(lua_State *L);
 };
 }

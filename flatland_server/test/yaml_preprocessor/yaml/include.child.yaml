@@ -1,0 +1,3 @@
+foo: bar
+spam: 2
+eggs: $include include.string.yaml

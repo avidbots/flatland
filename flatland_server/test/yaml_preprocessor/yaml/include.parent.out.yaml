@@ -1,0 +1,8 @@
+a: this is a
+b: 52
+c: this is a technically a YAML string.
+d: contents of absolute file
+e:
+  foo: bar
+  spam: 2
+  eggs: this is a technically a YAML string.
