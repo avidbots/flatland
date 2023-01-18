@@ -47,6 +47,7 @@
 #include "flatland_server/yaml_preprocessor.h"
 #include <gtest/gtest.h>
 #include <ros/ros.h>
+#include <fstream>
 #include <cmath>
 
 namespace fs = boost::filesystem;
@@ -125,6 +126,38 @@ TEST(YamlPreprocTest, testEvalStrings) {
   compareNodes("testParam", "param7", in, out);
   compareNodes("testParam", "param8", in, out);
   compareNodes("testParam", "param9", in, out);
+}
+
+TEST(YamlPreprocTest, testIncludeStrings) {
+  boost::filesystem::path cwd = fs::path(__FILE__).parent_path();
+  // randomly-generated UUID
+  const std::string kAbsoluteFileName = "/tmp/9aaafd40-2083-49d9-a300-9d01f94d6671.yaml";
+
+  auto parent_yaml_filename = (cwd / "yaml/include.parent.yaml").string();
+  auto result_yaml_filename = (cwd / "yaml/include.parent.out.yaml").string();
+
+  std::ofstream f(kAbsoluteFileName);
+  f << "contents of absolute file\n";
+  ASSERT_TRUE(f.good()) << "Failure writing temp file " << kAbsoluteFileName;
+  f.close();
+
+  YAML::Node in = YamlPreprocessor::LoadParse(parent_yaml_filename);
+  YAML::Node out = YamlPreprocessor::LoadParse(result_yaml_filename);
+
+  // make sure we get the expected node structure.
+  compareNodes("a", in, out);
+  compareNodes("b", in, out);
+  compareNodes("c", in, out);
+  compareNodes("d", in, out);
+  compareNodes("e", "foo", in, out);
+  compareNodes("e", "spam", in, out);
+  compareNodes("e", "eggs", in, out);
+
+  compareNodes("f", 0, in, out);
+  compareNodes("f", 1, in, out);
+  compareNodes("f", 2, in, out);
+  compareNodes("f", 3, in, out);
+  compareNodes("f", 4, in, out);
 }
 
 // Run all the tests that were declared with TEST()

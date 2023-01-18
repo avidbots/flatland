@@ -9,9 +9,60 @@ Yaml Preprocessor
 Flatland Server has a lua preprocessor for YAML with simple bindings for the environment variables and rosparam.
 The intent is to be able to build parametric models that are defined by dimensions and flags found in either environment variables or rosparam, in a similar way to xacro+urdf. Because this is parsed at model load time, any roslaunch rosparam loading will have completed and those parameters will be available.
 
+Including additional YAML files
+-------------------------------
+The YAML preprocessor allows for including of other YAML files using the `$include` keyword. When this string is encountered, the following filename is parsed as a YAML file and substituted for the `$include`-string. The file path bay be absolute or relative. Relative file paths are relative to the YAML file currently being processed.
+
+.. code-block:: yaml
+
+  # project/param/parent.yaml
+  foo: 123
+  bar: $include child.yaml # Looks in current directory (project/param/) for relative filenames
+  baz: $include /absolute/path/to/project/param/child.yaml # or an absolute path can be specified
+
+  # project/param/child.yaml
+  a: 1
+  b: 2
+
+  # result of YAML preprocessing parent.yaml:
+  foo: 123
+  bar:
+    a: 1
+    b: 2
+  baz:
+    a: 1
+    b: 2
+
+There is also a special form of `$include`, `$[include]`,  that can be used to populate a sequence with an arbitrary number of items. Each individual document in the specified YAML file (separated by `---` as is standard for multi-document YAML files) becomes its own element in the sequence. For example:
+
+.. code-block:: yaml
+
+  # parent.yaml
+  foo:
+    - first
+    - $[include] child.yaml
+    - last
+
+  #child.yaml
+  one
+  ---
+  a: foo
+  b: baz
+  ---
+  three
+
+  # result of YAML preprocessing of parent.yaml:
+  foo:
+    - first
+    - one
+    - a: foo
+      b: baz
+    - three
+    - last
+
 body/joint/plugin enabled flag
 ------------------------------
-Model bodies, plugins and joints now have a new flag `enabled` which can be set to true or false either directly in the yaml, or based on more complex logic from a lua `$eval` string that returns "true" or "false". Disabled bodies, plugins and joints are skipped during yaml loading, and as a result are never instantiated. From Flatland's perspective `enabled: false` causes the affected body/plugin/joint to be deleted. 
+Model bodies, plugins and joints now have a new flag `enabled` which can be set to true or false either directly in the yaml, or based on more complex logic from a lua `$eval` string that returns "true" or "false". Disabled bodies, plugins and joints are skipped during yaml loading, and as a result are never instantiated. From Flatland's perspective `enabled: false` causes the affected body/plugin/joint to be deleted.
 
 bindings for env and param
 -------------------------------

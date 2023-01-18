@@ -42,7 +42,7 @@ find_package(Lua 5.1 QUIET)
 find_package(OpenCV REQUIRED)
 
 # Boost
-find_package(Boost REQUIRED COMPONENTS date_time system thread)
+find_package(Boost REQUIRED COMPONENTS date_time system thread filesystem)
 find_package(Threads)
 
 ##############
