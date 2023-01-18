@@ -55,6 +55,11 @@ messages.
       # lasers only detects objects in the specified layers
       layers: ["all"]
 
+      # optional, set the scan direction of the lidar sweep
+      # "clockwise" or "counter-clockwise", defaults to "counter-closewise"
+      scan_direction: "counter-clockwise"
+
+
     # another example
     - type: Laser
       name: laser_front

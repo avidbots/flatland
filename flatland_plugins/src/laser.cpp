@@ -239,7 +239,7 @@ void Laser::ComputeLaserRanges() {
 
   // Unqueue all of the future'd results
   const auto reflectance = reflectance_layers_bits_;
-  if (flipped_) {
+  if (scan_clockwise_) {
     auto i = laser_scan_.intensities.rbegin();
     auto r = laser_scan_.ranges.rbegin();
     for (auto clusterIte = results.begin(); clusterIte != results.end();
@@ -307,7 +307,7 @@ void Laser::ParseParameters(const YAML::Node& config) {
   range_ = reader.Get<double>("range");
   noise_std_dev_ = reader.Get<double>("noise_std_dev", 0);
 
-  flipped_ = reader.Get<bool>("flipped", false);
+  scan_clockwise_ = reader.Get<std::string>("scan_direction", "counter-clockwise").compare("clockwise") ? false : true;
 
   std::vector<std::string> layers =
       reader.GetList<std::string>("layers", {"all"}, -1, -1);

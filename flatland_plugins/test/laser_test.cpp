@@ -208,6 +208,41 @@ TEST_F(LaserPluginTest, range_test) {
   EXPECT_TRUE(fltcmp(p3->update_rate_, 1)) << "Actual: " << p2->update_rate_;
   EXPECT_EQ(p3->body_, w->models_[0]->bodies_[0]);
 }
+
+
+/**
+ * Test the laser plugin's ability to flip the scan direction to clockwise works as expected
+ */
+TEST_F(LaserPluginTest, scan_direction_test) {
+  world_yaml = this_file_dir / fs::path("laser_tests/range_test/world.cw.yaml");
+
+  Timekeeper timekeeper;
+  timekeeper.SetMaxStepSize(1.0);
+  w = World::MakeWorld(world_yaml.string());
+
+  ros::NodeHandle nh;
+  ros::Subscriber sub_1;
+  LaserPluginTest* obj = dynamic_cast<LaserPluginTest*>(this);
+  sub_1 = nh.subscribe("r/scan", 1, &LaserPluginTest::ScanFrontCb, obj);
+
+  Laser* p1 = dynamic_cast<Laser*>(w->plugin_manager_.model_plugins_[0].get());
+
+  // let it spin for 10 times to make sure the message gets through
+  ros::WallRate rate(500);
+  for (unsigned int i = 0; i < 10; i++) {
+    w->Update(timekeeper);
+    ros::spinOnce();
+    rate.sleep();
+  }
+
+  // check scan returns
+  EXPECT_TRUE(ScanEq(scan_front, "r_laser_front", -M_PI / 2, M_PI / 2, M_PI / 2,
+                     0.0, 0.0, 0.0, 5.0, {4.3, 4.4, 4.5}, {}));
+  EXPECT_TRUE(fltcmp(p1->update_rate_, std::numeric_limits<float>::infinity()))
+      << "Actual: " << p1->update_rate_;
+  EXPECT_EQ(p1->body_, w->models_[0]->bodies_[0]);
+}
+
 /**
  * Test the laser plugin for intensity configuration
  */
