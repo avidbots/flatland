@@ -9,6 +9,7 @@ jobs:
         env:
           - {ROS_DISTRO: noetic, UBUNTU: 20.04}
     runs-on: ubuntu-${{matrix.env.UBUNTU}}
+    container: ros:${{matrix.env.ROS_DISTRO}}
     steps:
       - uses: actions/checkout@v3
       - uses: 'ros-industrial/industrial_ci@master'
