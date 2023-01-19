@@ -56,7 +56,7 @@ messages.
       layers: ["all"]
 
       # optional, set the scan direction of the lidar sweep
-      # "clockwise" or "counter-clockwise", defaults to "counter-closewise"
+      # "clockwise" or "counter-clockwise", defaults to "counter-clockwise"
       scan_direction: "counter-clockwise"
 
 
