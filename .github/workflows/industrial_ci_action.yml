@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: kinetic, UBUNTU: 16.04}
+          - {ROS_DISTRO: noetic, UBUNTU: 20.04}
     runs-on: ubuntu-${{matrix.env.UBUNTU}}
     steps:
       - uses: actions/checkout@v3
