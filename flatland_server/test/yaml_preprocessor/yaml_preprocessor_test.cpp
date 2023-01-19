@@ -158,6 +158,10 @@ TEST(YamlPreprocTest, testIncludeStrings) {
   compareNodes("f", 2, in, out);
   compareNodes("f", 3, in, out);
   compareNodes("f", 4, in, out);
+
+  // previously we had a bug where empty lists would be converted to null
+  EXPECT_EQ(YAML::NodeType::Sequence, in["g"].Type());
+  EXPECT_EQ(0, in["g"].size());
 }
 
 // Run all the tests that were declared with TEST()

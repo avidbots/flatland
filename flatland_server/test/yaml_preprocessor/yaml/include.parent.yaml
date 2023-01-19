@@ -7,3 +7,4 @@ f:
   - parent first element
   - $[include] include.sequence.yaml
   - parent last element
+g: [] # Test: make sure empty lists are not modified
