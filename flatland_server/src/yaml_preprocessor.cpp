@@ -77,7 +77,7 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node,
       // copy the elements to a new sequence, checking for $[include] expressions
       // as we go. If an include is found, replace it with one or more nodes
       // parsed from the included file.
-      YAML::Node new_sequence;
+      YAML::Node new_sequence = YAML::Node(YAML::NodeType::Sequence);
       for (YAML::Node child : node) {
         std::vector<YAML::Node> included_nodes = {};
         if (ProcessSequenceIncludeNode(included_nodes, child, ref_path)) {
