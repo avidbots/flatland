@@ -90,9 +90,8 @@ void Laser::OnInitialize(const YAML::Node& config) {
       angle = -angle;
     }
 
-    // Negative because box2d uses inverted y axis
-    float x = range_ * cos(-angle);
-    float y = range_ * sin(-angle);
+    float x = range_ * cos(angle);
+    float y = range_ * sin(angle);
 
     m_laser_points_(0, i) = x;
     m_laser_points_(1, i) = y;
@@ -119,9 +118,9 @@ void Laser::OnInitialize(const YAML::Node& config) {
   // Broadcast transform between the body and laser
   tf::Quaternion q;
   if (upside_down_) {
-    q.setRPY(0, 0, origin_.theta);
-  } else {
     q.setRPY(M_PI, 0, origin_.theta);
+  } else {
+    q.setRPY(0, 0, origin_.theta);
   }
   
 
