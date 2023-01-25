@@ -55,9 +55,11 @@ messages.
       # lasers only detects objects in the specified layers
       layers: ["all"]
 
-      # optional, set the scan direction of the lidar sweep
-      # "clockwise" or "counter-clockwise", defaults to "counter-clockwise"
-      scan_direction: "counter-clockwise"
+      # optional, invert the mounting orientation of the lidar (default: false)
+      # This will invert the laser's body->laser frame TF (roll=PI)
+      # And sweep the lidar scan across a field mirrored across its mounted axis
+      # (as if you physically mounted the lidar upside down)
+      upside_down: false
 
 
     # another example

@@ -84,10 +84,15 @@ void Laser::OnInitialize(const YAML::Node& config) {
   // pre-calculate the laser points w.r.t to the laser frame, since this never
   // changes
   for (unsigned int i = 0; i < num_laser_points; i++) {
+    
     float angle = min_angle_ + i * increment_;
+    if (upside_down_) {  // Laser inverted, so laser local frame angles are also inverted
+      angle = -angle;
+    }
 
-    float x = range_ * cos(angle);
-    float y = range_ * sin(angle);
+    // Negative because box2d uses inverted y axis
+    float x = range_ * cos(-angle);
+    float y = range_ * sin(-angle);
 
     m_laser_points_(0, i) = x;
     m_laser_points_(1, i) = y;
@@ -113,7 +118,12 @@ void Laser::OnInitialize(const YAML::Node& config) {
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
-  q.setRPY(0, 0, origin_.theta);
+  if (upside_down_) {
+    q.setRPY(0, 0, origin_.theta);
+  } else {
+    q.setRPY(M_PI, 0, origin_.theta);
+  }
+  
 
   laser_tf_.header.frame_id = tf::resolve(
       "", GetModel()->NameSpaceTF(body_->GetName()));  // Todo: parent_tf param
@@ -239,37 +249,19 @@ void Laser::ComputeLaserRanges() {
 
   // Unqueue all of the future'd results
   const auto reflectance = reflectance_layers_bits_;
-  if (scan_clockwise_) {
-    auto i = laser_scan_.intensities.rbegin();
-    auto r = laser_scan_.ranges.rbegin();
-    for (auto clusterIte = results.begin(); clusterIte != results.end();
-         ++clusterIte) {
-      auto resultCluster = clusterIte->get();
-      for (auto ite = resultCluster.begin(); ite != resultCluster.end();
-           ++ite, ++i, ++r) {
-        // Loop unswitching should occur
-        if (reflectance) {
-          *i = ite->second;
-          *r = ite->first;
-        } else
-          *r = ite->first;
-      }
-    }
-  } else {
-    auto i = laser_scan_.intensities.begin();
-    auto r = laser_scan_.ranges.begin();
-    for (auto clusterIte = results.begin(); clusterIte != results.end();
-         ++clusterIte) {
-      auto resultCluster = clusterIte->get();
-      for (auto ite = resultCluster.begin(); ite != resultCluster.end();
-           ++ite, ++i, ++r) {
-        // Loop unswitching should occur
-        if (reflectance) {
-          *i = ite->second;
-          *r = ite->first;
-        } else
-          *r = ite->first;
-      }
+  auto i = laser_scan_.intensities.begin();
+  auto r = laser_scan_.ranges.begin();
+  for (auto clusterIte = results.begin(); clusterIte != results.end();
+        ++clusterIte) {
+    auto resultCluster = clusterIte->get();
+    for (auto ite = resultCluster.begin(); ite != resultCluster.end();
+          ++ite, ++i, ++r) {
+      // Loop unswitching should occur
+      if (reflectance) {
+        *i = ite->second;
+        *r = ite->first;
+      } else
+        *r = ite->first;
     }
   }
 }
@@ -307,7 +299,7 @@ void Laser::ParseParameters(const YAML::Node& config) {
   range_ = reader.Get<double>("range");
   noise_std_dev_ = reader.Get<double>("noise_std_dev", 0);
 
-  scan_clockwise_ = reader.Get<std::string>("scan_direction", "counter-clockwise").compare("clockwise") ? false : true;
+  upside_down_ = reader.Get<bool>("upside_down", false);
 
   std::vector<std::string> layers =
       reader.GetList<std::string>("layers", {"all"}, -1, -1);
@@ -345,7 +337,7 @@ void Laser::ParseParameters(const YAML::Node& config) {
   rng_ = std::default_random_engine(rd());
   noise_gen_ = std::normal_distribution<float>(0.0, noise_std_dev_);
 
-  ROS_DEBUG_NAMED("LaserPlugin",
+  ROS_INFO(//"LaserPlugin",
                   "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) "
                   "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
                   "noise_std_dev(%f) angle_min(%f) angle_max(%f) "

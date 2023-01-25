@@ -16,5 +16,5 @@ plugins:
     name: laser_front
     body: base_link
     range: 5
-    scan_direction: clockwise
+    upside_down: true
     angle: {min: -1.5707963267948966, max: 1.5707963267948966, increment: 1.5707963267948966}

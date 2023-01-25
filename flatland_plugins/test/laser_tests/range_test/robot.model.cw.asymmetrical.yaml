@@ -1,0 +1,34 @@
+# Turtlebot
+
+bodies:  # List of named bodies
+  - name: base_link
+    pose: [0, 0, 0] 
+    type: dynamic
+    color: [1, 1, 0, 1]
+    footprints:
+      - type: polygon
+        density: 1.0
+        points: [[-.5, -0.25], [-.5, 0.25], [.5, 0.25], [.5, -0.25]]
+
+plugins:
+  - type: Laser
+    name: laser_flipped
+    body: base_link
+    range: 5
+    topic: scan1
+    frame: laser_flipped_custom
+    upside_down: true
+    angle: {min: 0, max: 0.21, increment: 0.1}
+  - type: Laser
+    name: laser_normal
+    body: base_link
+    range: 5
+    topic: scan2
+    upside_down: false
+    angle: {min: 0, max: 0.21, increment: 0.1}
+  - type: ModelTfPublisher
+    name: state_publisher
+    update_rate: .inf
+    publish_tf_world: true
+    world_frame_id: map
+    reference: base_link
