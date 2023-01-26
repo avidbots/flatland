@@ -46,6 +46,9 @@ messages.
 
       # required, w.r.t to the coordinate system, scan from min angle to max angle
       # at steps of specified increments
+      # Scan direction defaults to counter-clockwise but clockwise rotations can be
+      # simulated by providing a decrementing angle configuration.
+      # e.g. min: 2, max: -2, increment: -0.1 (clockwise)
       angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.004363323129985824}
 
       # optional, default to inf (as fast as possible), rate to publish laser scan messages
