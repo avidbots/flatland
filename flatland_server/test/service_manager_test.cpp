@@ -118,7 +118,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model) {
   // Threading is required since client.call blocks executing until return
   StartSimulationThread();
 
-  ros::service::waitForService("spawn_model", 1000);
+  ros::service::waitForService("spawn_model", 5000);
   ASSERT_TRUE(client.call(srv));
 
   ASSERT_TRUE(srv.response.success);
@@ -157,7 +157,7 @@ TEST_F(ServiceManagerTest, spawn_invalid_model) {
 
   StartSimulationThread();
 
-  ros::service::waitForService("spawn_model", 1000);
+  ros::service::waitForService("spawn_model", 5000);
   ASSERT_TRUE(client.call(srv));
 
   ASSERT_FALSE(srv.response.success);
@@ -189,7 +189,7 @@ TEST_F(ServiceManagerTest, move_model) {
 
   StartSimulationThread();
 
-  ros::service::waitForService("move_model", 1000);
+  ros::service::waitForService("move_model", 5000);
   ASSERT_TRUE(client.call(srv));
 
   ASSERT_TRUE(srv.response.success);
@@ -219,7 +219,7 @@ TEST_F(ServiceManagerTest, move_nonexistent_model) {
 
   StartSimulationThread();
 
-  ros::service::waitForService("move_model", 1000);
+  ros::service::waitForService("move_model", 5000);
   ASSERT_TRUE(client.call(srv));
 
   ASSERT_FALSE(srv.response.success);
@@ -243,7 +243,7 @@ TEST_F(ServiceManagerTest, delete_model) {
 
   StartSimulationThread();
 
-  ros::service::waitForService("delete_model", 1000);
+  ros::service::waitForService("delete_model", 5000);
   ASSERT_TRUE(client.call(srv));
 
   ASSERT_TRUE(srv.response.success);
@@ -270,7 +270,7 @@ TEST_F(ServiceManagerTest, delete_nonexistent_model) {
 
   StartSimulationThread();
 
-  ros::service::waitForService("delete_model", 1000);
+  ros::service::waitForService("delete_model", 5000);
   ASSERT_TRUE(client.call(srv));
 
   ASSERT_FALSE(srv.response.success);

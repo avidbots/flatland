@@ -46,6 +46,9 @@ messages.
 
       # required, w.r.t to the coordinate system, scan from min angle to max angle
       # at steps of specified increments
+      # Scan direction defaults to counter-clockwise but clockwise rotations can be
+      # simulated by providing a decrementing angle configuration.
+      # e.g. min: 2, max: -2, increment: -0.1 (clockwise)
       angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.004363323129985824}
 
       # optional, default to inf (as fast as possible), rate to publish laser scan messages
@@ -54,6 +57,13 @@ messages.
       # optional, default to ["all"], the layers to operate the laser at, 
       # lasers only detects objects in the specified layers
       layers: ["all"]
+
+      # optional, invert the mounting orientation of the lidar (default: false)
+      # This will invert the laser's body->laser frame TF (roll=PI)
+      # And sweep the lidar scan across a field mirrored across its mounted axis
+      # (as if you physically mounted the lidar upside down)
+      upside_down: false
+
 
     # another example
     - type: Laser
