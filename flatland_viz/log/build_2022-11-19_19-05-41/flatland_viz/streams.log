@@ -1,0 +1,24 @@
+[0.031s] Invoking command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz': HOMEPATH=%HOMEPATH%
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin;
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz
+[0.047s] CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.047s]   Compatibility with CMake < 2.8.12 will be removed from a future version of
+[0.047s]   CMake.
+[0.047s] 
+[0.047s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.047s]   CMake that the project does not need compatibility with older versions.
+[0.047s] 
+[0.047s] 
+[0.078s] CMake Error at CMakeLists.txt:10 (if):
+[0.078s]   if given arguments:
+[0.078s] 
+[0.078s]     "STREQUAL" "14.04"
+[0.078s] 
+[0.078s]   Unknown arguments specified
+[0.078s] 
+[0.078s] 
+[0.078s] -- Configuring incomplete, errors occurred!
+[0.078s] See also "C:/Users/PC/Documents/Aulas/5ano/1semestre/RI/flatland/flatland_viz/build/flatland_viz/CMakeFiles/CMakeOutput.log".
+[0.094s] Invoked command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz' returned '1': HOMEPATH=%HOMEPATH%
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin;
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz
