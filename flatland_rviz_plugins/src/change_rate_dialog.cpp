@@ -39,7 +39,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "change_rate_dialog.hpp"
+#include "flatland_rviz_plugins/change_rate_dialog.hpp"
 
 #include <rviz_common/tool_manager.hpp>
 

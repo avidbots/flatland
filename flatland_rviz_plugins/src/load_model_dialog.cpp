@@ -45,6 +45,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flatland_rviz_plugins/load_model_dialog.hpp"
+
 #include <string>
 
 #include <OgreVector3.h>
@@ -65,7 +67,6 @@
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_common/visualization_manager.hpp>
 
-#include "load_model_dialog.hpp"
 
 namespace flatland_rviz_plugins
 {

@@ -41,7 +41,10 @@ set(flatland_rviz_plugins_headers_to_moc
   include/flatland_rviz_plugins/change_rate_tool.hpp
   include/flatland_rviz_plugins/pause_tool.hpp
   include/flatland_rviz_plugins/interactive_tool.hpp
-  include/flatland_rviz_plugins/spawn_model_tool.hpp)
+  include/flatland_rviz_plugins/spawn_model_tool.hpp
+  include/flatland_rviz_plugins/change_rate_dialog.hpp
+  include/flatland_rviz_plugins/load_model_dialog.hpp
+  )
 
 include_directories(
   include

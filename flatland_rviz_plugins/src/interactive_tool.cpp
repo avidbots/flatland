@@ -39,7 +39,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "include/flatland_rviz_plugins/interactive_tool.hpp"
+#include "flatland_rviz_plugins/interactive_tool.hpp"
 
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/display_group.hpp>

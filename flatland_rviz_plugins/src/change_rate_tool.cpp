@@ -47,7 +47,7 @@
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/tool_manager.hpp>
 
-#include "change_rate_dialog.hpp"
+#include "flatland_rviz_plugins/change_rate_dialog.hpp"
 
 namespace flatland_rviz_plugins
 {

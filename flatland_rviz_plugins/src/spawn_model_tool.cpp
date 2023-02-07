@@ -70,7 +70,7 @@
 #include <rviz_common/viewport_mouse_event.hpp>
 #include <rviz_rendering/viewport_projection_finder.hpp>
 
-#include "load_model_dialog.hpp"
+#include "flatland_rviz_plugins/load_model_dialog.hpp"
 
 namespace flatland_rviz_plugins
 {
