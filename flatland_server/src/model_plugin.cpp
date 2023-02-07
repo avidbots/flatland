@@ -46,12 +46,15 @@
 
 #include <flatland_server/model_plugin.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-Model *ModelPlugin::GetModel() { return model_; }
+Model * ModelPlugin::GetModel() { return model_; }
 
-void ModelPlugin::Initialize(rclcpp::Node::SharedPtr node, const std::string &type, const std::string &name,
-                             Model *model, const YAML::Node &config) {
+void ModelPlugin::Initialize(
+  rclcpp::Node::SharedPtr node, const std::string & type, const std::string & name, Model * model,
+  const YAML::Node & config)
+{
   type_ = type;
   name_ = name;
   model_ = model;
@@ -60,15 +63,15 @@ void ModelPlugin::Initialize(rclcpp::Node::SharedPtr node, const std::string &ty
   OnInitialize(config);
 }
 
-bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
-                                b2Fixture *&this_fixture,
-                                b2Fixture *&other_fixture) {
-  b2Fixture *f_A = contact->GetFixtureA();
-  b2Fixture *f_B = contact->GetFixtureB();
-  Body *b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
-  Body *b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
-  Entity *e_A = b_A->GetEntity();
-  Entity *e_B = b_B->GetEntity();
+bool ModelPlugin::FilterContact(
+  b2Contact * contact, Entity *& entity, b2Fixture *& this_fixture, b2Fixture *& other_fixture)
+{
+  b2Fixture * f_A = contact->GetFixtureA();
+  b2Fixture * f_B = contact->GetFixtureB();
+  Body * b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
+  Body * b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
+  Entity * e_A = b_A->GetEntity();
+  Entity * e_B = b_B->GetEntity();
 
   if (e_A == model_) {
     entity = e_B;
@@ -84,10 +87,11 @@ bool ModelPlugin::FilterContact(b2Contact *contact, Entity *&entity,
   return true;
 }
 
-bool ModelPlugin::FilterContact(b2Contact *contact) {
+bool ModelPlugin::FilterContact(b2Contact * contact)
+{
   b2Fixture *f1, *f2;
-  Entity *e;
+  Entity * e;
   return FilterContact(contact, e, f1, f2);
 }
 
-}  //namespace flatland_server
+}  // namespace flatland_server

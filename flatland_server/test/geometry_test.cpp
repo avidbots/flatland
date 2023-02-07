@@ -51,9 +51,9 @@
 #include <cmath>
 
 // Test the CreateTransform method
-TEST(TestSuite, testCreateTransform) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(2.0, 1.0, 1.1);
+TEST(TestSuite, testCreateTransform)
+{
+  flatland_server::RotateTranslate rt = flatland_server::Geometry::CreateTransform(2.0, 1.0, 1.1);
 
   EXPECT_NEAR(rt.dx, 2.0, 1e-5);
   EXPECT_NEAR(rt.dy, 1.0, 1e-5);
@@ -62,9 +62,9 @@ TEST(TestSuite, testCreateTransform) {
 }
 
 // Test the Transform method, translation
-TEST(TestSuite, testTransformTranslate) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(2.0, 1.5, 0.0);
+TEST(TestSuite, testTransformTranslate)
+{
+  flatland_server::RotateTranslate rt = flatland_server::Geometry::CreateTransform(2.0, 1.5, 0.0);
 
   b2Vec2 in(1.0, 2.0);
   b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
@@ -74,9 +74,10 @@ TEST(TestSuite, testTransformTranslate) {
 }
 
 // Test the Transform method, rotation
-TEST(TestSuite, testTransformRotate) {
+TEST(TestSuite, testTransformRotate)
+{
   flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(0.0, 0.0, M_PI_2);
+    flatland_server::Geometry::CreateTransform(0.0, 0.0, M_PI_2);
 
   b2Vec2 in(1.0, 2.0);
   b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
@@ -86,9 +87,9 @@ TEST(TestSuite, testTransformRotate) {
 }
 
 // Test the Transform method, translation + rotation
-TEST(TestSuite, testTransformTranslateAndRotate) {
-  flatland_server::RotateTranslate rt =
-      flatland_server::Geometry::CreateTransform(1.0, 0.5, -M_PI);
+TEST(TestSuite, testTransformTranslateAndRotate)
+{
+  flatland_server::RotateTranslate rt = flatland_server::Geometry::CreateTransform(1.0, 0.5, -M_PI);
 
   b2Vec2 in(-1.0, 1.5);
   b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
@@ -98,7 +99,8 @@ TEST(TestSuite, testTransformTranslateAndRotate) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

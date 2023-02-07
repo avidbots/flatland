@@ -128,42 +128,32 @@ install(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-if(FALSE) # fake a block comment
-if(BUILD_TESTING )
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
 
-  add_rostest_gtest(laser_test test/laser_test.test
-                    test/laser_test.cpp)
-  target_link_libraries(laser_test flatland_plugins_lib)
-
-  add_rostest_gtest(tricycle_drive_test test/tricycle_drive_test.test
-                    test/tricycle_drive_test.cpp)
-  target_link_libraries(tricycle_drive_test flatland_plugins_lib)
-
-  add_rostest_gtest(diff_drive_test test/diff_drive_test.test
-                    test/diff_drive_test.cpp)
+  ament_add_gtest(diff_drive_test test/diff_drive_test.cpp)
   target_link_libraries(diff_drive_test flatland_plugins_lib)
 
-  add_rostest_gtest(bumper_test test/bumper_test.test
-                    test/bumper_test.cpp)
-  target_link_libraries(bumper_test flatland_plugins_lib)
+  ament_add_gtest(tricycle_drive_test test/tricycle_drive_test.cpp)
+  target_link_libraries(tricycle_drive_test flatland_plugins_lib)
 
-  add_rostest_gtest(model_tf_publisher_test test/model_tf_publisher_test.test
-                    test/model_tf_publisher_test.cpp)
+  ament_add_gtest(model_tf_publisher_test test/model_tf_publisher_test.cpp)
   target_link_libraries(model_tf_publisher_test flatland_plugins_lib)
 
-  add_rostest_gtest(update_timer_test test/update_timer_test.test
-                    test/update_timer_test.cpp)
-  target_link_libraries(update_timer_test flatland_plugins_lib)
+  ament_add_gtest(tween_test test/tween_test.cpp)
+  target_link_libraries(tween_test flatland_plugins_lib)
 
-  add_rostest_gtest(tween_test test/tween_test.test
-                    test/tween_test.cpp)
-  target_link_libraries(tween_test flatland_plugins_lib ${catkin_LIBRARIES})
-
-  add_rostest_gtest(gps_test test/gps_test.test
-                    test/gps_test.cpp)
+  ament_add_gtest(gps_test test/gps_test.cpp)
   target_link_libraries(gps_test flatland_plugins_lib)
 
-endif()
+  ament_add_gtest(bumper_test test/bumper_test.cpp)
+  target_link_libraries(bumper_test flatland_plugins_lib)
+
+  ament_add_gtest(laser_test test/laser_test.cpp)
+  target_link_libraries(laser_test flatland_plugins_lib)
+
+  ament_add_gtest(update_timer_test test/update_timer_test.cpp)
+  target_link_libraries(update_timer_test flatland_plugins_lib)
 endif()
 
 ament_package()

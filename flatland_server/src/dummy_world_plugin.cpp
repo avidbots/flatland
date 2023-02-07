@@ -48,30 +48,32 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/world_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_list_macros.hpp>
 #include <yaml-cpp/yaml.h>
+
+#include <pluginlib/class_list_macros.hpp>
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-void DummyWorldPlugin::OnInitialize(const YAML::Node &plugin_reader, YamlReader &world_config) {
+void DummyWorldPlugin::OnInitialize(const YAML::Node & plugin_reader, YamlReader & world_config)
+{
   if (world_ != NULL) {
     throw PluginException("World is not NULL!");
   }
   if (name_ != "DummyWorldPluginName") {
     throw PluginException(
-        "Dummy world plugin name is in correct, instead of "
-        "\"DummyWorldPluginName\", the name is " +
-        name_);
+      "Dummy world plugin name is in correct, instead of "
+      "\"DummyWorldPluginName\", the name is " +
+      name_);
   }
   if (type_ != "DummyWorldPluginType") {
     throw PluginException(
-        "Dummy world plugin type is in correct, instead of "
-        "\"DummyWorldPluginType\", the type is " +
-        type_);
+      "Dummy world plugin type is in correct, instead of "
+      "\"DummyWorldPluginType\", the type is " +
+      type_);
   }
 }
-}
+}  // namespace flatland_plugins
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyWorldPlugin,
-                       flatland_server::WorldPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyWorldPlugin, flatland_server::WorldPlugin)

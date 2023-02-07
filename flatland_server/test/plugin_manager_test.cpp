@@ -57,20 +57,22 @@
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-class TestModelPlugin : public ModelPlugin {
- public:
+class TestModelPlugin : public ModelPlugin
+{
+public:
   // variables used for testing
   double timestep_before;
   double timestep_after;
-  Entity *entity;
-  b2Fixture *fixture_A;
-  b2Fixture *fixture_B;
+  Entity * entity;
+  b2Fixture * fixture_A;
+  b2Fixture * fixture_B;
 
   std::map<std::string, bool> function_called;
 
   TestModelPlugin() { ClearTestingVariables(); }
 
-  void ClearTestingVariables() {
+  void ClearTestingVariables()
+  {
     entity = nullptr;
     fixture_A = nullptr;
     fixture_B = nullptr;
@@ -84,89 +86,93 @@ class TestModelPlugin : public ModelPlugin {
     function_called["PostSolve"] = false;
   }
 
-  void OnInitialize(const YAML::Node &config) override {
-    function_called["OnInitialize"] = true;
-  }
+  void OnInitialize(const YAML::Node & config) override { function_called["OnInitialize"] = true; }
 
-  void BeforePhysicsStep(const Timekeeper &timekeeper) override {
+  void BeforePhysicsStep(const Timekeeper & timekeeper) override
+  {
     function_called["BeforePhysicsStep"] = true;
   }
 
-  void AfterPhysicsStep(const Timekeeper &timekeeper) override {
+  void AfterPhysicsStep(const Timekeeper & timekeeper) override
+  {
     function_called["AfterPhysicsStep"] = true;
   }
 
-  void BeginContact(b2Contact *contact) override {
+  void BeginContact(b2Contact * contact) override
+  {
     function_called["BeginContact"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void EndContact(b2Contact *contact) override {
+  void EndContact(b2Contact * contact) override
+  {
     function_called["EndContact"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) override {
+  void PreSolve(b2Contact * contact, const b2Manifold * oldManifold) override
+  {
     function_called["PreSolve"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override {
+  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse) override
+  {
     function_called["PostSolve"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 };
 
-class PluginManagerTest : public ::testing::Test {
- protected:
+class PluginManagerTest : public ::testing::Test
+{
+protected:
   boost::filesystem::path this_file_dir;
   boost::filesystem::path world_yaml;
-  World *w;
+  World * w;
 
-  void SetUp() override {
+  void SetUp() override
+  {
     this_file_dir = boost::filesystem::path(__FILE__).parent_path();
     w = nullptr;
   }
 
-  void TearDown() override {
+  void TearDown() override
+  {
     if (w != nullptr) {
       delete w;
     }
   }
 
-  PluginManagerTest() {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
-  }
+  PluginManagerTest() { this_file_dir = boost::filesystem::path(__FILE__).parent_path(); }
 
-  bool fltcmp(double n1, double n2) {
+  bool fltcmp(double n1, double n2)
+  {
     bool ret = std::fabs(n1 - n2) < 1e-7;
     return ret;
   }
 
   // checks if tow maps have the same keys
-  bool key_compare(std::map<std::string, bool> const &lhs,
-                   std::map<std::string, bool> const &rhs) {
-    auto pred = [](decltype(*lhs.begin()) a, decltype(a) b) {
-      return a.first == b.first;
-    };
+  bool key_compare(std::map<std::string, bool> const & lhs, std::map<std::string, bool> const & rhs)
+  {
+    auto pred = [](decltype(*lhs.begin()) a, decltype(a) b) { return a.first == b.first; };
 
-    return lhs.size() == rhs.size() &&
-           std::equal(lhs.begin(), lhs.end(), rhs.begin(), pred);
+    return lhs.size() == rhs.size() && std::equal(lhs.begin(), lhs.end(), rhs.begin(), pred);
   }
 
   // Check the true/false if the function is called
-  bool FunctionCallEq(TestModelPlugin *p,
-                      std::map<std::string, bool> function_called) {
+  bool FunctionCallEq(TestModelPlugin * p, std::map<std::string, bool> function_called)
+  {
     if (!key_compare(p->function_called, function_called)) {
       printf("Two maps does not have the same keys (set of function)\n");
       return false;
     }
 
-    for (const auto &func : p->function_called) {
+    for (const auto & func : p->function_called) {
       if (func.second != function_called[func.first]) {
-        printf("%s is %s, expected to be %s\n", func.first.c_str(),
-               func.second ? "called" : "not called",
-               function_called[func.first] ? "called" : "not called");
+        printf(
+          "%s is %s, expected to be %s\n", func.first.c_str(),
+          func.second ? "called" : "not called",
+          function_called[func.first] ? "called" : "not called");
         return false;
       }
     }
@@ -178,26 +184,24 @@ class PluginManagerTest : public ::testing::Test {
  * This test moves bodies around and test if all the correct functions are
  * called with the expected inputs
  */
-TEST_F(PluginManagerTest, collision_test) {
-  world_yaml = this_file_dir /
-               fs::path("plugin_manager_tests/collision_test/world.yaml");
-  std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("PluginManagerTest_node");
+TEST_F(PluginManagerTest, collision_test)
+{
+  world_yaml = this_file_dir / fs::path("plugin_manager_tests/collision_test/world.yaml");
+  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("PluginManagerTest_node");
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
 
   w = World::MakeWorld(node, world_yaml.string());
-  Layer *l = w->layers_[0];
-  Model *m0 = w->models_[0];
-  Model *m1 = w->models_[1];
-  Body *b0 = m0->bodies_[0];
-  Body *b1 = m1->bodies_[0];
-  PluginManager *pm = &w->plugin_manager_;
+  Layer * l = w->layers_[0];
+  Model * m0 = w->models_[0];
+  Model * m1 = w->models_[1];
+  Body * b0 = m0->bodies_[0];
+  Body * b1 = m1->bodies_[0];
+  PluginManager * pm = &w->plugin_manager_;
   std::shared_ptr<TestModelPlugin> shared_p(new TestModelPlugin());
-  shared_p->Initialize(node, "TestModelPlugin", "test_model_plugin", m0,
-                       YAML::Node());
+  shared_p->Initialize(node, "TestModelPlugin", "test_model_plugin", m0, YAML::Node());
   pm->model_plugins_.push_back(shared_p);
-  TestModelPlugin *p = shared_p.get();
+  TestModelPlugin * p = shared_p.get();
 
   // step the world with everything at zero velocity, this should make sure
   // the collision callbacks gets called
@@ -208,13 +212,14 @@ TEST_F(PluginManagerTest, collision_test) {
   // begin contact should trigger, as well as before and after physics step.
   // Note that pre and post solve are never called because the fixtures are
   // set as sensors
-  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", true},
-                                 {"BeforePhysicsStep", true},
-                                 {"AfterPhysicsStep", true},
-                                 {"BeginContact", true},
-                                 {"EndContact", false},
-                                 {"PreSolve", false},
-                                 {"PostSolve", false}}));
+  EXPECT_TRUE(FunctionCallEq(
+    p, {{"OnInitialize", true},
+        {"BeforePhysicsStep", true},
+        {"AfterPhysicsStep", true},
+        {"BeginContact", true},
+        {"EndContact", false},
+        {"PreSolve", false},
+        {"PostSolve", false}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_B->GetType(), b2Shape::e_edge);
@@ -226,13 +231,14 @@ TEST_F(PluginManagerTest, collision_test) {
   // takes two steps for Box2D to genreate collision events, not sure why
   w->Update(timekeeper);
   w->Update(timekeeper);
-  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
-                                 {"BeforePhysicsStep", true},
-                                 {"AfterPhysicsStep", true},
-                                 {"BeginContact", false},
-                                 {"EndContact", true},
-                                 {"PreSolve", false},
-                                 {"PostSolve", false}}));
+  EXPECT_TRUE(FunctionCallEq(
+    p, {{"OnInitialize", false},
+        {"BeforePhysicsStep", true},
+        {"AfterPhysicsStep", true},
+        {"BeginContact", false},
+        {"EndContact", true},
+        {"PreSolve", false},
+        {"PostSolve", false}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_B->GetType(), b2Shape::e_edge);
@@ -244,13 +250,14 @@ TEST_F(PluginManagerTest, collision_test) {
   b1->physics_body_->SetLinearVelocity(b2Vec2(0, -0.5));
   w->Update(timekeeper);
   w->Update(timekeeper);
-  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
-                                 {"BeforePhysicsStep", true},
-                                 {"AfterPhysicsStep", true},
-                                 {"BeginContact", true},
-                                 {"EndContact", false},
-                                 {"PreSolve", false},
-                                 {"PostSolve", false}}));
+  EXPECT_TRUE(FunctionCallEq(
+    p, {{"OnInitialize", false},
+        {"BeforePhysicsStep", true},
+        {"AfterPhysicsStep", true},
+        {"BeginContact", true},
+        {"EndContact", false},
+        {"PreSolve", false},
+        {"PostSolve", false}}));
   EXPECT_EQ(p->entity, m1);
   EXPECT_EQ(p->fixture_B, b1->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
@@ -262,13 +269,14 @@ TEST_F(PluginManagerTest, collision_test) {
   b1->physics_body_->SetLinearVelocity(b2Vec2(0, -1));
   w->Update(timekeeper);
   w->Update(timekeeper);
-  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
-                                 {"BeforePhysicsStep", true},
-                                 {"AfterPhysicsStep", true},
-                                 {"BeginContact", false},
-                                 {"EndContact", true},
-                                 {"PreSolve", false},
-                                 {"PostSolve", false}}));
+  EXPECT_TRUE(FunctionCallEq(
+    p, {{"OnInitialize", false},
+        {"BeforePhysicsStep", true},
+        {"AfterPhysicsStep", true},
+        {"BeginContact", false},
+        {"EndContact", true},
+        {"PreSolve", false},
+        {"PostSolve", false}}));
   EXPECT_EQ(p->entity, m1);
   EXPECT_EQ(p->fixture_B, b1->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
@@ -286,13 +294,14 @@ TEST_F(PluginManagerTest, collision_test) {
   b0->physics_body_->SetTransform(b2Vec2(0, 0), 0);
   w->Update(timekeeper);
   w->Update(timekeeper);
-  EXPECT_TRUE(FunctionCallEq(p, {{"OnInitialize", false},
-                                 {"BeforePhysicsStep", true},
-                                 {"AfterPhysicsStep", true},
-                                 {"BeginContact", true},
-                                 {"EndContact", false},
-                                 {"PreSolve", true},
-                                 {"PostSolve", true}}));
+  EXPECT_TRUE(FunctionCallEq(
+    p, {{"OnInitialize", false},
+        {"BeforePhysicsStep", true},
+        {"AfterPhysicsStep", true},
+        {"BeginContact", true},
+        {"EndContact", false},
+        {"PreSolve", true},
+        {"PostSolve", true}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_B->GetType(), b2Shape::e_edge);
@@ -303,103 +312,102 @@ TEST_F(PluginManagerTest, collision_test) {
   // ros::spin();
 }
 
-TEST_F(PluginManagerTest, load_dummy_test) {
-  world_yaml = this_file_dir /
-               fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
+TEST_F(PluginManagerTest, load_dummy_test)
+{
+  world_yaml = this_file_dir / fs::path("plugin_manager_tests/load_dummy_test/world.yaml");
 
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
   w = World::MakeWorld(node, world_yaml.string());
 
-  ModelPlugin *p = w->plugin_manager_.model_plugins_[0].get();
+  ModelPlugin * p = w->plugin_manager_.model_plugins_[0].get();
 
   EXPECT_STREQ(p->GetType().c_str(), "DummyModelPlugin");
   EXPECT_STREQ(p->GetName().c_str(), "dummy_test_plugin");
 }
 
-TEST_F(PluginManagerTest, plugin_throws_exception) {
-  world_yaml =
-      this_file_dir /
-      fs::path("plugin_manager_tests/plugin_throws_exception/world.yaml");
+TEST_F(PluginManagerTest, plugin_throws_exception)
+{
+  world_yaml = this_file_dir / fs::path("plugin_manager_tests/plugin_throws_exception/world.yaml");
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
     w = World::MakeWorld(node, world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
-  } catch (const PluginException &e) {
+  } catch (const PluginException & e) {
     // do a regex match against error message
     std::string regex_str =
-        ".*dummy_param_float must be dummy_test_123456, instead it was "
-        "\"wrong_message\".*";
+      ".*dummy_param_float must be dummy_test_123456, instead it was "
+      "\"wrong_message\".*";
     std::cmatch match;
     std::regex regex(regex_str);
     EXPECT_TRUE(std::regex_match(e.what(), match, regex))
-        << "Exception Message '" + std::string(e.what()) + "'" +
-               " did not match against regex '" + regex_str + "'";
-  } catch (const std::exception &e) {
+      << "Exception Message '" + std::string(e.what()) + "'" + " did not match against regex '" +
+           regex_str + "'";
+  } catch (const std::exception & e) {
     ADD_FAILURE() << "Was expecting a PluginException, another exception was "
                      "caught instead: "
                   << e.what();
   }
 }
 
-TEST_F(PluginManagerTest, nonexistent_plugin) {
-  world_yaml = this_file_dir /
-               fs::path("plugin_manager_tests/nonexistent_plugin/world.yaml");
+TEST_F(PluginManagerTest, nonexistent_plugin)
+{
+  world_yaml = this_file_dir / fs::path("plugin_manager_tests/nonexistent_plugin/world.yaml");
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
     w = World::MakeWorld(node, world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
-  } catch (const PluginException &e) {
+  } catch (const PluginException & e) {
     std::cmatch match;
     std::string regex_str =
-        ".*RandomPlugin with base class type flatland_server::ModelPlugin does "
-        "not exist.*";
+      ".*RandomPlugin with base class type flatland_server::ModelPlugin does "
+      "not exist.*";
     std::regex regex(regex_str);
     EXPECT_TRUE(std::regex_match(e.what(), match, regex))
-        << "Exception Message '" + std::string(e.what()) + "'" +
-               " did not match against regex '" + regex_str + "'";
-  } catch (const std::exception &e) {
+      << "Exception Message '" + std::string(e.what()) + "'" + " did not match against regex '" +
+           regex_str + "'";
+  } catch (const std::exception & e) {
     ADD_FAILURE() << "Was expecting a PluginException, another exception was "
                      "caught instead: "
                   << e.what();
   }
 }
 
-TEST_F(PluginManagerTest, invalid_plugin_yaml) {
-  world_yaml = this_file_dir /
-               fs::path("plugin_manager_tests/invalid_plugin_yaml/world.yaml");
+TEST_F(PluginManagerTest, invalid_plugin_yaml)
+{
+  world_yaml = this_file_dir / fs::path("plugin_manager_tests/invalid_plugin_yaml/world.yaml");
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
     w = World::MakeWorld(node, world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
-  } catch (const YAMLException &e) {
+  } catch (const YAMLException & e) {
     EXPECT_STREQ(
-        "Flatland YAML: Entry \"name\" does not exist (in model \"turtlebot1\" "
-        "\"plugins\" index=0)",
-        e.what());
-  } catch (const std::exception &e) {
+      "Flatland YAML: Entry \"name\" does not exist (in model \"turtlebot1\" "
+      "\"plugins\" index=0)",
+      e.what());
+  } catch (const std::exception & e) {
     ADD_FAILURE() << "Was expecting a YAMLException, another exception was "
                      "caught instead: "
                   << e.what();
   }
 }
 
-TEST_F(PluginManagerTest, duplicate_plugin) {
-  world_yaml = this_file_dir /
-               fs::path("plugin_manager_tests/duplicate_plugin/world.yaml");
+TEST_F(PluginManagerTest, duplicate_plugin)
+{
+  world_yaml = this_file_dir / fs::path("plugin_manager_tests/duplicate_plugin/world.yaml");
 
   try {
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
     w = World::MakeWorld(node, world_yaml.string());
     FAIL() << "Expected an exception, but none were raised";
-  } catch (const YAMLException &e) {
+  } catch (const YAMLException & e) {
     EXPECT_STREQ(
-        "Flatland YAML: Invalid \"plugins\" in \"turtlebot1\" model, plugin "
-        "with name \"dummy_test_plugin\" already exists",
-        e.what());
-  } catch (const std::exception &e) {
+      "Flatland YAML: Invalid \"plugins\" in \"turtlebot1\" model, plugin "
+      "with name \"dummy_test_plugin\" already exists",
+      e.what());
+  } catch (const std::exception & e) {
     ADD_FAILURE() << "Was expecting a YAMLException, another exception was "
                      "caught instead: "
                   << e.what();
@@ -407,7 +415,8 @@ TEST_F(PluginManagerTest, duplicate_plugin) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

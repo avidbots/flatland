@@ -53,23 +53,26 @@
 #include <flatland_server/entity.h>
 #include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
+
 #include <opencv2/opencv.hpp>
 #include <string>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 /**
  * This class defines a layer in the simulation world which simulates the
  * environment in the world
  */
-class Layer : public Entity {
- public:
+class Layer : public Entity
+{
+public:
   std::vector<std::string> names_;  ///< list of layer names
   std::shared_ptr<rclcpp::Node> node_;
 
-  Body *body_ = nullptr;
-  CollisionFilterRegistry *cfr_;  ///< collision filter registry
-  std::string viz_name_;          ///< for visualization
+  Body * body_ = nullptr;
+  CollisionFilterRegistry * cfr_;  ///< collision filter registry
+  std::string viz_name_;           ///< for visualization
 
   /**
    * @brief Constructor for the Layer class for initialization using a image
@@ -87,11 +90,11 @@ class Layer : public Entity {
    * @param[in] resolution Resolution of the map image in meters per pixel
    * @param[in] properties A YAML node containing properties for plugins to use
    */
-  Layer(std::shared_ptr<rclcpp::Node> node,
-        b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::vector<std::string> &names, const Color &color,
-        const Pose &origin, const cv::Mat &bitmap, double occupied_thresh,
-        double resolution, const YAML::Node &properties);
+  Layer(
+    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    const std::vector<std::string> & names, const Color & color, const Pose & origin,
+    const cv::Mat & bitmap, double occupied_thresh, double resolution,
+    const YAML::Node & properties);
 
   /**
    * @brief Constructor for the Layer class for initialization using line
@@ -109,24 +112,24 @@ class Layer : public Entity {
    * the same way as resolution
    * @param[in] properties A YAML node containing properties for plugins to use
    */
-  Layer(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::vector<std::string> &names, const Color &color,
-        const Pose &origin, const std::vector<LineSegment> &line_segments,
-        double scale, const YAML::Node &properties);
+  Layer(
+    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    const std::vector<std::string> & names, const Color & color, const Pose & origin,
+    const std::vector<LineSegment> & line_segments, double scale, const YAML::Node & properties);
 
   /**
-  * @brief Constructor for the Layer class for initialization with no static
-  * map in it
-  * @param[in] rclcpp::Node shared pointer to the current ROS node
-  * @param[in] physics_world Pointer to the box2d physics world
-  * @param[in] cfr Collision filter registry
-  * @param[in] names A list of names for the layer, the first name is used
-  * for the name of the body
-  * @param[in] properties A YAML node containing properties for plugins to use
-  */
-  Layer(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
-        const std::vector<std::string> &names, const Color &color,
-        const YAML::Node &properties);
+   * @brief Constructor for the Layer class for initialization with no static
+   * map in it
+   * @param[in] rclcpp::Node shared pointer to the current ROS node
+   * @param[in] physics_world Pointer to the box2d physics world
+   * @param[in] cfr Collision filter registry
+   * @param[in] names A list of names for the layer, the first name is used
+   * for the name of the body
+   * @param[in] properties A YAML node containing properties for plugins to use
+   */
+  Layer(
+    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    const std::vector<std::string> & names, const Color & color, const YAML::Node & properties);
 
   /**
    * @brief Destructor for the layer class
@@ -136,14 +139,14 @@ class Layer : public Entity {
   /**
    * @return The list of names the layer has
    */
-  const std::vector<std::string> &GetNames() const;
+  const std::vector<std::string> & GetNames() const;
 
   /**
    * @return The collision filter registrar
    */
-  const CollisionFilterRegistry *GetCfr() const;
+  const CollisionFilterRegistry * GetCfr() const;
 
-  Body *GetBody();
+  Body * GetBody();
 
   /**
    * @brief Return the type of entity
@@ -157,8 +160,7 @@ class Layer : public Entity {
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] resolution Resolution of the map image in meters per pixel
    */
-  void LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
-                      double resolution);
+  void LoadFromBitmap(const cv::Mat & bitmap, double occupied_thresh, double resolution);
 
   /**
    * @brief Visualize layer for debugging purposes
@@ -176,8 +178,8 @@ class Layer : public Entity {
    * @param[in] file_path Path to the file
    * @param[out] line_segments Line segments obtained from the file
    */
-  static void ReadLineSegmentsFile(const std::string &file_path,
-                                   std::vector<LineSegment> &line_segments);
+  static void ReadLineSegmentsFile(
+    const std::string & file_path, std::vector<LineSegment> & line_segments);
 
   /**
    * @brief Factory method to instantiate a layer, throws exceptions upon
@@ -194,10 +196,10 @@ class Layer : public Entity {
    * @param[in] properties A YAML node containing properties for plugins to use
    * @return A new layer
    */
-  static Layer *MakeLayer(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, CollisionFilterRegistry *cfr,
-                          const std::string &map_path,
-                          const std::vector<std::string> &names,
-                          const Color &color, const YAML::Node &properties);
+  static Layer * MakeLayer(
+    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    const std::string & map_path, const std::vector<std::string> & names, const Color & color,
+    const YAML::Node & properties);
 };
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_SERVER_WORLD_H

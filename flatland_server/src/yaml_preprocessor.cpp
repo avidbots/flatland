@@ -45,21 +45,21 @@
  */
 
 #include "flatland_server/yaml_preprocessor.h"
-#include <rclcpp/rclcpp.hpp>
+
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
-
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <rclcpp/rclcpp.hpp>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-void YamlPreprocessor::Parse(YAML::Node &node) {
-  this->ProcessNodes(node);
-}
+void YamlPreprocessor::Parse(YAML::Node & node) { this->ProcessNodes(node); }
 
-void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
+void YamlPreprocessor::ProcessNodes(YAML::Node & node)
+{
   switch (node.Type()) {
     case YAML::NodeType::Sequence:
       for (YAML::Node child : node) {
@@ -77,13 +77,15 @@ void YamlPreprocessor::ProcessNodes(YAML::Node &node) {
       }
       break;
     default:
-      RCLCPP_DEBUG_STREAM(rclcpp::get_logger("Yaml Preprocessor"),
-          "Yaml Preprocessor found an unexpected type: " << node.Type());
+      RCLCPP_DEBUG_STREAM(
+        rclcpp::get_logger("Yaml Preprocessor"),
+        "Yaml Preprocessor found an unexpected type: " << node.Type());
       break;
   }
 }
 
-void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
+void YamlPreprocessor::ProcessScalarNode(YAML::Node & node)
+{
   std::string value = node.as<std::string>().substr(5);  // omit the $eval
   boost::algorithm::trim(value);                         // trim whitespace
   RCLCPP_INFO_STREAM(rclcpp::get_logger("YAML Preprocessor"), "Attempting to parse lua " << value);
@@ -93,13 +95,13 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   }
 
   // Create the Lua context
-  lua_State *L = luaL_newstate();
+  lua_State * L = luaL_newstate();
   luaL_openlibs(L);
   lua_pushcfunction(L, YamlPreprocessor::LuaGetEnv);
   lua_setglobal(L, "env");
   lua_pushcfunction(L, YamlPreprocessor::LuaGetParam);
   lua_setglobal(L, "param");
-  lua_pushlightuserdata(L, (void*)this);
+  lua_pushlightuserdata(L, (void *)this);
   lua_setglobal(L, "class_pointer");
 
   try { /* Attempt to run the Lua string and parse its results */
@@ -111,15 +113,19 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
       int t = lua_type(L, 1);
       if (t == LUA_TNIL) {
         node = "";
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("YAML Preprocessor"), "Preprocessor parsed " << value << " as empty string");
+        RCLCPP_INFO_STREAM(
+          rclcpp::get_logger("YAML Preprocessor"),
+          "Preprocessor parsed " << value << " as empty string");
       } else if (t == LUA_TBOOLEAN) {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("YAML Preprocessor"), "Preprocessor parsed "
-                        << value << " as bool "
-                        << (lua_toboolean(L, 1) ? "true" : "false"));
+        RCLCPP_INFO_STREAM(
+          rclcpp::get_logger("YAML Preprocessor"), "Preprocessor parsed "
+                                                     << value << " as bool "
+                                                     << (lua_toboolean(L, 1) ? "true" : "false"));
         node = lua_toboolean(L, 1) ? "true" : "false";
       } else if (t == LUA_TSTRING || t == LUA_TNUMBER) {
-        RCLCPP_INFO_STREAM(rclcpp::get_logger("YAML Preprocessor"), "Preprocessor parsed " << value << " as "
-                                               << lua_tostring(L, 1));
+        RCLCPP_INFO_STREAM(
+          rclcpp::get_logger("YAML Preprocessor"),
+          "Preprocessor parsed " << value << " as " << lua_tostring(L, 1));
         node = lua_tostring(L, 1);
       } else {
         RCLCPP_ERROR_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "No lua output for " << value);
@@ -131,16 +137,17 @@ void YamlPreprocessor::ProcessScalarNode(YAML::Node &node) {
   }
 }
 
-YAML::Node YamlPreprocessor::LoadParse(const std::string &path) {
+YAML::Node YamlPreprocessor::LoadParse(const std::string & path)
+{
   YAML::Node node;
 
   try {
     node = YAML::LoadFile(path);
-  } catch (const YAML::BadFile &e) {
+  } catch (const YAML::BadFile & e) {
     throw YAMLException("File does not exist, path=" + path);
-  } catch (const YAML::ParserException &e) {
+  } catch (const YAML::ParserException & e) {
     throw YAMLException("Malformatted file, path=" + path, e);
-  } catch (const YAML::Exception &e) {
+  } catch (const YAML::Exception & e) {
     throw YAMLException("Error loading file, path=" + path, e);
   }
 
@@ -148,9 +155,10 @@ YAML::Node YamlPreprocessor::LoadParse(const std::string &path) {
   return node;
 }
 
-int YamlPreprocessor::LuaGetEnv(lua_State *L) {
-  const char *name = lua_tostring(L, 1);
-  const char *env = std::getenv(name);
+int YamlPreprocessor::LuaGetEnv(lua_State * L)
+{
+  const char * name = lua_tostring(L, 1);
+  const char * env = std::getenv(name);
 
   if (lua_gettop(L) == 2 && env == NULL) {  // use default
     if (lua_isnumber(L, 2)) {
@@ -162,7 +170,8 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
     }
   } else {              // no default
     if (env == NULL) {  // Push back a nil
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "No environment variable for: " << name);
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("Yaml Preprocessor"), "No environment variable for: " << name);
       lua_pushnil(L);
     } else {
       RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Found env for " << name);
@@ -178,13 +187,15 @@ int YamlPreprocessor::LuaGetEnv(lua_State *L) {
   return 1;  // 1 return value
 }
 
-int YamlPreprocessor::LuaGetParam(lua_State *L) {
-  const char *name = lua_tostring(L, 1);
+int YamlPreprocessor::LuaGetParam(lua_State * L)
+{
+  const char * name = lua_tostring(L, 1);
   rclcpp::Parameter param;
 
   lua_getglobal(L, "class_pointer");  // push class pointer to the stack
   // grab the class pointer and cast it, so we can use it
-  YamlPreprocessor *class_pointer = reinterpret_cast<YamlPreprocessor*>(lua_touserdata(L, lua_gettop(L)));
+  YamlPreprocessor * class_pointer =
+    reinterpret_cast<YamlPreprocessor *>(lua_touserdata(L, lua_gettop(L)));
   lua_pop(L, 1);  // pop that class pointer from the stack
 
   if (lua_gettop(L) == 2 && !class_pointer->ros_node_->has_parameter(name)) {  // use default
@@ -195,31 +206,34 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
     } else if (lua_isstring(L, 2)) {
       lua_pushstring(L, lua_tostring(L, 2));
     } else {
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Couldn't load int/double/string value at param "
-                      << name);
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("Yaml Preprocessor"),
+        "Couldn't load int/double/string value at param " << name);
       lua_pushnil(L);
     }
-  } else {                         // no default
+  } else {                                                 // no default
     if (!class_pointer->ros_node_->has_parameter(name)) {  // Push back a nil
-      RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "No rosparam found for: " << name);
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("Yaml Preprocessor"), "No rosparam found for: " << name);
       lua_pushnil(L);
     } else {
       if (!class_pointer->ros_node_->get_parameter(name, param)) {
-        RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Couldn't find a param with name "
-            << name);
+        RCLCPP_WARN_STREAM(
+          rclcpp::get_logger("Yaml Preprocessor"), "Couldn't find a param with name " << name);
         lua_pushnil(L);
       }
       if (param.get_type() == rclcpp::PARAMETER_DOUBLE) {
         lua_pushnumber(L, param.as_double());
       } else if (param.get_type() == rclcpp::PARAMETER_INTEGER) {
-          lua_pushinteger(L, param.as_int());
+        lua_pushinteger(L, param.as_int());
       } else if (param.get_type() == rclcpp::PARAMETER_STRING) {
         lua_pushstring(L, param.as_string().c_str());
       } else if (param.get_type() == rclcpp::PARAMETER_BOOL) {
         lua_pushstring(L, param.as_bool() ? "true" : "false");
       } else {
-        RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Couldn't load int/double/string value at param "
-                        << name);
+        RCLCPP_WARN_STREAM(
+          rclcpp::get_logger("Yaml Preprocessor"),
+          "Couldn't load int/double/string value at param " << name);
         lua_pushnil(L);
       }
     }
@@ -227,4 +241,4 @@ int YamlPreprocessor::LuaGetParam(lua_State *L) {
 
   return 1;  // 1 return value
 }
-}
+}  // namespace flatland_server

@@ -58,7 +58,8 @@
 using std::placeholders::_1;
 
 // Test the bodyToMarkers method on a polygon shape
-TEST(DebugVizTest, testBodyToMarkersPolygon) {
+TEST(DebugVizTest, testBodyToMarkersPolygon)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -66,7 +67,7 @@ TEST(DebugVizTest, testBodyToMarkersPolygon) {
   bodyDef.type = b2_dynamicBody;
   bodyDef.position.Set(3.0f, 4.0f);
   bodyDef.angle = M_PI_2;
-  b2Body* body = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
 
   b2PolygonShape dynamicBox;
   dynamicBox.SetAsBox(1.0f, 2.0f);
@@ -77,10 +78,9 @@ TEST(DebugVizTest, testBodyToMarkersPolygon) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
-      "test_debug_visualization_BodyToMarkersPolygon");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body, 1.0, 0.0, 0.5, 0.7);
+  std::shared_ptr<rclcpp::Node> node =
+    rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersPolygon");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0, 0.0, 0.5, 0.7);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -123,7 +123,8 @@ TEST(DebugVizTest, testBodyToMarkersPolygon) {
 }
 
 // Test the bodyToMarkers method on a circle shape
-TEST(DebugVizTest, testBodyToMarkersCircle) {
+TEST(DebugVizTest, testBodyToMarkersCircle)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
@@ -131,7 +132,7 @@ TEST(DebugVizTest, testBodyToMarkersCircle) {
   bodyDef.type = b2_dynamicBody;
   bodyDef.position.Set(3.0f, 4.0f);
   bodyDef.angle = M_PI_2;
-  b2Body* body = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef;
   b2CircleShape circle;
@@ -142,9 +143,8 @@ TEST(DebugVizTest, testBodyToMarkersCircle) {
 
   visualization_msgs::msg::MarkerArray markers;
   std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersCircle");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body, 1.0, 0.0, 0.0, 1.0);
+    rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersCircle");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -156,12 +156,13 @@ TEST(DebugVizTest, testBodyToMarkersCircle) {
 }
 
 // Test the bodyToMarkers method on a edge shape
-TEST(DebugVizTest, testBodyToMarkersEdge) {
+TEST(DebugVizTest, testBodyToMarkersEdge)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  b2Body* body = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef;
   b2EdgeShape edge;
@@ -172,9 +173,8 @@ TEST(DebugVizTest, testBodyToMarkersEdge) {
 
   visualization_msgs::msg::MarkerArray markers;
   std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersEdge");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body, 1.0, 0.0, 0.0, 1.0);
+    rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersEdge");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -188,12 +188,13 @@ TEST(DebugVizTest, testBodyToMarkersEdge) {
 }
 
 // Test the bodyToMarkers method on an unsupported shape
-TEST(DebugVizTest, testBodyToMarkersUnsupported) {
+TEST(DebugVizTest, testBodyToMarkersUnsupported)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  b2Body* body = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef;
   b2Vec2 vs[4];
@@ -207,21 +208,21 @@ TEST(DebugVizTest, testBodyToMarkersUnsupported) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
-      "test_debug_visualization_BodyToMarkersUnsupported");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body, 1.0, 0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node =
+    rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersUnsupported");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that marker was not created
   ASSERT_EQ(markers.markers.size(), 0UL);
 }
 
 // test bodyToMarkers with a body with multiple fixtures
-TEST(DebugVizTest, testBodyToMarkersMultifixture) {
+TEST(DebugVizTest, testBodyToMarkersMultifixture)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  b2Body* body = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
 
   // body 2 before body 1 because fixture ordering is LIFO in box2d
   b2FixtureDef fixtureDef, fixtureDef2;
@@ -238,10 +239,9 @@ TEST(DebugVizTest, testBodyToMarkersMultifixture) {
   body->CreateFixture(&fixtureDef);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
-      "test_debug_visualization_BodyToMarkersMultifixture");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body, 1.0, 0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node =
+    rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersMultifixture");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0, 0.0, 0.0, 1.0);
   // check that one marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -261,13 +261,14 @@ TEST(DebugVizTest, testBodyToMarkersMultifixture) {
 }
 
 // test bodyToMarkers with multiple bodies
-TEST(DebugVizTest, testBodyToMarkersMultibody) {
+TEST(DebugVizTest, testBodyToMarkersMultibody)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  b2Body* body = world.CreateBody(&bodyDef);
-  b2Body* body2 = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
+  b2Body * body2 = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef, fixtureDef2;
   b2EdgeShape edge, edge2;
@@ -283,12 +284,10 @@ TEST(DebugVizTest, testBodyToMarkersMultibody) {
   body2->CreateFixture(&fixtureDef2);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
-      "test_debug_visualization_BodyToMarkersMultibody");
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body, 1.0, 0.0, 0.0, 1.0);
-  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(
-      markers, body2, 1.0, 0.0, 0.0, 1.0);
+  std::shared_ptr<rclcpp::Node> node =
+    rclcpp::Node::make_shared("test_debug_visualization_BodyToMarkersMultibody");
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body, 1.0, 0.0, 0.0, 1.0);
+  flatland_server::DebugVisualization::Get(node)->BodyToMarkers(markers, body2, 1.0, 0.0, 0.0, 1.0);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 1UL);
 
@@ -308,13 +307,14 @@ TEST(DebugVizTest, testBodyToMarkersMultibody) {
 }
 
 // test bodyToMarkers with multiple joint
-TEST(DebugVizTest, testJointToMarkersMultiJoint) {
+TEST(DebugVizTest, testJointToMarkersMultiJoint)
+{
   b2Vec2 gravity(0.0, 0.0);
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  b2Body* b1 = world.CreateBody(&bodyDef);
-  b2Body* b2 = world.CreateBody(&bodyDef);
+  b2Body * b1 = world.CreateBody(&bodyDef);
+  b2Body * b2 = world.CreateBody(&bodyDef);
 
   b2WeldJointDef jd1, jd2;
   jd1.bodyA = b1;
@@ -326,16 +326,14 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
   jd2.localAnchorA = b2Vec2(1, 2);
   jd2.localAnchorB = b2Vec2(3, 4);
 
-  b2Joint* j1 = world.CreateJoint(&jd1);
-  b2Joint* j2 = world.CreateJoint(&jd2);
+  b2Joint * j1 = world.CreateJoint(&jd1);
+  b2Joint * j2 = world.CreateJoint(&jd2);
 
   visualization_msgs::msg::MarkerArray markers;
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared(
-      "test_debug_visualization_JointToMarkersMultiJoint");
-  flatland_server::DebugVisualization::Get(node)->JointToMarkers(
-      markers, j1, 0.1, 0.2, 0.3, 0.4);
-  flatland_server::DebugVisualization::Get(node)->JointToMarkers(
-      markers, j2, 0.5, 0.6, 0.7, 0.8);
+  std::shared_ptr<rclcpp::Node> node =
+    rclcpp::Node::make_shared("test_debug_visualization_JointToMarkersMultiJoint");
+  flatland_server::DebugVisualization::Get(node)->JointToMarkers(markers, j1, 0.1, 0.2, 0.3, 0.4);
+  flatland_server::DebugVisualization::Get(node)->JointToMarkers(markers, j2, 0.5, 0.6, 0.7, 0.8);
   // check that marker was created
   ASSERT_EQ(markers.markers.size(), 4UL);
 
@@ -394,19 +392,23 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint) {
 }
 
 // A helper class to accept MarkerArray message callbacks
-struct MarkerArraySubscriptionHelper {
+struct MarkerArraySubscriptionHelper
+{
   std::shared_ptr<rclcpp::Node> node_;
   visualization_msgs::msg::MarkerArray markers_;
   int count_;
 
   explicit MarkerArraySubscriptionHelper(std::shared_ptr<rclcpp::Node> node)
-      : node_(std::move(node)), count_(0) {}
+  : node_(std::move(node)), count_(0)
+  {
+  }
 
   /**
    * @brief callback that stores the last message and total message count
    * @param msg The input message pointer
    */
-  void callback(const visualization_msgs::msg::MarkerArray& msg) {
+  void callback(const visualization_msgs::msg::MarkerArray & msg)
+  {
     // void callback(const visualization_msgs::msg::MarkerArrayConstPtr& msg) {
     ++count_;
     RCLCPP_INFO(rclcpp::get_logger("Debug Visualization Test"), "GOT ONE");
@@ -420,7 +422,8 @@ struct MarkerArraySubscriptionHelper {
    *
    * @return true if successful
    */
-  bool waitForMessageCount(int count) const {
+  bool waitForMessageCount(int count) const
+  {
     rclcpp::Rate rate(10);  // throttle check to 10Hz
     for (unsigned int i = 0; i < 20; i++) {
       rclcpp::spin_some(node_);
@@ -432,9 +435,10 @@ struct MarkerArraySubscriptionHelper {
 };
 
 // Test the bodyToMarkers method on an unsupported shape
-TEST(DebugVizTest, testPublishMarkers) {
+TEST(DebugVizTest, testPublishMarkers)
+{
   std::shared_ptr<rclcpp::Node> node =
-      rclcpp::Node::make_shared("test_debug_visualization_PublishMarkers");
+    rclcpp::Node::make_shared("test_debug_visualization_PublishMarkers");
   flatland_server::Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.01);
 
@@ -442,8 +446,8 @@ TEST(DebugVizTest, testPublishMarkers) {
   b2World world(gravity);
 
   b2BodyDef bodyDef;
-  b2Body* body = world.CreateBody(&bodyDef);
-  b2Body* body2 = world.CreateBody(&bodyDef);
+  b2Body * body = world.CreateBody(&bodyDef);
+  b2Body * body2 = world.CreateBody(&bodyDef);
 
   b2FixtureDef fixtureDef;
   b2CircleShape circle;
@@ -457,14 +461,13 @@ TEST(DebugVizTest, testPublishMarkers) {
   joint_def.bodyB = body2;
   joint_def.localAnchorA = b2Vec2(0, 0);
   joint_def.localAnchorB = b2Vec2(0, 0);
-  b2Joint* joint = world.CreateJoint(&joint_def);
+  b2Joint * joint = world.CreateJoint(&joint_def);
 
   // Set up helper class subscribing to rostopic
   MarkerArraySubscriptionHelper helper(node);
   std::string topicName = "example";
   auto sub = node->create_subscription<visualization_msgs::msg::MarkerArray>(
-      topicName, 0,
-      std::bind(&MarkerArraySubscriptionHelper::callback, &helper, _1));
+    topicName, 0, std::bind(&MarkerArraySubscriptionHelper::callback, &helper, _1));
 
   auto debugVis = flatland_server::DebugVisualization::Get(node);
   debugVis->Visualize(topicName, body, 1.0, 0.0, 0.0, 1.0);
@@ -520,7 +523,8 @@ TEST(DebugVizTest, testPublishMarkers) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char** argv) {
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

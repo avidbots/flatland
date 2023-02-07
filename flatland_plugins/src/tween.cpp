@@ -48,50 +48,53 @@
 #include <flatland_plugins/tween.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
+
 #include <pluginlib/class_list_macros.hpp>
 #include <rclcpp/rclcpp.hpp>
 //#include <tf/tf.h>
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
 std::map<std::string, Tween::ModeType_> Tween::mode_strings_ = {
-    {"yoyo", Tween::ModeType_::YOYO},
-    {"loop", Tween::ModeType_::LOOP},
-    {"once", Tween::ModeType_::ONCE},
-    {"trigger", Tween::ModeType_::TRIGGER}};
+  {"yoyo", Tween::ModeType_::YOYO},
+  {"loop", Tween::ModeType_::LOOP},
+  {"once", Tween::ModeType_::ONCE},
+  {"trigger", Tween::ModeType_::TRIGGER}};
 
 std::map<std::string, Tween::EasingType_> Tween::easing_strings_ = {
-    {"linear", Tween::EasingType_::linear},
-    {"quadraticIn", Tween::EasingType_::quadraticIn},
-    {"quadraticOut", Tween::EasingType_::quadraticOut},
-    {"quadraticInOut", Tween::EasingType_::quadraticInOut},
-    {"cubicIn", Tween::EasingType_::cubicIn},
-    {"cubicOut", Tween::EasingType_::cubicOut},
-    {"cubicInOut", Tween::EasingType_::cubicInOut},
-    {"quarticIn", Tween::EasingType_::quarticIn},
-    {"quarticOut", Tween::EasingType_::quarticOut},
-    {"quarticInOut", Tween::EasingType_::quarticInOut},
-    {"quinticIn", Tween::EasingType_::quinticIn},
-    {"quinticOut", Tween::EasingType_::quinticOut},
-    {"quinticInOut", Tween::EasingType_::quinticInOut},
-    // { "sinuisodal", Tween::EasingType_::sinuisodal },
-    {"exponentialIn", Tween::EasingType_::exponentialIn},
-    {"exponentialOut", Tween::EasingType_::exponentialOut},
-    {"exponentialInOut", Tween::EasingType_::exponentialInOut},
-    {"circularIn", Tween::EasingType_::circularIn},
-    {"circularOut", Tween::EasingType_::circularOut},
-    {"circularInOut", Tween::EasingType_::circularInOut},
-    {"backIn", Tween::EasingType_::backIn},
-    {"backOut", Tween::EasingType_::backOut},
-    {"backInOut", Tween::EasingType_::backInOut},
-    {"elasticIn", Tween::EasingType_::elasticIn},
-    {"elasticOut", Tween::EasingType_::elasticOut},
-    {"elasticInOut", Tween::EasingType_::elasticInOut},
-    {"bounceIn", Tween::EasingType_::bounceIn},
-    {"bounceOut", Tween::EasingType_::bounceOut},
-    {"bounceInOut", Tween::EasingType_::bounceInOut}};
+  {"linear", Tween::EasingType_::linear},
+  {"quadraticIn", Tween::EasingType_::quadraticIn},
+  {"quadraticOut", Tween::EasingType_::quadraticOut},
+  {"quadraticInOut", Tween::EasingType_::quadraticInOut},
+  {"cubicIn", Tween::EasingType_::cubicIn},
+  {"cubicOut", Tween::EasingType_::cubicOut},
+  {"cubicInOut", Tween::EasingType_::cubicInOut},
+  {"quarticIn", Tween::EasingType_::quarticIn},
+  {"quarticOut", Tween::EasingType_::quarticOut},
+  {"quarticInOut", Tween::EasingType_::quarticInOut},
+  {"quinticIn", Tween::EasingType_::quinticIn},
+  {"quinticOut", Tween::EasingType_::quinticOut},
+  {"quinticInOut", Tween::EasingType_::quinticInOut},
+  // { "sinuisodal", Tween::EasingType_::sinuisodal },
+  {"exponentialIn", Tween::EasingType_::exponentialIn},
+  {"exponentialOut", Tween::EasingType_::exponentialOut},
+  {"exponentialInOut", Tween::EasingType_::exponentialInOut},
+  {"circularIn", Tween::EasingType_::circularIn},
+  {"circularOut", Tween::EasingType_::circularOut},
+  {"circularInOut", Tween::EasingType_::circularInOut},
+  {"backIn", Tween::EasingType_::backIn},
+  {"backOut", Tween::EasingType_::backOut},
+  {"backInOut", Tween::EasingType_::backInOut},
+  {"elasticIn", Tween::EasingType_::elasticIn},
+  {"elasticOut", Tween::EasingType_::elasticOut},
+  {"elasticInOut", Tween::EasingType_::elasticInOut},
+  {"bounceIn", Tween::EasingType_::bounceIn},
+  {"bounceOut", Tween::EasingType_::bounceOut},
+  {"bounceInOut", Tween::EasingType_::bounceInOut}};
 
-void Tween::OnInitialize(const YAML::Node& config) {
+void Tween::OnInitialize(const YAML::Node & config)
+{
   YamlReader reader(node_, config);
   std::string body_name = reader.Get<std::string>("body");
 
@@ -112,9 +115,9 @@ void Tween::OnInitialize(const YAML::Node& config) {
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
   }
-  start_ = Pose(body_->physics_body_->GetPosition().x,
-                body_->physics_body_->GetPosition().y,
-                body_->physics_body_->GetAngle());
+  start_ = Pose(
+    body_->physics_body_->GetPosition().x, body_->physics_body_->GetPosition().y,
+    body_->physics_body_->GetAngle());
 
   // Validate the mode selection
   if (!Tween::mode_strings_.count(mode)) {
@@ -123,8 +126,8 @@ void Tween::OnInitialize(const YAML::Node& config) {
   mode_ = Tween::mode_strings_.at(mode);
 
   tween_ = tweeny::from(0.0, 0.0, 0.0)
-               .to(delta_.x, delta_.y, delta_.theta)
-               .during((uint32)(duration_ * 1000.0));
+             .to(delta_.x, delta_.y, delta_.theta)
+             .during((uint32)(duration_ * 1000.0));
 
   Tween::EasingType_ easing_type;
   std::string easing = reader.Get<std::string>("easing", "linear");
@@ -231,31 +234,28 @@ void Tween::OnInitialize(const YAML::Node& config) {
   // Make sure there are no unused keys
   reader.EnsureAccessedAllKeys();
 
-  RCLCPP_DEBUG(rclcpp::get_logger("Tween"),
-                  "Initialized with params body(%p %s) "
-                  "start ({%f,%f,%f}) "
-                  "end ({%f,%f,%f}) "
-                  "duration %f "
-                  "mode: %s [%d] "
-                  "easing: %s\n",
-                  body_, body_->name_.c_str(), start_.x, start_.y, start_.theta,
-                  delta_.x, delta_.y, delta_.theta, duration_, mode.c_str(),
-                  (int)mode_, easing.c_str());
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("Tween"),
+    "Initialized with params body(%p %s) "
+    "start ({%f,%f,%f}) "
+    "end ({%f,%f,%f}) "
+    "duration %f "
+    "mode: %s [%d] "
+    "easing: %s\n",
+    body_, body_->name_.c_str(), start_.x, start_.y, start_.theta, delta_.x, delta_.y, delta_.theta,
+    duration_, mode.c_str(), (int)mode_, easing.c_str());
 }
 
-void Tween::TriggerCallback(const std_msgs::msg::Bool::SharedPtr msg) {
-  triggered_ = msg->data;
-}
+void Tween::TriggerCallback(const std_msgs::msg::Bool::SharedPtr msg) { triggered_ = msg->data; }
 
-void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
-  std::array<double, 3> v =
-      tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
+void Tween::BeforePhysicsStep(const Timekeeper & timekeeper)
+{
+  std::array<double, 3> v = tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
   rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
-  RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("Tween"), steady_clock, 1000, "value %f,%f,%f step %f progress %f",
-                           v[0], v[1], v[2], timekeeper.GetStepSize(),
-                           tween_.progress());
-  body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]),
-                                     start_.theta + v[2]);
+  RCLCPP_DEBUG_THROTTLE(
+    rclcpp::get_logger("Tween"), steady_clock, 1000, "value %f,%f,%f step %f progress %f", v[0],
+    v[1], v[2], timekeeper.GetStepSize(), tween_.progress());
+  body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]), start_.theta + v[2]);
   // Tell Box2D to update the AABB and check for collisions for this object
   body_->physics_body_->SetAwake(true);
 
@@ -284,6 +284,6 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
     }
   }
 }
-}
+}  // namespace flatland_plugins
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::Tween, flatland_server::ModelPlugin)

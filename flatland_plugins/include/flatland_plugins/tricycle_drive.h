@@ -48,6 +48,7 @@
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
+
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -59,24 +60,26 @@
 using namespace flatland_server;
 using namespace std;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-class TricycleDrive : public flatland_server::ModelPlugin {
- public:
-  Body* body_;
-  Joint* front_wj_;       ///<  front wheel joint
-  Joint* rear_left_wj_;   ///< rear left wheel joint
-  Joint* rear_right_wj_;  ///< rear right wheel joint
-  double axel_track_;     ///< normal distrance between the rear two wheels
-  double wheelbase_;      ///< distance between the front and rear wheel
-  b2Vec2 rear_center_;    ///< middle point between the two rear wheels
+class TricycleDrive : public flatland_server::ModelPlugin
+{
+public:
+  Body * body_;
+  Joint * front_wj_;               ///<  front wheel joint
+  Joint * rear_left_wj_;           ///< rear left wheel joint
+  Joint * rear_right_wj_;          ///< rear right wheel joint
+  double axel_track_;              ///< normal distrance between the rear two wheels
+  double wheelbase_;               ///< distance between the front and rear wheel
+  b2Vec2 rear_center_;             ///< middle point between the two rear wheels
   bool invert_steering_angle_;     ///< whether to invert steering angle
   double max_steer_angle_;         ///< max abs. steering allowed [rad]
   double max_steer_velocity_;      ///< max abs. steering velocity [rad/s]
   double max_steer_acceleration_;  ///< max abs. steering acceleration [rad/s^2]
-  double delta_command_;  ///< The current target (commanded) wheel angle
-  double delta_;          ///< The current angular offset of the front wheel
-  double d_delta_;        ///< The current angular speed of the front wheel
+  double delta_command_;           ///< The current target (commanded) wheel angle
+  double delta_;                   ///< The current angular offset of the front wheel
+  double d_delta_;                 ///< The current angular speed of the front wheel
 
   geometry_msgs::msg::Twist::SharedPtr twist_msg_ = std::make_shared<geometry_msgs::msg::Twist>();
   nav_msgs::msg::Odometry odom_msg_;
@@ -95,7 +98,7 @@ class TricycleDrive : public flatland_server::ModelPlugin {
    * @brief               initialize the bicycle plugin
    * @param world_file    The path to the world.yaml file
    */
-  void OnInitialize(const YAML::Node& config) override;
+  void OnInitialize(const YAML::Node & config) override;
 
   /**
    * @brief This is a helper function that is used to valid and extract
@@ -120,13 +123,13 @@ class TricycleDrive : public flatland_server::ModelPlugin {
    *            Some notation and ideas borrowed from
    *            http://ai.stanford.edu/~gabeh/papers/hoffmann_stanley_control07.pdf
    */
-  void BeforePhysicsStep(const Timekeeper& timekeeper) override;
+  void BeforePhysicsStep(const Timekeeper & timekeeper) override;
 
   /**
-  * @name          TwistCallback
-  * @brief         callback to apply twist (velocity and omega)
-  * @param[in]     timestep how much the physics time will increment
-  */
+   * @name          TwistCallback
+   * @brief         callback to apply twist (velocity and omega)
+   * @param[in]     timestep how much the physics time will increment
+   */
   void TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
   /**
@@ -138,6 +141,6 @@ class TricycleDrive : public flatland_server::ModelPlugin {
    */
   double Saturate(double in, double lower, double upper);
 };
-}
+}  // namespace flatland_plugins
 
 #endif

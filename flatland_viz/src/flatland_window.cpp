@@ -47,16 +47,16 @@
 
 #include "flatland_viz/flatland_window.h"
 
-void FlatlandWindow::openNewToolDialog() {
+void FlatlandWindow::openNewToolDialog()
+{
   QString class_id;
   QStringList empty;
 }
 
-rviz_common::VisualizationManager *FlatlandWindow::getManager() {
-  return visualization_manager_;
-}
+rviz_common::VisualizationManager * FlatlandWindow::getManager() { return visualization_manager_; }
 
-FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent) {
+FlatlandWindow::FlatlandWindow(QWidget * parent) : QMainWindow(parent)
+{
   // Create the main viewport
   viz_ = new FlatlandViz(this);
   setCentralWidget(viz_);

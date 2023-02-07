@@ -1,0 +1,71 @@
+[0.714s] [34mcolcon[0m [1;30mDEBUG[0m [32mCommand line arguments: ['C:\\Python38\\Scripts\\colcon', 'build', '--cmake-args', '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-G', 'Ninja'][0m
+[0.715s] [34mcolcon[0m [1;30mDEBUG[0m [32mParsed command line arguments: Namespace(ament_cmake_args=None, base_paths=['.'], build_base='build', catkin_cmake_args=None, catkin_skip_building_tests=False, cmake_args=['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-G', 'Ninja'], cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, cmake_target=None, cmake_target_skip_unavailable=False, continue_on_error=False, event_handlers=None, executor='parallel', ignore_user_meta=False, install_base='install', log_base=None, log_level=None, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x0000028E7259C9A0>>, merge_install=False, metas=['./colcon.meta'], packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_end=None, packages_ignore=None, packages_ignore_regex=None, packages_select=None, packages_select_build_failed=False, packages_select_by_dep=None, packages_select_regex=None, packages_select_test_failures=False, packages_skip=None, packages_skip_build_finished=False, packages_skip_by_dep=None, packages_skip_regex=None, packages_skip_test_passed=False, packages_skip_up_to=None, packages_start=None, packages_up_to=None, packages_up_to_regex=None, parallel_workers=12, paths=None, symlink_install=False, test_result_base=None, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x0000028E7259C9A0>, verb_name='build', verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x0000028E725A7430>)[0m
+[0.769s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(colcon_meta) check parameters
+[0.770s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) check parameters
+[0.770s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(ignore) check parameters
+[0.770s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) check parameters
+[0.770s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(colcon_meta) discover
+[0.770s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) discover
+[0.770s] [34mcolcon.colcon_core.package_discovery[0m [1;30mINFO[0m Crawling recursively for packages in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz'
+[0.770s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.770s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ignore'
+[0.770s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ignore_ament_install'
+[0.771s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['colcon_pkg']
+[0.771s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'colcon_pkg'
+[0.771s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['colcon_meta']
+[0.771s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'colcon_meta'
+[0.771s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extensions ['ros']
+[0.771s] [34mcolcon.colcon_core.package_identification[0m [1;30mLevel 1[0m _identify(.) by extension 'ros'
+[0.808s] [34mcolcon.colcon_core.package_identification[0m [1;30mDEBUG[0m [32mPackage '.' with type 'ros.catkin' and name 'flatland_viz'[0m
+[0.808s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(recursive) using defaults
+[0.808s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(ignore) discover
+[0.808s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(ignore) using defaults
+[0.808s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) discover
+[0.808s] [34mcolcon.colcon_core.package_discovery[0m [1;30mLevel 1[0m discover_packages(path) using defaults
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'cmake_args' from command line to '['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-G', 'Ninja']'
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'cmake_target' from command line to 'None'
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'cmake_clean_cache' from command line to 'False'
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'cmake_clean_first' from command line to 'False'
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'cmake_force_configure' from command line to 'False'
+[0.863s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'ament_cmake_args' from command line to 'None'
+[0.864s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'catkin_cmake_args' from command line to 'None'
+[0.864s] [34mcolcon.colcon_core.verb[0m [1;30mLevel 5[0m set package 'flatland_viz' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.864s] [34mcolcon.colcon_core.verb[0m [1;30mDEBUG[0m [32mBuilding package 'flatland_viz' with the following arguments: {'ament_cmake_args': None, 'build_base': 'C:\\Users\\PC\\Documents\\Aulas\\5ano\\1semestre\\RI\\flatland\\flatland_viz\\build\\flatland_viz', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': ['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-G', 'Ninja'], 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': 'C:\\Users\\PC\\Documents\\Aulas\\5ano\\1semestre\\RI\\flatland\\flatland_viz\\install\\flatland_viz', 'merge_install': False, 'path': 'C:\\Users\\PC\\Documents\\Aulas\\5ano\\1semestre\\RI\\flatland\\flatland_viz', 'symlink_install': False, 'test_result_base': None}[0m
+[0.866s] [34mcolcon.colcon_core.executor[0m [1;30mINFO[0m Executing jobs using 'parallel' executor
+[0.887s] [34mcolcon.colcon_parallel_executor.executor.parallel[0m [1;30mDEBUG[0m [32mrun_until_complete[0m
+[0.887s] [34mcolcon.colcon_ros.task.catkin.build[0m [1;30mINFO[0m Building ROS package in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz' with build type 'catkin'
+[0.887s] [34mcolcon.colcon_cmake.task.cmake.build[0m [1;30mINFO[0m Building CMake package in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz'
+[0.898s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_core.shell.sh': Not used on Windows systems
+[0.898s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.029s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoking command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz': INCLUDE=%INCLUDE%
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin;
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz[0m
+[3.785s] [34mcolcon.colcon_core.event_handler.log_command[0m [1;30mDEBUG[0m [32mInvoked command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz' returned '1': INCLUDE=%INCLUDE%
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin;
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz[0m
+[3.820s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_environment_scripts_only(flatland_viz)
+[3.837s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz' for CMake module files
+[3.838s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz' for CMake config files
+[3.839s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\bin'
+[3.839s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\bin'
+[3.839s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\lib\pkgconfig\flatland_viz.pc'
+[3.840s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\Lib\site-packages'
+[3.840s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m checking 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\Scripts'
+[3.845s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\share\flatland_viz\package.ps1'
+[3.847s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package script 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\share\flatland_viz\package.bat'
+[3.848s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating package descriptor 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\share\flatland_viz\package.dsv'
+[3.849s] [34mcolcon.colcon_core.environment[0m [1;30mLevel 1[0m create_file_with_runtime_dependencies(C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz\share\colcon-core\packages\flatland_viz)
+[3.867s] [34mcolcon.colcon_parallel_executor.executor.parallel[0m [1;30mDEBUG[0m [32mrun_until_complete finished with '1'[0m
+[3.867s] [34mcolcon.colcon_core.event_reactor[0m [1;30mDEBUG[0m [32mjoining thread[0m
+[3.878s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_notification.desktop_notification.notify2': 'notify2' not found
+[3.878s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_notification.desktop_notification.notify_send': Not used on non-Linux systems
+[3.878s] [34mcolcon.colcon_core.plugin_system[0m [1;30mINFO[0m Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[3.878s] [34mcolcon.colcon_notification.desktop_notification[0m [1;30mINFO[0m Sending desktop notification using 'win32'
+[8.926s] [34mcolcon.colcon_core.event_reactor[0m [1;30mDEBUG[0m [32mjoined thread[0m
+[8.934s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\local_setup.ps1'
+[8.935s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\_local_setup_util_ps1.py'
+[8.937s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\setup.ps1'
+[8.944s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix script 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\local_setup.bat'
+[8.945s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix util module 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\_local_setup_util_bat.py'
+[8.946s] [34mcolcon.colcon_core.shell[0m [1;30mINFO[0m Creating prefix chain script 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\setup.bat'

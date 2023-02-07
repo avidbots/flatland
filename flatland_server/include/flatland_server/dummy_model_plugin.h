@@ -56,13 +56,15 @@
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 /**
  * This is a dummy plugin of type model plugin, used completely for testing
  * purposes
  */
-class DummyModelPlugin : public ModelPlugin {
- public:
+class DummyModelPlugin : public ModelPlugin
+{
+public:
   int dummy_param_int_;             ///< Iteger variable for testing
   std::string dummy_param_string_;  ///< String variable for testing
   double dummy_param_float_;        ///< float variable for testing
@@ -71,8 +73,8 @@ class DummyModelPlugin : public ModelPlugin {
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
    */
-  void OnInitialize(const YAML::Node &config) override;
+  void OnInitialize(const YAML::Node & config) override;
 };
-};
+};  // namespace flatland_plugins
 
 #endif

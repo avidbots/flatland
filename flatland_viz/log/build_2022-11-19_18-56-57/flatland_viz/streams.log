@@ -1,0 +1,19 @@
+[0.937s] Invoking command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz': ROS_DISTRO=%ROS_DISTRO%
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin;
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz
+[0.968s] CMake Deprecation Warning at CMakeLists.txt:1 (cmake_minimum_required):
+[0.968s]   Compatibility with CMake < 2.8.12 will be removed from a future version of
+[0.968s]   CMake.
+[0.968s] 
+[0.968s]   Update the VERSION argument <min> value or use a ...<max> suffix to tell
+[0.968s]   CMake that the project does not need compatibility with older versions.
+[0.968s] 
+[0.968s] 
+[1.031s] CMake Error: CMake was unable to find a build program corresponding to "Ninja".  CMAKE_MAKE_PROGRAM is not set.  You probably need to select a different build tool.
+[1.031s] CMake Error: CMAKE_C_COMPILER not set, after EnableLanguage
+[1.031s] CMake Error: CMAKE_CXX_COMPILER not set, after EnableLanguage
+[1.031s] -- Configuring incomplete, errors occurred!
+[1.031s] See also "C:/Users/PC/Documents/Aulas/5ano/1semestre/RI/flatland/flatland_viz/build/flatland_viz/CMakeFiles/CMakeOutput.log".
+[1.031s] Invoked command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz' returned '1': ROS_DISTRO=%ROS_DISTRO%
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin;
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz

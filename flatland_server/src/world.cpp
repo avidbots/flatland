@@ -50,25 +50,29 @@
 #include <flatland_server/types.h>
 #include <flatland_server/world.h>
 #include <flatland_server/yaml_reader.h>
-#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
+
 #include <boost/filesystem.hpp>
 #include <map>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 World::World(std::shared_ptr<rclcpp::Node> node)
-    : node_(node),
-      gravity_(0, 0),
-      service_paused_(false),
-      plugin_manager_(node),
-      int_marker_manager_(&models_, &plugin_manager_) {
+: node_(node),
+  gravity_(0, 0),
+  service_paused_(false),
+  plugin_manager_(node),
+  int_marker_manager_(&models_, &plugin_manager_)
+{
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
 
-World::~World() {
+World::~World()
+{
   RCLCPP_INFO(node_->get_logger(), "World: Destroying world...");
 
   // The order of things matters in the destructor. The contact listener is
@@ -80,7 +84,7 @@ World::~World() {
   // fixtures in a layer and it is too slow for the destroyBody method to remove
   // them since the AABB tree gets restructured everytime a fixture is removed
   // The memory will later be freed by deleting the world
-  for (auto &layer : layers_) {
+  for (auto & layer : layers_) {
     if (layer->body_ != nullptr) {
       layer->body_->physics_body_ = nullptr;
     }
@@ -100,41 +104,41 @@ World::~World() {
   RCLCPP_INFO(node_->get_logger(), "World: World destroyed");
 }
 
-void World::Update(Timekeeper &timekeeper) {
+void World::Update(Timekeeper & timekeeper)
+{
   if (!IsPaused()) {
     plugin_manager_.BeforePhysicsStep(timekeeper);
-    physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
-                         physics_position_iterations_);
+    physics_world_->Step(
+      timekeeper.GetStepSize(), physics_velocity_iterations_, physics_position_iterations_);
     timekeeper.StepTime();
     plugin_manager_.AfterPhysicsStep(timekeeper);
   }
   int_marker_manager_.update();
 }
 
-void World::BeginContact(b2Contact *contact) {
-  plugin_manager_.BeginContact(contact);
-}
+void World::BeginContact(b2Contact * contact) { plugin_manager_.BeginContact(contact); }
 
-void World::EndContact(b2Contact *contact) {
-  plugin_manager_.EndContact(contact);
-}
+void World::EndContact(b2Contact * contact) { plugin_manager_.EndContact(contact); }
 
-void World::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
+void World::PreSolve(b2Contact * contact, const b2Manifold * oldManifold)
+{
   plugin_manager_.PreSolve(contact, oldManifold);
 }
 
-void World::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
+void World::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
+{
   plugin_manager_.PostSolve(contact, impulse);
 }
 
-World *World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &yaml_path) {
+World * World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string & yaml_path)
+{
   YamlReader world_reader = YamlReader(node, yaml_path);
   YamlReader prop_reader = world_reader.Subnode("properties", YamlReader::MAP);
   int v = prop_reader.Get<int>("velocity_iterations", 10);
   int p = prop_reader.Get<int>("position_iterations", 10);
   prop_reader.EnsureAccessedAllKeys();
 
-  World *w = new World(node);
+  World * w = new World(node);
 
   w->world_yaml_dir_ = boost::filesystem::path(yaml_path).parent_path();
   w->physics_velocity_iterations_ = v;
@@ -142,23 +146,21 @@ World *World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &y
 
   try {
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);
-    YamlReader models_reader =
-        world_reader.SubnodeOpt("models", YamlReader::LIST);
-    YamlReader world_plugin_reader =
-        world_reader.SubnodeOpt("plugins", YamlReader::LIST);
+    YamlReader models_reader = world_reader.SubnodeOpt("models", YamlReader::LIST);
+    YamlReader world_plugin_reader = world_reader.SubnodeOpt("plugins", YamlReader::LIST);
     world_reader.EnsureAccessedAllKeys();
     w->LoadLayers(layers_reader);
     w->LoadModels(models_reader);
     w->LoadWorldPlugins(world_plugin_reader, w, world_reader);
-  } catch (const YAMLException &e) {
+  } catch (const YAMLException & e) {
     RCLCPP_FATAL(node->get_logger(), "World: Error loading from YAML");
     delete w;
     throw e;
-  } catch (const PluginException &e) {
+  } catch (const PluginException & e) {
     RCLCPP_FATAL(node->get_logger(), "World: Error loading plugins");
     delete w;
     throw e;
-  } catch (const Exception &e) {
+  } catch (const Exception & e) {
     RCLCPP_FATAL(node->get_logger(), "World: Error loading world");
     delete w;
     throw e;
@@ -166,7 +168,8 @@ World *World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &y
   return w;
 }
 
-void World::LoadLayers(YamlReader &layers_reader) {
+void World::LoadLayers(YamlReader & layers_reader)
+{
   // loop through each layer and parse the data
   for (int i = 0; i < layers_reader.NodeSize(); i++) {
     YamlReader reader = layers_reader.Subnode(i, YamlReader::MAP);
@@ -182,19 +185,17 @@ void World::LoadLayers(YamlReader &layers_reader) {
 
     if (cfr_.LayersCount() + names.size() > cfr_.MAX_LAYERS) {
       throw YAMLException(
-          "Unable to add " + std::to_string(names.size()) +
-          " additional layer(s) {" + boost::algorithm::join(names, ", ") +
-          "}, current layers count is " + std::to_string(cfr_.LayersCount()) +
-          ", max allowed is " + std::to_string(cfr_.MAX_LAYERS));
+        "Unable to add " + std::to_string(names.size()) + " additional layer(s) {" +
+        boost::algorithm::join(names, ", ") + "}, current layers count is " +
+        std::to_string(cfr_.LayersCount()) + ", max allowed is " + std::to_string(cfr_.MAX_LAYERS));
     }
 
     boost::filesystem::path map_path(reader.Get<std::string>("map", ""));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
-    auto properties =
-        reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node();
+    auto properties = reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node();
     reader.EnsureAccessedAllKeys();
 
-    for (const auto &name : names) {
+    for (const auto & name : names) {
       if (cfr_.RegisterLayer(name) == cfr_.LAYER_ALREADY_EXIST) {
         throw YAMLException("Layer with name " + Q(name) + " already exists");
       }
@@ -204,13 +205,13 @@ void World::LoadLayers(YamlReader &layers_reader) {
       map_path = world_yaml_dir_ / map_path;
     }
 
-    RCLCPP_INFO(node_->get_logger(), "World: Loading layer \"%s\" from path=\"%s\"",
-                   names[0].c_str(), map_path.string().c_str());
+    RCLCPP_INFO(
+      node_->get_logger(), "World: Loading layer \"%s\" from path=\"%s\"", names[0].c_str(),
+      map_path.string().c_str());
 
-    Layer *layer = Layer::MakeLayer(node_, physics_world_, &cfr_, map_path.string(),
-                                    names, color, properties);
-    layers_name_map_.insert(
-        std::pair<std::vector<std::string>, Layer *>(names, layer));
+    Layer * layer =
+      Layer::MakeLayer(node_, physics_world_, &cfr_, map_path.string(), names, color, properties);
+    layers_name_map_.insert(std::pair<std::vector<std::string>, Layer *>(names, layer));
     layers_.push_back(layer);
 
     RCLCPP_INFO(node_->get_logger(), "World: Layer \"%s\" loaded", layer->name_.c_str());
@@ -218,7 +219,8 @@ void World::LoadLayers(YamlReader &layers_reader) {
   }
 }
 
-void World::LoadModels(YamlReader &models_reader) {
+void World::LoadModels(YamlReader & models_reader)
+{
   if (!models_reader.IsNodeNull()) {
     for (int i = 0; i < models_reader.NodeSize(); i++) {
       YamlReader reader = models_reader.Subnode(i, YamlReader::MAP);
@@ -233,8 +235,9 @@ void World::LoadModels(YamlReader &models_reader) {
   }
 }
 
-void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
-                             YamlReader &world_config) {
+void World::LoadWorldPlugins(
+  YamlReader & world_plugin_reader, World * world, YamlReader & world_config)
+{
   if (!world_plugin_reader.IsNodeNull()) {
     for (int i = 0; i < world_plugin_reader.NodeSize(); i++) {
       YamlReader reader = world_plugin_reader.Subnode(i, YamlReader::MAP);
@@ -243,11 +246,14 @@ void World::LoadWorldPlugins(YamlReader &world_plugin_reader, World *world,
     }
   }
 }
-void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
-                      const std::string &name, const Pose &pose) {
+void World::LoadModel(
+  const std::string & model_yaml_path, const std::string & ns, const std::string & name,
+  const Pose & pose)
+{
   // ensure no duplicate model names
-  if (std::count_if(models_.begin(), models_.end(),
-                    [&](Model *m) { return m->name_ == name; }) >= 1) {
+  if (std::count_if(models_.begin(), models_.end(), [&](Model * m) {
+        return m->name_ == name;
+      }) >= 1) {
     throw YAMLException("Model with name " + Q(name) + " already exists");
   }
 
@@ -256,11 +262,10 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
     abs_path = world_yaml_dir_ / abs_path;
   }
 
-  RCLCPP_INFO(node_->get_logger(), "World: Loading model from path=\"%s\"",
-                 abs_path.string().c_str());
+  RCLCPP_INFO(
+    node_->get_logger(), "World: Loading model from path=\"%s\"", abs_path.string().c_str());
 
-  Model *m =
-      Model::MakeModel(node_, physics_world_, &cfr_, abs_path.string(), ns, name);
+  Model * m = Model::MakeModel(node_, physics_world_, &cfr_, abs_path.string(), ns, name);
   m->TransformAll(pose);
 
   try {
@@ -268,11 +273,11 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
       YamlReader plugin_reader = m->plugins_reader_.Subnode(i, YamlReader::MAP);
       plugin_manager_.LoadModelPlugin(m, plugin_reader);
     }
-  } catch (const YAMLException &e) {
+  } catch (const YAMLException & e) {
     plugin_manager_.DeleteModelPlugin(m);
     delete m;
     throw e;
-  } catch (const PluginException &e) {
+  } catch (const PluginException & e) {
     plugin_manager_.DeleteModelPlugin(m);
     delete m;
     throw e;
@@ -283,7 +288,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   visualization_msgs::msg::MarkerArray body_markers;
   for (size_t i = 0; i < m->bodies_.size(); i++) {
     DebugVisualization::Get(node_)->BodyToMarkers(
-        body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
+      body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
   }
   int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
 
@@ -291,7 +296,8 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   m->DebugOutput();
 }
 
-void World::DeleteModel(const std::string &name) {
+void World::DeleteModel(const std::string & name)
+{
   bool found = false;
 
   for (unsigned int i = 0; i < models_.size(); i++) {
@@ -308,12 +314,13 @@ void World::DeleteModel(const std::string &name) {
   }
 
   if (!found) {
-    throw Exception("Flatland World: failed to delete model, model with name " +
-                    Q(name) + " does not exist");
+    throw Exception(
+      "Flatland World: failed to delete model, model with name " + Q(name) + " does not exist");
   }
 }
 
-void World::MoveModel(const std::string &name, const Pose &pose) {
+void World::MoveModel(const std::string & name, const Pose & pose)
+{
   // Find desired model
   bool found = false;
 
@@ -327,8 +334,8 @@ void World::MoveModel(const std::string &name, const Pose &pose) {
   }
 
   if (!found) {
-    throw Exception("Flatland World: failed to move model, model with name " +
-                    Q(name) + " does not exist");
+    throw Exception(
+      "Flatland World: failed to move model, model with name " + Q(name) + " does not exist");
   }
 }
 
@@ -338,19 +345,18 @@ void World::Resume() { service_paused_ = false; }
 
 void World::TogglePaused() { service_paused_ = !service_paused_; }
 
-bool World::IsPaused() {
-  return service_paused_ /*|| int_marker_manager_.isManipulating()*/;
-}
+bool World::IsPaused() { return service_paused_ /*|| int_marker_manager_.isManipulating()*/; }
 
-void World::DebugVisualize(bool update_layers) {
+void World::DebugVisualize(bool update_layers)
+{
   if (update_layers) {
-    for (const auto &layer : layers_) {
+    for (const auto & layer : layers_) {
       layer->DebugVisualize();
     }
   }
 
-  for (const auto &model : models_) {
+  for (const auto & model : models_) {
     model->DebugVisualize();
   }
 }
-}  //namespace flatland_server
+}  // namespace flatland_server

@@ -44,11 +44,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "rclcpp/rclcpp.hpp"
 #include <signal.h>
+
 #include <string>
 
 #include "flatland_server/simulation_manager.h"
+#include "rclcpp/rclcpp.hpp"
 
 /** Global variables */
 //
@@ -72,57 +73,57 @@
 
 class FlatlandServerNode : public rclcpp::Node
 {
-  public:
-    FlatlandServerNode()
-    : Node("flatland_server")
-    {
-      declare_parameter<std::string>("world_path");
-      declare_parameter<float>("update_rate");
-      declare_parameter<float>("step_size");
-      declare_parameter<bool>("show_viz");
-      declare_parameter<float>("viz_pub_rate");
+public:
+  FlatlandServerNode() : Node("flatland_server")
+  {
+    declare_parameter<std::string>("world_path");
+    declare_parameter<float>("update_rate");
+    declare_parameter<float>("step_size");
+    declare_parameter<bool>("show_viz");
+    declare_parameter<float>("viz_pub_rate");
 
-      // Load parameters
-      if (!get_parameter("world_path", world_path_)) {
-        RCLCPP_INFO(get_logger(), "No world_path parameter given!");
-        rclcpp::shutdown();
-        return;
-      }
-      get_parameter_or<float>("update_rate", update_rate_, 200.0f);
-      get_parameter_or<float>("step_size", step_size_, 1.0f/200.0f);
-      get_parameter_or<bool>("show_viz", show_viz_, false);
-      get_parameter_or<float>("viz_pub_rate", viz_pub_rate_, 30.0f);
+    // Load parameters
+    if (!get_parameter("world_path", world_path_)) {
+      RCLCPP_INFO(get_logger(), "No world_path parameter given!");
+      rclcpp::shutdown();
+      return;
     }
-
-  void Run() {
-    // Create simulation manager object
-      simulation_manager_ = std::make_shared<flatland_server::SimulationManager>(
-        shared_from_this(), world_path_, update_rate_, step_size_, show_viz_, viz_pub_rate_);
-      
-
-      RCLCPP_INFO(this->get_logger(), "Initialized");
-      simulation_manager_->Main();
-
-      RCLCPP_INFO(this->get_logger(), "Returned from simulation manager main2");
+    get_parameter_or<float>("update_rate", update_rate_, 200.0f);
+    get_parameter_or<float>("step_size", step_size_, 1.0f / 200.0f);
+    get_parameter_or<bool>("show_viz", show_viz_, false);
+    get_parameter_or<float>("viz_pub_rate", viz_pub_rate_, 30.0f);
   }
 
-  // TODO: Allow updates to step size, update rate etc. with new ros2 dynamic params
+  void Run()
+  {
+    // Create simulation manager object
+    simulation_manager_ = std::make_shared<flatland_server::SimulationManager>(
+      shared_from_this(), world_path_, update_rate_, step_size_, show_viz_, viz_pub_rate_);
 
-  private:
-    std::string world_path_; // The file path to the world.yaml file
-    float update_rate_;  // The physics update rate (Hz)
-    float step_size_;
-    bool show_viz_;
-    float viz_pub_rate_;
-    std::shared_ptr<flatland_server::SimulationManager> simulation_manager_;
+    RCLCPP_INFO(this->get_logger(), "Initialized");
+    simulation_manager_->Main();
+
+    RCLCPP_INFO(this->get_logger(), "Returned from simulation manager main2");
+  }
+
+  // TODO: Allow updates to step size, update rate etc. with new ros2 dynamic
+  // params
+
+private:
+  std::string world_path_;  // The file path to the world.yaml file
+  float update_rate_;       // The physics update rate (Hz)
+  float step_size_;
+  bool show_viz_;
+  float viz_pub_rate_;
+  std::shared_ptr<flatland_server::SimulationManager> simulation_manager_;
 };
 
 /**
  * @name        main
  * @brief       Entrypoint for Flatland Server ros node
  */
-int main(int argc, char **argv) {
-
+int main(int argc, char ** argv)
+{
   rclcpp::init(argc, argv);
   auto flatland_server = std::make_shared<FlatlandServerNode>();
   flatland_server->Run();

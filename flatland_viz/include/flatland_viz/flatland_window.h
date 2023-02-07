@@ -46,43 +46,40 @@
 
 // namespace rviz;
 
-#include <rclcpp/rclcpp.hpp>
-
-#include <QLabel>
-#include <QMainWindow>
-#include <QPushButton>
-#include <QWidget>
 #include <QAction>
 #include <QActionGroup>
 #include <QDesktopWidget>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMainWindow>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>
-
-#include "flatland_viz/flatland_viz.h"
-
+#include <rclcpp/rclcpp.hpp>
 #include <rviz_common/render_panel.hpp>
 #include <rviz_common/visualization_manager.hpp>
 
-class FlatlandWindow : public QMainWindow {
+#include "flatland_viz/flatland_viz.h"
+
+class FlatlandWindow : public QMainWindow
+{
   Q_OBJECT
- public:
-  FlatlandWindow(QWidget* parent = 0);
-  rviz_common::VisualizationManager* visualization_manager_;
-  rviz_common::RenderPanel* render_panel_;
+public:
+  FlatlandWindow(QWidget * parent = 0);
+  rviz_common::VisualizationManager * visualization_manager_;
+  rviz_common::RenderPanel * render_panel_;
 
-  rviz_common::VisualizationManager* getManager();
+  rviz_common::VisualizationManager * getManager();
 
- protected Q_SLOTS:
+protected Q_SLOTS:
 
   void openNewToolDialog();
 
- private:
-  FlatlandViz* viz_;
+private:
+  FlatlandViz * viz_;
 };

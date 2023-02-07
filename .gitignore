@@ -8,3 +8,5 @@ docs/_templates/*
 */.vscode
 .history
 */.history
+**/.idea/
+**/cmake-build-debug/

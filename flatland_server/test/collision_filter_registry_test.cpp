@@ -54,12 +54,14 @@ using namespace flatland_server;
 
 typedef CollisionFilterRegistry CFR;
 
-class CollisionFilterRegistryTest : public ::testing::Test {
- protected:
+class CollisionFilterRegistryTest : public ::testing::Test
+{
+protected:
   CollisionFilterRegistry cfr;
 };
 
-TEST_F(CollisionFilterRegistryTest, empty_test) {
+TEST_F(CollisionFilterRegistryTest, empty_test)
+{
   EXPECT_FALSE(cfr.IsLayersFull());
   EXPECT_EQ(cfr.LookUpLayerId("random_layer"), CFR::LAYER_NOT_EXIST);
 
@@ -67,7 +69,8 @@ TEST_F(CollisionFilterRegistryTest, empty_test) {
   EXPECT_EQ(layer_names.size(), 0UL);
 }
 
-TEST_F(CollisionFilterRegistryTest, register_collide_test) {
+TEST_F(CollisionFilterRegistryTest, register_collide_test)
+{
   EXPECT_EQ(cfr.RegisterCollide(), 1);
   EXPECT_EQ(cfr.RegisterCollide(), 2);
   EXPECT_EQ(cfr.RegisterCollide(), 3);
@@ -75,7 +78,8 @@ TEST_F(CollisionFilterRegistryTest, register_collide_test) {
   EXPECT_EQ(cfr.RegisterCollide(), 5);
 }
 
-TEST_F(CollisionFilterRegistryTest, register_no_collide_test) {
+TEST_F(CollisionFilterRegistryTest, register_no_collide_test)
+{
   EXPECT_EQ(cfr.RegisterNoCollide(), -1);
   EXPECT_EQ(cfr.RegisterNoCollide(), -2);
   EXPECT_EQ(cfr.RegisterNoCollide(), -3);
@@ -83,7 +87,8 @@ TEST_F(CollisionFilterRegistryTest, register_no_collide_test) {
   EXPECT_EQ(cfr.RegisterNoCollide(), -5);
 }
 
-TEST_F(CollisionFilterRegistryTest, register_layers_test) {
+TEST_F(CollisionFilterRegistryTest, register_layers_test)
+{
   EXPECT_EQ(CFR::MAX_LAYERS, 16);
 
   EXPECT_EQ(cfr.RegisterLayer("layer1"), 0);
@@ -101,16 +106,11 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
   std::vector<std::string> layer_names = cfr.GetAllLayers();
   EXPECT_EQ(layer_names.size(), 5UL);
 
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer1") !=
-              layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer2") !=
-              layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer3") !=
-              layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer4") !=
-              layer_names.end());
-  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer5") !=
-              layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer1") != layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer2") != layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer3") != layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer4") != layer_names.end());
+  EXPECT_TRUE(std::find(layer_names.begin(), layer_names.end(), "layer5") != layer_names.end());
 
   EXPECT_EQ(cfr.RegisterLayer("layer5"), CFR::LAYER_ALREADY_EXIST);
   EXPECT_EQ(cfr.RegisterLayer("layer6"), 5);
@@ -133,7 +133,8 @@ TEST_F(CollisionFilterRegistryTest, register_layers_test) {
 }
 
 // Run all the tests that were declared with TEST()
-int main(int argc, char **argv) {
+int main(int argc, char ** argv)
+{
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

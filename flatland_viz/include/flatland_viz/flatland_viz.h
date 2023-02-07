@@ -47,7 +47,6 @@
 #ifndef FLATLAND_VIZ_FLATLAND_VIZ_H
 #define FLATLAND_VIZ_FLATLAND_VIZ_H
 
-#include <rclcpp/rclcpp.hpp>
 #include <QAction>
 #include <QActionGroup>
 #include <QList>
@@ -58,23 +57,22 @@
 #include <QToolButton>
 #include <QWidget>
 #include <map>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/config.hpp>
+#include <rviz_common/display.hpp>
+#include <rviz_common/new_object_dialog.hpp"
+#include <rviz_common/panel.hpp>
+#include <rviz_common/properties/property_tree_widget.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/visualization_manager.hpp>
+#include <rviz_common/window_manager_interface.hpp>
 #include <set>
 
 #include "flatland_msgs/msg/debug_topic_list.hpp"
-#include <rviz_common/config.hpp>
-#include <rviz_common/panel.hpp>
-#include <rviz_common/properties/property_tree_widget.hpp>
-#include <rviz_common/tool.hpp>
-#include <rviz_common/tool_manager.hpp>
-#include <rviz_common/window_manager_interface.hpp>
-
-
-#include <rviz_common/new_object_dialog.hpp"
-#include <rviz_common/display.hpp>
-#include <rviz_common/render_panel.hpp>
-#include <rviz_common/view_manager.hpp>
 #include "rviz_common/load_resource.hpp"
-#include <rviz_common/visualization_manager.hpp>
 
 class QSplashScreen;
 class QAction;
@@ -84,25 +82,27 @@ class QDockWidget;
 class QLabel;
 class QToolButton;
 
-namespace rviz_common {
+namespace rviz_common
+{
 class PanelFactory;
 class Tool;
 class Display;
 class RenderPanel;
 class VisualizationManager;
 class WidgetGeometryChangeDetector;
-}
+}  // namespace rviz_common
 
 class FlatlandWindow;
 
-class FlatlandViz : public QWidget {
+class FlatlandViz : public QWidget
+{
   Q_OBJECT public :
-      /**
-        * @brief Construct FlatlandViz and subscribe to debug topic list
-        *
-        * @param parent The parent widget
-        */
-      FlatlandViz(FlatlandWindow* parent = 0);
+    /**
+       * @brief Construct FlatlandViz and subscribe to debug topic list
+       *
+       * @param parent The parent widget
+       */
+    FlatlandViz(FlatlandWindow * parent = 0);
 
   /**
    * @brief Recieve a new DebugTopicList msg and add any new displays required
@@ -116,33 +116,33 @@ class FlatlandViz : public QWidget {
    */
   virtual ~FlatlandViz();
 
-  rviz_common::VisualizationManager* manager_;
+  rviz_common::VisualizationManager * manager_;
 
- private:
-  rviz_common::RenderPanel* render_panel_;
+private:
+  rviz_common::RenderPanel * render_panel_;
 
-  rviz_common::Display* grid_;
-  rviz_common::Display* interactive_markers_;
-  std::map<std::string, rviz_common::Display*> debug_displays_;
+  rviz_common::Display * grid_;
+  rviz_common::Display * interactive_markers_;
+  std::map<std::string, rviz_common::Display *> debug_displays_;
   rclcpp::Subscription<flatland_msgs::msg::DebugTopicList>::SharedPtr debug_topic_subscriber_;
   rviz_common::properties::PropertyTreeWidget * tree_widget_;
-  FlatlandWindow* parent_;
+  FlatlandWindow * parent_;
 
-  QMenu* file_menu_;
-  QMenu* recent_configs_menu_;
-  QMenu* view_menu_;
-  QMenu* delete_view_menu_;
-  QMenu* plugins_menu_;
+  QMenu * file_menu_;
+  QMenu * recent_configs_menu_;
+  QMenu * view_menu_;
+  QMenu * delete_view_menu_;
+  QMenu * plugins_menu_;
 
-  QToolBar* toolbar_;
+  QToolBar * toolbar_;
 
-  QActionGroup* toolbar_actions_;
-  std::map<QAction*, rviz_common::Tool*> action_to_tool_map_;
-  std::map<rviz_common::Tool*, QAction*> tool_to_action_map_;
+  QActionGroup * toolbar_actions_;
+  std::map<QAction *, rviz_common::Tool *> action_to_tool_map_;
+  std::map<rviz_common::Tool *, QAction *> tool_to_action_map_;
   bool show_choose_new_master_option_;
 
-  QAction* add_tool_action_;
-  QMenu* remove_tool_menu_;
+  QAction * add_tool_action_;
+  QMenu * remove_tool_menu_;
 
   /// Indicates if the toolbar should be visible outside of fullscreen mode.
   bool toolbar_visible_;
@@ -151,12 +151,12 @@ class FlatlandViz : public QWidget {
   void fullScreenChange(bool hidden);
 
   void setDisplayConfigModified();
-  void addTool(rviz_common::Tool*);
-  void removeTool(rviz_common::Tool*);
-  void refreshTool(rviz_common::Tool*);
-  void indicateToolIsCurrent(rviz_common::Tool*);
-  void onToolbarActionTriggered(QAction* action);
-  void onToolbarRemoveTool(QAction* remove_tool_menu_action);
+  void addTool(rviz_common::Tool *);
+  void removeTool(rviz_common::Tool *);
+  void refreshTool(rviz_common::Tool *);
+  void indicateToolIsCurrent(rviz_common::Tool *);
+  void onToolbarActionTriggered(QAction * action);
+  void onToolbarRemoveTool(QAction * remove_tool_menu_action);
   void initToolbars();
   void initMenus();
   void openNewToolDialog();
