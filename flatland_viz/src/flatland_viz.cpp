@@ -179,7 +179,7 @@ void FlatlandViz::setDisplayConfigModified() {
 }
 
 void FlatlandViz::addTool(rviz::Tool* tool) {
-  ROS_ERROR("addTool called");
+  ROS_ERROR("addTool called: %s", tool->getName().toStdString().c_str());
   QAction* action = new QAction(tool->getName(), toolbar_actions_);
   action->setIcon(tool->getIcon());
   action->setIconText(tool->getName());

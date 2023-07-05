@@ -73,8 +73,9 @@ class DiffDrive : public flatland_server::ModelPlugin {
   nav_msgs::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;
   tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
-  bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
-  bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
+  bool enable_odom_pub_;            ///< YAML parameter to enable odom publishing
+  bool enable_odom_tf_pub_;         ///< YAML parameter to enable odom tf publishing
+  bool enable_twist_pub_;           ///< YAML parameter to enable twist publishing
   DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
   DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
   double angular_velocity_ = 0.0;
