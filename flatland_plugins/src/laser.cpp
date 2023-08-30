@@ -68,6 +68,10 @@ void Laser::OnInitialize(const YAML::Node & config)
   ParseParameters(config);
 
   update_timer_.SetRate(update_rate_);
+
+  //add namespace
+  std::string ns = GetModel()->GetName();
+  topic_ = ns + "/" + topic_;
   scan_publisher_ = node_->create_publisher<sensor_msgs::msg::LaserScan>(topic_, 1);
 
   // construct the body to laser transformation matrix once since it never
