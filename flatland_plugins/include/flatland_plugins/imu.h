@@ -46,47 +46,37 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
-#include <flatland_plugins/dynamics_limits.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
-#include <nav_msgs/Odometry.h>
+#include <sensor_msgs/Imu.h>
 #include <tf/transform_broadcaster.h>
-#include <random>
 
-#ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
-#define FLATLAND_PLUGINS_DIFFDRIVE_H
+#ifndef FLATLAND_PLUGINS_IMU_H
+#define FLATLAND_PLUGINS_IMU_H
 
 using namespace flatland_server;
 
 namespace flatland_plugins {
 
-class DiffDrive : public flatland_server::ModelPlugin {
+class Imu : public flatland_server::ModelPlugin {
  public:
-  ros::Subscriber twist_sub_;
-  ros::Publisher odom_pub_;
+  ros::Publisher imu_pub_;
   ros::Publisher ground_truth_pub_;
-  ros::Publisher twist_pub_;
   Body* body_;
-  geometry_msgs::Twist twist_msg_;
-  nav_msgs::Odometry odom_msg_;
-  nav_msgs::Odometry ground_truth_msg_;
+  sensor_msgs::Imu imu_msg_;
+  sensor_msgs::Imu ground_truth_msg_;
   UpdateTimer update_timer_;
-  tf::TransformBroadcaster tf_broadcaster;  ///< For publish ROS TF
-  bool enable_odom_pub_;            ///< YAML parameter to enable odom publishing
-  bool enable_odom_tf_pub_;         ///< YAML parameter to enable odom tf publishing
-  bool enable_twist_pub_;           ///< YAML parameter to enable twist publishing
-  bool twist_in_local_frame_;  ///< YAML parameter to publish velocity in local
-                               /// frame. Original diff drive plugin publishes
-                               /// local velocity wrt to odom frame
-  DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
-  DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
-  double angular_velocity_ = 0.0;
-  double linear_velocity_ = 0.0;
+  bool enable_imu_pub_;  ///< YAML parameter to enable odom publishing
 
   std::default_random_engine rng_;
-  std::array<std::normal_distribution<double>, 6> noise_gen_;
-
+  std::array<std::normal_distribution<double>, 9> noise_gen_;
+  geometry_msgs::TransformStamped imu_tf_;   ///< tf from body to laser frame
+  tf::TransformBroadcaster tf_broadcaster_;  ///< broadcast laser frame
+  std::string imu_frame_id_;
+  bool broadcast_tf_;
+  b2Vec2 linear_vel_local_prev;
+  double pub_rate_;
   /**
    * @name          OnInitialize
    * @brief         override the BeforePhysicsStep method
@@ -98,7 +88,7 @@ class DiffDrive : public flatland_server::ModelPlugin {
    * @brief         override the BeforePhysicsStep method
    * @param[in]     config The plugin YAML node
    */
-  void BeforePhysicsStep(const Timekeeper& timekeeper) override;
+  void AfterPhysicsStep(const Timekeeper& timekeeper) override;
   /**
    * @name        TwistCallback
    * @brief       callback to apply twist (velocity and omega)

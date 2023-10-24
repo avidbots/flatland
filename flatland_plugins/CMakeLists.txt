@@ -74,6 +74,7 @@ add_library(flatland_plugins_lib
   src/tricycle_drive.cpp
   src/diff_drive.cpp
   src/dynamics_limits.cpp
+  src/imu.cpp
   src/model_tf_publisher.cpp
   src/update_timer.cpp
   src/bumper.cpp
@@ -152,6 +153,10 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(diff_drive_test test/diff_drive_test.test
                     test/diff_drive_test.cpp)
   target_link_libraries(diff_drive_test flatland_plugins_lib)
+
+  add_rostest_gtest(imu_test test/imu_test.test
+                    test/imu_test.cpp)
+  target_link_libraries(imu_test flatland_plugins_lib)
 
   add_rostest_gtest(bumper_test test/bumper_test.test
                     test/bumper_test.cpp)

@@ -49,6 +49,7 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/TwistWithCovarianceStamped.h>
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 #include <tf/tf.h>
@@ -64,6 +65,8 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
   enable_odom_tf_pub_ = reader.Get<bool>("enable_odom_tf_pub", true);
   enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
+  twist_in_local_frame_ = reader.Get<bool>("twist_in_local_frame", true);
+
   std::string body_name = reader.Get<std::string>("body");
   std::string odom_frame_id = reader.Get<std::string>("odom_frame_id", "odom");
   std::string ground_truth_frame_id =
@@ -126,7 +129,8 @@ void DiffDrive::OnInitialize(const YAML::Node& config) {
   }
 
   if (enable_twist_pub_) {
-    twist_pub_ = nh_.advertise<geometry_msgs::TwistStamped>(twist_pub_topic, 1);
+    twist_pub_ = nh_.advertise<geometry_msgs::TwistWithCovarianceStamped>(
+        twist_pub_topic, 1);
   }
 
   // init the values for the messages
@@ -220,12 +224,22 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     ground_truth_msg_.pose.pose.position.z = 0;
     ground_truth_msg_.pose.pose.orientation =
         tf::createQuaternionMsgFromYaw(angle);
-    ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
-    ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
+
     ground_truth_msg_.twist.twist.linear.z = 0;
     ground_truth_msg_.twist.twist.angular.x = 0;
     ground_truth_msg_.twist.twist.angular.y = 0;
-    ground_truth_msg_.twist.twist.angular.z = angular_vel;
+    if (twist_in_local_frame_) {
+      // change frame of velocity
+      ground_truth_msg_.twist.twist.linear.x =
+          cos(-angle) * linear_vel_local.x - sin(-angle) * linear_vel_local.y;
+      ground_truth_msg_.twist.twist.linear.y =
+          sin(-angle) * linear_vel_local.x + cos(-angle) * linear_vel_local.y;
+      ground_truth_msg_.twist.twist.angular.z = angular_vel;
+    } else {
+      ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
+      ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
+      ground_truth_msg_.twist.twist.angular.z = angular_vel;
+    }
 
     // add the noise to odom messages
     odom_msg_.header.stamp = timekeeper.GetSimTime();
@@ -247,17 +261,20 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     if (enable_twist_pub_) {
       // Transform global frame velocity into local frame to simulate encoder
       // readings
-      geometry_msgs::TwistStamped twist_pub_msg;
+      geometry_msgs::TwistWithCovarianceStamped twist_pub_msg;
       twist_pub_msg.header.stamp = timekeeper.GetSimTime();
       twist_pub_msg.header.frame_id = odom_msg_.child_frame_id;
 
       // Forward velocity in twist.linear.x
-      twist_pub_msg.twist.linear.x = cos(angle) * linear_vel_local.x +
-                                     sin(angle) * linear_vel_local.y +
-                                     noise_gen_[3](rng_);
+      twist_pub_msg.twist.twist.linear.x = cos(angle) * linear_vel_local.x +
+                                           sin(angle) * linear_vel_local.y +
+                                           noise_gen_[3](rng_);
 
       // Angular velocity in twist.angular.z
-      twist_pub_msg.twist.angular.z = angular_vel + noise_gen_[5](rng_);
+      twist_pub_msg.twist.twist.angular.z = angular_vel + noise_gen_[5](rng_);
+
+      twist_pub_msg.twist.covariance = odom_msg_.twist.covariance;
+
       twist_pub_.publish(twist_pub_msg);
     }
 

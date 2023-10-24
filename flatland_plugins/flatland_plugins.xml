@@ -8,6 +8,9 @@
   <class type="flatland_plugins::DiffDrive" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland differential drive plugin</description>
   </class>
+  <class type="flatland_plugins::Imu" base_class_type="flatland_server::ModelPlugin">
+    <description>Flatland imu plugin</description>
+  </class>
   <class type="flatland_plugins::ModelTfPublisher" base_class_type="flatland_server::ModelPlugin">
     <description>Publish body transformations</description>
   </class>
