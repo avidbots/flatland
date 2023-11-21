@@ -49,6 +49,7 @@
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <geometry_msgs/Twist.h>
+#include <random>
 #include <sensor_msgs/Imu.h>
 #include <tf/transform_broadcaster.h>
 
