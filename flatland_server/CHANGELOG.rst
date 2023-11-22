@@ -2,6 +2,10 @@
 Changelog for package flatland_server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.4.0 (2023-11-22)
+------------------
+* Version Bump
+
 1.3.3 (2023-02-06)
 ------------------
 * added missing std_srvs dep
