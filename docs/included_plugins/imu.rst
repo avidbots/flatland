@@ -4,7 +4,7 @@
     :target: ../_static/flatland_logo2.png
 
 
-GPS
+IMU
 ==========
 This plugin provides a simple simulation of an IMU (three-axis accelerometer and three-axis gyroscope).
 
@@ -13,15 +13,6 @@ This plugin provides a simple simulation of an IMU (three-axis accelerometer and
 * The measurements are modelled in a simple manner; they are simply the ground truth corrupted with zero-mean Gaussian noise.
 
 * Publishes a `sensor_msgs/Imu <http://docs.ros.org/api/sensor_msgs/html/msg/Imu.html>`_ message with the simulated measurements
-
-  "imu_frame_id", "imu"
-  "imu_pub", "imu/filtered"
-  "ground_truth_pub", "imu/ground_truth"
-  "orientation_noise", {0, 0, 0}, 3, 3
-  "angular_velocity_noise", {0, 0, 0}, 3, 3
-  "linear_acceleration_noise", {0, 0, 0}, 3, 3
-  "pub_rate", std::numeric_limits<double>::infinity()
-  "broadcast_tf", true
 
 .. code-block:: yaml
 
