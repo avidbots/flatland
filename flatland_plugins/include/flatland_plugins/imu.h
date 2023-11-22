@@ -7,8 +7,8 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
- * @name	diff_drive.h
- * @brief   Diff drive plugin
+ * @name	imu.h
+ * @brief   IMU plugin
  * @author  Mike Brousseau
  *
  * Software License Agreement (BSD License)
@@ -72,8 +72,8 @@ class Imu : public flatland_server::ModelPlugin {
 
   std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 9> noise_gen_;
-  geometry_msgs::TransformStamped imu_tf_;   ///< tf from body to laser frame
-  tf::TransformBroadcaster tf_broadcaster_;  ///< broadcast laser frame
+  geometry_msgs::TransformStamped imu_tf_;   ///< tf from body to IMU frame
+  tf::TransformBroadcaster tf_broadcaster_;  ///< broadcast IMU frame
   std::string imu_frame_id_;
   bool broadcast_tf_;
   b2Vec2 linear_vel_local_prev;
@@ -85,9 +85,9 @@ class Imu : public flatland_server::ModelPlugin {
    */
   void OnInitialize(const YAML::Node& config) override;
   /**
-   * @name          BeforePhysicsStep
-   * @brief         override the BeforePhysicsStep method
-   * @param[in]     config The plugin YAML node
+   * @name          AfterPhysicsStep
+   * @brief         override the AfterPhysicsStep method
+   * @param[in]     timekeeper Tracks time in flatland
    */
   void AfterPhysicsStep(const Timekeeper& timekeeper) override;
   /**
