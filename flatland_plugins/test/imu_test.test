@@ -1,0 +1,9 @@
+<!--
+Test launchfile for imu_test
+
+This file is used so that rosmaster is running when the test is executed,
+in order to test publish/subscribe
+-->
+<launch>
+  <test pkg="flatland_plugins" type="imu_test" test-name="imu_test"/>
+</launch>
