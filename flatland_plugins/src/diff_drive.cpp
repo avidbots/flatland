@@ -110,6 +110,14 @@ void DiffDrive::OnInitialize(const YAML::Node & config)
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
   }
 
+  //append namespace to topics
+  std::string ns = this->GetModel()->GetNameSpace();
+  twist_topic = ns + "/" + twist_topic;
+  odom_topic = ns + "/" + odom_topic;
+  ground_truth_topic = ns + "/" + ground_truth_topic;
+  twist_pub_topic = ns + "/" + twist_pub_topic;
+  
+
   // publish and subscribe to topics
   using std::placeholders::_1;
   twist_sub_ = node_->create_subscription<geometry_msgs::msg::Twist>(
