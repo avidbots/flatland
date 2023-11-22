@@ -1,0 +1,4 @@
+float64 rate
+---
+bool success
+string message

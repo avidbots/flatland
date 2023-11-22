@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>flatland_viz</name>
-  <version>1.1.1</version>
+  <version>2.0.0</version>
   <description>The flatland gui and visualization</description>
   <license>BSD</license>
   <url type="website">https://bitbucket.org/avidbots/flatland</url>
@@ -18,12 +19,25 @@
   <depend>libqt5-gui</depend>
   <depend>libqt5-widgets</depend>
   <depend>libogre-dev</depend>
-  <depend>roscpp</depend>
-  <depend>rviz2</depend>
+  <depend>rclcpp</depend>
+  <depend>rviz_common</depend>
+  <depend>rviz_rendering</depend>
+  <depend>rviz_default_plugins</depend>
+  <depend>std_srvs</depend>
   <depend>flatland_server</depend>
-  <depend>flatland_msgs</depend>  
+  <depend>flatland_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>interactive_markers</depend>
+  <depend>libboost-date-time-dev</depend>
+  <depend>libboost-filesystem-dev</depend>
+  <depend>libboost-dev</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
+    
     <!-- Other tools can request additional information be placed here -->
       <rviz plugin="${prefix}/plugin_description.xml"/>
       <flatland_viz plugin="${prefix}/plugin_description.xml"/>

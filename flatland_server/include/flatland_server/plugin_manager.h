@@ -53,22 +53,25 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_loader.hpp>
 #include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
+#include <pluginlib/class_loader.hpp>
+
+namespace flatland_server
+{
 
 // forward declaration
 class World;
 
-class PluginManager {
- public:
+class PluginManager
+{
+public:
   rclcpp::Node::SharedPtr node_;
   std::vector<std::shared_ptr<ModelPlugin>> model_plugins_;
-  pluginlib::ClassLoader<flatland_server::ModelPlugin> *model_plugin_loader_;
+  pluginlib::ClassLoader<flatland_server::ModelPlugin> * model_plugin_loader_;
 
   std::vector<std::shared_ptr<WorldPlugin>> world_plugins_;
-  pluginlib::ClassLoader<flatland_server::WorldPlugin> *world_plugin_loader_;
+  pluginlib::ClassLoader<flatland_server::WorldPlugin> * world_plugin_loader_;
   /**
    * @brief Plugin manager constructor
    */
@@ -83,19 +86,19 @@ class PluginManager {
    * @brief This method is called before the Box2D physics step
    * @param[in] timekeeper provide time related information
    */
-  void BeforePhysicsStep(const Timekeeper &timekeeper);
+  void BeforePhysicsStep(const Timekeeper & timekeeper);
 
   /**
    * @brief This method is called after the Box2D physics step
    * @param[in] timekeeper provide time related information
    */
-  void AfterPhysicsStep(const Timekeeper &timekeeper);
+  void AfterPhysicsStep(const Timekeeper & timekeeper);
 
   /**
    * @brief This method removes all model plugins associated with a given mode
    * @param[in] The model plugins is associated to
    */
-  void DeleteModelPlugin(Model *model);
+  void DeleteModelPlugin(Model * model);
 
   /**
    * @brief Load model plugins
@@ -103,42 +106,41 @@ class PluginManager {
    * @param[in] plugin_reader The YAML reader with node containing the plugin
    * parameter
    */
-  void LoadModelPlugin(Model *model, YamlReader &plugin_reader);
+  void LoadModelPlugin(Model * model, YamlReader & plugin_reader);
 
   /*
    * @brief load world plugins
    * @param[in] world, the world that thsi plugin is tied to
    * @param[in] plugin_reader, the YAML reader with node containing the plugin
    * @param[in] world_config, the yaml reader of world.yaml
-  */
-  void LoadWorldPlugin(World *world, YamlReader &plugin_reader,
-                       YamlReader &world_config);
+   */
+  void LoadWorldPlugin(World * world, YamlReader & plugin_reader, YamlReader & world_config);
 
   /**
    * @brief Method called for a box2D begin contact
    * @param[in] contact Box2D contact information
    */
-  void BeginContact(b2Contact *contact);
+  void BeginContact(b2Contact * contact);
 
   /**
    * @brief Method called for a box2D end contact
    * @param[in] contact Box2D contact information
    */
-  void EndContact(b2Contact *contact);
+  void EndContact(b2Contact * contact);
 
   /**
    * @brief Method called for Box2D presolve
    * @param[in] contact Box2D contact information
    * @param[in] oldManifold The manifold from the previous timestep
    */
-  void PreSolve(b2Contact *contact, const b2Manifold *oldManifold);
+  void PreSolve(b2Contact * contact, const b2Manifold * oldManifold);
 
   /**
    * @brief Method called for Box2D Postsolve
    * @param[in] contact Box2D contact information
    * @param[in] impulse The calculated impulse from the collision resolute
    */
-  void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse);
+  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse);
 };
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H

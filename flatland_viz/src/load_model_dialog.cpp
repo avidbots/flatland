@@ -45,19 +45,15 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "flatland_viz/load_model_dialog.h"
+
 #include <OGRE/OgreEntity.h>
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreSceneNode.h>
-#include <OgreVector3.h>
+#include <OGRE/OgreVector3.h>
+//#include <OgreVector3.h>
 
-#include <ros/console.h>
-
-#include <rviz/geometry.h>
-#include <rviz/mesh_loader.h>
-#include <rviz/properties/float_property.h>
-#include <rviz/properties/vector_property.h>
-#include <rviz/viewport_mouse_event.h>
-#include <rviz/visualization_manager.h>
+#include <rviz_common/visualization_manager.h>
 
 #include <QCheckBox>
 #include <QCursor>
@@ -69,38 +65,40 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
-
 #include <boost/filesystem.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <rviz_common/properties/float_property.hpp>
+#include <rviz_common/properties/vector_property.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_rendering/geometry.hpp>
+#include <rviz_rendering/mesh_loader.hpp>
 
-#include "flatland_viz/load_model_dialog.h"
 #include "flatland_viz/spawn_model_tool.h"
-// #include "load_model_dialog.h"
-// #include "spawn_model_tool.h"
 
 QString LoadModelDialog::path_to_model_file;
 int LoadModelDialog::count;
 bool LoadModelDialog::numbering;
 
-LoadModelDialog::LoadModelDialog(QWidget *parent,
-                                 flatland_viz::SpawnModelTool *tool)
-    : QDialog(parent), tool_(tool) {
+LoadModelDialog::LoadModelDialog(QWidget * parent, flatland_viz::SpawnModelTool * tool)
+: QDialog(parent), tool_(tool)
+{
   RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "ModelDialog::ModelDialog");
-  QVBoxLayout *v_layout = new QVBoxLayout;
+  QVBoxLayout * v_layout = new QVBoxLayout;
   setLayout(v_layout);
 
   // we are injecting horizontal layouts into the master vertical layout
-  QHBoxLayout *h0_layout = new QHBoxLayout;
-  QHBoxLayout *h1_layout = new QHBoxLayout;
-  QHBoxLayout *h2_layout = new QHBoxLayout;
-  QHBoxLayout *h3_layout = new QHBoxLayout;
+  QHBoxLayout * h0_layout = new QHBoxLayout;
+  QHBoxLayout * h1_layout = new QHBoxLayout;
+  QHBoxLayout * h2_layout = new QHBoxLayout;
+  QHBoxLayout * h3_layout = new QHBoxLayout;
 
   // create widgets
-  QPushButton *pathButton = new QPushButton("choose file");
+  QPushButton * pathButton = new QPushButton("choose file");
   p_label = new QLabel;
   n_checkbox = new QCheckBox;
   n_edit = new QLineEdit;
-  QPushButton *okButton = new QPushButton("ok");
-  QPushButton *cancelButton = new QPushButton("cancel");
+  QPushButton * okButton = new QPushButton("ok");
+  QPushButton * cancelButton = new QPushButton("cancel");
 
   // set focus policy, otherwise cr in textfield triggers all the slots
   pathButton->setFocusPolicy(Qt::NoFocus);
@@ -110,14 +108,10 @@ LoadModelDialog::LoadModelDialog(QWidget *parent,
   okButton->setFocusPolicy(Qt::NoFocus);
   cancelButton->setFocusPolicy(Qt::NoFocus);
 
-  connect(pathButton, &QAbstractButton::clicked, this,
-          &LoadModelDialog::on_PathButtonClicked);
-  connect(okButton, &QAbstractButton::clicked, this,
-          &LoadModelDialog::OkButtonClicked);
-  connect(cancelButton, &QAbstractButton::clicked, this,
-          &LoadModelDialog::CancelButtonClicked);
-  connect(n_checkbox, &QAbstractButton::clicked, this,
-          &LoadModelDialog::NumberCheckBoxChanged);
+  connect(pathButton, &QAbstractButton::clicked, this, &LoadModelDialog::on_PathButtonClicked);
+  connect(okButton, &QAbstractButton::clicked, this, &LoadModelDialog::OkButtonClicked);
+  connect(cancelButton, &QAbstractButton::clicked, this, &LoadModelDialog::CancelButtonClicked);
+  connect(n_checkbox, &QAbstractButton::clicked, this, &LoadModelDialog::NumberCheckBoxChanged);
 
   // path button
   h0_layout->addWidget(pathButton);
@@ -156,13 +150,15 @@ LoadModelDialog::LoadModelDialog(QWidget *parent,
   this->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
-void LoadModelDialog::CancelButtonClicked() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::CancelButtonClicked");
+void LoadModelDialog::CancelButtonClicked()
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "LoadModelDialog::CancelButtonClicked");
   this->close();
 }
 
-void LoadModelDialog::OkButtonClicked() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::OkButtonClicked");
+void LoadModelDialog::OkButtonClicked()
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "LoadModelDialog::OkButtonClicked");
 
   QString name = n_edit->displayText();
 
@@ -173,9 +169,9 @@ void LoadModelDialog::OkButtonClicked() {
   this->close();
 }
 
-void LoadModelDialog::AddNumberAndUpdateName() {
-  std::string bsfn =
-      boost::filesystem::basename(path_to_model_file.toStdString());
+void LoadModelDialog::AddNumberAndUpdateName()
+{
+  std::string bsfn = boost::filesystem::basename(path_to_model_file.toStdString());
   QString name = QString::fromStdString(bsfn);
 
   if (numbering) {
@@ -186,8 +182,9 @@ void LoadModelDialog::AddNumberAndUpdateName() {
   n_edit->setText(name);
 }
 
-void LoadModelDialog::on_PathButtonClicked() {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "LoadModelDialog::on_PathButtonClicked");
+void LoadModelDialog::on_PathButtonClicked()
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "LoadModelDialog::on_PathButtonClicked");
   path_to_model_file = ChooseFile();
 
   AddNumberAndUpdateName();
@@ -195,23 +192,23 @@ void LoadModelDialog::on_PathButtonClicked() {
   n_edit->setFocus();
 }
 
-void LoadModelDialog::NumberCheckBoxChanged(bool i) {
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"),  "NumberCheckBoxChanged");
+void LoadModelDialog::NumberCheckBoxChanged(bool i)
+{
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("ModelDialog"), "NumberCheckBoxChanged");
   numbering = !numbering;
   AddNumberAndUpdateName();
 }
 
-QString LoadModelDialog::ChooseFile() {
-  QString fileName =
-      QFileDialog::getOpenFileName(NULL, tr("Open model file"), "", "");
+QString LoadModelDialog::ChooseFile()
+{
+  QString fileName = QFileDialog::getOpenFileName(NULL, tr("Open model file"), "", "");
   if (fileName.isEmpty())
     return fileName;
   else {
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly)) {
-      QMessageBox::information(NULL, tr("Unable to open file"),
-                               file.errorString());
+      QMessageBox::information(NULL, tr("Unable to open file"), file.errorString());
       return fileName;
     }
     file.close();

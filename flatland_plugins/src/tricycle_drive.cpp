@@ -49,16 +49,19 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_list_macros.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/convert.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 #include <memory>
+#include <pluginlib/class_list_macros.hpp>
+#include <rclcpp/rclcpp.hpp>
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-void TricycleDrive::OnInitialize(const YAML::Node& config) {
+void TricycleDrive::OnInitialize(const YAML::Node & config)
+{
   YamlReader r(node_, config);
 
   // load all the parameters
@@ -70,17 +73,13 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
 
   string twist_topic = r.Get<string>("twist_sub", "cmd_vel");
   string odom_topic = r.Get<string>("odom_pub", "odometry/filtered");
-  string ground_truth_topic =
-      r.Get<string>("ground_truth_pub", "odometry/ground_truth");
+  string ground_truth_topic = r.Get<string>("ground_truth_pub", "odometry/ground_truth");
 
   // noise are in the form of linear x, linear y, angular variances
-  vector<double> odom_twist_noise =
-      r.GetList<double>("odom_twist_noise", {0, 0, 0}, 3, 3);
-  vector<double> odom_pose_noise =
-      r.GetList<double>("odom_pose_noise", {0, 0, 0}, 3, 3);
+  vector<double> odom_twist_noise = r.GetList<double>("odom_twist_noise", {0, 0, 0}, 3, 3);
+  vector<double> odom_pose_noise = r.GetList<double>("odom_pose_noise", {0, 0, 0}, 3, 3);
 
-  double pub_rate =
-      r.Get<double>("pub_rate", numeric_limits<double>::infinity());
+  double pub_rate = r.Get<double>("pub_rate", numeric_limits<double>::infinity());
   update_timer_.SetRate(pub_rate);
 
   // by default the covariance diagonal is the variance of actual noise
@@ -96,10 +95,8 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   odom_twist_covar_default[7] = odom_twist_noise[1];
   odom_twist_covar_default[35] = odom_twist_noise[2];
 
-  auto odom_twist_covar =
-      r.GetArray<double, 36>("odom_twist_covariance", odom_twist_covar_default);
-  auto odom_pose_covar =
-      r.GetArray<double, 36>("odom_pose_covariance", odom_pose_covar_default);
+  auto odom_twist_covar = r.GetArray<double, 36>("odom_twist_covariance", odom_twist_covar_default);
+  auto odom_pose_covar = r.GetArray<double, 36>("odom_pose_covariance", odom_pose_covar_default);
 
   // Default max_steer_angle=0, max_angular_velocity=0, and
   // max_steer_acceleration=0 mean "unbounded"
@@ -120,20 +117,17 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
 
   front_wj_ = GetModel()->GetJoint(front_wj_name);
   if (front_wj_ == nullptr) {
-    throw YAMLException("Joint with name " + Q(front_wj_name) +
-                        " does not exist");
+    throw YAMLException("Joint with name " + Q(front_wj_name) + " does not exist");
   }
 
   rear_left_wj_ = GetModel()->GetJoint(rear_left_wj_name);
   if (rear_left_wj_ == nullptr) {
-    throw YAMLException("Joint with name " + Q(rear_left_wj_name) +
-                        " does not exist");
+    throw YAMLException("Joint with name " + Q(rear_left_wj_name) + " does not exist");
   }
 
   rear_right_wj_ = GetModel()->GetJoint(rear_right_wj_name);
   if (rear_right_wj_ == nullptr) {
-    throw YAMLException("Joint with name " + Q(rear_right_wj_name) +
-                        " does not exist");
+    throw YAMLException("Joint with name " + Q(rear_right_wj_name) + " does not exist");
   }
 
   // validate the that joints fits the assumption of the robot model and
@@ -149,8 +143,7 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
 
   // init the values for the messages
   ground_truth_msg_.header.frame_id = odom_frame_id;
-  ground_truth_msg_.child_frame_id =
-      GetModel()->NameSpaceTF(body_->name_);
+  ground_truth_msg_.child_frame_id = GetModel()->NameSpaceTF(body_->name_);
 
   ground_truth_msg_.twist.covariance.fill(0);
   ground_truth_msg_.pose.covariance.fill(0);
@@ -171,27 +164,26 @@ void TricycleDrive::OnInitialize(const YAML::Node& config) {
   }
 
   for (unsigned int i = 0; i < 3; i++) {
-    noise_gen_[i + 3] =
-        normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
+    noise_gen_[i + 3] = normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
   }
 
-  RCLCPP_DEBUG(rclcpp::get_logger("TricycleDrive"),
-      "Initialized with params body(%p %s) front_wj(%p %s) "
-      "rear_left_wj(%p %s) rear_right_wj(%p %s) "
-      "odom_frame_id(%s) twist_sub(%s) odom_pub(%s) "
-      "ground_truth_pub(%s) odom_pose_noise({%f,%f,%f}) "
-      "odom_twist_noise({%f,%f,%f}) pub_rate(%f)\n",
-      body_, body_->GetName().c_str(), front_wj_, front_wj_->GetName().c_str(),
-      rear_left_wj_, rear_left_wj_->GetName().c_str(), rear_right_wj_,
-      rear_right_wj_->GetName().c_str(), odom_frame_id.c_str(),
-      twist_topic.c_str(), odom_topic.c_str(), ground_truth_topic.c_str(),
-      odom_pose_noise[0], odom_pose_noise[1], odom_pose_noise[2],
-      odom_twist_noise[0], odom_twist_noise[1], odom_twist_noise[2], pub_rate);
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("TricycleDrive"),
+    "Initialized with params body(%p %s) front_wj(%p %s) "
+    "rear_left_wj(%p %s) rear_right_wj(%p %s) "
+    "odom_frame_id(%s) twist_sub(%s) odom_pub(%s) "
+    "ground_truth_pub(%s) odom_pose_noise({%f,%f,%f}) "
+    "odom_twist_noise({%f,%f,%f}) pub_rate(%f)\n",
+    body_, body_->GetName().c_str(), front_wj_, front_wj_->GetName().c_str(), rear_left_wj_,
+    rear_left_wj_->GetName().c_str(), rear_right_wj_, rear_right_wj_->GetName().c_str(),
+    odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(), ground_truth_topic.c_str(),
+    odom_pose_noise[0], odom_pose_noise[1], odom_pose_noise[2], odom_twist_noise[0],
+    odom_twist_noise[1], odom_twist_noise[2], pub_rate);
 }
 
-void TricycleDrive::ComputeJoints() {
-  auto get_anchor = [&](Joint* joint, bool* is_inverted = nullptr) {
-
+void TricycleDrive::ComputeJoints()
+{
+  auto get_anchor = [&](Joint * joint, bool * is_inverted = nullptr) {
     b2Vec2 wheel_anchor;  ///< wheel anchor point, must be (0,0)
     b2Vec2 body_anchor;   ///< body anchor point
     bool inv = false;
@@ -205,8 +197,8 @@ void TricycleDrive::ComputeJoints() {
       body_anchor = joint->physics_joint_->GetAnchorB();
       inv = true;
     } else {
-      throw YAMLException("Joint " + Q(joint->GetName()) +
-                          " does not anchor on body " + Q(body_->GetName()));
+      throw YAMLException(
+        "Joint " + Q(joint->GetName()) + " does not anchor on body " + Q(body_->GetName()));
     }
 
     // convert anchor is global coordinates to local body coordinates
@@ -215,8 +207,8 @@ void TricycleDrive::ComputeJoints() {
 
     // ensure the joint is anchored at (0,0) of the wheel_body
     if (std::fabs(wheel_anchor.x) > 1e-5 || std::fabs(wheel_anchor.y) > 1e-5) {
-      throw YAMLException("Joint " + Q(joint->GetName()) +
-                          " must be anchored at (0, 0) on the wheel");
+      throw YAMLException(
+        "Joint " + Q(joint->GetName()) + " must be anchored at (0, 0) on the wheel");
     }
 
     if (is_inverted) {
@@ -240,8 +232,7 @@ void TricycleDrive::ComputeJoints() {
   }
 
   // enable limits for the front joint
-  b2RevoluteJoint* j =
-      dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
+  b2RevoluteJoint * j = dynamic_cast<b2RevoluteJoint *>(front_wj_->physics_joint_);
   j->EnableLimit(true);
 
   // positive joint angle goes counter clockwise from the perspective of BodyA,
@@ -252,8 +243,7 @@ void TricycleDrive::ComputeJoints() {
 
   // the front wheel must be at (0,0) of the body
   if (std::fabs(front_anchor.x) > 1e-5 || std::fabs(front_anchor.y) > 1e-5) {
-    throw YAMLException(
-        "Front wheel joint must have its body anchored at (0, 0)");
+    throw YAMLException("Front wheel joint must have its body anchored at (0, 0)");
   }
 
   // calculate the wheelbase and axeltrack. We also need to verify that
@@ -263,9 +253,8 @@ void TricycleDrive::ComputeJoints() {
 
   // find the perpendicular intersection between line segment given by (x1, y1)
   // and (x2, y2) and a point (x3, y3).
-  double x1 = rear_left_anchor.x, y1 = rear_left_anchor.y,
-         x2 = rear_right_anchor.x, y2 = rear_right_anchor.y,
-         x3 = front_anchor.x, y3 = front_anchor.y;
+  double x1 = rear_left_anchor.x, y1 = rear_left_anchor.y, x2 = rear_right_anchor.x,
+         y2 = rear_right_anchor.y, x3 = front_anchor.x, y3 = front_anchor.y;
 
   double k = ((y2 - y1) * (x3 - x1) - (x2 - x1) * (y3 - y1)) /
              ((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1));
@@ -275,9 +264,9 @@ void TricycleDrive::ComputeJoints() {
   // check (x4, y4) equals to rear_center_
   if (std::fabs(x4 - rear_center_.x) > 1e-5 || std::fabs(y4 - rear_center_.y) > 1e-5) {
     throw YAMLException(
-        "The mid point between the rear wheel anchors on the body must equal "
-        "the perpendicular intersection between the rear axel (line segment "
-        "between rear anchors) and the front wheel anchor");
+      "The mid point between the rear wheel anchors on the body must equal "
+      "the perpendicular intersection between the rear axel (line segment "
+      "between rear anchors) and the front wheel anchor");
   }
 
   // track is the separation between the rear two wheels, which is simply the
@@ -289,10 +278,11 @@ void TricycleDrive::ComputeJoints() {
   wheelbase_ = sqrt((x4 - x3) * (x4 - x3) + (y4 - y3) * (y4 - y3));
 }
 
-void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
+void TricycleDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
+{
   bool publish = update_timer_.CheckUpdate(timekeeper);
 
-  b2Body* b2body = body_->physics_body_;
+  b2Body * b2body = body_->physics_body_;
 
   b2Vec2 position = b2body->GetPosition();
   float angle = b2body->GetAngle();
@@ -300,8 +290,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   if (publish) {
     // 1. get the state of the body and publish the data,
     //    before the tricycle physics get updated
-    b2Vec2 linear_vel_local =
-        b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+    b2Vec2 linear_vel_local = b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
     float angular_vel = b2body->GetAngularVelocity();
 
     ground_truth_msg_.header.stamp = timekeeper.GetSimTime();
@@ -310,7 +299,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     ground_truth_msg_.pose.pose.position.z = 0;
     tf2::Quaternion q;
     q.setRPY(0, 0, angle);
-    ground_truth_msg_.pose.pose.orientation= tf2::toMsg(q);
+    ground_truth_msg_.pose.pose.orientation = tf2::toMsg(q);
     ground_truth_msg_.twist.twist.linear.x = linear_vel_local.x;
     ground_truth_msg_.twist.twist.linear.y = linear_vel_local.y;
     ground_truth_msg_.twist.twist.linear.z = 0;
@@ -325,7 +314,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
     odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
     odom_msg_.pose.pose.position.y += noise_gen_[1](rng_);
     q.setRPY(0, 0, angle + noise_gen_[2](rng_));
-    odom_msg_.pose.pose.orientation= tf2::toMsg(q);
+    odom_msg_.pose.pose.orientation = tf2::toMsg(q);
     odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
     odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
     odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
@@ -357,7 +346,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   // twist message contains the speed and angle of the front wheel
   double v_f = twist_msg_->linear.x;       // target velocity at front wheel
   delta_command_ = twist_msg_->angular.z;  // target steering angle
-  double theta = angle;                   // angle of robot in map frame
+  double theta = angle;                    // angle of robot in map frame
   double dt = timekeeper.GetStepSize();
 
   // In the simulation, the equations of motion have to be computed backwards
@@ -374,15 +363,13 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   }
   if (max_steer_velocity_ != 0.0) {
     // Saturating the command also saturates the steering velocity
-    d_delta_command =
-        Saturate(d_delta_command, -max_steer_velocity_, max_steer_velocity_);
+    d_delta_command = Saturate(d_delta_command, -max_steer_velocity_, max_steer_velocity_);
   }
 
   // (3) Update the new steering acceleration
   double d2_delta = (d_delta_command - d_delta_) / dt;
   if (max_steer_acceleration_ != 0.0) {
-    d2_delta =
-        Saturate(d2_delta, -max_steer_acceleration_, max_steer_acceleration_);
+    d2_delta = Saturate(d2_delta, -max_steer_acceleration_, max_steer_acceleration_);
   }
 
   // (2) Update the new steering velocity
@@ -395,16 +382,15 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   }
 
   rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
-  RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("TricycleDrive"), steady_clock, 500, 
-                     "Using new tricycle steering, d2_delta = %.4f, "
-                     "d_delta = %.4f, twist.x = %.4f, twist.delta = %.4f",
-                     d2_delta, d_delta_, twist_msg_->linear.x,
-                     twist_msg_->angular.z);
+  RCLCPP_DEBUG_THROTTLE(
+    rclcpp::get_logger("TricycleDrive"), steady_clock, 500,
+    "Using new tricycle steering, d2_delta = %.4f, "
+    "d_delta = %.4f, twist.x = %.4f, twist.delta = %.4f",
+    d2_delta, d_delta_, twist_msg_->linear.x, twist_msg_->angular.z);
 
   // change angle of the front wheel for visualization
 
-  b2RevoluteJoint* j =
-      dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
+  b2RevoluteJoint * j = dynamic_cast<b2RevoluteJoint *>(front_wj_->physics_joint_);
   j->EnableLimit(true);
   if (invert_steering_angle_) {
     j->SetLimits(-delta_, -delta_);
@@ -439,11 +425,13 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper& timekeeper) {
   b2body->SetAngularVelocity(w);
 }
 
-void TricycleDrive::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
+void TricycleDrive::TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
+{
   twist_msg_ = msg;
 }
 
-double TricycleDrive::Saturate(double in, double lower, double upper) {
+double TricycleDrive::Saturate(double in, double lower, double upper)
+{
   if (lower > upper) {
     return in;
   }
@@ -452,7 +440,6 @@ double TricycleDrive::Saturate(double in, double lower, double upper) {
   out = std::min(out, upper);
   return out;
 }
-}
+}  // namespace flatland_plugins
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::TricycleDrive,
-                       flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::TricycleDrive, flatland_server::ModelPlugin)

@@ -1,0 +1,15 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  industrial_ci:
+    strategy:
+      matrix:
+        env:
+          - {ROS_DISTRO: humble, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: ${{matrix.env}}

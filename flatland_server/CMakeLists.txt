@@ -3,12 +3,12 @@ cmake_minimum_required(VERSION 3.5)
 project(flatland_server)
 
 # Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+# if(NOT CMAKE_CXX_STANDARD)
+#   set(CMAKE_CXX_STANDARD 17)
+# endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
 endif()
 
 ## Find macros and libraries
@@ -25,19 +25,18 @@ find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
+find_package(flatland_box2d REQUIRED)
 
 # lua5.1
 find_package(Lua 5.1 QUIET)
 
 # OpenCV
 find_package(OpenCV REQUIRED)
-
-# Box2D
-find_package(Box2D REQUIRED)
 
 # Boost
 find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
@@ -90,20 +89,19 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
+ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers sensor_msgs)
 
 target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
   ${LUA_LIBRARIES}
-  ${BOX2D_LIBRARIES}
   yaml-cpp
 )
 
 ## Declare a C++ executable
 add_executable(flatland_server src/flatland_server_node.cpp)
-ament_target_dependencies(flatland_server rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
+ament_target_dependencies(flatland_server flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_include_directories(flatland_server
   PUBLIC
@@ -118,15 +116,14 @@ target_link_libraries(flatland_server
   ${Boost_LIBRARIES}
   ${Boost_FILESYSTEM_LIBRARY}
   ${LUA_LIBRARIES}
-  ${BOX2D_LIBRARIES}
   yaml-cpp
   flatland_lib
 )
 
 
-ament_export_interfaces(export_flatland_lib HAS_LIBRARY_TARGET)
+ament_export_targets(export_flatland_lib HAS_LIBRARY_TARGET)
 ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_dependencies(rclcpp flatland_box2d flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
 ament_export_include_directories(include)
 
 
@@ -148,66 +145,36 @@ if(BUILD_TESTING)
   ament_add_gtest(model_test test/model_test.cpp)
   target_link_libraries(model_test flatland_lib)
 
-if(FALSE) # fake a block comment
+  ament_add_gtest(geometry_test test/geometry_test.cpp)
+  target_link_libraries(geometry_test flatland_lib)
 
-  catkin_add_gtest(geometry_test test/geometry_test.cpp)
-  target_link_libraries(geometry_test
-    flatland_lib)
+  ament_add_gtest(collision_filter_registry_test test/collision_filter_registry_test.cpp)
+  target_link_libraries(collision_filter_registry_test flatland_lib)
 
-  catkin_add_gtest(collision_filter_registry_test
-    test/collision_filter_registry_test.cpp)
-  target_link_libraries(collision_filter_registry_test
-    flatland_lib)
+  ament_add_gtest(plugin_manager_test test/plugin_manager_test.cpp)
+  target_link_libraries(plugin_manager_test flatland_lib)
 
-  add_rostest_gtest(plugin_manager_test
-    test/plugin_manager_test.test
-    test/plugin_manager_test.cpp)
-  target_link_libraries(plugin_manager_test
-    flatland_lib)
+  ament_add_gtest(yaml_preprocessor_test test/yaml_preprocessor/yaml_preprocessor_test.cpp)
+  target_link_libraries(yaml_preprocessor_test flatland_lib yaml-cpp)
 
-  add_rostest_gtest(service_manager_test
-    test/service_manager_test.test
-    test/service_manager_test.cpp)
-  target_link_libraries(service_manager_test
-    flatland_lib)
+  ament_add_gtest(dummy_world_plugin_test test/dummy_world_plugin_test.cpp)
+  target_link_libraries(dummy_world_plugin_test flatland_lib yaml-cpp)
 
+  ament_add_gtest(dummy_model_plugin_test test/dummy_model_plugin_test.cpp)
+  target_link_libraries(dummy_model_plugin_test flatland_lib)
 
-  add_rostest_gtest(debug_visualization_test
-    test/debug_visualization.test
-    test/debug_visualization_test.cpp)
-  target_link_libraries(debug_visualization_test
-    flatland_lib)
+  ament_add_gtest(service_manager_test test/service_manager_test.cpp)
+  target_link_libraries(service_manager_test flatland_lib)
 
-  add_rostest_gtest(dummy_model_plugin_test 
-                    test/dummy_model_plugin_test.test 
-                    test/dummy_model_plugin_test.cpp) 
-  target_link_libraries(dummy_model_plugin_test
-                        flatland_lib) 
-                        
-  add_rostest_gtest(dummy_world_plugin_test 
-                    test/dummy_world_plugin_test.test 
-                    test/dummy_world_plugin_test.cpp) 
-  target_link_libraries(dummy_world_plugin_test
-                        flatland_lib yaml-cpp) 
-
-  add_rostest_gtest(yaml_preprocessor_test
-                    test/yaml_preprocessor/yaml_preprocessor_test.test 
-                    test/yaml_preprocessor/yaml_preprocessor_test.cpp) 
-  target_link_libraries(yaml_preprocessor_test
-                        flatland_lib yaml-cpp)
-
-
+  ament_add_gtest(debug_visualization_test test/debug_visualization_test.cpp)
+  target_link_libraries(debug_visualization_test flatland_lib)
 endif()
-endif()
-
-
-ament_package()
 
 #############
 ## Install ##
 #############
 
-pluginlib_export_plugin_description_file(flatland_lib plugin_description.xml)
+pluginlib_export_plugin_description_file(flatland_server plugin_description.xml)
 
 install(
   TARGETS flatland_lib
@@ -238,8 +205,4 @@ install(DIRECTORY test/conestogo_office_test
     DESTINATION share/${PROJECT_NAME}/test
 )
 
-# TODO
-# Install plugins file
-#install(FILES flatland_plugins.xml
-#    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-#)
+ament_package()

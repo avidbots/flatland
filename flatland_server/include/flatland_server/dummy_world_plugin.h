@@ -53,20 +53,22 @@
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 /**
  * This is a dummy plugin of type world plugin, used completely for testing
  * purposes
  */
-class DummyWorldPlugin : public WorldPlugin {
- public:
+class DummyWorldPlugin : public WorldPlugin
+{
+public:
   /**
    * @brief Initialization for the plugin
    * @param[in] config Plugin YAML Node
    * @param[in] world_config The world configuration file
    */
-  void OnInitialize(const YAML::Node &plugin_reader, YamlReader &world_config) override;
+  void OnInitialize(const YAML::Node & plugin_reader, YamlReader & world_config) override;
 };
-}
+}  // namespace flatland_plugins
 
 #endif

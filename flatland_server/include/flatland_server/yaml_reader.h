@@ -50,12 +50,13 @@
 #include <Box2D/Box2D.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/types.h>
+#include <flatland_server/yaml_preprocessor.h>
 #include <yaml-cpp/yaml.h>
+
 #include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/version.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <flatland_server/yaml_preprocessor.h>
 
 // If we have a version of boost with type_index
 #if BOOST_VERSION / 100 % 1000 >= 56
@@ -71,17 +72,19 @@
 #include <string>
 #include <vector>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 /**
  */
-class YamlReader {
- public:
+class YamlReader
+{
+public:
   enum NodeTypeCheck { MAP, LIST, NO_CHECK };
 
-  YAML::Node node_;                      ///< The YAML Node this processes
+  YAML::Node node_;  ///< The YAML Node this processes
   std::shared_ptr<rclcpp::Node> ros_node_;
-  YamlPreprocessor yaml_preprocessor_; 
+  YamlPreprocessor yaml_preprocessor_;
   std::set<std::string> accessed_keys_;  /// Records of the keys processed
   ///< location of the entry, used to show where the error come from
   std::string filename_;
@@ -102,14 +105,14 @@ class YamlReader {
    * @brief Constructor with a given node
    * @param[in] node A Yaml node to get data from
    */
-  YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const YAML::Node &node);
+  YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const YAML::Node & node);
 
   /**
    * @brief Constructor with a given path to a yaml file, throws exception on
    * failure
    * @param[in] path Path to the yaml file
    */
-  YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const std::string &path);
+  YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const std::string & path);
 
   /**
    * @brief Use this method to set the entry location and entry name for error
@@ -126,7 +129,7 @@ class YamlReader {
    * @param[in] file_path path to the file, use "_NONE_" for empty string,
    * file_path with empty string will keep current path
    */
-  void SetFile(const std::string &file_path);
+  void SetFile(const std::string & file_path);
 
   /**
    * @brief This method checks all keys in the yaml node are used, otherwise it
@@ -159,8 +162,7 @@ class YamlReader {
    * using its parents entry location and entry name. It also accepts "_NONE_"
    * @return YamlReader of the sub node
    */
-  YamlReader Subnode(int index, NodeTypeCheck type_check,
-                     std::string sub_node_location = "");
+  YamlReader Subnode(int index, NodeTypeCheck type_check, std::string sub_node_location = "");
   /**
    * @brief Get one of the subnode using a key, throws exception on failure,
    * file path is inherited from the parent
@@ -171,8 +173,8 @@ class YamlReader {
    * using its parents entry location and entry name. It also accepts "_NONE_"
    * @return YamlReader of the sub node
    */
-  YamlReader Subnode(const std::string &key, NodeTypeCheck type_check,
-                     std::string sub_node_location = "");
+  YamlReader Subnode(
+    const std::string & key, NodeTypeCheck type_check, std::string sub_node_location = "");
   /**
    * @brief Optionally get one of the subnode using a key, throws exception on
    * failure, file path is inherited from the parent
@@ -184,8 +186,8 @@ class YamlReader {
    * @return YamlReader of the sub node, or a YamlReader of a empty node if a
    * node with the given key does not exist
    */
-  YamlReader SubnodeOpt(const std::string &key, NodeTypeCheck type_check,
-                        std::string sub_node_location = "");
+  YamlReader SubnodeOpt(
+    const std::string & key, NodeTypeCheck type_check, std::string sub_node_location = "");
   /**
    * @brief Convert the current node in yaml reader to a given template type. It
    * uses yaml-cpp's as<T>() function, you could specify conversion for custom
@@ -219,7 +221,7 @@ class YamlReader {
    * @return Value of the converted subnode
    */
   template <typename T>
-  T Get(const std::string &key);
+  T Get(const std::string & key);
 
   /**
    * @brief Optionally get subnode with a given key and converted to the given
@@ -230,7 +232,7 @@ class YamlReader {
    * does not exist
    */
   template <typename T>
-  T Get(const std::string &key, const T &default_val);
+  T Get(const std::string & key, const T & default_val);
 
   /**
    * @brief Get subnode with a given key and converted to list of the given
@@ -241,7 +243,7 @@ class YamlReader {
    * @return Value of the converted subnode
    */
   template <typename T>
-  std::vector<T> GetList(const std::string &key, int min_size, int max_size);
+  std::vector<T> GetList(const std::string & key, int min_size, int max_size);
 
   /**
    * @brief Optionally get subnode with a given key and converted to list of the
@@ -253,9 +255,8 @@ class YamlReader {
    * @return Value of the converted subnode
    */
   template <typename T>
-  std::vector<T> GetList(const std::string &key,
-                         const std::vector<T> default_val, int min_size,
-                         int max_size);
+  std::vector<T> GetList(
+    const std::string & key, const std::vector<T> default_val, int min_size, int max_size);
 
   /**
    * @brief Get subnode with a given key and converted to array of the given
@@ -264,7 +265,7 @@ class YamlReader {
    * @return Value of the converted subnode
    */
   template <typename T, int N>
-  std::array<T, N> GetArray(const std::string &key);
+  std::array<T, N> GetArray(const std::string & key);
 
   /**
    * @brief Optionally get subnode with a given key and converted to array of
@@ -274,53 +275,52 @@ class YamlReader {
    * @return Value of the converted subnode
    */
   template <typename T, int N>
-  std::array<T, N> GetArray(const std::string &key,
-                            const std::array<T, N> default_val);
+  std::array<T, N> GetArray(const std::string & key, const std::array<T, N> default_val);
 
   /**
    * @return A Vec2 accessed by a given key
    */
-  Vec2 GetVec2(const std::string &key);
+  Vec2 GetVec2(const std::string & key);
 
   /**
    * @return A Vec2 accessed by a given key, or default value if key does not
    * exist
    */
-  Vec2 GetVec2(const std::string &key, const Vec2 &default_val);
+  Vec2 GetVec2(const std::string & key, const Vec2 & default_val);
 
   /**
    * @return A Color value accessed by a given key, or default value if key does
    * not exist
    */
-  Color GetColor(const std::string &key, const Color &default_val);
+  Color GetColor(const std::string & key, const Color & default_val);
 
   /**
    * @return A Pose value accessed by a given key
    */
-  Pose GetPose(const std::string &key);
+  Pose GetPose(const std::string & key);
 
   /**
    * @return A Pose value accessed by a given key, or default value if key does
    * not exist
    */
-  Pose GetPose(const std::string &key, const Pose &default_val);
+  Pose GetPose(const std::string & key, const Pose & default_val);
 };
 
 /**
  * @return A string with quotes around the input
  */
-inline std::string Q(const std::string &str) { return "\"" + str + "\""; }
+inline std::string Q(const std::string & str) { return "\"" + str + "\""; }
 
 template <typename T>
-T YamlReader::As() {
+T YamlReader::As()
+{
   T ret;
 
   try {
     ret = node_.as<T>();
-  } catch (const YAML::RepresentationException &e) {
-    throw YAMLException("Error converting entry" + fmt_name_ + " to " +
-                        TYPESTRING(T) + fmt_in_);
-  } catch (const YAML::Exception &e) {
+  } catch (const YAML::RepresentationException & e) {
+    throw YAMLException("Error converting entry" + fmt_name_ + " to " + TYPESTRING(T) + fmt_in_);
+  } catch (const YAML::Exception & e) {
     throw YAMLException("Error reading entry" + fmt_name_ + fmt_in_);
   }
 
@@ -328,23 +328,23 @@ T YamlReader::As() {
 }
 
 template <typename T>
-std::vector<T> YamlReader::AsList(int min_size, int max_size) {
+std::vector<T> YamlReader::AsList(int min_size, int max_size)
+{
   std::vector<T> list;
 
-  if (min_size > 0 && max_size > 0 && min_size == max_size &&
-      NodeSize() != max_size) {
-    throw YAMLException("Entry" + fmt_name_ + " must have size of exactly " +
-                        std::to_string(min_size) + fmt_in_);
+  if (min_size > 0 && max_size > 0 && min_size == max_size && NodeSize() != max_size) {
+    throw YAMLException(
+      "Entry" + fmt_name_ + " must have size of exactly " + std::to_string(min_size) + fmt_in_);
   }
 
   if (min_size > 0 && NodeSize() < min_size) {
-    throw YAMLException("Entry" + fmt_name_ + " must have size >= " +
-                        std::to_string(min_size) + fmt_in_);
+    throw YAMLException(
+      "Entry" + fmt_name_ + " must have size >= " + std::to_string(min_size) + fmt_in_);
   }
 
   if (max_size > 0 && NodeSize() > max_size) {
-    throw YAMLException("Entry" + fmt_name_ + " must have size <= " +
-                        std::to_string(max_size) + fmt_in_);
+    throw YAMLException(
+      "Entry" + fmt_name_ + " must have size <= " + std::to_string(max_size) + fmt_in_);
   }
 
   for (int i = 0; i < NodeSize(); i++) {
@@ -355,7 +355,8 @@ std::vector<T> YamlReader::AsList(int min_size, int max_size) {
 }
 
 template <typename T, int N>
-std::array<T, N> YamlReader::AsArray() {
+std::array<T, N> YamlReader::AsArray()
+{
   std::vector<T> list_ret = AsList<T>(N, N);
   std::array<T, N> array_ret;
 
@@ -366,12 +367,14 @@ std::array<T, N> YamlReader::AsArray() {
 }
 
 template <typename T>
-T YamlReader::Get(const std::string &key) {
+T YamlReader::Get(const std::string & key)
+{
   return Subnode(key, NO_CHECK).As<T>();
 }
 
 template <typename T>
-T YamlReader::Get(const std::string &key, const T &default_val) {
+T YamlReader::Get(const std::string & key, const T & default_val)
+{
   if (!node_[key]) {
     accessed_keys_.insert(key);
     return default_val;
@@ -380,15 +383,15 @@ T YamlReader::Get(const std::string &key, const T &default_val) {
 }
 
 template <typename T>
-std::vector<T> YamlReader::GetList(const std::string &key, int min_size,
-                                   int max_size) {
+std::vector<T> YamlReader::GetList(const std::string & key, int min_size, int max_size)
+{
   return Subnode(key, LIST).AsList<T>(min_size, max_size);
 }
 
 template <typename T>
-std::vector<T> YamlReader::GetList(const std::string &key,
-                                   const std::vector<T> default_val,
-                                   int min_size, int max_size) {
+std::vector<T> YamlReader::GetList(
+  const std::string & key, const std::vector<T> default_val, int min_size, int max_size)
+{
   if (!node_[key]) {
     accessed_keys_.insert(key);
     return default_val;
@@ -398,13 +401,14 @@ std::vector<T> YamlReader::GetList(const std::string &key,
 }
 
 template <typename T, int N>
-std::array<T, N> YamlReader::GetArray(const std::string &key) {
+std::array<T, N> YamlReader::GetArray(const std::string & key)
+{
   return Subnode(key, LIST).AsArray<T, N>();
 }
 
 template <typename T, int N>
-std::array<T, N> YamlReader::GetArray(const std::string &key,
-                                      const std::array<T, N> default_val) {
+std::array<T, N> YamlReader::GetArray(const std::string & key, const std::array<T, N> default_val)
+{
   if (!node_[key]) {
     accessed_keys_.insert(key);
     return default_val;
@@ -412,14 +416,17 @@ std::array<T, N> YamlReader::GetArray(const std::string &key,
 
   return GetArray<T, N>(key);
 }
-}
+}  // namespace flatland_server
 
 // encode and decode functions for yaml-cpp to convert values for commonly used
 // types in flatland server
-namespace YAML {
+namespace YAML
+{
 template <>
-struct convert<b2Vec2> {
-  static bool decode(const Node &node, b2Vec2 &rhs) {
+struct convert<b2Vec2>
+{
+  static bool decode(const Node & node, b2Vec2 & rhs)
+  {
     if (!node.IsSequence() || node.size() != 2) {
       return false;
     }
@@ -431,8 +438,10 @@ struct convert<b2Vec2> {
 };
 
 template <>
-struct convert<flatland_server::Vec2> {
-  static bool decode(const Node &node, flatland_server::Vec2 &rhs) {
+struct convert<flatland_server::Vec2>
+{
+  static bool decode(const Node & node, flatland_server::Vec2 & rhs)
+  {
     if (!node.IsSequence() || node.size() != 2) {
       return false;
     }
@@ -444,8 +453,10 @@ struct convert<flatland_server::Vec2> {
 };
 
 template <>
-struct convert<flatland_server::Color> {
-  static bool decode(const Node &node, flatland_server::Color &rhs) {
+struct convert<flatland_server::Color>
+{
+  static bool decode(const Node & node, flatland_server::Color & rhs)
+  {
     if (!node.IsSequence() || node.size() != 4) {
       return false;
     }
@@ -459,8 +470,10 @@ struct convert<flatland_server::Color> {
 };
 
 template <>
-struct convert<flatland_server::Pose> {
-  static bool decode(const Node &node, flatland_server::Pose &rhs) {
+struct convert<flatland_server::Pose>
+{
+  static bool decode(const Node & node, flatland_server::Pose & rhs)
+  {
     if (!node.IsSequence() || node.size() != 3) {
       return false;
     }
@@ -471,6 +484,6 @@ struct convert<flatland_server::Pose> {
     return true;
   }
 };
-}
+}  // namespace YAML
 
 #endif

@@ -52,17 +52,19 @@
 #include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 /**
  * This class defines a body in the simulation. It wraps around the Box2D
  * physics body providing extra data and useful methods
  */
-class Body {
- public:
-  Entity *entity_;         ///< The entity the body belongs to
+class Body
+{
+public:
+  Entity * entity_;        ///< The entity the body belongs to
   std::string name_;       ///< name of the body, unique within a model
-  b2Body *physics_body_;   ///< Box2D physics body
+  b2Body * physics_body_;  ///< Box2D physics body
   Color color_;            ///< color, for visualization
   YAML::Node properties_;  ///< Properties document for plugins to use
 
@@ -78,10 +80,10 @@ class Body {
    * @param[in] linear_damping Box2D body linear damping
    * @param[in] angular_damping Box2D body angular damping
    */
-  Body(b2World *physics_world, Entity *entity, const std::string &name,
-       const Color &color, const Pose &pose, b2BodyType body_type,
-       const YAML::Node &properties, double linear_damping = 0,
-       double angular_damping = 0);
+  Body(
+    b2World * physics_world, Entity * entity, const std::string & name, const Color & color,
+    const Pose & pose, b2BodyType body_type, const YAML::Node & properties,
+    double linear_damping = 0, double angular_damping = 0);
 
   /**
    * @brief logs the debugging information for the body
@@ -91,19 +93,19 @@ class Body {
   /**
    * @return entity associated with the body
    */
-  Entity *GetEntity();
+  Entity * GetEntity();
 
   /**
    * @return name of the body
    */
-  const std::string &GetName() const;
+  const std::string & GetName() const;
 
   /**
    * @brief Get the Box2D body, use this to manipulate the body in physics
    * through the Box2D methods
    * @return Pointer to Box2D physics body
    */
-  b2Body *GetPhysicsBody();
+  b2Body * GetPhysicsBody();
 
   /**
    * @brief Count the number of fixtures
@@ -114,12 +116,12 @@ class Body {
   /**
    * @return Color of the body
    */
-  const Color &GetColor() const;
+  const Color & GetColor() const;
 
   /**
    * @brief Set of the color of the body
    */
-  void SetColor(const Color &color);
+  void SetColor(const Color & color);
 
   /**
    * Destructor for the body
@@ -131,7 +133,7 @@ class Body {
    * and destructing bodies
    */
   Body(const Body &) = delete;
-  Body &operator=(const Body &) = delete;
+  Body & operator=(const Body &) = delete;
 };
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_MODEL_BODY_H

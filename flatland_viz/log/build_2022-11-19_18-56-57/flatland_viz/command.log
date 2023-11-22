@@ -1,0 +1,6 @@
+Invoking command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz': ROS_DISTRO=%ROS_DISTRO%
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin;
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz
+Invoked command in 'C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\build\flatland_viz' returned '1': ROS_DISTRO=%ROS_DISTRO%
+JetBrains Rider=C:\Program Files\JetBrains\JetBrains Rider 2021.3.3\bin;
+IntelliJ IDEA Community Edition=C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2022.2.2\bin; C:\Program Files\CMake\bin\cmake.EXE C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja -DCATKIN_INSTALL_INTO_PREFIX_ROOT=0 -DCMAKE_INSTALL_PREFIX=C:\Users\PC\Documents\Aulas\5ano\1semestre\RI\flatland\flatland_viz\install\flatland_viz
