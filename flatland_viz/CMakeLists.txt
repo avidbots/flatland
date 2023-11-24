@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(flatland_viz)
 
 # Get the LSB release name (14.04 or 16.04) string into variable ${LSB_RELEASE_VALUE}
