@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(flatland_server)
 
 # Ensure we're using c++11
@@ -42,8 +42,8 @@ find_package(Lua 5.1 QUIET)
 find_package(OpenCV REQUIRED)
 
 # Boost
-find_package(Boost REQUIRED COMPONENTS date_time system thread filesystem)
-find_package(Threads)
+find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
+find_package(Threads REQUIRED)
 
 ##############
 ## coverage ##
@@ -113,6 +113,7 @@ target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
   ${LUA_LIBRARIES}
+  Threads::Threads
   flatland_Box2D
   yaml-cpp
 )
@@ -132,6 +133,7 @@ target_link_libraries(flatland_server
   ${OpenCV_LIBRARIES}
   ${Boost_LIBRARIES}
   ${LUA_LIBRARIES}
+  Threads::Threads
   flatland_Box2D
   yaml-cpp
   flatland_lib
