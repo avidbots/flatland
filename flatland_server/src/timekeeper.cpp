@@ -49,8 +49,17 @@
 
 namespace flatland_server {
 
-Timekeeper::Timekeeper()
-    : time_(ros::Time(0, 0)), max_step_size_(0), clock_topic_("/clock") {
+Timekeeper::Timekeeper() : max_step_size_(0), clock_topic_("/clock") {
+  bool use_sim_time = false;
+  nh_.getParam("use_sim_time", use_sim_time);
+
+  if (!use_sim_time) {
+    time_ =
+        ros::Time(ros::WallTime::now().toSec(), ros::WallTime::now().toNSec());
+  } else {
+    time_ = ros::Time(0, 0);
+  }
+
   clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
 }
 
