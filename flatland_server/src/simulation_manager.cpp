@@ -99,8 +99,7 @@ void SimulationManager::Main() {
   double filtered_cycle_util = 0;
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
-  double viz_update_period = timekeeper.GetMaxStepSize() /
-                             rate.expectedCycleTime().toSec() / viz_pub_rate_;
+  double viz_update_period;
 
   ROS_INFO_NAMED("SimMan", "Waiting for Map");
   while (ros::ok() && run_simulator_) {
@@ -128,10 +127,20 @@ void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Received Map, Simulation Loop Started");
   while (ros::ok() && run_simulator_) {
     START_PROFILE(timekeeper, "Total Iteration");
+    
+    if (world_->IsSimTimeSlow()){
+      // Dynamic step_size_ depending on agents_in_slow_time
+      timekeeper.SlowTime(world_->step_size_);
+    }else{
+      timekeeper.FastTime();
+    }
+
     // for updating visualization at a given rate
     // see flatland_plugins/update_timer.cpp for this formula
     double f = 0.0;
     static double t_init_offset = timekeeper.GetSimTime().toSec();
+    viz_update_period = timekeeper.GetMaxStepSize() /
+                             rate.expectedCycleTime().toSec() / viz_pub_rate_;
     try {
       f = fmod(timekeeper.GetSimTime().toSec() - t_init_offset +
                    (rate.expectedCycleTime().toSec() / 2.0),

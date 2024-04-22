@@ -59,6 +59,7 @@ class Timekeeper {
   ros::NodeHandle nh_;             ///< ROS Node handle
   ros::Time time_;                 ///< simulation time
   double max_step_size_;           ///< maximum step size
+  double max_step_size_user_;           ///< maximum step size_user_
   const std::string clock_topic_;  ///< the name of the clock topic
   mutable Profiler profiler_;
 
@@ -97,6 +98,10 @@ class Timekeeper {
    * @return the max step size possible
    */
   double GetMaxStepSize() const;
+
+  void SlowTime(double step_size);
+
+  void FastTime();
 };
 };      // namespace flatland_server
 #endif  // FLATLAND_SERVER_TIME_KEEPER_H

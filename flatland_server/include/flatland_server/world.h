@@ -84,6 +84,8 @@ class World : public b2ContactListener {
   PluginManager plugin_manager_;  ///< for loading and updating plugins
   bool service_paused_;  ///< indicates if simulation is paused by a service
                          /// call or not
+  bool sim_time_slow_;  ///< indicates if simulation time is paused by a service
+                         /// call or not
   InteractiveMarkerManager
       int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
@@ -93,6 +95,13 @@ class World : public b2ContactListener {
 
   std::string yaml_path_;
   std::string models_path_;
+  ros::Time time_;
+  std::map<std::string, bool> agents_in_slow_time_;
+  double step_size_; // Step size based on agents_in_slow_time_
+  bool use_dynamic_fast_sim_;
+  double max_lower_speed_dynamic_sim_;
+  double min_lower_speed_dynamic_sim_;
+  int num_robots_threshold_dynamic_sim_;
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -198,6 +207,21 @@ class World : public b2ContactListener {
   void Resume();
 
   /**
+   * @brief add an agent to agents_in_slow_time_
+   */
+  void SlowSimTime(const std::string& agent);
+
+  /**
+   * @brief remove an agent from agents_in_slow_time_
+   */
+  void FastSimTime(const std::string& agent);
+
+  /**
+   * @brief Set values for Dynamic Fast Sim
+   */
+  void InitializeDynamicFastSim(double max_lower_speed_dynamic_sim, double min_lower_speed_dynamic_sim, int num_robots_threshold_dynamic_sim);
+
+  /**
    * @brief toggle the paused state of the simulation
    */
   void TogglePaused();
@@ -207,6 +231,16 @@ class World : public b2ContactListener {
    * currently being dragged
    */
   bool IsPaused();
+
+  /**
+   * @brief returns true if sim_time_slow_ is true 
+   **/
+  bool IsSimTimeSlow();
+
+    /**
+   * @return The current simulation time
+   */
+  const ros::Time& GetSimTime() const;
 
   /**
    * @brief factory method to create a instance of the world class. Cleans all

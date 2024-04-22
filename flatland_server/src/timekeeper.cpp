@@ -59,7 +59,6 @@ Timekeeper::Timekeeper()
 
 void Timekeeper::StepTime() {
   time_ += ros::Duration(max_step_size_);
-
   UpdateRosClock();
 }
 
@@ -71,6 +70,7 @@ void Timekeeper::UpdateRosClock() const {
 
 void Timekeeper::SetMaxStepSize(double step_size) {
   max_step_size_ = step_size;
+  max_step_size_user_ = step_size;
 }
 
 const ros::Time& Timekeeper::GetSimTime() const { return time_; }
@@ -78,5 +78,14 @@ const ros::Time& Timekeeper::GetSimTime() const { return time_; }
 double Timekeeper::GetStepSize() const { return max_step_size_; }
 
 double Timekeeper::GetMaxStepSize() const { return max_step_size_; }
+
+void Timekeeper::SlowTime(double step_size){
+  max_step_size_ = step_size;
+}
+
+void Timekeeper::FastTime(){
+  max_step_size_ = max_step_size_user_; 
+}
+
 
 };  // namespace flatland_server

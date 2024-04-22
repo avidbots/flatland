@@ -61,7 +61,12 @@ namespace flatland_server {
 World::World()
     : gravity_(0, 0),
       service_paused_(false),
-      int_marker_manager_(&models_, &plugin_manager_) {
+      int_marker_manager_(&models_, &plugin_manager_),
+      step_size_(0.01),
+      use_dynamic_fast_sim_(false),
+      max_lower_speed_dynamic_sim_(0.01),
+      min_lower_speed_dynamic_sim_(0.01),
+      num_robots_threshold_dynamic_sim_(0){
   physics_world_ = new b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
@@ -99,6 +104,9 @@ World::~World() {
 }
 
 void World::Update(Timekeeper &timekeeper) {
+
+  time_ = timekeeper.GetSimTime();
+
   if (!IsPaused()) {
     START_PROFILE(timekeeper, "Before Physics Step");
     plugin_manager_.BeforePhysicsStep(timekeeper);
@@ -404,10 +412,42 @@ void World::Pause() { service_paused_ = true; }
 
 void World::Resume() { service_paused_ = false; }
 
+void World::SlowSimTime(const std::string& agent) { 
+  if (use_dynamic_fast_sim_){
+    agents_in_slow_time_.insert({agent, true});
+    if (agents_in_slow_time_.size() == 0) {
+      step_size_ = min_lower_speed_dynamic_sim_;
+    }else if (agents_in_slow_time_.size() == 1) {
+      step_size_ = max_lower_speed_dynamic_sim_;
+    }else if (agents_in_slow_time_.size() <= num_robots_threshold_dynamic_sim_) {
+      step_size_ = (min_lower_speed_dynamic_sim_  + max_lower_speed_dynamic_sim_)  * 0.5 ;
+    }else{
+      step_size_ = min_lower_speed_dynamic_sim_;
+    }
+  }
+}
+
+void World::FastSimTime(const std::string& agent) {
+  agents_in_slow_time_.erase(agent);
+}
+
 void World::TogglePaused() { service_paused_ = !service_paused_; }
 
 bool World::IsPaused() {
   return service_paused_ || int_marker_manager_.isManipulating();
+}
+
+bool World::IsSimTimeSlow() {
+  return agents_in_slow_time_.size() > 0;
+}
+
+const ros::Time& World::GetSimTime() const { return time_; }
+
+void World::InitializeDynamicFastSim(double max_lower_speed_dynamic_sim, double min_lower_speed_dynamic_sim, int num_robots_threshold_dynamic_sim) {
+  use_dynamic_fast_sim_ = true;
+  max_lower_speed_dynamic_sim_ = max_lower_speed_dynamic_sim;
+  min_lower_speed_dynamic_sim_ = min_lower_speed_dynamic_sim;
+  num_robots_threshold_dynamic_sim_ = num_robots_threshold_dynamic_sim;
 }
 
 void World::DebugVisualize(bool update_layers) {
