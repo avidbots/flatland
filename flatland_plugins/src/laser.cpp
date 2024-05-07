@@ -54,6 +54,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <cmath>
 #include <limits>
+#include <chrono>
 
 using namespace flatland_server;
 
@@ -143,13 +144,20 @@ void Laser::BeforePhysicsStep(const Timekeeper& timekeeper) {
     return;
   }
 
-  // only compute and publish when the number of subscribers is not zero
-  if (scan_publisher_.getNumSubscribers() > 0) {
-    //START_PROFILE(timekeeper, "compute laser range");
+  // only compute and publish when the number of subscribers is not zero, or always_publish_ is true
+  if (always_publish_ || scan_publisher_.getNumSubscribers() > 0) {
+    // START_PROFILE(timekeeper, "compute laser range");
+    auto start = std::chrono::steady_clock::now();
     ComputeLaserRanges();
-    //END_PROFILE(timekeeper, "compute laser range");
+
+    ROS_INFO_THROTTLE_NAMED(
+        1, "Laser Plugin", "took %luus",
+        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count());
+
+    // END_PROFILE(timekeeper, "compute laser range");
     laser_scan_.header.stamp = timekeeper.GetSimTime();
     scan_publisher_.publish(laser_scan_);
+    publications_++;
   }
 
   if (broadcast_tf_) {
@@ -292,6 +300,7 @@ void Laser::ParseParameters(const YAML::Node& config) {
   topic_ = reader.Get<std::string>("topic", "scan");
   frame_id_ = reader.Get<std::string>("frame", GetName());
   broadcast_tf_ = reader.Get<bool>("broadcast_tf", true);
+  always_publish_ = reader.Get<bool>("always_publish", false);
   update_rate_ = reader.Get<double>("update_rate",
                                     std::numeric_limits<double>::infinity());
   origin_ = reader.GetPose("origin", Pose(0, 0, 0));
@@ -352,11 +361,11 @@ void Laser::ParseParameters(const YAML::Node& config) {
       "Laser %s params: topic(%s) body(%s, %p) origin(%f,%f,%f) upside_down(%d)"
       "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
       "noise_std_dev(%f) angle_min(%f) angle_max(%f) "
-      "angle_increment(%f) layers(0x%u {%s})",
+      "angle_increment(%f) layers(0x%u {%s}) always_publish(%d)",
       GetName().c_str(), topic_.c_str(), body_name.c_str(), body_, origin_.x,
       origin_.y, origin_.theta, upside_down_, frame_id_.c_str(), broadcast_tf_,
       update_rate_, range_, noise_std_dev_, min_angle_, max_angle_, increment_,
-      layers_bits_, boost::algorithm::join(layers, ",").c_str());
+      layers_bits_, boost::algorithm::join(layers, ",").c_str(), always_publish_);
 }
 };  // namespace flatland_plugins
 

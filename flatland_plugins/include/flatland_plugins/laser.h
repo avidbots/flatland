@@ -81,9 +81,11 @@ class Laser : public ModelPlugin {
   float update_rate_;     ///< the rate laser scan will be published
   std::string frame_id_;  ///< laser frame id name
   bool broadcast_tf_;     ///< whether to broadcast laser origin w.r.t body
+  bool always_publish_;   ///< Force publishing even if no subscribers
   bool upside_down_;          ///< whether the lidar is mounted upside down
   uint16_t layers_bits_;  ///< for setting the layers where laser will function
   ThreadPool pool_;       ///< ThreadPool for managing concurrent scan threads
+  uint64_t publications_ = 0;
 
   /*
    * for setting reflectance layers. if the laser hits those layers,

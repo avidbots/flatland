@@ -34,6 +34,9 @@ messages.
       # optional, default to true, whether to publish TF
       broadcast_tf: true
 
+      # optional, default to false, if true compute/publish even if no subscribers (for benchmarking)
+      always_publish: false
+
       # optional, default to name of this plugin, the TF frame id to publish TF with
       # only used when broadcast_tf=true
       frame: laser_back
