@@ -25,7 +25,8 @@ Here are the full list of parameters with the default values
                                             step_size:=0.005 \
                                             show_viz:=true \
                                             viz_pub_rate:=30.0 \
-                                            use_rviz:=false
+                                            use_rviz:=false \
+                                            simplify_map:=2
 
 * **world_path**: path to world.yaml
 * **update_rate**: the real time rate to run the simulation loop in Hz
@@ -34,3 +35,4 @@ Here are the full list of parameters with the default values
   visualization messages, either true or false
 * **viz_pub_rate**: rate to publish visualization in Hz, works only when show_viz=true
 * **use_rviz**:  works only when show_viz=true, set this to disable flatland_viz popup
+* **simplify_map**: Simpify map during vector tracing: 0=None (default), 1=moderately, 2=significantly

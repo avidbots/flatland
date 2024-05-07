@@ -6,14 +6,14 @@
  *   \ \ \/\ \ \ \_/ |\ \ \/\ \L\ \ \ \L\ \/\ \L\ \ \ \_/\__, `\
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
- * @copyright Copyright 2017 Avidbots Corp.
- * @name	flatland_server_node.cpp
- * @brief	Load params and run the ros node for flatland_server
+ * @copyright Copyright 2024 Avidbots Corp.
+ * @name	flatland_benchmark.cpp
+ * @brief	Benchmark version of flatland_server
  * @author Joseph Duchesne
  *
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2017, Avidbots Corp.
+ *  Copyright (c) 2024, Avidbots Corp.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,8 @@
 
 /** Global variables */
 flatland_server::SimulationManager *simulation_manager;
+double benchmark_duration = 10.0; // overwritten by rosparam "benchmark_duration" if set
+double benchmark_start = 0.0f;
 
 /**
  * @name        SigintHandler
@@ -59,15 +61,26 @@ flatland_server::SimulationManager *simulation_manager;
  * @param[in]   sig: signal itself
  */
 void SigintHandler(int sig) {
-  ROS_WARN_NAMED("Node", "*** Shutting down... ***");
+  ROS_WARN_NAMED("Benchmark", "*** Shutting down... ***");
 
   if (simulation_manager != nullptr) {
     simulation_manager->Shutdown();
     delete simulation_manager;
     simulation_manager = nullptr;
   }
-  ROS_INFO_STREAM_NAMED("Node", "Beginning ros shutdown");
+  ROS_INFO_STREAM_NAMED("Benchmark", "Beginning ros shutdown");
   ros::shutdown();
+}
+
+void CheckTimeout(const ros::WallTimerEvent& timer_event) {
+  double elapsed = simulation_manager->timekeeper_.GetSimTime().toSec();
+  if (elapsed >= benchmark_duration) {
+    double bench_time = ros::WallTime::now().toSec() - benchmark_start;
+    ROS_INFO_NAMED("Benchmark", "Benchmark complete. Ran %ld iterations in %.3f sec; %.3f iter/sec. Shutting down.",
+      simulation_manager->iterations_, bench_time, (double)(simulation_manager->iterations_)/bench_time);
+    ros::shutdown();
+  }
+  ROS_INFO_THROTTLE_NAMED(1.0, "Benchmark", "Elapsed: %.1f/%.1f.", elapsed, benchmark_duration);
 }
 
 /**
@@ -78,10 +91,12 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "flatland", ros::init_options::NoSigintHandler);
   ros::NodeHandle node_handle("~");
 
+  // todo: Load default parameters, run on a specific (default incl.) map for N seconds, then report.
+
   // Load parameters
   std::string world_path;  // The file path to the world.yaml file
   if (!node_handle.getParam("world_path", world_path)) {
-    ROS_FATAL_NAMED("Node", "No world_path parameter given!");
+    ROS_FATAL_NAMED("Benchmark", "No world_path parameter given!");
     ros::shutdown();
     return 1;
   }
@@ -98,6 +113,8 @@ int main(int argc, char **argv) {
   float viz_pub_rate = 30.0;
   node_handle.getParam("viz_pub_rate", viz_pub_rate);
 
+  node_handle.getParam("benchmark_duration", benchmark_duration);
+
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
       world_path, update_rate, step_size, show_viz, viz_pub_rate);
@@ -105,10 +122,14 @@ int main(int argc, char **argv) {
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
 
-  ROS_INFO_STREAM_NAMED("Node", "Initialized");
-  simulation_manager->Main();
+  // timeout
+  ros::WallTimer timeout_timer = node_handle.createWallTimer(ros::WallDuration(0.01), &CheckTimeout);
 
-  ROS_INFO_STREAM_NAMED("Node", "Returned from simulation manager main");
+  ROS_INFO_STREAM_NAMED("Benchmark", "Initialized");
+  benchmark_start = ros::WallTime::now().toSec();
+  simulation_manager->Main(/*benchmark=*/true);
+
+  ROS_INFO_STREAM_NAMED("Benchmark", "Returned from simulation manager main");
   delete simulation_manager;
   simulation_manager = nullptr;
   return 0;

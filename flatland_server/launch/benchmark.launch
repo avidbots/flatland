@@ -1,0 +1,33 @@
+<launch>
+
+  <!--
+  You can override these default values:
+    roslaunch flatland_Server server.launch world_path:="/some/world.yaml" initial_rate:="30.0"
+  -->
+  <arg name="world_path"   default="$(find flatland_server)/test/benchmark_world/world.yaml"/>
+  <arg name="update_rate" default="200.0"/>
+  <arg name="step_size" default="0.005"/>
+  <arg name="benchmark_duration" default="60.0"/>
+  <arg name="use_perf" default="false" />
+  <arg name="show_viz" default="true" />
+  <arg name="simplify_map" default="2" />  <!-- 0=None, 1=moderately, 2=significantly-->
+
+  <env name="ROSCONSOLE_FORMAT" value="[${severity} ${time} ${logger}]: ${message}" />
+
+  <param name="use_sim_time" value="true"/>  
+
+  <!-- launch flatland benchmark -->
+  <!-- /usr/lib/linux-tools/5.4.0-173-generic/perf on my local container -->
+  <node name="flatland_benchmark" pkg="flatland_server" type="flatland_benchmark" output="screen" required="true" 
+    launch-prefix="$(eval 'perf record --call-graph dwarf --output=perf.out.flatland_benchmark.data --' if arg('use_perf') else '')"
+    >  
+    <!-- Use the arguments passed into the launchfile for this node -->
+    <param name="world_path" value="$(arg world_path)" />
+    <param name="update_rate" value="$(arg update_rate)" />
+    <param name="step_size" value="$(arg step_size)" />
+    <param name="show_viz" value="$(arg show_viz)" />
+    <param name="benchmark_duration" value="$(arg benchmark_duration)" />
+    <param name="simplify_map" value="$(arg simplify_map)" />
+  </node>
+
+</launch>

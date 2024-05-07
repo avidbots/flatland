@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(flatland_server)
 
 # Ensure we're using c++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3")
 
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 
@@ -73,6 +73,7 @@ catkin_package(
 include_directories(
   thirdparty
   include
+  thirdparty/Clipper2Lib/CPP/Clipper2Lib/include
   ${catkin_INCLUDE_DIRS}
   ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -138,6 +139,23 @@ target_link_libraries(flatland_server
   yaml-cpp
   flatland_lib
 )
+
+## Add benchmark non-installed binary
+add_executable(flatland_benchmark src/flatland_benchmark.cpp)
+add_dependencies(flatland_benchmark ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(flatland_benchmark
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${LUA_LIBRARIES}
+  Threads::Threads
+  flatland_Box2D
+  yaml-cpp
+  flatland_lib
+)
+
 
 #############
 ## Install ##

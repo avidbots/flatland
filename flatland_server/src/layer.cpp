@@ -218,7 +218,7 @@ void Layer::ReadLineSegmentsFile(const std::string &file_path,
 }
 
 void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
-                           double resolution, int simplify) {
+                           double resolution) {
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
   uint32_t edges_added = 0;
@@ -251,11 +251,13 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
   // considered to be occupied
   cv::inRange(bitmap, occupied_thresh, 1.0, obstacle_map); 
 
-  // TODO: Make simplification a parameter
+  // simplify_map rosparam: 0=None, 1=moderate, 2=maximum simplification of map polygon outlines
+  int simplify = 0;
+  ros::param::param<int>("simplify_map", simplify, 0);
   
   std::vector<std::vector<cv::Point>> vectors_outline;
   cv::Mat obstacle_map_open;
-  if (simplify >= 1) {
+  if (simplify >= 2) {
     int open_kernel_size = 3;  // 0.15m at 5cm pixel resolution
     cv::Mat kernel = cv::getStructuringElement( cv::MORPH_ELLIPSE, {open_kernel_size*2+1, open_kernel_size*2+1});
     cv::morphologyEx(obstacle_map, obstacle_map_open, cv::MORPH_OPEN, kernel); 
@@ -271,7 +273,7 @@ void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
     std::vector<cv::Point2f>& poly_to_use = polygon2f;
 
     
-    if (simplify >= 2) {
+    if (simplify >= 1) {
       std::vector<cv::Point2f> polygon_rdp;
       cv::approxPolyDP(polygon2f, polygon_rdp, 1.0, true);  // RDP reduction
       if (polygon_rdp.size()>4) poly_to_use = polygon_rdp;
