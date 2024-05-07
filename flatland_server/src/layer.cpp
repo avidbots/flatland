@@ -218,98 +218,69 @@ void Layer::ReadLineSegmentsFile(const std::string &file_path,
 }
 
 void Layer::LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
-                           double resolution) {
+                           double resolution, int simplify) {
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
-  auto add_edge = [&](double x1, double y1, double x2, double y2) {
-    b2EdgeShape edge;
+  uint32_t edges_added = 0;
+
+  auto add_poly = [&](std::vector<cv::Point2f>& poly) {
+    b2ChainShape polygon_chain;
     double rows = bitmap.rows;
     double res = resolution;
 
-    edge.Set(b2Vec2(res * x1, res * (rows - y1)),
-             b2Vec2(res * x2, res * (rows - y2)));
+    std::vector<b2Vec2> poly_b2;
+    poly_b2.reserve(poly.size());
+    for(auto& p : poly) {
+      poly_b2.emplace_back(res * p.x, res * (rows - p.y));
+    }
+
+    polygon_chain.CreateLoop(&poly_b2.front(), poly_b2.size());
 
     b2FixtureDef fixture_def;
-    fixture_def.shape = &edge;
+    fixture_def.shape = &polygon_chain;
     fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     body_->physics_body_->CreateFixture(&fixture_def);
+
+    edges_added += poly.size();
   };
 
   cv::Mat padded_map, obstacle_map;
 
   // thresholds the map, values between the occupied threshold and 1.0 are
   // considered to be occupied
-  cv::inRange(bitmap, occupied_thresh, 1.0, obstacle_map);
+  cv::inRange(bitmap, occupied_thresh, 1.0, obstacle_map); 
 
-  // pad the top and bottom of the map each with an empty row (255=white). This
-  // helps to look at the transition from one row of pixel to another
-  cv::copyMakeBorder(obstacle_map, padded_map, 1, 1, 0, 0, cv::BORDER_CONSTANT,
-                     255);
-
-  // loop through all the rows, looking at 2 at once
-  for (int i = 0; i < padded_map.rows - 1; i++) {
-    cv::Mat row1 = padded_map.row(i);
-    cv::Mat row2 = padded_map.row(i + 1);
-    cv::Mat diff;
-
-    // if the two row are the same value, there is no edge
-    // if the two rows are not the same value, there is an edge
-    // result is still binary, either 255 or 0
-    cv::absdiff(row1, row2, diff);
-
-    int start = 0;
-    bool started = false;
-
-    // find all the walls, put the connected walls as a single line segment
-    for (unsigned int j = 0; j <= diff.total(); j++) {
-      bool edge_exists = false;
-      if (j < diff.total()) {
-        edge_exists = diff.at<uint8_t>(0, j);  // 255 maps to true
-      }
-
-      if (edge_exists && !started) {
-        start = j;
-        started = true;
-      } else if (started && !edge_exists) {
-        add_edge(start, i, j, i);
-
-        started = false;
-      }
-    }
+  // TODO: Make simplification a parameter
+  
+  std::vector<std::vector<cv::Point>> vectors_outline;
+  cv::Mat obstacle_map_open;
+  if (simplify >= 1) {
+    int open_kernel_size = 3;  // 0.15m at 5cm pixel resolution
+    cv::Mat kernel = cv::getStructuringElement( cv::MORPH_ELLIPSE, {open_kernel_size*2+1, open_kernel_size*2+1});
+    cv::morphologyEx(obstacle_map, obstacle_map_open, cv::MORPH_OPEN, kernel); 
+  } else {
+    obstacle_map_open = obstacle_map.clone();
   }
 
-  // pad the left and right of the map each with an empty column (255).
-  cv::copyMakeBorder(obstacle_map, padded_map, 0, 0, 1, 1, cv::BORDER_CONSTANT,
-                     255);
+  cv::findContours(obstacle_map_open, vectors_outline, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+  for (auto& polygon : vectors_outline) {
+    std::vector<cv::Point2f> polygon2f;  // create a double rep. for RDP accuracy
+    std::transform(polygon.begin(), polygon.end(), std::back_inserter(polygon2f),
+               [](const cv::Point& p) { return (cv::Point2f)p; });
+    std::vector<cv::Point2f>& poly_to_use = polygon2f;
 
-  // loop through all the columns, looking at 2 at once
-  for (int i = 0; i < padded_map.cols - 1; i++) {
-    cv::Mat col1 = padded_map.col(i);
-    cv::Mat col2 = padded_map.col(i + 1);
-    cv::Mat diff;
-
-    cv::absdiff(col1, col2, diff);
-
-    int start = 0;
-    bool started = false;
-
-    for (unsigned int j = 0; j <= diff.total(); j++) {
-      bool edge_exists = false;
-      if (j < diff.total()) {
-        edge_exists = diff.at<uint8_t>(j, 0);
-      }
-
-      if (edge_exists && !started) {
-        start = j;
-        started = true;
-      } else if (started && !edge_exists) {
-        add_edge(i, start, i, j);
-
-        started = false;
-      }
+    
+    if (simplify >= 2) {
+      std::vector<cv::Point2f> polygon_rdp;
+      cv::approxPolyDP(polygon2f, polygon_rdp, 1.0, true);  // RDP reduction
+      if (polygon_rdp.size()>4) poly_to_use = polygon_rdp;
     }
+
+    add_poly(poly_to_use);
   }
+
+  ROS_INFO_NAMED("Layer", "added %d line segments", edges_added);
 }
 
 void Layer::DebugVisualize() const {

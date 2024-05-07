@@ -201,6 +201,27 @@ void DebugVisualization::BodyToMarkers(visualization_msgs::MarkerArray& markers,
 
       } break;
 
+      case b2Shape::e_chain: {
+
+        geometry_msgs::Point p;  // b2Edge uses vertex1 and 2 for its edges
+        b2ChainShape* chain = (b2ChainShape*)fixture->GetShape();
+
+        add_marker = true;  
+        marker.type = marker.LINE_STRIP;
+        marker.scale.x = 0.03;  // 3cm wide lines
+        
+        for(int i=0; i<chain->m_count; i++) {
+          p.x = chain->m_vertices[i].x;
+          p.y = chain->m_vertices[i].y;
+          marker.points.push_back(p);
+        }
+
+        // close loop
+        p.x = chain->m_vertices[0].x;
+        p.y = chain->m_vertices[0].y;
+        marker.points.push_back(p);
+      } break;
+
       default:  // Unsupported shape
         ROS_WARN_THROTTLE_NAMED(1.0, "DebugVis", "Unsupported Box2D shape %d",
                                 static_cast<int>(fixture->GetType()));

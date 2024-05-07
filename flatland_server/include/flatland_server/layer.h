@@ -151,9 +151,10 @@ class Layer : public Entity {
    * @param[in] bitmap OpenCV Image
    * @param[in] occupied_thresh Threshold indicating obstacle if above
    * @param[in] resolution Resolution of the map image in meters per pixel
+   * @param[in] simplify Simplification factor: 0=None, 1=moderate, 2=significant
    */
   void LoadFromBitmap(const cv::Mat &bitmap, double occupied_thresh,
-                      double resolution);
+                      double resolution, int simplify=0);
 
   /**
    * @brief Visualize layer for debugging purposes
