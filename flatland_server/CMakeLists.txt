@@ -20,23 +20,14 @@ find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
   interactive_markers
   flatland_msgs
+  yaml_cpp_catkin
 )
 
 ## System dependencies are found with CMake's conventions
 find_package(PkgConfig REQUIRED)
 
-# yaml-cpp
-pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
-find_path(YAML_CPP_INCLUDE_DIR
-          NAMES yaml_cpp.h
-          PATHS ${YAML_CPP_INCLUDE_DIRS})
-find_library(YAML_CPP_LIBRARY
-             NAMES YAML_CPP
-             PATHS ${YAML_CPP_LIBRARY_DIRS})
-link_directories(${YAML_CPP_LIBRARY_DIRS})
-
 # lua5.1
-find_package(Lua 5.1 QUIET)
+find_package(Lua 5.1 REQUIRED)
 
 # OpenCV
 find_package(OpenCV REQUIRED)
@@ -62,8 +53,8 @@ endif()
 catkin_package(
   INCLUDE_DIRS include thirdparty
   LIBRARIES flatland_lib flatland_Box2D
-  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 visualization_msgs tf2_geometry_msgs geometry_msgs
-  DEPENDS OpenCV YAML_CPP
+  CATKIN_DEPENDS pluginlib roscpp std_msgs tf2 visualization_msgs tf2_geometry_msgs geometry_msgs yaml_cpp_catkin
+  DEPENDS OpenCV
 )
 
 ###########
@@ -75,7 +66,6 @@ include_directories(
   include
   thirdparty/Clipper2Lib/CPP/Clipper2Lib/include
   ${catkin_INCLUDE_DIRS}
-  ${YAML_CPP_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${LUA_INCLUDE_DIR}
@@ -103,7 +93,7 @@ add_library(flatland_lib
   src/timekeeper.cpp
   src/service_manager.cpp
   src/yaml_reader.cpp
-  src/dummy_model_plugin.cpp 
+  src/dummy_model_plugin.cpp
   src/dummy_world_plugin.cpp
   src/yaml_preprocessor.cpp
 )
@@ -116,7 +106,6 @@ target_link_libraries(flatland_lib
   ${LUA_LIBRARIES}
   Threads::Threads
   flatland_Box2D
-  yaml-cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -136,7 +125,6 @@ target_link_libraries(flatland_server
   ${LUA_LIBRARIES}
   Threads::Threads
   flatland_Box2D
-  yaml-cpp
   flatland_lib
 )
 
