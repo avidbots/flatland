@@ -57,8 +57,10 @@ class Timekeeper {
   ros::Publisher clock_pub_;       ///< the topic to publish the clock
   ros::NodeHandle nh_;             ///< ROS Node handle
   ros::Time time_;                 ///< simulation time
+  double step_size_;               ///< loop step size
   double max_step_size_;           ///< maximum step size
-  const std::string clock_topic_;  ///< the name of the clock topic
+  std::string clock_topic_;        ///< the name of the clock topic
+  bool use_sim_time_;              ///< use fix time step or not
 
   /**
    * @brief constructor
@@ -80,6 +82,12 @@ class Timekeeper {
    * @param[in] step_size The step size
    */
   void SetMaxStepSize(double step_size);
+
+  /**
+   * @brief Set the loop step size
+   * @param[in] step_size The step size
+   */
+  void SetStepSize(double step_size);
 
   /**
    * @return The current simulation time

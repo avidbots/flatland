@@ -100,11 +100,16 @@ World::~World() {
 
 void World::Update(Timekeeper &timekeeper) {
   if (!IsPaused()) {
+    std::chrono::duration<double> loop_start = std::chrono::steady_clock::now().time_since_epoch();
+
     plugin_manager_.BeforePhysicsStep(timekeeper);
     physics_world_->Step(timekeeper.GetStepSize(), physics_velocity_iterations_,
                          physics_position_iterations_);
     timekeeper.StepTime();
     plugin_manager_.AfterPhysicsStep(timekeeper);
+
+    double loop_step = ((std::chrono::duration<double, std::ratio<1, 1>>)(std::chrono::steady_clock::now().time_since_epoch()) - loop_start).count();
+    timekeeper.SetStepSize(loop_step);
   }
   int_marker_manager_.update();
 }

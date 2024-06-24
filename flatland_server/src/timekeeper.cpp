@@ -49,15 +49,26 @@
 
 namespace flatland_server {
 
-Timekeeper::Timekeeper()
-    : time_(ros::Time(0, 0)), max_step_size_(0), clock_topic_("/clock") {
-  clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
+Timekeeper::Timekeeper() : step_size_(0), max_step_size_(0), use_sim_time_(false) {
+  nh_.getParam("use_sim_time", use_sim_time_);
+
+  if (!use_sim_time_) {
+    time_ =
+        ros::Time(ros::WallTime::now().toSec(), ros::WallTime::now().toNSec());
+  } else {
+    time_ = ros::Time(0, 0);
+    clock_topic_ = "/clock"; 
+    clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
+  }
 }
 
 void Timekeeper::StepTime() {
-  time_ += ros::Duration(max_step_size_);
-
-  UpdateRosClock();
+  if (!use_sim_time_)
+    time_ += ros::Duration(step_size_);
+  else {
+    time_ += ros::Duration(max_step_size_);
+    UpdateRosClock();
+  }
 }
 
 void Timekeeper::UpdateRosClock() const {
@@ -70,9 +81,13 @@ void Timekeeper::SetMaxStepSize(double step_size) {
   max_step_size_ = step_size;
 }
 
+void Timekeeper::SetStepSize(double step_size) {
+  step_size_ = step_size;
+}
+
 const ros::Time& Timekeeper::GetSimTime() const { return time_; }
 
-double Timekeeper::GetStepSize() const { return max_step_size_; }
+double Timekeeper::GetStepSize() const { return step_size_; }
 
 double Timekeeper::GetMaxStepSize() const { return max_step_size_; }
 
