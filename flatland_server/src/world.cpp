@@ -152,6 +152,12 @@ World *World::MakeWorld(const std::string &yaml_path,
 
   int v = prop_reader.Get<int>("velocity_iterations", 10);
   int p = prop_reader.Get<int>("position_iterations", 10);
+
+  // Override from ROS param if available
+  ros::NodeHandle nh("~");
+  nh.getParam("velocity_iterations", v);
+  nh.getParam("position_iterations", p);
+
   prop_reader.EnsureAccessedAllKeys();
 
   World *w = new World();
