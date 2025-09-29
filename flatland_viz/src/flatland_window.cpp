@@ -53,9 +53,9 @@ void FlatlandWindow::openNewToolDialog()
   QStringList empty;
 }
 
-rviz_common::VisualizationManager * FlatlandWindow::getManager() { return visualization_manager_; }
+rviz_common::VisualizationManager *FlatlandWindow::getManager() { return visualization_manager_; }
 
-FlatlandWindow::FlatlandWindow(QWidget * parent) : QMainWindow(parent)
+FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent)
 {
   // Create the main viewport
   viz_ = new FlatlandViz(this);

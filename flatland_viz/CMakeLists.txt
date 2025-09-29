@@ -26,6 +26,7 @@ find_package(flatland_server REQUIRED)
 find_package(flatland_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
+find_package(pluginlib REQUIRED)
 
 # Boost
 find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
@@ -113,7 +114,7 @@ target_include_directories(flatland_viz
 
 #add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 
-ament_target_dependencies(flatland_viz rclcpp flatland_msgs flatland_server visualization_msgs interactive_markers rviz_common rviz_rendering rviz_default_plugins std_srvs)
+ament_target_dependencies(flatland_viz rclcpp flatland_msgs flatland_server visualization_msgs interactive_markers rviz_common rviz_rendering rviz_default_plugins std_srvs pluginlib)
 
 target_link_libraries(flatland_viz
   ${QT_LIBRARIES}
@@ -139,7 +140,7 @@ target_include_directories(flatland_viz_plugins
     ${OGRE_OV_INCLUDE_DIRS})
 
 #add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
-ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_server rviz_common rviz_rendering rviz_default_plugins std_srvs)
+ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_server rviz_common rviz_rendering rviz_default_plugins std_srvs pluginlib)
 
 target_link_libraries(flatland_viz_plugins
   ${QT_LIBRARIES}
@@ -153,7 +154,8 @@ ament_package()
 ## Install ##
 #############
 
-pluginlib_export_plugin_description_file(flatland_viz plugin_description.xml)
+# Export the plugin description
+pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
 
 # Mark executables and/or libraries for installation
 install(TARGETS flatland_viz flatland_viz_plugins

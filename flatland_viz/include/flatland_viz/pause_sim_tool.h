@@ -81,6 +81,7 @@ private:
   virtual void deactivate();
 
   rclcpp::Client<std_srvs::srv::Empty>::SharedPtr pause_service_;
+  std::shared_ptr<rclcpp::Node> node_;  // ROS 2 node for service calls
 };
 }  // namespace flatland_viz
 

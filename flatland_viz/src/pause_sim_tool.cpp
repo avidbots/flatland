@@ -52,8 +52,8 @@ PauseSimTool::~PauseSimTool() { rclcpp::shutdown(); /*pause_service_->shutdown()
 // When the tool is initially loaded, connect to the pause toggle service
 void PauseSimTool::onInitialize()
 {
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("pause_sim_tool");  // TODO
-  pause_service_ = node->create_client<std_srvs::srv::Empty>("toggle_pause");
+  node_ = std::make_shared<rclcpp::Node>("pause_sim_tool");
+  pause_service_ = node_->create_client<std_srvs::srv::Empty>("toggle_pause");
   setName("Pause/Resume");
 }
 

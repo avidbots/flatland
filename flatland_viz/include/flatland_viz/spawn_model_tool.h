@@ -167,8 +167,9 @@ private:
   static QString model_name;           // base file name with path and extension removed
 
 protected:
-  rviz_rendering::Arrow * arrow_;  // Rviz 3d arrow to show axis of rotation
+  rviz_rendering::Arrow *arrow_;  // Rviz 3d arrow to show axis of rotation
   rclcpp::Client<flatland_msgs::srv::SpawnModel>::SharedPtr client;
+  std::shared_ptr<rclcpp::Node> node_;  // ROS 2 node for service calls
   std::vector<std::shared_ptr<rviz_rendering::BillboardLine>> lines_list_;
 };
 

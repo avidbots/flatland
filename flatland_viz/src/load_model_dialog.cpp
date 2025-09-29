@@ -53,7 +53,7 @@
 #include <OGRE/Ogre.h>
 //#include <Ogre.h>
 
-#include <rviz_common/visualization_manager.h>
+#include <rviz_common/visualization_manager.hpp>
 
 #include <QCheckBox>
 #include <QCursor>

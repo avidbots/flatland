@@ -70,16 +70,15 @@ class FlatlandWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  FlatlandWindow(QWidget * parent = 0);
-  rviz_common::VisualizationManager * visualization_manager_;
-  rviz_common::RenderPanel * render_panel_;
+  explicit FlatlandWindow(QWidget *parent = nullptr);
+  rviz_common::VisualizationManager *visualization_manager_;
+  rviz_common::RenderPanel *render_panel_;
 
-  rviz_common::VisualizationManager * getManager();
+  rviz_common::VisualizationManager *getManager();
 
 protected Q_SLOTS:
-
   void openNewToolDialog();
 
 private:
-  FlatlandViz * viz_;
+  FlatlandViz *viz_;
 };
