@@ -72,9 +72,7 @@ void SigintHandler(int sig)
 
 int main(int argc, char ** argv)
 {
-  if (!rclcpp::isInitialized()) {
-    rclcpp::init(argc, argv);
-  }
+  rclcpp::init(argc, argv);
 
   QApplication app(argc, argv);
 

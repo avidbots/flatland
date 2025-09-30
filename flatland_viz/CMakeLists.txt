@@ -27,6 +27,7 @@ find_package(flatland_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # Boost
 find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
@@ -99,10 +100,8 @@ add_executable(flatland_viz
   include/flatland_viz/load_model_dialog.h
   src/spawn_model_tool.cpp
   include/flatland_viz/spawn_model_tool.h
-  src/load_model_dialog.cpp
-  include/flatland_viz/load_model_dialog.h
-  #src/pause_sim_tool.cpp
-  #include/flatland_viz/pause_sim_tool.h
+  src/pause_sim_tool.cpp
+  include/flatland_viz/pause_sim_tool.h
 )
 
 target_include_directories(flatland_viz
@@ -114,7 +113,7 @@ target_include_directories(flatland_viz
 
 #add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 
-ament_target_dependencies(flatland_viz rclcpp flatland_msgs flatland_server visualization_msgs interactive_markers rviz_common rviz_rendering rviz_default_plugins std_srvs pluginlib)
+ament_target_dependencies(flatland_viz rclcpp flatland_msgs flatland_server visualization_msgs interactive_markers rviz_common rviz_rendering rviz_default_plugins std_srvs pluginlib tf2_ros)
 
 target_link_libraries(flatland_viz
   ${QT_LIBRARIES}
@@ -127,10 +126,8 @@ add_library(flatland_viz_plugins
   include/flatland_viz/load_model_dialog.h
   src/spawn_model_tool.cpp
   include/flatland_viz/spawn_model_tool.h
-  src/load_model_dialog.cpp
-  include/flatland_viz/load_model_dialog.h
-  #src/pause_sim_tool.cpp
-  #include/flatland_viz/pause_sim_tool.h
+  src/pause_sim_tool.cpp
+  include/flatland_viz/pause_sim_tool.h
   )
 
 target_include_directories(flatland_viz_plugins
@@ -140,7 +137,7 @@ target_include_directories(flatland_viz_plugins
     ${OGRE_OV_INCLUDE_DIRS})
 
 #add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
-ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_server rviz_common rviz_rendering rviz_default_plugins std_srvs pluginlib)
+ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_server rviz_common rviz_rendering rviz_default_plugins std_srvs pluginlib tf2_ros)
 
 target_link_libraries(flatland_viz_plugins
   ${QT_LIBRARIES}

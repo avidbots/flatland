@@ -56,6 +56,8 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/tool.hpp>
+#include <rviz_common/viewport_mouse_event.hpp>
+#include <rviz_common/display_context.hpp>
 #include <vector>
 //#include <Ogre.h>
 
@@ -65,6 +67,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_rendering/objects/arrow.hpp>
 #include <rviz_rendering/objects/billboard_line.hpp>
+#include <rviz_rendering/viewport_projection_finder.hpp>
 
 #include "flatland_viz/load_model_dialog.h"
 
@@ -170,6 +173,7 @@ protected:
   rviz_rendering::Arrow *arrow_;  // Rviz 3d arrow to show axis of rotation
   rclcpp::Client<flatland_msgs::srv::SpawnModel>::SharedPtr client;
   std::shared_ptr<rclcpp::Node> node_;  // ROS 2 node for service calls
+  std::shared_ptr<rviz_rendering::ViewportProjectionFinder> projection_finder_;
   std::vector<std::shared_ptr<rviz_rendering::BillboardLine>> lines_list_;
 };
 

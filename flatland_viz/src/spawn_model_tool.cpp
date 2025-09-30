@@ -49,6 +49,7 @@
 
 #include <OGRE/OgreEntity.h>
 #include <chrono>
+#include <rviz_common/render_panel.hpp>
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -76,7 +77,11 @@ QString SpawnModelTool::model_name;
 
 // Set the "shortcut_key_" member variable defined in the
 // superclass to declare which key will activate the tool.
-SpawnModelTool::SpawnModelTool() : moving_model_node_(nullptr) { shortcut_key_ = 'm'; }
+SpawnModelTool::SpawnModelTool() : moving_model_node_(nullptr) 
+{ 
+  shortcut_key_ = 'm'; 
+  projection_finder_ = std::make_shared<rviz_rendering::ViewportProjectionFinder>();
+}
 
 // The destructor destroys the Ogre scene nodes for the models so they
 // disappear from the 3D scene.  The destructor for a Tool subclass is
@@ -241,12 +246,12 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent & event)
     return Render;
   }
 
-  Ogre::Vector3 intersection2;
-  Ogre::Plane ground_plane(Ogre::Vector3::UNIT_Z, 0.0f);
+  auto point_projection_on_xy_plane = projection_finder_->getViewportPointProjectionOnXYPlane(
+    event.panel->getRenderWindow(), event.x, event.y);
 
   if (model_state == m_dragging) {
-    if (rviz_rendering::getPointOnPlaneFromWindowXY(
-          event.viewport, ground_plane, event.x, event.y, intersection)) {
+    if (point_projection_on_xy_plane.first) {
+      intersection = point_projection_on_xy_plane.second;
       moving_model_node_->setVisible(true);
       moving_model_node_->setPosition(intersection);
 
@@ -263,9 +268,11 @@ int SpawnModelTool::processMouseEvent(rviz_common::ViewportMouseEvent & event)
     }
   }
   if (model_state == m_rotating) {  // model_state is m_rotating
+    auto point_projection_on_xy_plane2 = projection_finder_->getViewportPointProjectionOnXYPlane(
+      event.panel->getRenderWindow(), event.x, event.y);
 
-    if (rviz_rendering::getPointOnPlaneFromWindowXY(
-          event.viewport, ground_plane, event.x, event.y, intersection2)) {
+    if (point_projection_on_xy_plane2.first) {
+      Ogre::Vector3 intersection2 = point_projection_on_xy_plane2.second;
       if (event.leftDown()) {
         model_state = m_hidden;
         arrow_->getSceneNode()->setVisible(false);
@@ -320,7 +327,7 @@ void SpawnModelTool::LoadPreview()
           footprints_node.Subnode(j, flatland_server::YamlReader::MAP);
 
         lines_list_.push_back(std::make_shared<rviz_rendering::BillboardLine>(
-          context_->getSceneManager(), moving_model_node_));
+          scene_manager_, moving_model_node_));
         auto lines = lines_list_.back();
         lines->setColor(0.0, 1.0, 0.0, 0.75);  // Green
         lines->setLineWidth(0.05);
@@ -352,8 +359,7 @@ void SpawnModelTool::LoadPolygonFootprint(
     lines->addPoint(Ogre::Vector3(p.x, p.y, 0.));
   }
   if (points.size() > 0) {
-    lines->addPoint(
-    //    Ogre::Vector3(points.at(0).x, points.at(0).y, 0.));  // Close the box
+    lines->addPoint(Ogre::Vector3(points.at(0).x, points.at(0).y, 0.)); // Close the box
   }
 }
 

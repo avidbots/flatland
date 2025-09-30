@@ -60,6 +60,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/config.hpp>
 #include <rviz_common/display.hpp>
+// #include <rviz_common/new_object_dialog.hpp>
 #include <rviz_common/panel.hpp>
 #include <rviz_common/properties/property_tree_widget.hpp>
 #include <rviz_common/render_panel.hpp>
@@ -158,18 +159,6 @@ private:
   void initMenus();
   void openNewToolDialog();
   void setFullScreen(bool full_screen);
-
-  // Menu slot implementations (stubs for now)
-  void onOpen();
-  void onSave();
-  void onSaveAs();
-  void onSaveImage();
-  void changeMaster();
-  void openNewPanelDialog();
-  void exitFullScreen();
-  void showHelpPanel();
-  void onHelpWiki();
-  void onHelpAbout();
 };
 
 #endif  // FLATLAND_VIZ_FLATLAND_VIZ_H

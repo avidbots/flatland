@@ -69,6 +69,16 @@
 #include <QToolButton>
 #include <QUrl>
 #include <rclcpp/rclcpp.hpp>
+#include <rviz_common/ros_integration/ros_client_abstraction.hpp>
+#include <rviz_common/ros_integration/ros_node_abstraction.hpp>
+
+// Define Qt macros before including RenderWindow
+#ifndef Q_MOC_RUN
+#define slots Q_SLOTS
+#define signals Q_SIGNALS
+#endif
+
+#include <rviz_rendering/render_window.hpp>
 
 #include "flatland_viz/flatland_window.h"
 
@@ -98,8 +108,29 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
   // holds the main Ogre scene, holds the ViewController, etc.  It is
   // very central and we will probably need one in every usage of
   // librviz.
-  manager_ = new rviz_common::VisualizationManager(render_panel_);
-  render_panel_->initialize(manager_->getSceneManager(), manager_);
+
+  // Create ROS client abstraction and initialize properly
+  auto ros_client_abstraction = std::make_unique<rviz_common::ros_integration::RosClientAbstraction>();
+  
+  // Initialize ROS node abstraction through the client abstraction
+  // Note: This will call rclcpp::init() internally if not already initialized
+  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr ros_node_abstraction;
+  try {
+    ros_node_abstraction = ros_client_abstraction->init(0, nullptr, "flatland_viz_node", false);
+  } catch (const rclcpp::ContextAlreadyInitialized& e) {
+    // If ROS is already initialized, create node abstraction directly
+    auto node_abstraction_ptr = std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz_node");
+    ros_node_abstraction = node_abstraction_ptr;
+  }
+  
+  // Get clock from the node abstraction
+  auto clock = ros_node_abstraction.lock()->get_raw_node()->get_clock();
+
+  // Initialize render window first
+  render_panel_->getRenderWindow()->initialize();
+
+  manager_ = new rviz_common::VisualizationManager(render_panel_, ros_node_abstraction, nullptr, clock);
+  render_panel_->initialize(manager_);
 
   // bind toolbar events
   rviz_common::ToolManager * tool_man = manager_->getToolManager();
@@ -125,7 +156,8 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
 
   // Set view controller to top down
   manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
-  render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
+  // Note: setBackgroundColor is no longer available in RViz2 RenderPanel
+  //render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
   // Create a Grid display.
   grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
@@ -412,55 +444,4 @@ void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::S
       debug_displays_[topic]->subProp("Marker Topic")->setValue(topic_qt);
     }
   }
-}
-
-// Menu slot implementations (stubs for basic functionality)
-void FlatlandViz::onOpen()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Open config not implemented yet");
-}
-
-void FlatlandViz::onSave()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Save config not implemented yet");
-}
-
-void FlatlandViz::onSaveAs()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Save As config not implemented yet");
-}
-
-void FlatlandViz::onSaveImage()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Save Image not implemented yet");
-}
-
-void FlatlandViz::changeMaster()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Change Master not implemented yet");
-}
-
-void FlatlandViz::openNewPanelDialog()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Open New Panel Dialog not implemented yet");
-}
-
-void FlatlandViz::exitFullScreen()
-{
-  setFullScreen(false);
-}
-
-void FlatlandViz::showHelpPanel()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Show Help Panel not implemented yet");
-}
-
-void FlatlandViz::onHelpWiki()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "Help Wiki not implemented yet");
-}
-
-void FlatlandViz::onHelpAbout()
-{
-  RCLCPP_INFO(rclcpp::get_logger("flatland_viz"), "About dialog not implemented yet");
 }

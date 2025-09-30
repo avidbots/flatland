@@ -2,7 +2,7 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-import launch.conditions as conditions
+from launch.conditions import IfCondition
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
@@ -21,16 +21,16 @@ def generate_launch_description():
             ),
             DeclareLaunchArgument(name="update_rate", default_value="200.0"),
             DeclareLaunchArgument(name="step_size", default_value="0.005"),
-            DeclareLaunchArgument(name="show_viz", default_value="false"),
+            DeclareLaunchArgument(name="show_viz", default_value="true"),
             DeclareLaunchArgument(name="viz_pub_rate", default_value="30.0"),
             DeclareLaunchArgument(name="use_rviz", default_value="false"),
-            #  Node(
-            #  package="flatland_viz",
-            #  executable="flatland_viz",
-            #  name="flatland_viz",
-            #  output="screen",
-            #  condition=conditions.IfCondition("$(var show_viz)"),
-            #  ),
+            Node(
+                package="flatland_viz",
+                executable="flatland_viz",
+                name="flatland_viz",
+                output="screen",
+                condition=IfCondition(LaunchConfiguration("show_viz")),
+            ),
             Node(
                 package="flatland_server",
                 name="flatland_server",
