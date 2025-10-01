@@ -64,6 +64,8 @@
 #include <rviz_common/panel.hpp>
 #include <rviz_common/properties/property_tree_widget.hpp>
 #include <rviz_common/render_panel.hpp>
+#include <rviz_common/ros_integration/ros_client_abstraction_iface.hpp>
+#include <rviz_common/ros_integration/ros_node_abstraction_iface.hpp>
 #include <rviz_common/tool.hpp>
 #include <rviz_common/tool_manager.hpp>
 #include <rviz_common/view_manager.hpp>
@@ -102,8 +104,10 @@ public:
   /**
    * @brief Construct FlatlandViz and subscribe to debug topic list
    * @param parent The parent widget
+   * @param argc Command line argument count for ROS initialization
+   * @param argv Command line arguments for ROS initialization
    */
-  explicit FlatlandViz(FlatlandWindow *parent = nullptr);
+  explicit FlatlandViz(FlatlandWindow *parent = nullptr, int argc = 0, char ** argv = nullptr);
 
   /**
    * @brief Receive a new DebugTopicList msg and add any new displays required
@@ -119,7 +123,8 @@ public:
   rviz_common::VisualizationManager *manager_;
 
 private:
-  std::shared_ptr<rclcpp::Node> node_;  // ROS 2 node for subscriptions
+  std::unique_ptr<rviz_common::ros_integration::RosClientAbstractionIface> ros_client_abstraction_;
+  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr node_;  // ROS 2 node abstraction for comms & plugins
   rviz_common::RenderPanel *render_panel_;
   rviz_common::Display *grid_;
   rviz_common::Display *interactive_markers_;

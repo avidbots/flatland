@@ -83,14 +83,26 @@
 #include "flatland_viz/flatland_window.h"
 
 // Constructor.
-FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>(parent))
+FlatlandViz::FlatlandViz(FlatlandWindow *parent, int argc, char ** argv) : QWidget(static_cast<QWidget*>(parent))
 {
   parent_ = parent;
+  
+  // Initialize ROS client abstraction (following RViz2 pattern)
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Creating ROS client abstraction");
+  ros_client_abstraction_ = std::make_unique<rviz_common::ros_integration::RosClientAbstraction>();
+  
+  // Initialize ROS node through client abstraction (deferred initialization)
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing ROS node");
+  node_ = ros_client_abstraction_->init(argc, argv, "flatland_viz", false /* anonymous_name */);
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Node abstraction complete");
+
   toolbar_ = parent->addToolBar("Tools");
 
   // init toolbar action handler
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing toolbars");
   initToolbars();
 
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing menus");
   initMenus();
 
   // Construct and lay out render panel.
@@ -100,6 +112,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
   main_layout->addWidget(render_panel_);
 
   // Set the top-level layout for this FlatlandViz widget.
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "About to set layout");
   setLayout(main_layout);
 
   // Next we initialize the main RViz classes.
@@ -108,31 +121,18 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
   // holds the main Ogre scene, holds the ViewController, etc.  It is
   // very central and we will probably need one in every usage of
   // librviz.
-
-  // Create ROS client abstraction and initialize properly
-  auto ros_client_abstraction = std::make_unique<rviz_common::ros_integration::RosClientAbstraction>();
-  
-  // Initialize ROS node abstraction through the client abstraction
-  // Note: This will call rclcpp::init() internally if not already initialized
-  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr ros_node_abstraction;
-  try {
-    ros_node_abstraction = ros_client_abstraction->init(0, nullptr, "flatland_viz_node", false);
-  } catch (const rclcpp::ContextAlreadyInitialized& e) {
-    // If ROS is already initialized, create node abstraction directly
-    auto node_abstraction_ptr = std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz_node");
-    ros_node_abstraction = node_abstraction_ptr;
-  }
-  
-  // Get clock from the node abstraction
-  auto clock = ros_node_abstraction.lock()->get_raw_node()->get_clock();
+  auto clock = node_.lock()->get_raw_node()->get_clock();
 
   // Initialize render window first
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing render window");
   render_panel_->getRenderWindow()->initialize();
 
-  manager_ = new rviz_common::VisualizationManager(render_panel_, ros_node_abstraction, nullptr, clock);
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Setting up visualization manager");
+  manager_ = new rviz_common::VisualizationManager(render_panel_, node_, nullptr, clock);
   render_panel_->initialize(manager_);
 
   // bind toolbar events
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Binding toolbar events");
   rviz_common::ToolManager * tool_man = manager_->getToolManager();
 
   connect(manager_, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
@@ -147,11 +147,13 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
     tool_man, SIGNAL(toolChanged(rviz_common::Tool *)), this,
     SLOT(indicateToolIsCurrent(rviz_common::Tool *)));
 
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing visualization manager");
   manager_->initialize();
 
   tool_man->addTool("flatland_viz/SpawnModel");
   tool_man->addTool("flatland_viz/PauseSim");
 
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Starting visualization manager update");
   manager_->startUpdate();
 
   // Set view controller to top down
@@ -160,6 +162,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
   //render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
   // Create a Grid display.
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Making grid");
   grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
   if (grid_ == nullptr) {
     RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
@@ -174,6 +177,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
   grid_->subProp("Alpha")->setValue(0.1);
 
   // Create interactive markers display
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Adding interactive markers");
   interactive_markers_ = manager_->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
   if (interactive_markers_ == nullptr) {
     RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
@@ -181,15 +185,14 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent) : QWidget(static_cast<QWidget*>
   }
   interactive_markers_->subProp("Update Topic")->setValue("/interactive_model_markers/update");
 
-  // Create ROS 2 node for this component
-  rclcpp::NodeOptions node_options;
-  node_ = std::make_shared<rclcpp::Node>("flatland_viz", node_options);
-
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Created node, subscribing to debug topics");
   // Subscribe to debug topics topic with appropriate QoS
   using std::placeholders::_1;
   auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
-  debug_topic_subscriber_ = node_->create_subscription<flatland_msgs::msg::DebugTopicList>(
+  debug_topic_subscriber_ = node_.lock()->get_raw_node()->create_subscription<flatland_msgs::msg::DebugTopicList>(
     "/flatland_server/debug/topics", qos, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
+
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "All done");
 }
 
 // Destructor.
@@ -197,6 +200,11 @@ FlatlandViz::~FlatlandViz()
 {
   delete render_panel_;
   delete manager_;
+  
+  // Shutdown ROS client abstraction (following RViz2 pattern)
+  if (ros_client_abstraction_) {
+    ros_client_abstraction_->shutdown();
+  }
 }
 
 void FlatlandViz::indicateToolIsCurrent(rviz_common::Tool * tool)

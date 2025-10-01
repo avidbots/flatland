@@ -55,10 +55,10 @@ void FlatlandWindow::openNewToolDialog()
 
 rviz_common::VisualizationManager *FlatlandWindow::getManager() { return visualization_manager_; }
 
-FlatlandWindow::FlatlandWindow(QWidget *parent) : QMainWindow(parent)
+FlatlandWindow::FlatlandWindow(int argc, char ** argv, QWidget *parent) : QMainWindow(parent)
 {
-  // Create the main viewport
-  viz_ = new FlatlandViz(this);
+  // Create the main viewport with ROS arguments for proper initialization
+  viz_ = new FlatlandViz(this, argc, argv);
   setCentralWidget(viz_);
   resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
 

@@ -48,6 +48,8 @@
 
 #include <QApplication>
 #include <rclcpp/rclcpp.hpp>
+#include <vector>
+#include <string>
 
 #include "flatland_viz/flatland_window.h"
 
@@ -55,7 +57,7 @@ FlatlandWindow * window = nullptr;
 
 /**
  * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
+ * @brief       Interrupt handler - sends shutdown signal to window and ROS
  * @param[in]   sig: signal itself
  */
 void SigintHandler(int sig)
@@ -63,28 +65,39 @@ void SigintHandler(int sig)
   RCLCPP_WARN(rclcpp::get_logger("Node"), "*** Shutting down... ***");
 
   if (window != nullptr) {
+    // Window destructor will handle ROS client abstraction shutdown
     delete window;
     window = nullptr;
   }
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("Flatland Viz"), "Beginning ros shutdown");
-  rclcpp::shutdown();
+  
+  RCLCPP_INFO_STREAM(rclcpp::get_logger("Flatland Viz"), "Shutdown complete");
 }
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
+  // Remove ROS arguments before passing to QApplication (following RViz2 pattern)
+  std::vector<std::string> non_ros_args = rclcpp::remove_ros_arguments(argc, argv);
 
-  QApplication app(argc, argv);
+  // Convert to char* array for QApplication
+  std::vector<char *> non_ros_args_c_strings;
+  for (auto & arg : non_ros_args) {
+    non_ros_args_c_strings.push_back(&arg.front());
+  }
+  int non_ros_argc = static_cast<int>(non_ros_args_c_strings.size());
 
-  window = new FlatlandWindow();
+  // Initialize QApplication with non-ROS arguments only
+  QApplication app(non_ros_argc, non_ros_args_c_strings.data());
+
+  // Create window with ROS initialization deferred to FlatlandViz
+  window = new FlatlandWindow(argc, argv);  // Pass original argc/argv for ROS init
   window->show();
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
 
-  app.exec();
+  int result = app.exec();
 
   delete window;
   window = nullptr;
-  return 0;
+  return result;
 }

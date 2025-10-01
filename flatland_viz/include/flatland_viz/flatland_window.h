@@ -70,7 +70,7 @@ class FlatlandWindow : public QMainWindow
 {
   Q_OBJECT
 public:
-  explicit FlatlandWindow(QWidget *parent = nullptr);
+  explicit FlatlandWindow(int argc = 0, char ** argv = nullptr, QWidget *parent = nullptr);
   rviz_common::VisualizationManager *visualization_manager_;
   rviz_common::RenderPanel *render_panel_;
 
