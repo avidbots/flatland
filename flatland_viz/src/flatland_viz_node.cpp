@@ -45,8 +45,10 @@
  */
 
 #include <signal.h>
+#include <iostream>
 
 #include <QApplication>
+#include <QSurfaceFormat>
 #include <rclcpp/rclcpp.hpp>
 #include <vector>
 #include <string>
@@ -75,6 +77,14 @@ void SigintHandler(int sig)
 
 int main(int argc, char ** argv)
 {
+  // Check for display environment
+  const char* display = getenv("DISPLAY");
+  if (!display || strlen(display) == 0) {
+    std::cerr << "Error: No DISPLAY environment variable set. Cannot run GUI application." << std::endl;
+    return 1;
+  }
+  RCLCPP_INFO(rclcpp::get_logger("FlatlandVizNode"), "DISPLAY environment: %s", display);
+
   // Remove ROS arguments before passing to QApplication (following RViz2 pattern)
   std::vector<std::string> non_ros_args = rclcpp::remove_ros_arguments(argc, argv);
 
@@ -87,11 +97,36 @@ int main(int argc, char ** argv)
 
   // Initialize QApplication with non-ROS arguments only
   QApplication app(non_ros_argc, non_ros_args_c_strings.data());
+  
+  // Debug Qt platform information
+  RCLCPP_INFO(rclcpp::get_logger("FlatlandVizNode"), "Qt platform: %s", QApplication::platformName().toStdString().c_str());
+  
+  // Set Qt OpenGL format (defensive programming)
+  QSurfaceFormat format;
+  format.setDepthBufferSize(24);
+  format.setStencilBufferSize(8);
+  format.setVersion(2, 1);
+  format.setProfile(QSurfaceFormat::CompatibilityProfile);
+  QSurfaceFormat::setDefaultFormat(format);
+  RCLCPP_INFO(rclcpp::get_logger("FlatlandVizNode"), "OpenGL format configured");
 
+  RCLCPP_WARN(rclcpp::get_logger("FlatlandVizNode"), "Creating FlatlandWindow...");
   // Create window with ROS initialization deferred to FlatlandViz
   window = new FlatlandWindow(argc, argv);  // Pass original argc/argv for ROS init
-  window->show();
+  
+  RCLCPP_WARN(rclcpp::get_logger("FlatlandVizNode"), "Showing window...");
+  try {
+    // Let the deferred initialization handle showing properly
+    window->show();
+    RCLCPP_WARN(rclcpp::get_logger("FlatlandVizNode"), "Window shown successfully");
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(rclcpp::get_logger("FlatlandVizNode"), "Failed to show window: %s", e.what());
+    delete window;
+    window = nullptr;
+    return 1;
+  }
 
+  RCLCPP_WARN(rclcpp::get_logger("FlatlandVizNode"), "Entering Qt event loop...");
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);
 

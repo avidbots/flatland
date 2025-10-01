@@ -53,6 +53,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QMenuBar>
+#include <QShowEvent>
 #include <QToolBar>
 #include <QToolButton>
 #include <QWidget>
@@ -121,11 +122,12 @@ public:
   ~FlatlandViz() override;
 
   rviz_common::VisualizationManager *manager_;
+  rviz_common::RenderPanel *render_panel_;
 
 private:
   std::unique_ptr<rviz_common::ros_integration::RosClientAbstractionIface> ros_client_abstraction_;
   rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr node_;  // ROS 2 node abstraction for comms & plugins
-  rviz_common::RenderPanel *render_panel_;
+  std::shared_ptr<rclcpp::Clock> clock_;  // Clock for VisualizationManager
   rviz_common::Display *grid_;
   rviz_common::Display *interactive_markers_;
   std::map<std::string, rviz_common::Display *> debug_displays_;
@@ -165,7 +167,13 @@ public Q_SLOTS:
   void onHelpWiki();
   void onHelpAbout();
 
+protected:
+  void showEvent(QShowEvent* event) override;  // Override to handle deferred initialization
+
 private:
+  void initializeRendering();  // Deferred OpenGL initialization
+  void setupDisplays();  // Setup displays after rendering is initialized
+  bool rendering_initialized_ = false;  // Track initialization state
   void fullScreenChange(bool hidden);
   void addTool(rviz_common::Tool *);
   void removeTool(rviz_common::Tool *);

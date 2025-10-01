@@ -115,78 +115,20 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent, int argc, char ** argv) : QWidg
   RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "About to set layout");
   setLayout(main_layout);
 
-  // Next we initialize the main RViz classes.
-  //
-  // The VisualizationManager is the container for Display objects,
-  // holds the main Ogre scene, holds the ViewController, etc.  It is
-  // very central and we will probably need one in every usage of
-  // librviz.
-  auto clock = node_.lock()->get_raw_node()->get_clock();
-
-  // Initialize render window first
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing render window");
-  render_panel_->getRenderWindow()->initialize();
-
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Setting up visualization manager");
-  manager_ = new rviz_common::VisualizationManager(render_panel_, node_, nullptr, clock);
-  render_panel_->initialize(manager_);
-
-  // bind toolbar events
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Binding toolbar events");
-  rviz_common::ToolManager * tool_man = manager_->getToolManager();
-
-  connect(manager_, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
-  connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
-  connect(tool_man, &rviz_common::ToolManager::toolRemoved, this, &FlatlandViz::removeTool);
-  connect(tool_man, &rviz_common::ToolManager::toolRefreshed, this, &FlatlandViz::refreshTool);
-  connect(tool_man, &rviz_common::ToolManager::toolChanged, this, &FlatlandViz::indicateToolIsCurrent);
-
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing visualization manager");
-  manager_->initialize();
-
-  tool_man->addTool("flatland_rviz_plugins/SpawnModel");
-  tool_man->addTool("flatland_rviz_plugins/TogglePause");
-
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Starting visualization manager update");
-  manager_->startUpdate();
-
-  // Set view controller to top down
-  manager_->getViewManager()->setCurrentViewControllerType("rviz_default_plugins/TopDownOrtho");
-  // Note: setBackgroundColor is no longer available in RViz2 RenderPanel
-  //render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
-
-  // Create a Grid display.
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Making grid");
-  grid_ = manager_->createDisplay("rviz_default_plugins/Grid", "adjustable grid", true);
-  if (grid_ == nullptr) {
-    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
-    exit(1);
+  // NOTE: VisualizationManager creation is deferred to initializeRendering()
+  // because it needs the render window to be fully initialized first.
+  // The VisualizationManager constructor tries to enable displays which
+  // requires the Ogre SceneNode to be ready.
+  
+  // Store clock for later use
+  auto node_locked = node_.lock();
+  if (node_locked) {
+    clock_ = node_locked->get_raw_node()->get_clock();
   }
+  
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Deferring VisualizationManager creation until render init");
 
-  // Configure the GridDisplay the way we like it.
-  grid_->subProp("Line Style")->setValue("Lines");
-  grid_->subProp("Color")->setValue(QColor(Qt::white));
-  grid_->subProp("Cell Size")->setValue(1.0);
-  grid_->subProp("Plane Cell Count")->setValue(100);
-  grid_->subProp("Alpha")->setValue(0.1);
-
-  // Create interactive markers display
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Adding interactive markers");
-  interactive_markers_ = manager_->createDisplay("rviz_default_plugins/InteractiveMarkers", "Move Objects", false);
-  if (interactive_markers_ == nullptr) {
-    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
-    exit(1);
-  }
-  interactive_markers_->subProp("Update Topic")->setValue("/interactive_model_markers/update");
-
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Created node, subscribing to debug topics");
-  // Subscribe to debug topics topic with appropriate QoS
-  using std::placeholders::_1;
-  auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
-  debug_topic_subscriber_ = node_.lock()->get_raw_node()->create_subscription<flatland_msgs::msg::DebugTopicList>(
-    "/flatland_server/debug/topics", qos, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
-
-  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "All done");
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Constructor complete - displays will be setup after rendering initialization");
 }
 
 // Destructor.
@@ -268,6 +210,128 @@ void FlatlandViz::onHelpAbout()
   // TODO: Show about dialog
 }
 
+void FlatlandViz::setupDisplays()
+{
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Setting up displays and toolbar events");
+
+  // Bind toolbar events
+  rviz_common::ToolManager * tool_man = manager_->getToolManager();
+
+  connect(manager_, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
+  connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
+  connect(tool_man, &rviz_common::ToolManager::toolRemoved, this, &FlatlandViz::removeTool);
+  connect(tool_man, &rviz_common::ToolManager::toolRefreshed, this, &FlatlandViz::refreshTool);
+  connect(tool_man, &rviz_common::ToolManager::toolChanged, this, &FlatlandViz::indicateToolIsCurrent);
+
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing visualization manager");
+  manager_->initialize();
+
+  tool_man->addTool("flatland_rviz_plugins/SpawnModel");
+  tool_man->addTool("flatland_rviz_plugins/TogglePause");
+
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Starting visualization manager update");
+  manager_->startUpdate();
+
+  // Set view controller to top down
+  manager_->getViewManager()->setCurrentViewControllerType("rviz_default_plugins/TopDownOrtho");
+  
+  // Create a Grid display.
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Making grid");
+  grid_ = manager_->createDisplay("rviz_default_plugins/Grid", "adjustable grid", true);
+  if (grid_ == nullptr) {
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
+    exit(1);
+  }
+
+  // Configure the GridDisplay the way we like it.
+  grid_->subProp("Line Style")->setValue("Lines");
+  grid_->subProp("Color")->setValue(QColor(Qt::white));
+  grid_->subProp("Cell Size")->setValue(1.0);
+  grid_->subProp("Plane Cell Count")->setValue(100);
+  grid_->subProp("Alpha")->setValue(0.1);
+
+  // Create interactive markers display
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Adding interactive markers");
+  interactive_markers_ = manager_->createDisplay("rviz_default_plugins/InteractiveMarkers", "Move Objects", false);
+  if (interactive_markers_ == nullptr) {
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
+    exit(1);
+  }
+  
+  // Wait for the display to be fully initialized before setting properties
+  QCoreApplication::processEvents();
+  
+  // Check if the property exists before setting it
+  auto update_topic_prop = interactive_markers_->subProp("Update Topic");
+  if (update_topic_prop) {
+    update_topic_prop->setValue("/interactive_model_markers/update");
+  } else {
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Update Topic property not available yet");
+  }
+
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Created node, subscribing to debug topics");
+  // Subscribe to debug topics topic with appropriate QoS
+  using std::placeholders::_1;
+  auto qos = rclcpp::QoS(rclcpp::KeepLast(10)).transient_local().reliable();
+  debug_topic_subscriber_ = node_.lock()->get_raw_node()->create_subscription<flatland_msgs::msg::DebugTopicList>(
+    "/flatland_server/debug/topics", qos, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
+
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Display setup complete");
+}
+
+void FlatlandViz::showEvent(QShowEvent* event)
+{
+  QWidget::showEvent(event);  // Call base class first
+  
+  if (!rendering_initialized_) {
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Widget shown - initializing rendering system");
+    initializeRendering();
+  }
+}
+
+void FlatlandViz::initializeRendering()
+{
+  if (rendering_initialized_) {
+    return;  // Already initialized
+  }
+  
+  RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing render window (deferred)");
+  
+  // Wait for Qt to be ready
+  QCoreApplication::processEvents();
+  
+  // Check if render window exists before initializing
+  if (!render_panel_ || !render_panel_->getRenderWindow()) {
+    RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Failed to get render window or render panel is null");
+    return;
+  }
+  
+  try {
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Calling render window initialize...");
+    render_panel_->getRenderWindow()->initialize();
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Render window initialized successfully");
+    
+    // Now create the VisualizationManager with properly initialized render window
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Creating VisualizationManager with initialized render window");
+    manager_ = new rviz_common::VisualizationManager(render_panel_, node_, nullptr, clock_);
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "VisualizationManager created successfully");
+    
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Calling render panel initialize...");
+    render_panel_->initialize(manager_);
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Render panel initialized successfully");
+    
+    rendering_initialized_ = true;
+    
+    // Now that everything is initialized, set up the displays
+    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Setting up displays after initialization");
+    setupDisplays();
+    
+  } catch (const std::exception& e) {
+    RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "Failed to initialize rendering: %s", e.what());
+    return;
+  }
+}
+
 void FlatlandViz::addTool(rviz_common::Tool * tool)
 {
   RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "addTool called");
@@ -294,7 +358,7 @@ void FlatlandViz::onToolbarActionTriggered(QAction * action)
 
     // If the simulation pause/resume tool was clicked, automatically and
     // immediately switch back to the previously active tool
-    if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
+    if (tool->getClassId().toStdString() == "flatland_rviz_plugins/PauseSim") {
       manager_->getToolManager()->setCurrentTool(current_tool);
       tool = current_tool;
       indicateToolIsCurrent(tool);
@@ -302,7 +366,7 @@ void FlatlandViz::onToolbarActionTriggered(QAction * action)
 
     // Show or hide interactive markers depending on whether interact mode is
     // active
-    if (tool->getClassId().toStdString() == "rviz/Interact") {
+    if (tool->getClassId().toStdString() == "rviz_default_plugins/Interact") {
       interactive_markers_->setEnabled(true);
     } else {
       interactive_markers_->setEnabled(false);

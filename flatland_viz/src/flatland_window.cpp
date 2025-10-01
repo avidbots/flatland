@@ -46,6 +46,7 @@
  */
 
 #include "flatland_viz/flatland_window.h"
+#include <QCoreApplication>
 
 void FlatlandWindow::openNewToolDialog()
 {
@@ -53,15 +54,27 @@ void FlatlandWindow::openNewToolDialog()
   QStringList empty;
 }
 
-rviz_common::VisualizationManager *FlatlandWindow::getManager() { return visualization_manager_; }
+rviz_common::VisualizationManager *FlatlandWindow::getManager() { 
+  // Return the manager from viz_ if available, otherwise return stored reference
+  if (viz_ && viz_->manager_) {
+    return viz_->manager_;
+  }
+  return visualization_manager_; 
+}
 
 FlatlandWindow::FlatlandWindow(int argc, char ** argv, QWidget *parent) : QMainWindow(parent)
 {
-  // Create the main viewport with ROS arguments for proper initialization
+  RCLCPP_WARN(rclcpp::get_logger("FlatlandWindow"), "Creating FlatlandViz widget...");
+  
+  // Create the FlatlandViz widget - this is the main visualization component
   viz_ = new FlatlandViz(this, argc, argv);
+  
+  // Set the FlatlandViz widget as the central widget
   setCentralWidget(viz_);
-  resize(QDesktopWidget().availableGeometry(this).size() * 0.9);
-
-  // Set the main window properties
-  setWindowTitle("Flatland Viz");
+  
+  // Store references for compatibility (but these might be null initially due to deferred init)
+  visualization_manager_ = viz_->manager_;
+  render_panel_ = viz_->render_panel_;
+  
+  RCLCPP_WARN(rclcpp::get_logger("FlatlandWindow"), "FlatlandWindow constructor complete");
 }
