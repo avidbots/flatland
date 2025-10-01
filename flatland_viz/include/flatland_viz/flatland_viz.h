@@ -152,8 +152,21 @@ private:
   /// Indicates if the toolbar should be visible outside of fullscreen mode.
   bool toolbar_visible_;
 
-  void fullScreenChange(bool hidden);
+public Q_SLOTS:
   void setDisplayConfigModified();
+  void setFullScreen(bool full_screen);
+  void exitFullScreen();
+  void openNewPanelDialog();
+  void showHelpPanel();
+  void onOpen();
+  void onSave();
+  void onSaveAs();
+  void onSaveImage();
+  void onHelpWiki();
+  void onHelpAbout();
+
+private:
+  void fullScreenChange(bool hidden);
   void addTool(rviz_common::Tool *);
   void removeTool(rviz_common::Tool *);
   void refreshTool(rviz_common::Tool *);
@@ -163,7 +176,6 @@ private:
   void initToolbars();
   void initMenus();
   void openNewToolDialog();
-  void setFullScreen(bool full_screen);
 };
 
 #endif  // FLATLAND_VIZ_FLATLAND_VIZ_H

@@ -137,33 +137,27 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent, int argc, char ** argv) : QWidg
 
   connect(manager_, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
   connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
-  connect(
-    tool_man, SIGNAL(toolRemoved(rviz_common::Tool *)), this,
-    SLOT(removeTool(rviz_common::Tool *)));
-  connect(
-    tool_man, SIGNAL(toolRefreshed(rviz_common::Tool *)), this,
-    SLOT(refreshTool(rviz_common::Tool *)));
-  connect(
-    tool_man, SIGNAL(toolChanged(rviz_common::Tool *)), this,
-    SLOT(indicateToolIsCurrent(rviz_common::Tool *)));
+  connect(tool_man, &rviz_common::ToolManager::toolRemoved, this, &FlatlandViz::removeTool);
+  connect(tool_man, &rviz_common::ToolManager::toolRefreshed, this, &FlatlandViz::refreshTool);
+  connect(tool_man, &rviz_common::ToolManager::toolChanged, this, &FlatlandViz::indicateToolIsCurrent);
 
   RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Initializing visualization manager");
   manager_->initialize();
 
-  tool_man->addTool("flatland_viz/SpawnModel");
-  tool_man->addTool("flatland_viz/PauseSim");
+  tool_man->addTool("flatland_rviz_plugins/SpawnModel");
+  tool_man->addTool("flatland_rviz_plugins/TogglePause");
 
   RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Starting visualization manager update");
   manager_->startUpdate();
 
   // Set view controller to top down
-  manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
+  manager_->getViewManager()->setCurrentViewControllerType("rviz_default_plugins/TopDownOrtho");
   // Note: setBackgroundColor is no longer available in RViz2 RenderPanel
   //render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
 
   // Create a Grid display.
   RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Making grid");
-  grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
+  grid_ = manager_->createDisplay("rviz_default_plugins/Grid", "adjustable grid", true);
   if (grid_ == nullptr) {
     RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
     exit(1);
@@ -178,7 +172,7 @@ FlatlandViz::FlatlandViz(FlatlandWindow *parent, int argc, char ** argv) : QWidg
 
   // Create interactive markers display
   RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Adding interactive markers");
-  interactive_markers_ = manager_->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
+  interactive_markers_ = manager_->createDisplay("rviz_default_plugins/InteractiveMarkers", "Move Objects", false);
   if (interactive_markers_ == nullptr) {
     RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
     exit(1);
@@ -217,7 +211,61 @@ void FlatlandViz::indicateToolIsCurrent(rviz_common::Tool * tool)
 
 void FlatlandViz::setDisplayConfigModified()
 {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "setDisplayConfigModified called");
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "setDisplayConfigModified called");
+}
+
+void FlatlandViz::onOpen()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "onOpen called");
+  // TODO: Implement config file opening
+}
+
+void FlatlandViz::onSave()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "onSave called");
+  // TODO: Implement config file saving
+}
+
+void FlatlandViz::onSaveAs()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "onSaveAs called");
+  // TODO: Implement config file save as
+}
+
+void FlatlandViz::onSaveImage()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "onSaveImage called");
+  // TODO: Implement image saving
+}
+
+void FlatlandViz::openNewPanelDialog()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "openNewPanelDialog called");
+  // TODO: Implement panel dialog
+}
+
+void FlatlandViz::exitFullScreen()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "exitFullScreen called");
+  setFullScreen(false);
+}
+
+void FlatlandViz::showHelpPanel()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "showHelpPanel called");
+  // TODO: Implement help panel
+}
+
+void FlatlandViz::onHelpWiki()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "onHelpWiki called");
+  // TODO: Open wiki URL
+}
+
+void FlatlandViz::onHelpAbout()
+{
+  RCLCPP_DEBUG(rclcpp::get_logger("flatland_viz"), "onHelpAbout called");
+  // TODO: Show about dialog
 }
 
 void FlatlandViz::addTool(rviz_common::Tool * tool)
