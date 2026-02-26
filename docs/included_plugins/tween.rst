@@ -13,9 +13,9 @@ This can be done using a variety of tween modes and easings.
 Modes
 ^^^^^
 
-- ``yoyo`` - move back and forth between the start and end position repeatedly
+- ``yoyo`` - move back and forth between the start and end position repeatedly. Supports optional ``trigger_topic`` for pause/resume control.
 - ``once`` - move to the end position and stop
-- ``loop`` - move to the end position then teleport back, then repeat indefinitely
+- ``loop`` - move to the end position then teleport back, then repeat indefinitely. Supports optional ``trigger_topic`` for pause/resume control.
 - ``trigger`` - move towards the end position if the "trigger_topic" ros topic recieves ``true``, move towards start otherwise.
 
 Easings
@@ -55,9 +55,11 @@ Configuration
       # The easing mode (documented above, default 'linear')
       easing: cubicInOut
 
-      # The ROS topic name to subscribe to for 'trigger' mode ("/tween_trigger")
+      # The ROS topic name to subscribe to (default: "/tween_trigger")
       # This will respect model namespaces
-      # e.g. if this model has namespace "foo", it will publish on "/foo/tween_trigger"
+      # e.g. if this model has namespace "foo", it will subscribe on "/foo/tween_trigger"
+      # For 'trigger' mode: true=move forward, false=move backward
+      # For 'yoyo' and 'loop' modes: true=run, false=pause
       trigger_topic: tween_trigger
 
       # animation duration in seconds (default 1 second)

@@ -121,6 +121,8 @@ void Tween::OnInitialize(const YAML::Node& config) {
     throw YAMLException("Mode " + mode + " does not exist");
   }
   mode_ = Tween::mode_strings_.at(mode);
+  // Preserve original behavior: TRIGGER starts stationary; LOOP/YOYO start running
+  triggered_ = (mode_ != Tween::ModeType_::TRIGGER);
 
   tween_ = tweeny::from(0.0, 0.0, 0.0)
                .to(delta_.x, delta_.y, delta_.theta)
