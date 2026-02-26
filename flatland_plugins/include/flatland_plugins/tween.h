@@ -68,16 +68,20 @@ class Tween : public flatland_server::ModelPlugin {
   Pose delta_;      // The maximum change
   float duration_;  // Seconds to enact change over
 
-  ros::Subscriber trigger_sub_;  // Handle forward/reverse trigger
-  bool triggered_ = false;  // If true,animate forwards, otherwise backwards
+  ros::Subscriber trigger_sub_;  // Handle triggers: pause/resume for LOOP/YOYO
+                                 // modes, direction for TRIGGER mode
+  bool triggered_ = true;        // TRIGGER mode: true=forward, false=backward;
+                                 // LOOP/YOYO modes: true=run, false=pause
 
   tweeny::tween<double, double, double> tween_;  // The tween object (x,y,theta)
 
   // The three different operating modes
   enum class ModeType_ {
-    YOYO,    // tween up to delta_, then down again, and repeat
-    LOOP,    // tween up to delta_, then teleport back to start_
-    ONCE,    // tween up to delta_ then stay there
+    YOYO,  // tween up to delta_, then down again, and repeat (supports optional
+           // trigger_topic for pause/resume)
+    LOOP,  // tween up to delta_, then teleport back to start_ (supports
+           // optional trigger_topic for pause/resume)
+    ONCE,  // tween up to delta_ then stay there
     TRIGGER  // tween forwards on "true", backward on "false"
   };
   ModeType_ mode_;
@@ -131,7 +135,9 @@ class Tween : public flatland_server::ModelPlugin {
 
   /**
    * @name      TriggerCallback
-   * @brief     Handles external tween triggers for mode "trigger"
+   * @brief     Handles external tween triggers
+   *            TRIGGER mode: true=forward, false=backward
+   *            LOOP/YOYO modes: true=run, false=pause
    * @param[in] The boolean message
    */
   void TriggerCallback(const std_msgs::Bool& msg);

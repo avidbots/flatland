@@ -244,12 +244,26 @@ void Tween::OnInitialize(const YAML::Node& config) {
 }
 
 void Tween::TriggerCallback(const std_msgs::Bool& msg) {
+  ROS_INFO("Tween::TriggerCallback: received trigger %d", msg.data);
   triggered_ = msg.data;
 }
 
 void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
-  std::array<double, 3> v =
-      tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
+  // For LOOP and YOYO modes with pause support, only advance if triggered_
+  bool should_advance = true;
+  if ((mode_ == Tween::ModeType_::LOOP || mode_ == Tween::ModeType_::YOYO) &&
+      !triggered_) {
+    should_advance = false;  // Pause when triggered_ is false
+  }
+
+  std::array<double, 3> v;
+  if (should_advance) {
+    v = tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
+  } else {
+    // Don't advance, just get current position
+    v = tween_.step(0);
+  }
+
   ROS_DEBUG_THROTTLE_NAMED(1.0, "Tween", "value %f,%f,%f step %f progress %f",
                            v[0], v[1], v[2], timekeeper.GetStepSize(),
                            tween_.progress());
@@ -258,18 +272,18 @@ void Tween::BeforePhysicsStep(const Timekeeper& timekeeper) {
   // Tell Box2D to update the AABB and check for collisions for this object
   body_->physics_body_->SetAwake(true);
 
-  // Yoyo back and forth
+  // Yoyo back and forth (only when running, not paused)
   if (mode_ == Tween::ModeType_::YOYO) {
-    if (tween_.progress() >= 1.0f) {
+    if (triggered_ && tween_.progress() >= 1.0f) {
       tween_.backward();
-    } else if (tween_.progress() <= 0.001f) {
+    } else if (triggered_ && tween_.progress() <= 0.001f) {
       tween_.forward();
     }
   }
 
-  // Teleport back in loop mode
+  // Teleport back in loop mode (only when running, not paused)
   if (mode_ == Tween::ModeType_::LOOP) {
-    if (tween_.progress() >= 1.0f) {
+    if (triggered_ && tween_.progress() >= 1.0f) {
       tween_.seek(0);
     }
   }
