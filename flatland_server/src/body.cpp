@@ -61,6 +61,7 @@ Body::Body(b2World *physics_world, Entity *entity, const std::string &name,
   body_def.linearDamping = linear_damping;
   body_def.angularDamping = angular_damping;
 
+  parent_transform_ = pose;
   physics_body_ = physics_world->CreateBody(&body_def);
   physics_body_->SetUserData(this);
 }
@@ -87,6 +88,8 @@ const std::string &Body::GetName() const { return name_; }
 b2Body *Body::GetPhysicsBody() { return physics_body_; }
 
 const Color &Body::GetColor() const { return color_; }
+
+const Pose &Body::GetParentTransform() const { return parent_transform_; }
 
 void Body::SetColor(const Color &color) { color_ = color; }
 

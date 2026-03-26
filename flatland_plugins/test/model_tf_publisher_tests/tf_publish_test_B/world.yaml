@@ -1,5 +1,4 @@
-properties: {}
-layers: 
+layers:
   - name: "layer_1"
     map: "../tf_publish_test_A/map_1.yaml"
     color: [0, 1, 0, 1]

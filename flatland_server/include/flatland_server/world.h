@@ -51,10 +51,13 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/interactive_marker_manager.h>
 #include <flatland_server/layer.h>
+#include <flatland_server/message_server.h>
 #include <flatland_server/model.h>
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
+
 #include <map>
+#include <queue>
 #include <string>
 #include <string>
 #include <vector>
@@ -66,6 +69,8 @@ namespace flatland_server {
  * that can represent environments at multiple levels, and models which are
  * can be robots or obstacles.
  */
+class InteractiveMarkerManager;
+
 class World : public b2ContactListener {
  public:
   boost::filesystem::path world_yaml_dir_;  ///<directory containing world file
@@ -83,6 +88,11 @@ class World : public b2ContactListener {
       int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;  ///< Box2D solver param
   int physics_velocity_iterations_;  ///< Box2D solver param
+
+  MessageServer message_server;
+
+  std::string yaml_path_;
+  std::string models_path_;
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -164,6 +174,13 @@ class World : public b2ContactListener {
   void DeleteModel(const std::string &name);
 
   /**
+ * @brief get model with a given name
+ * @param[in] name The name of the model you are looking for
+ * @param[out] Model* The model that you find
+ */
+  const Model *GetModel(const std::string &name);
+
+  /**
    * @brief move model with a given name
    * @param[in] name The name of the model to move
    * @param[in] pose The desired new pose of the model
@@ -195,15 +212,24 @@ class World : public b2ContactListener {
    * @brief factory method to create a instance of the world class. Cleans all
    * the inputs before instantiation of the class. TThrows YAMLException.
    * @param[in] yaml_path Path to the world yaml file
+   * @param[in] models_path Path to the world yaml file
+   * @param[in] world_plugins_path Path to the world yaml file
    * @return pointer to a new world
    */
-  static World *MakeWorld(const std::string &yaml_path);
+  static World *MakeWorld(const std::string &yaml_path,
+                          const std::string &models_path,
+                          const std::string &world_plugins_path);
 
   /**
-   * @brief Publish debug visualizations for everything
-   * @param[in] update_layers since layers are pretty much static, this
-   * parameter is used to skip updating layers
+   * @brief Loads the layers and objects in the world
    */
+  void LoadWorldEntities();
+
+  /**
+ * @brief Publish debug visualizations for everything
+ * @param[in] update_layers since layers are pretty much static, this
+ * parameter is used to skip updating layers
+ */
   void DebugVisualize(bool update_layers = true);
 };
 };      // namespace flatland_server

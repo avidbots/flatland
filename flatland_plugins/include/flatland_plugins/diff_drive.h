@@ -79,6 +79,7 @@ class DiffDrive : public flatland_server::ModelPlugin {
   bool twist_in_local_frame_;  ///< YAML parameter to publish velocity in local
                                /// frame. Original diff drive plugin publishes
                                /// local velocity wrt to odom frame
+  bool enable_ground_truth_pub_;   ///< YAML parameter to enable ground truth publishing
   DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
   DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
   double angular_velocity_ = 0.0;

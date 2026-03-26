@@ -48,7 +48,7 @@
 
 namespace flatland_server {
 
-Model *ModelPlugin::GetModel() { return model_; }
+Model *ModelPlugin::GetModel() const { return model_; }
 
 void ModelPlugin::Initialize(const std::string &type, const std::string &name,
                              Model *model, const YAML::Node &config) {

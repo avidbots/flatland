@@ -36,7 +36,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   plane_control.interaction_mode =
       visualization_msgs::InteractiveMarkerControl::MOVE_PLANE;
   visualization_msgs::InteractiveMarkerControl rotate_control;
-  rotate_control.always_visible = true;
+  rotate_control.always_visible = false;
   rotate_control.orientation.w = 0.707;
   rotate_control.orientation.y = 0.707;
   rotate_control.name = "rotate_z";
@@ -57,7 +57,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   text_marker.color.a = 1.0;
   text_marker.pose.position.x = 0.5;
   text_marker.pose.position.y = 0.0;
-  text_marker.scale.z = 0.5;
+  text_marker.scale.z = 0.2;
   text_marker.text = model_name;
   no_control.markers.push_back(text_marker);
 
@@ -68,8 +68,8 @@ void InteractiveMarkerManager::createInteractiveMarker(
   easy_to_click_cube.color.g = 1.0;
   easy_to_click_cube.color.b = 0.0;
   easy_to_click_cube.color.a = 0.5;
-  easy_to_click_cube.scale.x = 0.5;
-  easy_to_click_cube.scale.y = 0.5;
+  easy_to_click_cube.scale.x = 0.1;
+  easy_to_click_cube.scale.y = 0.1;
   easy_to_click_cube.scale.z = 0.05;
   easy_to_click_cube.pose.position.x = 0.0;
   plane_control.markers.push_back(easy_to_click_cube);
@@ -99,7 +99,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
     if (transformed_body_marker.type ==
             visualization_msgs::Marker::LINE_STRIP ||
         transformed_body_marker.type == visualization_msgs::Marker::LINE_LIST) {
-      transformed_body_marker.scale.x = 0.1;
+      transformed_body_marker.scale.x = 0.01;
     }
 
     // Add transformed body marker to interactive marker control object
@@ -220,8 +220,8 @@ void InteractiveMarkerManager::update() {
       new_pose.orientation.w = cos(0.5 * theta);
       new_pose.orientation.z = sin(0.5 * theta);
       interactive_marker_server_->setPose((*models_)[i]->GetName(), new_pose);
-      interactive_marker_server_->applyChanges();
     }
+    interactive_marker_server_->applyChanges();
   }
 
   // Detect when interaction stops without triggering a MOUSE_UP event by

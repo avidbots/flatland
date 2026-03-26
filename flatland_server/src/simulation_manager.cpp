@@ -44,30 +44,32 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "flatland_server/simulation_manager.h"
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/model.h>
-#include <flatland_server/service_manager.h>
+#include <flatland_server/simulation_manager.h>
 #include <flatland_server/world.h>
 #include <ros/ros.h>
 #include <exception>
 #include <limits>
 #include <string>
-#include <chrono>
-#include <thread>
 
 namespace flatland_server {
 
 SimulationManager::SimulationManager(std::string world_yaml_file,
-                                     double update_rate, double step_size,
-                                     bool show_viz, double viz_pub_rate)
+                                     std::string models_path,
+                                     std::string world_plugins_path,
+                                     double update_rate,
+                                     double step_size, bool show_viz,
+                                     double viz_pub_rate)
     : world_(nullptr),
       update_rate_(update_rate),
       step_size_(step_size),
       show_viz_(show_viz),
       viz_pub_rate_(viz_pub_rate),
-      world_yaml_file_(world_yaml_file) {
+      world_yaml_file_(world_yaml_file),
+      models_path_(models_path),
+      world_plugins_path_(world_plugins_path) {
   ROS_INFO_NAMED("SimMan",
                  "Simulation params: world_yaml_file(%s) update_rate(%f), "
                  "step_size(%f) show_viz(%s), viz_pub_rate(%f)",
@@ -75,107 +77,107 @@ SimulationManager::SimulationManager(std::string world_yaml_file,
                  show_viz_ ? "true" : "false", viz_pub_rate_);
 }
 
-void SimulationManager::Main(bool benchmark) {
+void SimulationManager::Main() {
   ROS_INFO_NAMED("SimMan", "Initializing...");
   run_simulator_ = true;
 
   try {
-    world_ = World::MakeWorld(world_yaml_file_);
+    world_ =
+        World::MakeWorld(world_yaml_file_, models_path_, world_plugins_path_);
     ROS_INFO_NAMED("SimMan", "World loaded");
   } catch (const std::exception& e) {
     ROS_FATAL_NAMED("SimMan", "%s", e.what());
     return;
   }
+  service_manager_.reset(nullptr);
 
-  if (show_viz_) world_->DebugVisualize();
+  Timekeeper timekeeper;
+  ros::WallRate rate(update_rate_);
+  timekeeper.SetMaxStepSize(step_size_);
 
-  iterations_ = 0;
+  int iterations = 0;
   double filtered_cycle_util = 0;
   double min_cycle_util = std::numeric_limits<double>::infinity();
   double max_cycle_util = 0;
-  double viz_update_period = 1.0f / viz_pub_rate_;
-  ServiceManager service_manager(this, world_);
+  double viz_update_period = timekeeper.GetMaxStepSize() /
+                             rate.expectedCycleTime().toSec() / viz_pub_rate_;
 
-  // ros::WallDuration(1.0).sleep(); // sleep for one second to allow world/plugins to init
-
-  // integrated ros::WallRate logic here to expose internals for benchmarking
-  std::chrono::duration<double> start = std::chrono::steady_clock::now().time_since_epoch();
-  std::chrono::duration<double> expected_cycle_time(1.0/update_rate_);
-  std::chrono::duration<double> actual_cycle_time(0.0);
-  using seconds_d = std::chrono::duration<double, std::ratio<1, 1>>;
-  double seconds_taken = 0;
-
-  timekeeper_.SetMaxStepSize(step_size_);
-  ROS_INFO_NAMED("SimMan", "Simulation loop started");
-
+  ROS_INFO_NAMED("SimMan", "Waiting for Map");
   while (ros::ok() && run_simulator_) {
+    try {
+      world_->LoadWorldEntities();
+      if (show_viz_) {
+        world_->DebugVisualize();
+      }
+      service_manager_ =
+          std::unique_ptr<ServiceManager>(new ServiceManager(this, world_));
+      break;
+    } catch (const YAMLException& ex) {
+      std::string exception(ex.what());
+      if (exception.find("File does not exist") == std::string::npos) {
+        throw;
+      }
+      ROS_DEBUG_STREAM_THROTTLE(5, "Tried to load world yaml file "
+                                       << world_yaml_file_);
+    }
+
+    timekeeper.StepTime();
+    rate.sleep();
+  }
+
+  ROS_INFO_NAMED("SimMan", "Received Map, Simulation Loop Started");
+  while (ros::ok() && run_simulator_) {
+    START_PROFILE(timekeeper, "Total Iteration");
     // for updating visualization at a given rate
     // see flatland_plugins/update_timer.cpp for this formula
     double f = 0.0;
+    static double t_init_offset = timekeeper.GetSimTime().toSec();
     try {
-      f = fmod(ros::Time::now().toSec() +
-                   (expected_cycle_time.count() / 2.0),
+      f = fmod(timekeeper.GetSimTime().toSec() - t_init_offset +
+                   (rate.expectedCycleTime().toSec() / 2.0),
                viz_update_period);
     } catch (std::runtime_error& ex) {
       ROS_ERROR("Flatland runtime error: [%s]", ex.what());
     }
-    std::chrono::duration<double> update_start = std::chrono::steady_clock::now().time_since_epoch();
-    bool update_viz = ((f >= 0.0) && (f < expected_cycle_time.count()));
+    bool update_viz = ((f >= 0.0) && (f < rate.expectedCycleTime().toSec()));
 
-    world_->Update(timekeeper_);  // Step physics by ros cycle time
+    world_->Update(timekeeper);  // Step physics by ros cycle time
 
     if (show_viz_ && update_viz) {
       world_->DebugVisualize(false);  // no need to update layer
       DebugVisualization::Get().Publish(
-          timekeeper_);  // publish debug visualization
+          timekeeper);  // publish debug visualization
+    }
+
+    if (update_viz) {
+      START_PROFILE(timekeeper, "Update Interactive Marker");
+      world_->int_marker_manager_.update();
+      END_PROFILE(timekeeper, "Update Interactive Marker");
     }
 
     ros::spinOnce();
 
-    seconds_taken += (seconds_d(std::chrono::steady_clock::now().time_since_epoch()) - update_start).count();
+    END_PROFILE(timekeeper, "Total Iteration");
+    rate.sleep();
 
-    // ros::WallRate::sleep() logic, but using std::chrono time
-    {
-      std::chrono::duration<double> expected_end = start + expected_cycle_time;
-      std::chrono::duration<double> actual_end = std::chrono::steady_clock::now().time_since_epoch();
-      std::chrono::duration<double> sleep_time = expected_end - actual_end;  //calculate the time we'll sleep for
-      actual_cycle_time = actual_end - start;
-      start = expected_end;  //make sure to reset our start time
-      // ROS_INFO_NAMED(
-      //   "SimMan", "actual_end: %f, start: %f, actual: %f", 
-      //   seconds_d(actual_end).count(), 
-      //   seconds_d(start).count(), 
-      //   seconds_d(actual_cycle_time).count());
-      if(sleep_time.count() <= 0.0) { //if we've taken too much time we won't sleep
-        if (actual_end > expected_end + expected_cycle_time) {
-          start = actual_end;
-        }
-      } else {  // sleep, unless we're in a benchmark
-        if (benchmark == false) {   // if benchmark==true, skip sleeping to run as fast as possible
-          std::this_thread::sleep_for(sleep_time);
-        } else {
-          start = actual_end;
-        }
-      }
-    }
+    iterations++;
 
-    iterations_++;
-
-    double cycle_time = actual_cycle_time.count() * 1000;
-    double expected_cycle_time_ms = expected_cycle_time.count() * 1000;
-    double cycle_util = cycle_time / expected_cycle_time_ms * 100;  // in percent
-    double factor = timekeeper_.GetStepSize() * 1000 / expected_cycle_time_ms;
+    double cycle_time = rate.cycleTime().toSec() * 1000;
+    double expected_cycle_time = rate.expectedCycleTime().toSec() * 1000;
+    double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
+    double factor = timekeeper.GetStepSize() * 1000 / expected_cycle_time;
     min_cycle_util = std::min(cycle_util, min_cycle_util);
-    if (iterations_ > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
+    if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;
 
-    ROS_INFO_THROTTLE_NAMED(
-        1, "SimMan",
-        "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
-        min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
+    ROS_DEBUG_THROTTLE_NAMED(
+       1, "SimMan",
+       "utilization: min %.1f%% max %.1f%% ave %.1f%%  factor: %.1f",
+       min_cycle_util, max_cycle_util, filtered_cycle_util, factor);
   }
-  // std::cout << "Simulation loop ended. " << iterations_ << " iterations in " << seconds_taken << " seconds, " <<  (double)iterations_/seconds_taken << " iterations/sec" << std::endl;
+  ROS_INFO_NAMED("SimMan", "Simulation loop ended");
 
+  PRINT_ALL_PROFILES(timekeeper);
   delete world_;
 }
 

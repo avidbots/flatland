@@ -1,4 +1,3 @@
-properties: {}
 layers:
   - name: "2d"
     map: "map.yaml"

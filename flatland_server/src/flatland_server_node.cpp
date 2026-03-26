@@ -79,9 +79,23 @@ int main(int argc, char **argv) {
   ros::NodeHandle node_handle("~");
 
   // Load parameters
-  std::string world_path;  // The file path to the world.yaml file
+  std::string world_path = "";  // The file path to the world.yaml file
   if (!node_handle.getParam("world_path", world_path)) {
     ROS_FATAL_NAMED("Node", "No world_path parameter given!");
+    ros::shutdown();
+    return 1;
+  }
+
+  std::string models_path;
+  if (!node_handle.getParam("models_path", models_path)) {
+    ROS_FATAL_NAMED("Node", "No models_path parameter given!");
+    ros::shutdown();
+    return 1;
+  }
+
+  std::string world_plugins_path;
+  if (!node_handle.getParam("world_plugins_path", world_plugins_path)) {
+    ROS_FATAL_NAMED("Node", "No world_plugins_path parameter given!");
     ros::shutdown();
     return 1;
   }
@@ -100,7 +114,8 @@ int main(int argc, char **argv) {
 
   // Create simulation manager object
   simulation_manager = new flatland_server::SimulationManager(
-      world_path, update_rate, step_size, show_viz, viz_pub_rate);
+      world_path, models_path, world_plugins_path, update_rate,
+      step_size, show_viz, viz_pub_rate);
 
   // Register sigint shutdown handler
   signal(SIGINT, SigintHandler);

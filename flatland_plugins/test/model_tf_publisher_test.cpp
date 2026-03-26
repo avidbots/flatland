@@ -62,7 +62,7 @@ using namespace flatland_plugins;
 class ModelTfPublisherTest : public ::testing::Test {
  public:
   boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  boost::filesystem::path world_yaml_path;
   World* w;
 
   void SetUp() override {
@@ -119,13 +119,16 @@ class ModelTfPublisherTest : public ::testing::Test {
  * Test the transformation for the model robot in a given plugin configuration
  */
 TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
-  world_yaml =
-      this_file_dir /
-      fs::path("model_tf_publisher_tests/tf_publish_test_A/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("model_tf_publisher_tests/tf_publish_test_A/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml");
+  w->LoadWorldEntities();
+
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -193,13 +196,16 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A) {
  * Test the transformation for the model robot in another plugin configuration
  */
 TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
-  world_yaml =
-      this_file_dir /
-      fs::path("model_tf_publisher_tests/tf_publish_test_B/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("model_tf_publisher_tests/tf_publish_test_B/");
 
   Timekeeper timekeeper;
   timekeeper.SetMaxStepSize(1.0);
-  w = World::MakeWorld(world_yaml.string());
+  w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                       world_yaml_path.string(),
+                       world_yaml_path.string() + "world_plugins.yaml");
+  w->LoadWorldEntities();
+
   ModelTfPublisher* p = dynamic_cast<ModelTfPublisher*>(
       w->plugin_manager_.model_plugins_[0].get());
 
@@ -256,11 +262,14 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B) {
  * to a nonexistent reference body
  */
 TEST_F(ModelTfPublisherTest, invalid_A) {
-  world_yaml =
-      this_file_dir / fs::path("model_tf_publisher_tests/invalid_A/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("model_tf_publisher_tests/invalid_A/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml");
+    w->LoadWorldEntities();
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {
@@ -282,11 +291,14 @@ TEST_F(ModelTfPublisherTest, invalid_A) {
  * to a nonexistent body specified in the exclude list
  */
 TEST_F(ModelTfPublisherTest, invalid_B) {
-  world_yaml =
-      this_file_dir / fs::path("model_tf_publisher_tests/invalid_B/world.yaml");
+  world_yaml_path =
+      this_file_dir / fs::path("model_tf_publisher_tests/invalid_B/");
 
   try {
-    w = World::MakeWorld(world_yaml.string());
+    w = World::MakeWorld(world_yaml_path.string() + "world.yaml",
+                         world_yaml_path.string(),
+                         world_yaml_path.string() + "world_plugins.yaml");
+    w->LoadWorldEntities();
 
     FAIL() << "Expected an exception, but none were raised";
   } catch (const PluginException& e) {

@@ -183,7 +183,7 @@ void SpawnModelTool::SpawnModelInFlatland() {
   // fill in the service request
   srv.request.name = model_name.toStdString();
   srv.request.ns = model_name.toStdString();
-  srv.request.yaml_path = path_to_model_file_.toStdString();
+  srv.request.yaml_name = path_to_model_file_.toStdString();
   srv.request.pose.x = intersection[0];
   srv.request.pose.y = intersection[1];
   srv.request.pose.theta = initial_angle;

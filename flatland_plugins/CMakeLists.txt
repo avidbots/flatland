@@ -150,9 +150,9 @@ if(CATKIN_ENABLE_TESTING)
                     test/tricycle_drive_test.cpp)
   target_link_libraries(tricycle_drive_test flatland_plugins_lib)
 
-  add_rostest_gtest(diff_drive_test test/diff_drive_test.test
+  add_rostest_gtest(diff_drive_plugin_test test/diff_drive_test.test
                     test/diff_drive_test.cpp)
-  target_link_libraries(diff_drive_test flatland_plugins_lib)
+  target_link_libraries(diff_drive_plugin_test flatland_plugins_lib)
 
   add_rostest_gtest(imu_test test/imu_test.test
                     test/imu_test.cpp)

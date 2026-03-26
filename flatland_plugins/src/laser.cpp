@@ -48,6 +48,7 @@
 #include <flatland_server/collision_filter_registry.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+#include <flatland_server/profiler.h>
 #include <flatland_server/yaml_reader.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <pluginlib/class_list_macros.h>
@@ -113,8 +114,7 @@ void Laser::OnInitialize(const YAML::Node& config) {
   else
     laser_scan_.intensities.resize(0);
   laser_scan_.header.seq = 0;
-  laser_scan_.header.frame_id =
-      tf::resolve("", GetModel()->NameSpaceTF(frame_id_));
+  laser_scan_.header.frame_id = frame_id_;
 
   // Broadcast transform between the body and laser
   tf::Quaternion q;
@@ -146,7 +146,7 @@ void Laser::BeforePhysicsStep(const Timekeeper& timekeeper) {
 
   // only compute and publish when the number of subscribers is not zero, or always_publish_ is true
   if (always_publish_ || scan_publisher_.getNumSubscribers() > 0) {
-    // START_PROFILE(timekeeper, "compute laser range");
+    START_PROFILE(timekeeper, "compute laser range");
     auto start = std::chrono::steady_clock::now();
     ComputeLaserRanges();
 
@@ -154,7 +154,7 @@ void Laser::BeforePhysicsStep(const Timekeeper& timekeeper) {
         1, "Laser Plugin", "took %luus",
         std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - start).count());
 
-    // END_PROFILE(timekeeper, "compute laser range");
+    END_PROFILE(timekeeper, "compute laser range");
     laser_scan_.header.stamp = timekeeper.GetSimTime();
     scan_publisher_.publish(laser_scan_);
     publications_++;

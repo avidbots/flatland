@@ -1,4 +1,4 @@
-string yaml_path
+string yaml_name
 string name
 string ns
 geometry_msgs/Pose2D pose

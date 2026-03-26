@@ -87,17 +87,17 @@ ServiceManager::ServiceManager(SimulationManager *sim_man, World *world)
 
 bool ServiceManager::SpawnModel(flatland_msgs::SpawnModel::Request &request,
                                 flatland_msgs::SpawnModel::Response &response) {
-  ROS_DEBUG_NAMED("ServiceManager",
-                  "Model spawn requested with path(\"%s\"), namespace(\"%s\"), "
-                  "name(\'%s\"), pose(%f,%f,%f)",
-                  request.yaml_path.c_str(), request.ns.c_str(),
-                  request.name.c_str(), request.pose.x, request.pose.y,
-                  request.pose.theta);
+  ROS_DEBUG_NAMED(
+      "ServiceManager",
+      "Model spawn requested with yaml_name(\"%s\"), namespace(\"%s\"), "
+      "name(\'%s\"), pose(%f,%f,%f)",
+      request.yaml_name.c_str(), request.ns.c_str(), request.name.c_str(),
+      request.pose.x, request.pose.y, request.pose.theta);
 
   Pose pose(request.pose.x, request.pose.y, request.pose.theta);
 
   try {
-    world_->LoadModel(request.yaml_path, request.ns, request.name, pose);
+    world_->LoadModel(request.yaml_name, request.ns, request.name, pose);
     response.success = true;
     response.message = "";
   } catch (const std::exception &e) {
