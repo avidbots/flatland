@@ -49,8 +49,15 @@
 
 namespace flatland_server {
 
-Timekeeper::Timekeeper()
-    : time_(ros::Time(0, 0)), max_step_size_(0), clock_topic_("/clock") {
+Timekeeper::Timekeeper() : max_step_size_(0), clock_topic_("/clock") {
+  ros::NodeHandle private_nh("~");
+  bool use_wall_time = false;
+  private_nh.getParam("use_wall_time", use_wall_time);
+
+  time_ = use_wall_time
+      ? ros::Time(ros::WallTime::now().sec, ros::WallTime::now().nsec)
+      : ros::Time(0);
+
   clock_pub_ = nh_.advertise<rosgraph_msgs::Clock>(clock_topic_, 1);
 }
 

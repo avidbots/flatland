@@ -16,7 +16,7 @@ Run this following command to launch the simulator using default parameters
   $ roslaunch flatland_server server.launch world_path:=/path/to/world.yaml
 
 
-Here are the full list of parameters with the default values 
+Here are the full list of parameters with the default values
 
 .. code-block:: bash
 
@@ -26,13 +26,17 @@ Here are the full list of parameters with the default values
                                             show_viz:=true \
                                             viz_pub_rate:=30.0 \
                                             use_rviz:=false \
-                                            simplify_map:=2
+                                            simplify_map:=2 \
+                                            use_wall_time:=false
 
 * **world_path**: path to world.yaml
 * **update_rate**: the real time rate to run the simulation loop in Hz
 * **step_size**: amount of time to step each loop in seconds
-* **show_viz**: show visualization, pops the flatland_viz window and publishes 
+* **show_viz**: show visualization, pops the flatland_viz window and publishes
   visualization messages, either true or false
 * **viz_pub_rate**: rate to publish visualization in Hz, works only when show_viz=true
 * **use_rviz**:  works only when show_viz=true, set this to disable flatland_viz popup
 * **simplify_map**: Simpify map during vector tracing: 0=None (default), 1=moderately, 2=significantly
+* **use_wall_time**: when true, the simulation clock starts at the current
+  wall time so that bags and logs have human-readable timestamps; when false (default), the
+  clock starts at ``ros::Time(0)`` (epoch)
