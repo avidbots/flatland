@@ -1,9 +1,0 @@
-<!--
-Test launchfile for laser_test
-
-This file is used so that rosmaster is running when the test is executed,
-in order to test publish/subscribe
--->
-<launch>
-  <test pkg="flatland_plugins" type="laser_test" test-name="laser_test"/>
-</launch>

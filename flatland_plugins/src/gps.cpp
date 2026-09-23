@@ -1,14 +1,17 @@
 #include <flatland_plugins/gps.h>
+
 #include <pluginlib/class_list_macros.hpp>
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
 double Gps::WGS84_A = 6378137.0;
 double Gps::WGS84_E2 = 0.0066943799831668;
 
-void Gps::OnInitialize(const YAML::Node &config) {
+void Gps::OnInitialize(const YAML::Node & config)
+{
   tf_broadcaster_ = std::make_shared<tf2_ros::TransformBroadcaster>(node_);
   ParseParameters(config);
   update_timer_.SetRate(update_rate_);
@@ -18,9 +21,15 @@ void Gps::OnInitialize(const YAML::Node &config) {
   double s = sin(origin_.theta);
   double x = origin_.x, y = origin_.y;
   m_body_to_gps_ << c, -s, x, s, c, y, 0, 0, 1;
+
+  c = cos(ref_yaw_rad_);
+  s = sin(ref_yaw_rad_);
+  m_enu_to_world_ << c, -s, 0, s, c, 0, 0, 0, 1;
+
 }
 
-void Gps::BeforePhysicsStep(const Timekeeper &timekeeper) {
+void Gps::BeforePhysicsStep(const Timekeeper & timekeeper)
+{
   // keep the update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
@@ -39,7 +48,8 @@ void Gps::BeforePhysicsStep(const Timekeeper &timekeeper) {
   }
 }
 
-void Gps::ComputeReferenceEcef() {
+void Gps::ComputeReferenceEcef()
+{
   double s_lat = sin(ref_lat_rad_);
   double c_lat = cos(ref_lat_rad_);
   double s_lon = sin(ref_lon_rad_);
@@ -52,11 +62,12 @@ void Gps::ComputeReferenceEcef() {
   ref_ecef_z_ = n * (1.0 - WGS84_E2) * s_lat;
 }
 
-void Gps::UpdateFix() {
-  const b2Transform &t = body_->GetPhysicsBody()->GetTransform();
+void Gps::UpdateFix()
+{
+  const b2Transform & t = body_->GetPhysicsBody()->GetTransform();
   Eigen::Matrix3f m_world_to_body;
   m_world_to_body << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
-  Eigen::Matrix3f m_world_to_gps = m_world_to_body * m_body_to_gps_;
+  Eigen::Matrix3f m_world_to_gps = m_enu_to_world_ * m_world_to_body * m_body_to_gps_;
   b2Vec2 gps_pos(m_world_to_gps(0, 2), m_world_to_gps(1, 2));
 
   /* Convert simulation position into ECEF coordinates */
@@ -86,9 +97,12 @@ void Gps::UpdateFix() {
   }
   gps_fix_.latitude = lat_rad * 180.0 * M_1_PI;
   gps_fix_.altitude = 0.0;
+  gps_fix_.position_covariance_type = gps_fix_.COVARIANCE_TYPE_DIAGONAL_KNOWN;
+  gps_fix_.position_covariance = position_covariance_;
 }
 
-void Gps::ParseParameters(const YAML::Node &config) {
+void Gps::ParseParameters(const YAML::Node & config)
+{
   YamlReader reader(node_, config);
   std::string body_name = reader.Get<std::string>("body");
   topic_ = reader.Get<std::string>("topic", "gps/fix");
@@ -97,6 +111,9 @@ void Gps::ParseParameters(const YAML::Node &config) {
   update_rate_ = reader.Get<double>("update_rate", 10.0);
   ref_lat_rad_ = M_PI / 180.0 * reader.Get<double>("ref_lat", 0.0);
   ref_lon_rad_ = M_PI / 180.0 * reader.Get<double>("ref_lon", 0.0);
+  ref_yaw_rad_ = reader.Get<double>("ref_yaw_radians", 0.0);
+  position_covariance_ = reader.GetArray<double, 9>(
+      "position_cavariance", std::array<double, 9>{1e-2, 0, 0,  0, 1e-2, 0,  0, 0, 1e-2});
   ComputeReferenceEcef();
   origin_ = reader.GetPose("origin", Pose(0, 0, 0));
 
@@ -105,10 +122,8 @@ void Gps::ParseParameters(const YAML::Node &config) {
     throw YAMLException("Cannot find body with name " + body_name);
   }
 
-  std::string parent_frame_id =
-      GetModel()->NameSpaceTF(body_->GetName());
-  std::string child_frame_id =
-      GetModel()->NameSpaceTF(frame_id_);
+  std::string parent_frame_id = GetModel()->NameSpaceTF(body_->GetName());
+  std::string child_frame_id = GetModel()->NameSpaceTF(frame_id_);
 
   // Set constant frame ID in GPS fix message
   gps_fix_.header.frame_id = child_frame_id;
@@ -124,6 +139,6 @@ void Gps::ParseParameters(const YAML::Node &config) {
   gps_tf_.transform.rotation.z = sin(0.5 * origin_.theta);
   gps_tf_.transform.rotation.w = cos(0.5 * origin_.theta);
 }
-}
+}  // namespace flatland_plugins
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::Gps, flatland_server::ModelPlugin)

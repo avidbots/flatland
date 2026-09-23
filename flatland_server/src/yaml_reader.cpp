@@ -44,32 +44,39 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <flatland_server/yaml_reader.h>
+
 #include <boost/filesystem/path.hpp>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node) : ros_node_(ros_node), yaml_preprocessor_(ros_node) {
+YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node)
+: ros_node_(ros_node), yaml_preprocessor_(ros_node)
+{
   SetErrorInfo("_NONE_", "_NONE_");
 }
 
-YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const YAML::Node &node) : node_(node), ros_node_(ros_node), yaml_preprocessor_(ros_node) {
+YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const YAML::Node & node)
+: node_(node), ros_node_(ros_node), yaml_preprocessor_(ros_node)
+{
   yaml_preprocessor_.Parse(node_);
   SetErrorInfo("_NONE_", "_NONE_");
 }
 
-YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const std::string &path) : ros_node_(ros_node), yaml_preprocessor_(ros_node)  {
+YamlReader::YamlReader(std::shared_ptr<rclcpp::Node> ros_node, const std::string & path)
+: ros_node_(ros_node), yaml_preprocessor_(ros_node)
+{
   try {
     node_ = YAML::LoadFile(path);
     yaml_preprocessor_.Parse(node_);
-  } catch (const YAML::BadFile &e) {
+  } catch (const YAML::BadFile & e) {
     throw YAMLException("File does not exist, path=" + Q(path));
 
-  } catch (const YAML::ParserException &e) {
+  } catch (const YAML::ParserException & e) {
     throw YAMLException("Malformatted file, path=" + Q(path), e);
 
-  } catch (const YAML::Exception &e) {
+  } catch (const YAML::Exception & e) {
     throw YAMLException("Error loading file, path=" + Q(path), e);
   }
 
@@ -83,41 +90,40 @@ bool YamlReader::IsNodeNull() { return node_.IsNull(); }
 
 int YamlReader::NodeSize() { return node_.size(); }
 
-YamlReader YamlReader::Subnode(int index, NodeTypeCheck type_check,
-                               std::string subnode_location) {
+YamlReader YamlReader::Subnode(int index, NodeTypeCheck type_check, std::string subnode_location)
+{
   YamlReader reader(ros_node_, node_[index]);
 
   // default to use the error location message of its parent
-  std::string location = subnode_location == ""
-                             ? (entry_location_ + " " + entry_name_)
-                             : subnode_location;
+  std::string location =
+    subnode_location == "" ? (entry_location_ + " " + entry_name_) : subnode_location;
   reader.SetErrorInfo(location, "index=" + std::to_string(index));
   reader.SetFile(file_path_);
 
   if (reader.IsNodeNull()) {
-    throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  does not exist" + reader.fmt_in_);
+    throw YAMLException(
+      "Entry index=" + std::to_string(index) + "  does not exist" + reader.fmt_in_);
   } else if (type_check == NodeTypeCheck::MAP && !node_[index].IsMap()) {
-    throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  must be a map" + reader.fmt_in_);
+    throw YAMLException(
+      "Entry index=" + std::to_string(index) + "  must be a map" + reader.fmt_in_);
 
   } else if (type_check == NodeTypeCheck::LIST && !node_[index].IsSequence()) {
-    throw YAMLException("Entry index=" + std::to_string(index) +
-                        "  must be a list" + reader.fmt_in_);
+    throw YAMLException(
+      "Entry index=" + std::to_string(index) + "  must be a list" + reader.fmt_in_);
   }
 
   return reader;
 }
 
-YamlReader YamlReader::Subnode(const std::string &key, NodeTypeCheck type_check,
-                               std::string subnode_location) {
+YamlReader YamlReader::Subnode(
+  const std::string & key, NodeTypeCheck type_check, std::string subnode_location)
+{
   accessed_keys_.insert(key);
   YamlReader reader(ros_node_, node_[key]);
 
   // default to use the error location message of its parent
-  std::string location = subnode_location == ""
-                             ? (entry_location_ + " " + entry_name_)
-                             : subnode_location;
+  std::string location =
+    subnode_location == "" ? (entry_location_ + " " + entry_name_) : subnode_location;
   reader.SetErrorInfo(location, Q(key));
   reader.SetFile(file_path_);
 
@@ -132,9 +138,9 @@ YamlReader YamlReader::Subnode(const std::string &key, NodeTypeCheck type_check,
   return reader;
 }
 
-YamlReader YamlReader::SubnodeOpt(const std::string &key,
-                                  NodeTypeCheck type_check,
-                                  std::string subnode_location) {
+YamlReader YamlReader::SubnodeOpt(
+  const std::string & key, NodeTypeCheck type_check, std::string subnode_location)
+{
   if (!node_[key]) {
     accessed_keys_.insert(key);
     return YamlReader(ros_node_, YAML::Node());
@@ -142,12 +148,14 @@ YamlReader YamlReader::SubnodeOpt(const std::string &key,
   return Subnode(key, type_check, subnode_location);
 }
 
-Vec2 YamlReader::GetVec2(const std::string &key) {
+Vec2 YamlReader::GetVec2(const std::string & key)
+{
   std::array<double, 2> v = GetArray<double, 2>(key);
   return Vec2(v[0], v[1]);
 }
 
-Vec2 YamlReader::GetVec2(const std::string &key, const Vec2 &vec2) {
+Vec2 YamlReader::GetVec2(const std::string & key, const Vec2 & vec2)
+{
   if (!node_[key]) {
     accessed_keys_.insert(key);
     return vec2;
@@ -156,18 +164,21 @@ Vec2 YamlReader::GetVec2(const std::string &key, const Vec2 &vec2) {
   return GetVec2(key);
 }
 
-Color YamlReader::GetColor(const std::string &key, const Color &default_val) {
-  std::array<double, 4> v = GetArray<double, 4>(
-      key, {default_val.r, default_val.g, default_val.b, default_val.a});
+Color YamlReader::GetColor(const std::string & key, const Color & default_val)
+{
+  std::array<double, 4> v =
+    GetArray<double, 4>(key, {default_val.r, default_val.g, default_val.b, default_val.a});
   return Color(v[0], v[1], v[2], v[3]);
 }
 
-Pose YamlReader::GetPose(const std::string &key) {
+Pose YamlReader::GetPose(const std::string & key)
+{
   std::array<double, 3> v = GetArray<double, 3>(key);
   return Pose(v[0], v[1], v[2]);
 }
 
-Pose YamlReader::GetPose(const std::string &key, const Pose &default_val) {
+Pose YamlReader::GetPose(const std::string & key, const Pose & default_val)
+{
   if (!node_[key]) {
     accessed_keys_.insert(key);
     return default_val;
@@ -176,8 +187,8 @@ Pose YamlReader::GetPose(const std::string &key, const Pose &default_val) {
   return GetPose(key);
 }
 
-void YamlReader::SetErrorInfo(std::string entry_location,
-                              std::string entry_name) {
+void YamlReader::SetErrorInfo(std::string entry_location, std::string entry_name)
+{
   boost::algorithm::trim(entry_location);
   boost::algorithm::trim(entry_name);
 
@@ -210,7 +221,8 @@ void YamlReader::SetErrorInfo(std::string entry_location,
   }
 }
 
-void YamlReader::SetFile(const std::string &file_path) {
+void YamlReader::SetFile(const std::string & file_path)
+{
   if (file_path == "_NONE_") {
     file_path_ = "";
   } else {
@@ -220,7 +232,8 @@ void YamlReader::SetFile(const std::string &file_path) {
   filename_ = boost::filesystem::path(file_path).filename().string();
 }
 
-void YamlReader::EnsureAccessedAllKeys() {
+void YamlReader::EnsureAccessedAllKeys()
+{
   if (!node_.IsMap()) {
     throw YAMLException("Entry" + fmt_name_ + " should be a map" + fmt_in_);
   }
@@ -228,26 +241,24 @@ void YamlReader::EnsureAccessedAllKeys() {
   std::vector<std::string> unused_keys;
   std::vector<std::string> keys;
 
-  for (const auto &k : node_) {
+  for (const auto & k : node_) {
     keys.push_back(k.first.as<std::string>());
   }
 
   std::sort(keys.begin(), keys.end());
 
-  for (const auto &key : keys) {
+  for (const auto & key : keys) {
     if (accessed_keys_.count(key) == 0) {
       unused_keys.push_back("\"" + key + "\"");
     }
   }
 
   std::string keys_str = "{" + boost::algorithm::join(keys, ", ") + "}";
-  std::string unused_keys_str =
-      "{" + boost::algorithm::join(unused_keys, ", ") + "}";
+  std::string unused_keys_str = "{" + boost::algorithm::join(unused_keys, ", ") + "}";
 
   if (unused_keys.size() > 0) {
-    throw YAMLException("Entry" + fmt_name_ +
-                        " contains unrecognized entry(s) " + unused_keys_str +
-                        fmt_in_);
+    throw YAMLException(
+      "Entry" + fmt_name_ + " contains unrecognized entry(s) " + unused_keys_str + fmt_in_);
   }
 }
-}
+}  // namespace flatland_server

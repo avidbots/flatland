@@ -44,32 +44,36 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <rclcpp/rclcpp.hpp>
 #include <signal.h>
+
 #include <QApplication>
+#include <rclcpp/rclcpp.hpp>
+
 #include "flatland_viz/flatland_window.h"
 
-FlatlandWindow* window = nullptr;
+FlatlandWindow * window = nullptr;
 
 /**
  * @name        SigintHandler
  * @brief       Interrupt handler - sends shutdown signal to simulation_manager
  * @param[in]   sig: signal itself
  */
-void SigintHandler(int sig) {
-  RCLCPP_WARN(rclcpp::get_logger("Node", "*** Shutting down... ***"));
+void SigintHandler(int sig)
+{
+  RCLCPP_WARN(rclcpp::get_logger("Node"), "*** Shutting down... ***");
 
   if (window != nullptr) {
     delete window;
     window = nullptr;
   }
   RCLCPP_INFO_STREAM(rclcpp::get_logger("Flatland Viz"), "Beginning ros shutdown");
-  ros::shutdown();
+  rclcpp::shutdown();
 }
 
-int main(int argc, char** argv) {
-  if (!ros::isInitialized()) {
-    ros::init(argc, argv, "flatland_viz", ros::init_options::NoSigintHandler);
+int main(int argc, char ** argv)
+{
+  if (!rclcpp::isInitialized()) {
+    rclcpp::init(argc, argv);
   }
 
   QApplication app(argc, argv);

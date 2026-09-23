@@ -1,0 +1,43 @@
+<library path="flatland_rviz_plugins">
+
+  <class
+    name="flatland_rviz_plugins/ChangeRate"
+    type="flatland_rviz_plugins::ChangeRateTool"
+    base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Changes the update rate of the simulation
+    </description>
+  </class>
+
+  <class
+    name="flatland_rviz_plugins/TogglePause"
+    type="flatland_rviz_plugins::PauseTool"
+    base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Toggle the pause state of the simulation
+    </description>
+  </class>
+
+  <class
+          name="flatland_rviz_plugins/Interact"
+          type="flatland_rviz_plugins::InteractiveTool"
+          base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Allows interacting with interactive markers
+    </description>
+  </class>
+
+  <class
+          name="flatland_rviz_plugins/SpawnModel"
+          type="flatland_rviz_plugins::SpawnModelTool"
+          base_class_type="rviz_common::Tool"
+  >
+    <description>
+      Spawns a model
+    </description>
+  </class>
+
+</library>

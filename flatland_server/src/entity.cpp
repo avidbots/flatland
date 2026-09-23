@@ -45,15 +45,20 @@
  */
 
 #include <flatland_server/entity.h>
+
 #include <string>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-Entity::Entity(std::shared_ptr<rclcpp::Node> node, b2World *physics_world, const std::string &name)
-    : node_(node), physics_world_(physics_world), name_(name) {}
+Entity::Entity(
+  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, const std::string & name)
+: node_(node), physics_world_(physics_world), name_(name)
+{
+}
 
-const std::string &Entity::GetName() const { return name_; }
+const std::string & Entity::GetName() const { return name_; }
 
-b2World *Entity::GetPhysicsWorld() { return physics_world_; }
+b2World * Entity::GetPhysicsWorld() { return physics_world_; }
 
-}  //namespace flatland_server
+}  // namespace flatland_server

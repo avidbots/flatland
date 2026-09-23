@@ -45,38 +45,42 @@
  */
 
 #include <flatland_server/timekeeper.h>
-#include <rosgraph_msgs/msg/clock.hpp>
+
 #include <rclcpp/duration.hpp>
+#include <rosgraph_msgs/msg/clock.hpp>
 
-// Note: ros2 implementation based partially on https://github.com/ros2/rclcpp/blob/master/rclcpp/test/test_time_source.cpp
+// Note: ros2 implementation based partially on
+// https://github.com/ros2/rclcpp/blob/master/rclcpp/test/test_time_source.cpp
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 Timekeeper::Timekeeper(rclcpp::Node::SharedPtr node)
-    : node_(node), time_(rclcpp::Time(0, 0)), max_step_size_(0), clock_topic_("/clock") {
+: node_(node), time_(rclcpp::Time(0, 0)), max_step_size_(0), clock_topic_("/clock")
+{
   clock_pub_ = node_->create_publisher<rosgraph_msgs::msg::Clock>(clock_topic_, 1);
 }
 
-void Timekeeper::StepTime() {
+void Timekeeper::StepTime()
+{
   time_ = time_ + rclcpp::Duration(std::chrono::duration<double>(max_step_size_));
 
   UpdateRosClock();
 }
 
-void Timekeeper::UpdateRosClock() const {
+void Timekeeper::UpdateRosClock() const
+{
   rosgraph_msgs::msg::Clock clock;
   clock.clock = time_;
   clock_pub_->publish(clock);
 }
 
-void Timekeeper::SetMaxStepSize(double step_size) {
-  max_step_size_ = step_size;
-}
+void Timekeeper::SetMaxStepSize(double step_size) { max_step_size_ = step_size; }
 
-const rclcpp::Time& Timekeeper::GetSimTime() const { return time_; }
+const rclcpp::Time & Timekeeper::GetSimTime() const { return time_; }
 
 double Timekeeper::GetStepSize() const { return max_step_size_; }
 
 double Timekeeper::GetMaxStepSize() const { return max_step_size_; }
 
-}  //namespace flatland_server
+}  // namespace flatland_server

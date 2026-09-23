@@ -48,18 +48,18 @@
 #ifndef MODEL_DIALOG_H
 #define MODEL_DIALOG_H
 
+#include <flatland_server/timekeeper.h>
+#include <flatland_server/world.h>
+#include <gtest/gtest.h>
+
 #include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QWidget>
-
-#include <flatland_msgs/msg/SpawnModel.hpp>
-#include <flatland_server/timekeeper.h>
-#include <flatland_server/world.h>
-#include <gtest/gtest.h>
-#include <rclcpp/rclcpp.hpp>
 #include <boost/filesystem.hpp>
+#include <flatland_msgs/msg/SpawnModel.hpp>
 #include <iostream>
+#include <rclcpp/rclcpp.hpp>
 #include <regex>
 //#include <thread>
 #include <flatland_viz/model_dialog.h>
@@ -74,15 +74,16 @@ class DialogOptionsWidget;
 namespace fs = boost::filesystem;
 using namespace flatland_server;
 
-class ModelDialog : public QDialog {
+class ModelDialog : public QDialog
+{
   Q_OBJECT
 
- public:
+public:
   static QColor saved_color_;
 
-  ModelDialog(QWidget* parent = 0);
+  ModelDialog(QWidget * parent = 0);
 
- private Q_SLOTS:
+private Q_SLOTS:
   /**
    * @name        SetColor
    * @brief       Callback to pop up a ColorDialog
@@ -109,7 +110,7 @@ class ModelDialog : public QDialog {
    * @param[in]   QColor, color to set button to (incl alpha)
    * @param[in]   QPushButton, button to set color on
    */
-  void SetButtonColor(const QColor* c, QPushButton* b);
+  void SetButtonColor(const QColor * c, QPushButton * b);
   /**
    * @name        SpawnModelClient
    * @brief       Makes a call to spawn model ros service
@@ -117,17 +118,17 @@ class ModelDialog : public QDialog {
 
   void SpawnModelClient();
 
- private:
-  QPushButton* color_button;
+private:
+  QPushButton * color_button;
   QString path_to_model_file;
   QLineEdit *x_edit, *y_edit, *a_edit, *n_edit;
 
- protected:
+protected:
   boost::filesystem::path this_file_dir;
   ros::NodeHandle nh;
   ros::ServiceClient client;
   flatland_msgs::msg::SpawnModel srv;
-  World* w;
+  World * w;
 };
 
 #endif

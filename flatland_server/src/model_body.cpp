@@ -46,24 +46,28 @@
 
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_body.h>
+
 #include <boost/algorithm/string/join.hpp>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
-ModelBody::ModelBody(b2World *physics_world, CollisionFilterRegistry *cfr,
-                     Model *model, const std::string &name, const Color &color,
-                     const Pose &pose, b2BodyType body_type,
-                     const YAML::Node &properties, double linear_damping,
-                     double angular_damping)
-    : Body(physics_world, model, name, color, pose, body_type, properties,
-           linear_damping, angular_damping),
-      cfr_(cfr) {}
+ModelBody::ModelBody(
+  b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, const std::string & name,
+  const Color & color, const Pose & pose, b2BodyType body_type, const YAML::Node & properties,
+  double linear_damping, double angular_damping)
+: Body(
+    physics_world, model, name, color, pose, body_type, properties, linear_damping,
+    angular_damping),
+  cfr_(cfr)
+{
+}
 
-const CollisionFilterRegistry *ModelBody::GetCfr() const { return cfr_; }
+const CollisionFilterRegistry * ModelBody::GetCfr() const { return cfr_; }
 
-ModelBody *ModelBody::MakeBody(b2World *physics_world,
-                               CollisionFilterRegistry *cfr, Model *model,
-                               YamlReader &body_reader) {
+ModelBody * ModelBody::MakeBody(
+  b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, YamlReader & body_reader)
+{
   std::string name = body_reader.Get<std::string>("name");
   body_reader.SetErrorInfo("model " + Q(model->name_), "body " + Q(name));
 
@@ -81,23 +85,22 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   } else if (type_str == "dynamic") {
     type = b2_dynamicBody;
   } else {
-    throw YAMLException("Invalid \"type\" in " + body_reader.entry_location_ +
-                        " " + body_reader.entry_name_ +
-                        ", must be one of: static, kinematic, dynamic");
+    throw YAMLException(
+      "Invalid \"type\" in " + body_reader.entry_location_ + " " + body_reader.entry_name_ +
+      ", must be one of: static, kinematic, dynamic");
   }
 
   // TODO: Read the model's properties
-  ModelBody *m =
-      new ModelBody(physics_world, cfr, model, name, color, pose, type,
-                    YAML::Node(), linear_damping, angular_damping);
+  ModelBody * m = new ModelBody(
+    physics_world, cfr, model, name, color, pose, type, YAML::Node(), linear_damping,
+    angular_damping);
 
   try {
-    YamlReader footprints_node =
-        body_reader.Subnode("footprints", YamlReader::LIST);
+    YamlReader footprints_node = body_reader.Subnode("footprints", YamlReader::LIST);
     body_reader.EnsureAccessedAllKeys();
 
     m->LoadFootprints(footprints_node);
-  } catch (const YAMLException &e) {
+  } catch (const YAMLException & e) {
     delete m;
     throw e;
   }
@@ -105,7 +108,8 @@ ModelBody *ModelBody::MakeBody(b2World *physics_world,
   return m;
 }
 
-void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
+void ModelBody::LoadFootprints(YamlReader & footprints_reader)
+{
   for (int i = 0; i < footprints_reader.NodeSize(); i++) {
     YamlReader reader = footprints_reader.Subnode(i, YamlReader::MAP);
 
@@ -115,17 +119,17 @@ void ModelBody::LoadFootprints(YamlReader &footprints_reader) {
     } else if (type == "polygon") {
       LoadPolygonFootprint(reader);
     } else {
-      throw YAMLException("Invalid footprint \"type\" in " +
-                          reader.entry_location_ + " " + reader.entry_name_ +
-                          ", support footprints are: circle, polygon");
+      throw YAMLException(
+        "Invalid footprint \"type\" in " + reader.entry_location_ + " " + reader.entry_name_ +
+        ", support footprints are: circle, polygon");
     }
 
     reader.EnsureAccessedAllKeys();
   }
 }
 
-void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
-                                   b2FixtureDef &fixture_def) {
+void ModelBody::ConfigFootprintDef(YamlReader & footprint_reader, b2FixtureDef & fixture_def)
+{
   // configure physics properties
   fixture_def.density = footprint_reader.Get<float>("density");
   fixture_def.friction = footprint_reader.Get<float>("friction", 0.0);
@@ -136,17 +140,15 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   fixture_def.filter.groupIndex = 0;
 
   std::vector<std::string> layers =
-      footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
+    footprint_reader.GetList<std::string>("layers", {"all"}, -1, -1);
   std::vector<std::string> invalid_layers;
-  fixture_def.filter.categoryBits =
-      cfr_->GetCategoryBits(layers, &invalid_layers);
+  fixture_def.filter.categoryBits = cfr_->GetCategoryBits(layers, &invalid_layers);
 
   if (!invalid_layers.empty()) {
-    throw YAMLException("Invalid footprint \"layers\" in " +
-                        footprint_reader.entry_location_ + " " +
-                        footprint_reader.entry_name_ + ", {" +
-                        boost::algorithm::join(invalid_layers, ",") +
-                        "} layer(s) does not exist");
+    throw YAMLException(
+      "Invalid footprint \"layers\" in " + footprint_reader.entry_location_ + " " +
+      footprint_reader.entry_name_ + ", {" + boost::algorithm::join(invalid_layers, ",") +
+      "} layer(s) does not exist");
   }
 
   bool collision = footprint_reader.Get<bool>("collision", true);
@@ -159,7 +161,8 @@ void ModelBody::ConfigFootprintDef(YamlReader &footprint_reader,
   }
 }
 
-void ModelBody::LoadCircleFootprint(YamlReader &footprint_reader) {
+void ModelBody::LoadCircleFootprint(YamlReader & footprint_reader)
+{
   Vec2 center = footprint_reader.GetVec2("center", Vec2(0, 0));
   double radius = footprint_reader.Get<double>("radius");
 
@@ -174,9 +177,9 @@ void ModelBody::LoadCircleFootprint(YamlReader &footprint_reader) {
   physics_body_->CreateFixture(&fixture_def);
 }
 
-void ModelBody::LoadPolygonFootprint(YamlReader &footprint_reader) {
-  std::vector<b2Vec2> points =
-      footprint_reader.GetList<b2Vec2>("points", 3, b2_maxPolygonVertices);
+void ModelBody::LoadPolygonFootprint(YamlReader & footprint_reader)
+{
+  std::vector<b2Vec2> points = footprint_reader.GetList<b2Vec2>("points", 3, b2_maxPolygonVertices);
 
   b2FixtureDef fixture_def;
   ConfigFootprintDef(footprint_reader, fixture_def);
@@ -187,4 +190,4 @@ void ModelBody::LoadPolygonFootprint(YamlReader &footprint_reader) {
   fixture_def.shape = &shape;
   physics_body_->CreateFixture(&fixture_def);
 }
-};
+};  // namespace flatland_server

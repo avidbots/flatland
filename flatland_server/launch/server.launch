@@ -4,31 +4,29 @@
   You can override these default values:
     roslaunch flatland_Server server.launch world_path:="/some/world.yaml" initial_rate:="30.0"
   -->
-  <arg name="world_path"   default="$(find flatland_server)/test/conestogo_office_test/world.yaml"/>
+  <arg name="world_path"   default="$(find-pkg-share flatland_server)/test/conestogo_office_test/world.yaml"/>
   <arg name="update_rate" default="200.0"/>
   <arg name="step_size" default="0.005"/>
   <arg name="show_viz" default="true"/>
   <arg name="viz_pub_rate" default="30.0"/>
   <arg name="use_rviz" default="false"/>  
 
-  <env name="ROSCONSOLE_FORMAT" value="[${severity} ${time} ${logger}]: ${message}" />
-
-  <param name="use_sim_time" value="true"/>  
+  <set_env name="ROSCONSOLE_FORMAT" value="[${severity} ${time} ${logger}]: ${message}" />
 
   <!-- launch flatland server -->
-  <node name="flatland_server" pkg="flatland_server" type="flatland_server" output="screen">  
+  <node name="flatland_server" pkg="flatland_server" exec="flatland_server" output="screen">  
     <!-- Use the arguments passed into the launchfile for this node -->
-    <param name="world_path" value="$(arg world_path)" />
-    <param name="update_rate" value="$(arg update_rate)" />
-    <param name="step_size" value="$(arg step_size)" />
-    <param name="show_viz" value="$(arg show_viz)" />
-    <param name="viz_pub_rate" value="$(arg viz_pub_rate)" />
-    
+    <param name="world_path" value="$(var world_path)" />
+    <param name="update_rate" value="$(var update_rate)" />
+    <param name="step_size" value="$(var step_size)" />
+    <param name="show_viz" value="$(var show_viz)" />
+    <param name="viz_pub_rate" value="$(var viz_pub_rate)" />
+    <param name="use_sim_time" value="true"/>  
   </node>
-
-<group if="$(arg show_viz)">
-  <node name="flatland_viz" pkg="flatland_viz" type="flatland_viz" output="screen" required="true" unless="$(arg use_rviz)"/>
-</group>
+<!-- 
+<group if="$(var show_viz)">
+  <node name="flatland_viz" pkg="flatland_viz" exec="flatland_viz" output="screen" unless="$(var use_rviz)"/>
+</group> -->
 
 
 </launch>

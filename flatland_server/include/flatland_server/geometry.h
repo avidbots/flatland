@@ -49,19 +49,22 @@
 
 #include <Box2D/Box2D.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 /**
  * A struct to store precalculated 2D homogenous transformation values
  */
-struct RotateTranslate {
+struct RotateTranslate
+{
   double dx, dy;
   double cos;
   double sin;
 };
 
-class Geometry {
- public:
+class Geometry
+{
+public:
   /**
    * @brief Creates a transform for given position and yaw delta
    * @param[in] dx Delta x
@@ -77,7 +80,7 @@ class Geometry {
    * @param[in] rt Defined transformation
    * @return Transformed point
    */
-  static b2Vec2 Transform(const b2Vec2& in, const RotateTranslate& rt);
+  static b2Vec2 Transform(const b2Vec2 & in, const RotateTranslate & rt);
 
   /**
    * @brief Inverse transform a point for given transformation
@@ -85,8 +88,8 @@ class Geometry {
    * @param[in] rt Defined transformation
    * @return Inverse transformed point
    */
-  static b2Vec2 InverseTransform(const b2Vec2& in, const RotateTranslate& rt);
+  static b2Vec2 InverseTransform(const b2Vec2 & in, const RotateTranslate & rt);
 };
 
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_SERVER_GEOMETRY_H

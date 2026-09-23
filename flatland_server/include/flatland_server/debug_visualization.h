@@ -48,30 +48,33 @@
 #define FLATLAND_SERVER_DEBUG_VISUALIZATION_H
 
 #include <Box2D/Box2D.h>
+
 #include <flatland_msgs/msg/debug_topic_list.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
 #include <map>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include "flatland_server/body.h"
 #include "flatland_server/timekeeper.h"
 
-namespace flatland_server {
-struct DebugTopic {
+namespace flatland_server
+{
+struct DebugTopic
+{
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr publisher;
   bool needs_publishing;
   visualization_msgs::msg::MarkerArray markers;
 };
 
-class DebugVisualization {
-
- public:
+class DebugVisualization
+{
+public:
   DebugVisualization(rclcpp::Node::SharedPtr node);
   std::map<std::string, DebugTopic> topics_;
   rclcpp::Node::SharedPtr node_;
-  rclcpp::Publisher<flatland_msgs::msg::DebugTopicList>::SharedPtr  topic_list_publisher_;
+  rclcpp::Publisher<flatland_msgs::msg::DebugTopicList>::SharedPtr topic_list_publisher_;
 
   /**
    * @brief Return the singleton object
@@ -82,7 +85,7 @@ class DebugVisualization {
    * @brief Publish all marker array topics_ that need publishing
    * @param[in] timekeeper The time object to use for header timestamps
    */
-  void Publish(const Timekeeper& timekeeper);
+  void Publish(const Timekeeper & timekeeper);
 
   /**
    * @brief Visualize body
@@ -93,8 +96,7 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void Visualize(std::string name, b2Body* body, float r, float g, float b,
-                 float a);
+  void Visualize(std::string name, b2Body * body, float r, float g, float b, float a);
 
   /**
    * @brief Visualize body
@@ -105,8 +107,7 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void Visualize(std::string name, b2Joint* joint, float r, float g, float b,
-                 float a);
+  void Visualize(std::string name, b2Joint * joint, float r, float g, float b, float a);
 
   /**
    * @brief Visualize a layer in 2.5d
@@ -117,7 +118,7 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void VisualizeLayer(std::string name, Body* body);
+  void VisualizeLayer(std::string name, Body * body);
 
   /**
    * @brief Remove all elements in a visualization topic
@@ -134,8 +135,9 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void BodyToMarkers(visualization_msgs::msg::MarkerArray& markers, b2Body* body,
-                     float r, float g, float b, float a);
+  void BodyToMarkers(
+    visualization_msgs::msg::MarkerArray & markers, b2Body * body, float r, float g, float b,
+    float a);
 
   /**
    * @brief Append a joint as a marker on the marker array
@@ -146,19 +148,20 @@ class DebugVisualization {
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void JointToMarkers(visualization_msgs::msg::MarkerArray& markers, b2Joint* joint,
-                      float r, float g, float b, float a);
+  void JointToMarkers(
+    visualization_msgs::msg::MarkerArray & markers, b2Joint * joint, float r, float g, float b,
+    float a);
 
   /**
    * @brief Ensure that a topic name is being broadcasted
    * @param[in] name Name of the topic
    */
-  void AddTopicIfNotExist(const std::string& name);
+  void AddTopicIfNotExist(const std::string & name);
 
   /**
    * @brief Publish topics list
    */
   void PublishTopicList();
 };
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_SERVER_DEBUG_VISUALIZATION_H

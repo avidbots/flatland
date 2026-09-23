@@ -47,27 +47,27 @@
 #include <flatland_plugins/bool_sensor.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
+
 #include <pluginlib/class_list_macros.hpp>
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-void BoolSensor::OnInitialize(const YAML::Node &config) {
+void BoolSensor::OnInitialize(const YAML::Node & config)
+{
   YamlReader reader(node_, config);
 
   // defaults
   std::string topic_name = reader.Get<std::string>("topic", "bool_sensor");
-  update_rate_ = reader.Get<double>("update_rate",
-                                    std::numeric_limits<double>::infinity());
+  update_rate_ = reader.Get<double>("update_rate", std::numeric_limits<double>::infinity());
 
   // sensor defaults to the first model in the list
   if (GetModel()->bodies_.size() == 0) {
-    throw YAMLException("You didn't provide any bodies for model" +
-                        GetModel()->name_);
+    throw YAMLException("You didn't provide any bodies for model" + GetModel()->name_);
   }
-  std::string body_name =
-      reader.Get<std::string>("body", GetModel()->bodies_[0]->name_);
+  std::string body_name = reader.Get<std::string>("body", GetModel()->bodies_[0]->name_);
 
   reader.EnsureAccessedAllKeys();
 
@@ -82,15 +82,17 @@ void BoolSensor::OnInitialize(const YAML::Node &config) {
 
   // Init publisher
   publisher_ =
-      node_->create_publisher<std_msgs::msg::Bool>(GetModel()->NameSpaceTopic(topic_name), 1);
+    node_->create_publisher<std_msgs::msg::Bool>(GetModel()->NameSpaceTopic(topic_name), 1);
 
-  RCLCPP_DEBUG(rclcpp::get_logger("BoolSensor"),
-                  "Initialized with params: topic(%s) body(%s) "
-                  "update_rate(%f)",
-                  topic_name.c_str(), body_name.c_str(), update_rate_);
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("BoolSensor"),
+    "Initialized with params: topic(%s) body(%s) "
+    "update_rate(%f)",
+    topic_name.c_str(), body_name.c_str(), update_rate_);
 }
 
-void BoolSensor::AfterPhysicsStep(const Timekeeper &timekeeper) {
+void BoolSensor::AfterPhysicsStep(const Timekeeper & timekeeper)
+{
   // Publish the boolean timer at the desired update rate
   if (!update_timer_.CheckUpdate(timekeeper)) {
     return;
@@ -112,7 +114,8 @@ void BoolSensor::AfterPhysicsStep(const Timekeeper &timekeeper) {
   publisher_->publish(msg);
 }
 
-void BoolSensor::BeginContact(b2Contact *contact) {
+void BoolSensor::BeginContact(b2Contact * contact)
+{
   if (!FilterContact(contact)) return;
 
   // Skip collisions with other fixtures on this body
@@ -124,7 +127,8 @@ void BoolSensor::BeginContact(b2Contact *contact) {
   hit_something_ = true;
 }
 
-void BoolSensor::EndContact(b2Contact *contact) {
+void BoolSensor::EndContact(b2Contact * contact)
+{
   if (!FilterContact(contact)) return;
 
   // Skip collisions with other fixtures on this body
@@ -134,7 +138,6 @@ void BoolSensor::EndContact(b2Contact *contact) {
 
   collisions_--;
 }
-}  // End flatland_plugins namespace
+}  // namespace flatland_plugins
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::BoolSensor,
-                       flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::BoolSensor, flatland_server::ModelPlugin)

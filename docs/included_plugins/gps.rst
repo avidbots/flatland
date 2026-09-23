@@ -50,6 +50,13 @@ This plugin provides a simple simulation of a perfectly-accurate GPS receiver.
       # to (0, 0) in world frame
       ref_lon: 0.0
 
+      # optional, defaults to 0.0, angle, in CCW+ radians between ENU coordinates (GPS) and map/world
+      ref_yaw_radians: 0.0
+
+
       # optional, default to [0, 0, 0], in the form of [x, y, yaw], the position
       # and orientation to place GPS antenna relative to specified model body
       origin: [0, 0, 0]
+
+      # 3x3 covariance matrix for x/y/z
+      position_covariance: [1e-2, 0, 0,   0, 1e-2, 0,   0, 0, 1e-2]

@@ -47,13 +47,16 @@
 #include <flatland_server/dummy_model_plugin.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
+
 #include <pluginlib/class_list_macros.hpp>
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
+void DummyModelPlugin::OnInitialize(const YAML::Node & config)
+{
   dummy_param_float_ = config["dummy_param_float"].as<double>();
   dummy_param_string_ = config["dummy_param_string"].as<std::string>();
   dummy_param_int_ = config["dummy_param_int"].as<int>();
@@ -61,22 +64,22 @@ void DummyModelPlugin::OnInitialize(const YAML::Node &config) {
   // Dummy plugin has the these values enforced for testing
   if (std::fabs(dummy_param_float_ - 0.123456) > 1e-7) {
     throw YAMLException(
-        "dummy_param_float must be 0.1253456, instead it was \"" +
-        std::to_string(dummy_param_float_) + "\"");
+      "dummy_param_float must be 0.1253456, instead it was \"" +
+      std::to_string(dummy_param_float_) + "\"");
   }
 
   if (dummy_param_int_ != 123456) {
-    throw YAMLException("dummy_param_int must be 1253456, instead it was \"" +
-                        std::to_string(dummy_param_int_) + "\"");
+    throw YAMLException(
+      "dummy_param_int must be 1253456, instead it was \"" + std::to_string(dummy_param_int_) +
+      "\"");
   }
 
   if (dummy_param_string_ != "dummy_test_123456") {
     throw YAMLException(
-        "dummy_param_float must be dummy_test_123456, instead it was \"" +
-        dummy_param_string_ + "\"");
+      "dummy_param_float must be dummy_test_123456, instead it was \"" + dummy_param_string_ +
+      "\"");
   }
 }
-}
+}  // namespace flatland_plugins
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin,
-                       flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_plugins::DummyModelPlugin, flatland_server::ModelPlugin)

@@ -48,13 +48,16 @@
 #define FLATLAND_PLUGINS_UPDATE_TIMER_H
 
 #include <flatland_server/timekeeper.h>
-#include <rclcpp/rclcpp.hpp>
+
 #include <cmath>
+#include <rclcpp/rclcpp.hpp>
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-class UpdateTimer {
- public:
+class UpdateTimer
+{
+public:
   rclcpp::Duration period_;        ///< period of update
   rclcpp::Time last_update_time_;  ///< last time the update occured
 
@@ -75,8 +78,8 @@ class UpdateTimer {
    * @param[in] timekeeper The object that manages time for the simulation,
    * update timers get the simulation as well as step size for calculation
    */
-  bool CheckUpdate(const flatland_server::Timekeeper &timekeeper);
+  bool CheckUpdate(const flatland_server::Timekeeper & timekeeper);
 };
-}
+}  // namespace flatland_plugins
 
 #endif

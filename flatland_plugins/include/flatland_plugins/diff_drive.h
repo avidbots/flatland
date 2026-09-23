@@ -46,12 +46,14 @@
 
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
+#include <flatland_plugins/dynamics_limits.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
-#include <geometry_msgs/msg/twist.hpp>
-#include <geometry_msgs/msg/twist_stamped.hpp>
-#include <nav_msgs/msg/odometry.hpp>
 #include <tf2_ros/transform_broadcaster.h>
+
+#include <geometry_msgs/msg/twist_stamped.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <random>
 
 #ifndef FLATLAND_PLUGINS_DIFFDRIVE_H
@@ -59,22 +61,32 @@
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-class DiffDrive : public flatland_server::ModelPlugin {
- public:
-  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr twist_sub_;
+class DiffDrive : public flatland_server::ModelPlugin
+{
+public:
+  rclcpp::Subscription<geometry_msgs::msg::TwistStamped>::SharedPtr twist_sub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub_;
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr ground_truth_pub_;
-  rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr twist_pub_;
-  Body* body_;
-  geometry_msgs::msg::Twist::SharedPtr twist_msg_;
+  rclcpp::Publisher<geometry_msgs::msg::TwistWithCovarianceStamped>::SharedPtr twist_pub_;
+  Body * body_;
+  geometry_msgs::msg::TwistStamped::SharedPtr twist_msg_ = std::make_shared<geometry_msgs::msg::TwistStamped>();
   nav_msgs::msg::Odometry odom_msg_;
   nav_msgs::msg::Odometry ground_truth_msg_;
   UpdateTimer update_timer_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< For publish ROS TF
   bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
+  bool enable_odom_tf_;    ///< YAML parameter to enable publishing map->odom TF
   bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
+  bool twist_in_local_frame_;  ///< YAML parameter to publish velocity in local
+                               /// frame. Original diff drive plugin publishes
+                               /// local velocity wrt to odom frame
+  DynamicsLimits angular_dynamics_; ///< Angular dynamics constraints
+  DynamicsLimits linear_dynamics_;  ///< Linear dynamics constraints
+  double angular_velocity_ = 0.0;
+  double linear_velocity_ = 0.0;
 
   std::default_random_engine rng_;
   std::array<std::normal_distribution<double>, 6> noise_gen_;
@@ -84,20 +96,20 @@ class DiffDrive : public flatland_server::ModelPlugin {
    * @brief         override the BeforePhysicsStep method
    * @param[in]     config The plugin YAML node
    */
-  void OnInitialize(const YAML::Node& config) override;
+  void OnInitialize(const YAML::Node & config) override;
   /**
    * @name          BeforePhysicsStep
    * @brief         override the BeforePhysicsStep method
    * @param[in]     config The plugin YAML node
    */
-  void BeforePhysicsStep(const Timekeeper& timekeeper) override;
+  void BeforePhysicsStep(const Timekeeper & timekeeper) override;
   /**
    * @name        TwistCallback
    * @brief       callback to apply twist (velocity and omega)
    * @param[in]   timestep how much the physics time will increment
    */
-  void TwistCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+  void TwistCallback(const geometry_msgs::msg::TwistStamped::SharedPtr msg);
 };
-}
+}  // namespace flatland_plugins
 
 #endif

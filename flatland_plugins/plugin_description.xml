@@ -1,4 +1,4 @@
-<library path="lib/libflatland_plugins_lib">
+<library path="flatland_plugins_lib">
   <class type="flatland_plugins::Laser" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland laser plugin</description>
   </class>
@@ -7,6 +7,9 @@
   </class>
   <class type="flatland_plugins::DiffDrive" base_class_type="flatland_server::ModelPlugin">
     <description>Flatland differential drive plugin</description>
+  </class>
+  <class type="flatland_plugins::Imu" base_class_type="flatland_server::ModelPlugin">
+    <description>Flatland imu plugin</description>
   </class>
   <class type="flatland_plugins::ModelTfPublisher" base_class_type="flatland_server::ModelPlugin">
     <description>Publish body transformations</description>

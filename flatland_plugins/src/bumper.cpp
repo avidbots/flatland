@@ -44,22 +44,25 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <flatland_msgs/msg/collision.hpp>
-#include <flatland_msgs/msg/collisions.hpp>
 #include <flatland_plugins/bumper.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
-#include <pluginlib/class_list_macros.hpp>
+
 #include <boost/algorithm/string/join.hpp>
+#include <flatland_msgs/msg/collision.hpp>
+#include <flatland_msgs/msg/collisions.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
 Bumper::ContactState::ContactState() { Reset(); }
 
-void Bumper::ContactState::Reset() {
+void Bumper::ContactState::Reset()
+{
   num_count = 0;
   sum_normal_impulses[0] = 0;
   sum_normal_impulses[1] = 0;
@@ -67,45 +70,43 @@ void Bumper::ContactState::Reset() {
   sum_tangential_impulses[1] = 0;
 }
 
-void Bumper::OnInitialize(const YAML::Node &config) {
+void Bumper::OnInitialize(const YAML::Node & config)
+{
   YamlReader reader(node_, config);
 
   // defaults
   world_frame_id_ = reader.Get<std::string>("world_frame_id", "map");
   topic_name_ = reader.Get<std::string>("topic", "collisions");
   publish_all_collisions_ = reader.Get<bool>("publish_all_collisions", true);
-  update_rate_ = reader.Get<double>("update_rate",
-                                    std::numeric_limits<double>::infinity());
+  update_rate_ = reader.Get<double>("update_rate", std::numeric_limits<double>::infinity());
 
-  std::vector<std::string> excluded_body_names =
-      reader.GetList<std::string>("exclude", {}, -1, -1);
+  std::vector<std::string> excluded_body_names = reader.GetList<std::string>("exclude", {}, -1, -1);
 
   reader.EnsureAccessedAllKeys();
 
   for (unsigned int i = 0; i < excluded_body_names.size(); i++) {
-    Body *body = GetModel()->GetBody(excluded_body_names[i]);
+    Body * body = GetModel()->GetBody(excluded_body_names[i]);
 
     if (body == nullptr) {
-      throw YAMLException("Body with name \"" + excluded_body_names[i] +
-                          "\" does not exist");
+      throw YAMLException("Body with name \"" + excluded_body_names[i] + "\" does not exist");
     } else {
       excluded_bodies_.push_back(body);
     }
   }
 
   update_timer_.SetRate(update_rate_);
-  collisions_publisher_ =
-      node_->create_publisher<flatland_msgs::msg::Collisions>(topic_name_, 1);
+  collisions_publisher_ = node_->create_publisher<flatland_msgs::msg::Collisions>(topic_name_, 1);
 
-  RCLCPP_DEBUG(rclcpp::get_logger("Bumper"),
-                  "Initialized with params: topic(%s) world_frame_id(%s) "
-                  "publish_all_collisions(%d) update_rate(%f) exclude({%s})",
-                  topic_name_.c_str(), world_frame_id_.c_str(),
-                  publish_all_collisions_, update_rate_,
-                  boost::algorithm::join(excluded_body_names, ",").c_str());
+  RCLCPP_DEBUG(
+    rclcpp::get_logger("Bumper"),
+    "Initialized with params: topic(%s) world_frame_id(%s) "
+    "publish_all_collisions(%d) update_rate(%f) exclude({%s})",
+    topic_name_.c_str(), world_frame_id_.c_str(), publish_all_collisions_, update_rate_,
+    boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
-void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
+void Bumper::BeforePhysicsStep(const Timekeeper & timekeeper)
+{
   std::map<b2Contact *, ContactState>::iterator it;
 
   // Clear the forces at the begining of every physics step since brand
@@ -115,7 +116,8 @@ void Bumper::BeforePhysicsStep(const Timekeeper &timekeeper) {
   }
 }
 
-void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
+void Bumper::AfterPhysicsStep(const Timekeeper & timekeeper)
+{
   // The expected behaviour is to always publish non-empty collisions unless
   // publish_all_collisions set to false. The publishing of empty collision
   // manages the publishing rate of empty collisions when
@@ -135,8 +137,8 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
 
   // loop through all collisions in our record and publish
   for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
-    b2Contact *c = it->first;
-    ContactState *s = &it->second;
+    b2Contact * c = it->first;
+    ContactState * s = &it->second;
     flatland_msgs::msg::Collision collision;
     collision.entity_a = GetModel()->GetName();
     collision.entity_b = s->entity_b->name_;
@@ -147,25 +149,23 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
     // If there was no post solve called, which means that the collision
     // probably involves a Box2D sensor, therefore there are no contact points,
     if (s->num_count > 0) {
-      b2Manifold *m = c->GetManifold();
+      b2Manifold * m = c->GetManifold();
 
       // go through each collision point
       for (int i = 0; i < m->pointCount; i++) {
         // calculate average impulse during each time step, the impulse are
         // converted to the applied force by dividing the step size
         double ave_normal_impulse = s->sum_normal_impulses[i] / s->num_count;
-        double ave_tangential_impulse =
-            s->sum_tangential_impulses[i] / s->num_count;
+        double ave_tangential_impulse = s->sum_tangential_impulses[i] / s->num_count;
         double ave_normal_force = ave_normal_impulse / timekeeper.GetStepSize();
-        double ave_tangential_force =
-            ave_tangential_impulse / timekeeper.GetStepSize();
+        double ave_tangential_force = ave_tangential_impulse / timekeeper.GetStepSize();
 
         // Calculate the absolute magnitude of forces, forces are not provided
         // in vector form because the forces are obtained from averaging
         // Box2D impulses which are very inaccurate making them completely
         // useless for anything other than ball parking the impact strength
-        double force_abs = sqrt(ave_normal_force * ave_normal_force +
-                                ave_tangential_force * ave_tangential_force);
+        double force_abs =
+          sqrt(ave_normal_force * ave_normal_force + ave_tangential_force * ave_tangential_force);
 
         collision.magnitude_forces.push_back(force_abs);
         flatland_msgs::msg::Vector2 point;
@@ -185,8 +185,9 @@ void Bumper::AfterPhysicsStep(const Timekeeper &timekeeper) {
   collisions_publisher_->publish(collisions);
 }
 
-void Bumper::BeginContact(b2Contact *contact) {
-  Entity *other_entity;
+void Bumper::BeginContact(b2Contact * contact)
+{
+  Entity * other_entity;
   b2Fixture *this_fixture, *other_fixture;
   if (!FilterContact(contact, other_entity, this_fixture, other_fixture)) {
     return;
@@ -194,8 +195,7 @@ void Bumper::BeginContact(b2Contact *contact) {
 
   // If this is a new contact, add it to the records of alive contacts
   if (!contact_states_.count(contact)) {
-    Body *collision_body =
-        static_cast<Body *>(this_fixture->GetBody()->GetUserData());
+    Body * collision_body = static_cast<Body *>(this_fixture->GetBody()->GetUserData());
 
     bool ignore = false;
 
@@ -210,7 +210,7 @@ void Bumper::BeginContact(b2Contact *contact) {
     // add the body to the record of active contacts
     if (!ignore) {
       contact_states_[contact] = ContactState();
-      ContactState *c = &contact_states_[contact];
+      ContactState * c = &contact_states_[contact];
       c->entity_b = other_entity;
       c->body_B = static_cast<Body *>(other_fixture->GetBody()->GetUserData());
       c->body_A = collision_body;
@@ -227,7 +227,8 @@ void Bumper::BeginContact(b2Contact *contact) {
   }
 }
 
-void Bumper::EndContact(b2Contact *contact) {
+void Bumper::EndContact(b2Contact * contact)
+{
   if (!FilterContact(contact)) return;
 
   // The contact ended, remove it from the list of contacts
@@ -239,10 +240,11 @@ void Bumper::EndContact(b2Contact *contact) {
   }
 }
 
-void Bumper::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
+void Bumper::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
+{
   if (!FilterContact(contact)) return;
 
-  ContactState *state;
+  ContactState * state;
   if (contact_states_.count(contact)) {
     state = &contact_states_[contact];
   } else {
@@ -279,6 +281,6 @@ void Bumper::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
   state->normal = m.normal;
   state->normal *= state->normal_sign;
 }
-};
+};  // namespace flatland_plugins
 
 PLUGINLIB_EXPORT_CLASS(flatland_plugins::Bumper, flatland_server::ModelPlugin)

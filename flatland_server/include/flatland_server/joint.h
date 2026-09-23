@@ -52,7 +52,8 @@
 #include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 class Model;
 
@@ -60,13 +61,14 @@ class Model;
  * This class defines a joint in the simulation world. It wraps around the Box2D
  * physics joints providing extra data and useful methods
  */
-class Joint {
- public:
-  Model *model_;            ///< Model the joint belongs to
-  std::string name_;        ///< Name of the joint
-  b2World *physics_world_;  ///< Box2D physics world
-  Color color_;             ///< Color for visualization
-  b2Joint *physics_joint_;  ///< Box2D physics joint
+class Joint
+{
+public:
+  Model * model_;            ///< Model the joint belongs to
+  std::string name_;         ///< Name of the joint
+  b2World * physics_world_;  ///< Box2D physics world
+  Color color_;              ///< Color for visualization
+  b2Joint * physics_joint_;  ///< Box2D physics joint
 
   /**
    * @brief Constructor for the joint
@@ -76,13 +78,14 @@ class Joint {
    * @param[in] color Color to visualize the joint
    * @param[in] joint_def Box2D joint definition
    */
-  Joint(b2World *physics_world, Model *model, const std::string &name,
-        const Color &color, const b2JointDef &joint_def);
+  Joint(
+    b2World * physics_world, Model * model, const std::string & name, const Color & color,
+    const b2JointDef & joint_def);
   ~Joint();
 
   /// Disallow copying of joints, problematic for constructors and destructors
   Joint(const Joint &) = delete;
-  Joint &operator=(const Joint &) = delete;
+  Joint & operator=(const Joint &) = delete;
 
   /**
    * @brief logs the debugging information for the joint
@@ -92,32 +95,32 @@ class Joint {
   /**
    * @return Pointer to the model that contains the joint
    */
-  Model *GetModel();
+  Model * GetModel();
 
   /**
    * @return Name of the the joint
    */
-  const std::string &GetName() const;
+  const std::string & GetName() const;
 
   /**
    * @return Color of the joint for visualization
    */
-  const Color &GetColor() const;
+  const Color & GetColor() const;
 
   /**
    * @return Color of the joint for visualization
    */
-  void SetColor(const Color &color);
+  void SetColor(const Color & color);
 
   /**
    * @return Get pointer to the Box2D physics joint
    */
-  b2Joint *GetPhysicsJoint();
+  b2Joint * GetPhysicsJoint();
 
   /**
    * @return Get pointer of the Box2D physics world
    */
-  b2World *GetphysicsWorld();
+  b2World * GetphysicsWorld();
 
   /**
    * @brief Creates a joint for the given params, throws exceptions upon failure
@@ -127,8 +130,7 @@ class Joint {
    * information
    * @return A new joint as defined by the input data
    */
-  static Joint *MakeJoint(b2World *physics_world, Model *model,
-                          YamlReader &joint_reader);
+  static Joint * MakeJoint(b2World * physics_world, Model * model, YamlReader & joint_reader);
 
   /**
    * @brief Creates a revolute joint for the given params, throws exceptions
@@ -147,12 +149,10 @@ class Joint {
    * collide
    * @return A new revolute joint as defined by the input data
    */
-  static Joint *MakeRevoluteJoint(b2World *physics_world, Model *model,
-                                  YamlReader &joint_reader,
-                                  const std::string &name, const Color &color,
-                                  b2Body *body_A, b2Vec2 anchor_A,
-                                  b2Body *body_B, b2Vec2 anchor_B,
-                                  bool collide_connected);
+  static Joint * MakeRevoluteJoint(
+    b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
+    const Color & color, b2Body * body_A, b2Vec2 anchor_A, b2Body * body_B, b2Vec2 anchor_B,
+    bool collide_connected);
 
   /**
    * @brief Creates a weld joint for the given params, throws exceptions upon
@@ -171,11 +171,10 @@ class Joint {
    * collide
    * @return A new weld joint as defined by the input data
    */
-  static Joint *MakeWeldJoint(b2World *physics_world, Model *model,
-                              YamlReader &joint_reader, const std::string &name,
-                              const Color &color, b2Body *body_A,
-                              b2Vec2 anchor_A, b2Body *body_B, b2Vec2 anchor_B,
-                              bool collide_connected);
+  static Joint * MakeWeldJoint(
+    b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
+    const Color & color, b2Body * body_A, b2Vec2 anchor_A, b2Body * body_B, b2Vec2 anchor_B,
+    bool collide_connected);
 };
-}      //namespace flatland_server
+}  // namespace flatland_server
 #endif  // FLATLAND_MODEL_JOINT_H

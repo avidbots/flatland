@@ -46,31 +46,34 @@
 
 #include <flatland_server/collision_filter_registry.h>
 
-namespace flatland_server {
+namespace flatland_server
+{
 
 const int CollisionFilterRegistry::LAYER_NOT_EXIST;
 const int CollisionFilterRegistry::LAYER_ALREADY_EXIST;
 const int CollisionFilterRegistry::LAYERS_FULL;
 const int CollisionFilterRegistry::MAX_LAYERS;
 
-CollisionFilterRegistry::CollisionFilterRegistry()
-    : no_collide_group_cnt_(0), collide_group_cnt_(0) {}
+CollisionFilterRegistry::CollisionFilterRegistry() : no_collide_group_cnt_(0), collide_group_cnt_(0)
+{
+}
 
-int CollisionFilterRegistry::RegisterCollide() {
+int CollisionFilterRegistry::RegisterCollide()
+{
   collide_group_cnt_++;
   return collide_group_cnt_;
 }
 
-int CollisionFilterRegistry::RegisterNoCollide() {
+int CollisionFilterRegistry::RegisterNoCollide()
+{
   no_collide_group_cnt_--;
   return no_collide_group_cnt_;
 }
 
-bool CollisionFilterRegistry::IsLayersFull() const {
-  return layer_id_table_.size() >= MAX_LAYERS;
-}
+bool CollisionFilterRegistry::IsLayersFull() const { return layer_id_table_.size() >= MAX_LAYERS; }
 
-int CollisionFilterRegistry::RegisterLayer(std::string layer_name) {
+int CollisionFilterRegistry::RegisterLayer(std::string layer_name)
+{
   if (IsLayersFull()) {
     return LAYERS_FULL;
   }
@@ -99,14 +102,16 @@ int CollisionFilterRegistry::RegisterLayer(std::string layer_name) {
   return i;
 }
 
-int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) const {
+int CollisionFilterRegistry::LookUpLayerId(std::string layer_name) const
+{
   if (layer_id_table_.count(layer_name) == 0) {
     return LAYER_NOT_EXIST;
   }
   return layer_id_table_.at(layer_name);
 }
 
-std::vector<std::string> CollisionFilterRegistry::GetAllLayers() const {
+std::vector<std::string> CollisionFilterRegistry::GetAllLayers() const
+{
   std::vector<std::string> layer_names;
 
   std::map<std::string, int>::const_iterator it;
@@ -117,13 +122,11 @@ std::vector<std::string> CollisionFilterRegistry::GetAllLayers() const {
   return layer_names;
 }
 
-int CollisionFilterRegistry::LayersCount() const {
-  return layer_id_table_.size();
-}
+int CollisionFilterRegistry::LayersCount() const { return layer_id_table_.size(); }
 
 uint16_t CollisionFilterRegistry::GetCategoryBits(
-    const std::vector<std::string> &layers,
-    std::vector<std::string> *invalid_layers) const {
+  const std::vector<std::string> & layers, std::vector<std::string> * invalid_layers) const
+{
   if (layers.size() == 1 && layers[0] == "all") {
     return ~((uint16_t)0x0);
   }
@@ -133,7 +136,7 @@ uint16_t CollisionFilterRegistry::GetCategoryBits(
   }
   uint16_t category_bits = 0;
 
-  for (const auto &layer : layers) {
+  for (const auto & layer : layers) {
     int layer_id = LookUpLayerId(layer);
 
     if (layer_id < 0 && invalid_layers) {
@@ -146,4 +149,4 @@ uint16_t CollisionFilterRegistry::GetCategoryBits(
   return category_bits;
 }
 
-}  //namespace flatland_server
+}  // namespace flatland_server

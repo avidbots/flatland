@@ -44,20 +44,19 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 #include <Box2D/Box2D.h>
-#include <rclcpp/rclcpp.hpp>
-
 #include <flatland_plugins/world_modifier.h>
 #include <flatland_server/layer.h>
 #include <flatland_server/types.h>
 #include <flatland_server/world.h>
 #include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
-#include <boost/filesystem.hpp>
 
 #include <algorithm>
+#include <boost/filesystem.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <vector>
 
@@ -66,10 +65,12 @@ using std::endl;
 using namespace std::placeholders;
 using namespace flatland_server;
 
-namespace flatland_plugins {
+namespace flatland_plugins
+{
 
-float RayTrace::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
-                              const b2Vec2 &normal, float fraction) {
+float RayTrace::ReportFixture(
+  b2Fixture * fixture, const b2Vec2 & point, const b2Vec2 & normal, float fraction)
+{
   // only register hit in the specified layers
   if (!(fixture->GetFilterData().categoryBits & category_bits_)) {
     // cout << "hit others " << endl;
@@ -80,17 +81,20 @@ float RayTrace::ReportFixture(b2Fixture *fixture, const b2Vec2 &point,
   return fraction;
 }
 
-WorldModifier::WorldModifier(flatland_server::World *world,
-                             std::string layer_name, double wall_wall_dist,
-                             bool double_wall, Pose robot_ini_pose)
-    : world_(world),
-      layer_name_(layer_name),
-      wall_wall_dist_(wall_wall_dist),
-      double_wall_(double_wall),
-      robot_ini_pose_(robot_ini_pose) {}
+WorldModifier::WorldModifier(
+  flatland_server::World * world, std::string layer_name, double wall_wall_dist, bool double_wall,
+  Pose robot_ini_pose)
+: world_(world),
+  layer_name_(layer_name),
+  wall_wall_dist_(wall_wall_dist),
+  double_wall_(double_wall),
+  robot_ini_pose_(robot_ini_pose)
+{
+}
 
-void WorldModifier::CalculateNewWall(double d, b2Vec2 vertex1, b2Vec2 vertex2,
-                                     b2EdgeShape &new_wall) {
+void WorldModifier::CalculateNewWall(
+  double d, b2Vec2 vertex1, b2Vec2 vertex2, b2EdgeShape & new_wall)
+{
   b2Vec2 new_wall_v1;
   b2Vec2 new_wall_v2;
   if (d == 0) {  // if distance towards the robot is 0
@@ -121,11 +125,12 @@ void WorldModifier::CalculateNewWall(double d, b2Vec2 vertex1, b2Vec2 vertex2,
   new_wall.Set(new_wall_v1, new_wall_v2);
 }
 
-void WorldModifier::AddWall(b2EdgeShape &new_wall) {
-  Layer *layer = NULL;
+void WorldModifier::AddWall(b2EdgeShape & new_wall)
+{
+  Layer * layer = NULL;
   std::vector<std::string> cfr_names;
-  for (auto &it : world_->layers_name_map_) {
-    for (auto &v_it : it.first) {
+  for (auto & it : world_->layers_name_map_) {
+    for (auto & v_it : it.first) {
       if (v_it == layer_name_) {
         layer = it.second;
         cfr_names = it.first;
@@ -145,17 +150,17 @@ void WorldModifier::AddWall(b2EdgeShape &new_wall) {
   layer->body_->physics_body_->CreateFixture(&fixture_def);
 }
 
-void WorldModifier::AddSideWall(b2EdgeShape &old_wall, b2EdgeShape &new_wall) {
+void WorldModifier::AddSideWall(b2EdgeShape & old_wall, b2EdgeShape & new_wall)
+{
   b2Vec2 old_wall_v1 = old_wall.m_vertex1;
   b2Vec2 old_wall_v2 = old_wall.m_vertex2;
   b2Vec2 new_wall_v1 = new_wall.m_vertex1;
   b2Vec2 new_wall_v2 = new_wall.m_vertex2;
   // first side
   double k =
-      ((old_wall_v2.y - old_wall_v1.y) * (new_wall_v1.x - old_wall_v1.x) -
-       (old_wall_v2.x - old_wall_v1.x) * (new_wall_v1.y - old_wall_v1.y)) /
-      (std::pow((old_wall_v2.y - old_wall_v1.y), 2) +
-       std::pow((old_wall_v2.x - old_wall_v1.x), 2));
+    ((old_wall_v2.y - old_wall_v1.y) * (new_wall_v1.x - old_wall_v1.x) -
+     (old_wall_v2.x - old_wall_v1.x) * (new_wall_v1.y - old_wall_v1.y)) /
+    (std::pow((old_wall_v2.y - old_wall_v1.y), 2) + std::pow((old_wall_v2.x - old_wall_v1.x), 2));
   double x = new_wall_v1.x - k * (old_wall_v2.y - old_wall_v1.y);
   double y = new_wall_v1.y + k * (old_wall_v2.x - old_wall_v1.x);
   b2EdgeShape first_wall;
@@ -165,8 +170,7 @@ void WorldModifier::AddSideWall(b2EdgeShape &old_wall, b2EdgeShape &new_wall) {
   // second side
   k = ((old_wall_v2.y - old_wall_v1.y) * (new_wall_v2.x - old_wall_v1.x) -
        (old_wall_v2.x - old_wall_v1.x) * (new_wall_v2.y - old_wall_v1.y)) /
-      (std::pow((old_wall_v2.y - old_wall_v1.y), 2) +
-       std::pow((old_wall_v2.x - old_wall_v1.x), 2));
+      (std::pow((old_wall_v2.y - old_wall_v1.y), 2) + std::pow((old_wall_v2.x - old_wall_v1.x), 2));
   x = new_wall_v2.x - k * (old_wall_v2.y - old_wall_v1.y);
   y = new_wall_v2.y + k * (old_wall_v2.x - old_wall_v1.x);
   b2EdgeShape second_wall;
@@ -174,7 +178,8 @@ void WorldModifier::AddSideWall(b2EdgeShape &old_wall, b2EdgeShape &new_wall) {
   AddWall(second_wall);
 }
 
-void WorldModifier::AddFullWall(b2EdgeShape *wall) {
+void WorldModifier::AddFullWall(b2EdgeShape * wall)
+{
   b2Vec2 vertex1 = wall->m_vertex1;
   b2Vec2 vertex2 = wall->m_vertex2;
   double d = (robot_ini_pose_.x - vertex1.x) * (vertex2.y - vertex1.y) -
@@ -194,4 +199,4 @@ void WorldModifier::AddFullWall(b2EdgeShape *wall) {
     AddSideWall(*wall, new_wall);
   }
 }
-};  // namespace
+};  // namespace flatland_plugins

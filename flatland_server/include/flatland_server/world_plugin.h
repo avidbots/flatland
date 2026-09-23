@@ -51,45 +51,48 @@
 #include <flatland_server/flatland_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/yaml_reader.h>
-#include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
+
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 
-namespace flatland_server {
+namespace flatland_server
+{
 // forward declaration
 class World;
-class WorldPlugin : public FlatlandPlugin {
- protected:
-  World *world_;
+class WorldPlugin : public FlatlandPlugin
+{
+protected:
+  World * world_;
   rclcpp::Node::SharedPtr node_;
 
- public:
+public:
   /*
-  * @brief WorldPlugin default constructor
-  */
+   * @brief WorldPlugin default constructor
+   */
   WorldPlugin() = default;
 
   /*
-  * @brief initialize the plugin
-  * @param[in] node, the rclcpp node pointer
-  * @param[in] world, the World the plugin is attached to
-  * @param[in] name, name of the plugin
-  * @param[in] type, type of the plugin
-  * @param[in] plugin_reader, the YAML node contain the plugin's config
-  * @param[in] world_config, the yaml reader of world.yaml
-  */
-  void Initialize(rclcpp::Node::SharedPtr node, World *world, std::string name, std::string type,
-                  YAML::Node &plugin_reader, YamlReader &world_config);
+   * @brief initialize the plugin
+   * @param[in] node, the rclcpp node pointer
+   * @param[in] world, the World the plugin is attached to
+   * @param[in] name, name of the plugin
+   * @param[in] type, type of the plugin
+   * @param[in] plugin_reader, the YAML node contain the plugin's config
+   * @param[in] world_config, the yaml reader of world.yaml
+   */
+  void Initialize(
+    rclcpp::Node::SharedPtr node, World * world, std::string name, std::string type,
+    YAML::Node & plugin_reader, YamlReader & world_config);
 
   /*
-  * @brief trigger after plugin is initialized
-  * 
-  * @param[in] plugin_reader, the YAML node contain the plugin's config
-  * @param[in] world_config, the yaml reader of world.yaml
-  */
-  virtual void OnInitialize(const YAML::Node &plugin_reader, YamlReader &world_config) = 0;
-
+   * @brief trigger after plugin is initialized
+   *
+   * @param[in] plugin_reader, the YAML node contain the plugin's config
+   * @param[in] world_config, the yaml reader of world.yaml
+   */
+  virtual void OnInitialize(const YAML::Node & plugin_reader, YamlReader & world_config) = 0;
 };
-}
+}  // namespace flatland_server
 
 #endif  // FLATLAND_SERVER_WORLD_PLUGIN_H
