@@ -123,7 +123,7 @@ set(BOX2D_General_HDRS
 	include/Box2D/Box2D.h
 )
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(flatland_box2d)
 
 find_package(ament_cmake REQUIRED)
