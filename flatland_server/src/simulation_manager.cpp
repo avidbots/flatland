@@ -143,7 +143,6 @@ void SimulationManager::Main()
 
     double expected_cycle_time = 1.0f / update_rate_;
     double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
-    double factor = timekeeper.GetStepSize() / expected_cycle_time;
     min_cycle_util = std::min(cycle_util, min_cycle_util);
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;

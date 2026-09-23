@@ -32,8 +32,12 @@ find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 find_package(flatland_box2d REQUIRED)
 
-# lua5.1
-find_package(Lua 5.1 QUIET)
+# Lua 5.1 or newer
+find_package(Lua 5.1 REQUIRED)
+find_library(LUA_CXX_LIBRARY NAMES lua${LUA_VERSION_MAJOR}.${LUA_VERSION_MINOR}-c++)
+if(LUA_CXX_LIBRARY)
+  list(APPEND LUA_LIBRARIES ${LUA_CXX_LIBRARY})
+endif()
 
 # OpenCV
 find_package(OpenCV REQUIRED)

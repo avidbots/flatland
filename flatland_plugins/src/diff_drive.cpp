@@ -174,7 +174,7 @@ void DiffDrive::OnInitialize(const YAML::Node & config)
     "twist_sub(%s) odom_pub(%s) ground_truth_pub(%s) "
     "odom_pose_noise({%f,%f,%f}) odom_twist_noise({%f,%f,%f}) "
     "pub_rate(%f)\n",
-    body_, body_->name_.c_str(), odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(),
+    static_cast<void *>(body_), body_->name_.c_str(), odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(),
     ground_truth_topic.c_str(), odom_pose_noise[0], odom_pose_noise[1], odom_pose_noise[2],
     odom_twist_noise[0], odom_twist_noise[1], odom_twist_noise[2], pub_rate);
 }

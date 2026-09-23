@@ -200,7 +200,7 @@ void Laser::ComputeLaserRanges()
 }
 
 float LaserCallback::ReportFixture(
-  b2Fixture * fixture, const b2Vec2 & point, const b2Vec2 & normal, float fraction)
+  b2Fixture * fixture, const b2Vec2 &, const b2Vec2 &, float fraction)
 {
   uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers
@@ -274,7 +274,7 @@ void Laser::ParseParameters(const YAML::Node & config)
     "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
     "noise_std_dev(%f) angle_min(%f) angle_max(%f) "
     "angle_increment(%f) layers(0x%u {%s})",
-    GetName().c_str(), topic_.c_str(), body_name.c_str(), body_, origin_.x, origin_.y,
+    GetName().c_str(), topic_.c_str(), body_name.c_str(), static_cast<void *>(body_), origin_.x, origin_.y,
     origin_.theta, frame_id_.c_str(), broadcast_tf_, update_rate_, range_, noise_std_dev_,
     min_angle_, max_angle_, increment_, layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }

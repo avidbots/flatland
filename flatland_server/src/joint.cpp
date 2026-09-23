@@ -202,8 +202,8 @@ void Joint::DebugOutput() const
     "Joint %p: model(%p, %s) name(%s) color(%f,%f,%f,%f) "
     "physics_joint(%p) body_A(%p, %s) anchor_A_world(%f, %f) "
     "body_B(%p, %s) anchor_B_world(%f, %f)",
-    this, model_, model_->name_.c_str(), name_.c_str(), color_.r, color_.g, color_.b, color_.a,
-    physics_joint_, body_A, body_A->name_.c_str(), j->GetAnchorA().x, j->GetAnchorA().y, body_B,
+    const_cast<void *>(static_cast<const void *>(this)), static_cast<void *>(model_), model_->name_.c_str(), name_.c_str(), color_.r, color_.g, color_.b, color_.a,
+    static_cast<void *>(physics_joint_), static_cast<void *>(body_A), body_A->name_.c_str(), j->GetAnchorA().x, j->GetAnchorA().y, static_cast<void *>(body_B),
     body_B->name_.c_str(), j->GetAnchorB().x, j->GetAnchorB().y);
 }
 

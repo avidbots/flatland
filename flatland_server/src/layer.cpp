@@ -102,7 +102,7 @@ Layer::Layer(
 
 Layer::Layer(
   std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
-  const std::vector<std::string> & names, const Color & color, const YAML::Node & properties)
+  const std::vector<std::string> & names, const Color &, const YAML::Node &)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
 }
@@ -324,7 +324,7 @@ void Layer::DebugOutput() const
     rclcpp::get_logger("Layer"),
     "Layer %p: physics_world(%p) name(%s) names(%s) "
     "category_bits(0x%X)",
-    this, physics_world_, name_.c_str(), names.c_str(), category_bits);
+    const_cast<void *>(static_cast<const void *>(this)), static_cast<void *>(physics_world_), name_.c_str(), names.c_str(), category_bits);
 
   if (body_ != nullptr) {
     body_->DebugOutput();

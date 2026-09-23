@@ -242,7 +242,7 @@ void Tween::OnInitialize(const YAML::Node & config)
     "duration %f "
     "mode: %s [%d] "
     "easing: %s\n",
-    body_, body_->name_.c_str(), start_.x, start_.y, start_.theta, delta_.x, delta_.y, delta_.theta,
+    static_cast<void *>(body_), body_->name_.c_str(), start_.x, start_.y, start_.theta, delta_.x, delta_.y, delta_.theta,
     duration_, mode.c_str(), (int)mode_, easing.c_str());
 }
 

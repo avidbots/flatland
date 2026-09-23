@@ -86,14 +86,14 @@ public:
     function_called["PostSolve"] = false;
   }
 
-  void OnInitialize(const YAML::Node & config) override { function_called["OnInitialize"] = true; }
+  void OnInitialize(const YAML::Node &) override { function_called["OnInitialize"] = true; }
 
-  void BeforePhysicsStep(const Timekeeper & timekeeper) override
+  void BeforePhysicsStep(const Timekeeper &) override
   {
     function_called["BeforePhysicsStep"] = true;
   }
 
-  void AfterPhysicsStep(const Timekeeper & timekeeper) override
+  void AfterPhysicsStep(const Timekeeper &) override
   {
     function_called["AfterPhysicsStep"] = true;
   }
@@ -110,13 +110,13 @@ public:
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void PreSolve(b2Contact * contact, const b2Manifold * oldManifold) override
+  void PreSolve(b2Contact * contact, const b2Manifold *) override
   {
     function_called["PreSolve"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse) override
+  void PostSolve(b2Contact * contact, const b2ContactImpulse *) override
   {
     function_called["PostSolve"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);

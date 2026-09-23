@@ -35,8 +35,12 @@ find_package(OpenCV REQUIRED)
 #  rostest
 
 
-find_package(Eigen3 REQUIRED)# lua5.1
-find_package(Lua 5.1 QUIET)
+find_package(Eigen3 REQUIRED)
+find_package(Lua 5.1 REQUIRED)
+find_library(LUA_CXX_LIBRARY NAMES lua${LUA_VERSION_MAJOR}.${LUA_VERSION_MINOR}-c++)
+if(LUA_CXX_LIBRARY)
+  list(APPEND LUA_LIBRARIES ${LUA_CXX_LIBRARY})
+endif()
 
 find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 

@@ -63,8 +63,8 @@ namespace flatland_server
 World::World(std::shared_ptr<rclcpp::Node> node)
 : node_(node),
   gravity_(0, 0),
-  service_paused_(false),
   plugin_manager_(node),
+  service_paused_(false),
   int_marker_manager_(&models_, &plugin_manager_)
 {
   physics_world_ = new b2World(gravity_);
