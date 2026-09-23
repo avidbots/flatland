@@ -388,6 +388,7 @@ TEST(DynamicsLimitsTest, test_Limit_acceleration_and_velocity) {
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char** argv) {
+  rclcpp::init(argc, argv);
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

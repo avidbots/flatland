@@ -178,11 +178,11 @@ TEST_F(LaserPluginTest, range_test)
 
   auto * obj = dynamic_cast<LaserPluginTest *>(this);
   auto sub_1 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
+    "r/scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
   auto sub_2 = node->create_subscription<sensor_msgs::msg::LaserScan>(
     "scan_center", 1, std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
   auto sub_3 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
+    "r/scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
 
   auto * p1 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[0].get());
   auto * p2 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[1].get());
@@ -230,11 +230,11 @@ TEST_F(LaserPluginTest, intensity_test)
 
   auto * obj = dynamic_cast<LaserPluginTest *>(this);
   auto sub_1 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
+    "r/scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
   auto sub_2 = node->create_subscription<sensor_msgs::msg::LaserScan>(
     "scan_center", 1, std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
   auto sub_3 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
+    "r/scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
 
   auto * p1 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[0].get());
   auto * p2 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[1].get());
