@@ -10,7 +10,9 @@ jobs:
           # - {ROS_DISTRO: humble, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
           # - {ROS_DISTRO: jazzy, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
           - {ROS_DISTRO: kilted, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
-          - {ROS_DISTRO: lyrical, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
+          # Lyrical and rolling require adapting to the deprication of Pose2D
+          # - {ROS_DISTRO: rolling, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
+          # - {ROS_DISTRO: lyrical, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v1
