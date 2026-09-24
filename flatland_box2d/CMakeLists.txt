@@ -126,9 +126,9 @@ set(BOX2D_General_HDRS
 cmake_minimum_required(VERSION 3.10)
 project(flatland_box2d)
 
-# Default to C++26; falls back to the newest standard the compiler supports
+# C++23 is the lowest common denominator; Lyrical and newer can use C++26
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 26)
+  set(CMAKE_CXX_STANDARD 23)
 endif()
 
 find_package(ament_cmake REQUIRED)

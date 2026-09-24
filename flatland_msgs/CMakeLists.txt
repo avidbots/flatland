@@ -6,9 +6,9 @@ if(NOT CMAKE_C_STANDARD)
   set(CMAKE_C_STANDARD 99)
 endif()
 
-# Default to C++26; falls back to the newest standard the compiler supports
+# C++23 is the lowest common denominator; Lyrical and newer can use C++26
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 26)
+  set(CMAKE_CXX_STANDARD 23)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
