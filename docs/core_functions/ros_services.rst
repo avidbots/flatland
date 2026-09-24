@@ -21,7 +21,7 @@ Request:
   string yaml_path           # path to model yaml file
   string name                # name of the model
   string ns                  # namespace, use "" for no namespace
-  geometry_msgs/Pose2D pose  # model pose 
+  flatland_msgs/Pose2D pose  # model pose
   
 Response:
 
@@ -57,7 +57,7 @@ Request:
 .. code-block:: bash
 
   string name                 # name of the model to move
-  geometry_msgs/Pose2D pose   # desired new global pose
+  flatland_msgs/Pose2D pose   # desired new global pose
   
 Response:
 

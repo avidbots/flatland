@@ -14,6 +14,10 @@
   ros1_message_name: 'Vector2'
   ros2_package_name: 'flatland_msgs'
   ros2_message_name: 'Vector2'
+- ros1_package_name: 'geometry_msgs'
+  ros1_message_name: 'Pose2D'
+  ros2_package_name: 'flatland_msgs'
+  ros2_message_name: 'Pose2D'
 
 - ros1_package_name: 'flatland_msgs'
   ros1_service_name: 'DeleteModel'
