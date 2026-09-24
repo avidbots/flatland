@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(flatland_viz)
 
-# Default to C++14
+# Default to C++26; falls back to the newest standard the compiler supports
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 26)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -26,9 +26,6 @@ find_package(flatland_server REQUIRED)
 find_package(flatland_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
-
-# Boost
-find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 
 ##############
 ## coverage ##
@@ -117,8 +114,6 @@ ament_target_dependencies(flatland_viz rclcpp flatland_msgs flatland_server visu
 
 target_link_libraries(flatland_viz
   ${QT_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
 )
 
 add_library(flatland_viz_plugins
@@ -143,8 +138,6 @@ ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_ser
 
 target_link_libraries(flatland_viz_plugins
   ${QT_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
 )
 
 ament_package()

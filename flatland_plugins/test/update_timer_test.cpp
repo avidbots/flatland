@@ -50,9 +50,10 @@
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <regex>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
 using namespace std::chrono_literals;
@@ -82,8 +83,8 @@ public:
 class UpdateTimerTest : public ::testing::Test
 {
 public:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   double set_rate;
   double expected_rate;
   double actual_rate;
@@ -97,7 +98,7 @@ public:
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 

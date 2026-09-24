@@ -53,7 +53,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <boost/algorithm/string/join.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -128,9 +128,9 @@ Layer * Layer::MakeLayer(
     if (type == "line_segments") {
       double scale = reader.Get<double>("scale");
       Pose origin = reader.GetPose("origin");
-      boost::filesystem::path data_path(reader.Get<std::string>("data"));
+      std::filesystem::path data_path(reader.Get<std::string>("data"));
       if (data_path.string().front() != '/') {
-        data_path = boost::filesystem::path(map_path).parent_path() / data_path;
+        data_path = std::filesystem::path(map_path).parent_path() / data_path;
       }
 
       RCLCPP_INFO(
@@ -149,9 +149,9 @@ Layer * Layer::MakeLayer(
       double occupied_thresh = reader.Get<double>("occupied_thresh");
       Pose origin = reader.GetPose("origin");
 
-      boost::filesystem::path image_path(reader.Get<std::string>("image"));
+      std::filesystem::path image_path(reader.Get<std::string>("image"));
       if (image_path.string().front() != '/') {
-        image_path = boost::filesystem::path(map_path).parent_path() / image_path;
+        image_path = std::filesystem::path(map_path).parent_path() / image_path;
       }
 
       RCLCPP_INFO(
@@ -197,7 +197,7 @@ void Layer::ReadLineSegmentsFile(
       if (ss.fail()) {
         throw Exception(
           "Flatland File: Failed to read line segment from line " + std::to_string(line_count) +
-          ", in file " + Q(boost::filesystem::path(file_path).filename().string()));
+          ", in file " + Q(std::filesystem::path(file_path).filename().string()));
       }
     }
 

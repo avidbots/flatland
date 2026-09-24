@@ -46,7 +46,7 @@
 
 #include <flatland_server/yaml_reader.h>
 
-#include <boost/filesystem/path.hpp>
+#include <filesystem>
 
 namespace flatland_server
 {
@@ -229,7 +229,7 @@ void YamlReader::SetFile(const std::string & file_path)
     file_path_ = file_path;
   }
 
-  filename_ = boost::filesystem::path(file_path).filename().string();
+  filename_ = std::filesystem::path(file_path).filename().string();
 }
 
 void YamlReader::EnsureAccessedAllKeys()

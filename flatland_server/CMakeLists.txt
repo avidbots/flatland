@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 
 project(flatland_server)
 
-# Default to C++14
-# if(NOT CMAKE_CXX_STANDARD)
-#   set(CMAKE_CXX_STANDARD 17)
-# endif()
+# Default to C++26; falls back to the newest standard the compiler supports
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 26)
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 ## Find macros and libraries
@@ -42,8 +42,11 @@ endif()
 # OpenCV
 find_package(OpenCV REQUIRED)
 
-# Boost
-find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
+# Boost (header-only)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+find_package(Boost REQUIRED)
 find_package(Threads)
 
 ##############
@@ -97,8 +100,7 @@ ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_
 
 target_link_libraries(flatland_lib
   ${OpenCV_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::headers
   ${LUA_LIBRARIES}
   yaml-cpp
 )
@@ -117,8 +119,7 @@ target_include_directories(flatland_server
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flatland_server
   ${OpenCV_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::headers
   ${LUA_LIBRARIES}
   yaml-cpp
   flatland_lib
@@ -127,7 +128,7 @@ target_link_libraries(flatland_server
 
 ament_export_targets(export_flatland_lib HAS_LIBRARY_TARGET)
 ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_box2d flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_dependencies(rclcpp flatland_box2d flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs Boost)
 ament_export_include_directories(include)
 
 

@@ -51,10 +51,11 @@
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <rclcpp/rclcpp.hpp>
 #include <regex>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 
 class TestModelPlugin : public ModelPlugin
@@ -126,13 +127,13 @@ public:
 class PluginManagerTest : public ::testing::Test
 {
 protected:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   World * w;
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 
@@ -143,7 +144,7 @@ protected:
     }
   }
 
-  PluginManagerTest() { this_file_dir = boost::filesystem::path(__FILE__).parent_path(); }
+  PluginManagerTest() { this_file_dir = fs::path(__FILE__).parent_path(); }
 
   bool fltcmp(double n1, double n2)
   {

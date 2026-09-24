@@ -48,9 +48,10 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <filesystem>
 #include <rclcpp/rclcpp.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 
 void compareNodes(const char * p1, YAML::Node & a, YAML::Node & b)
@@ -96,12 +97,12 @@ TEST(YamlPreprocTest, testEvalStrings)
   node->declare_parameter("/float", 10.5);
 
   YamlPreprocessor yamlPreprocessor(node);
-  boost::filesystem::path cwd = fs::path(__FILE__).parent_path();
+  fs::path cwd = fs::path(__FILE__).parent_path();
 
-  YAML::Node in = yamlPreprocessor.LoadParse((cwd / fs::path("/yaml/eval.strings.yaml")).string());
+  YAML::Node in = yamlPreprocessor.LoadParse((cwd / "yaml/eval.strings.yaml").string());
 
   YAML::Node out =
-    yamlPreprocessor.LoadParse((cwd / fs::path("/yaml/eval.strings.out.yaml")).string());
+    yamlPreprocessor.LoadParse((cwd / "yaml/eval.strings.out.yaml").string());
 
   // check that the two strings match
   compareNodes("foo", in, out);

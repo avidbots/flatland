@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 
 project(flatland_plugins)
 
-# Default to C++14
-# if(NOT CMAKE_CXX_STANDARD)
-#   set(CMAKE_CXX_STANDARD 17)
-# endif()
+# Default to C++26; falls back to the newest standard the compiler supports
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 26)
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 
@@ -42,7 +42,10 @@ if(LUA_CXX_LIBRARY)
   list(APPEND LUA_LIBRARIES ${LUA_CXX_LIBRARY})
 endif()
 
-find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+find_package(Boost REQUIRED)
 
 ##############
 ## coverage ##
@@ -90,6 +93,7 @@ target_include_directories(flatland_plugins_lib PUBLIC
 
 
 target_link_libraries(flatland_plugins_lib
+  Boost::headers
   ${Eigen3_LIBRARIES}
   ${LUA_LIBRARIES}
   ${OpenCV_LIBRARIES}

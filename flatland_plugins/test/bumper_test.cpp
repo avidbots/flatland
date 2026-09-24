@@ -51,10 +51,11 @@
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <flatland_msgs/msg/collisions.hpp>
 #include <regex>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
 using namespace flatland_msgs::msg;
@@ -63,8 +64,8 @@ using std::placeholders::_1;
 class BumperPluginTest : public ::testing::Test
 {
 public:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   flatland_msgs::msg::Collisions msg1, msg2;
   World * w;
   std::shared_ptr<rclcpp::Node> node;
@@ -73,7 +74,7 @@ public:
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 

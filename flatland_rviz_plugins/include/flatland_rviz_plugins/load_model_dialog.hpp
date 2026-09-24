@@ -63,7 +63,6 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <boost/filesystem.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_rendering/geometry.hpp>

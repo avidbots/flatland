@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(flatland_rviz_plugins)
 
-# Default to C++14
+# Default to C++26; falls back to the newest standard the compiler supports
 if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD 26)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -33,9 +33,6 @@ find_package(flatland_msgs REQUIRED)
 
 # lua5.1
 find_package(Lua 5.1 REQUIRED)
-
-# Boost
-find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
 
 set(flatland_rviz_plugins_headers_to_moc
   include/flatland_rviz_plugins/change_rate_tool.hpp
@@ -89,8 +86,6 @@ target_include_directories(${library_name} PUBLIC
 )
 
 target_link_libraries(${library_name}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
   rviz_common::rviz_common
 )
 

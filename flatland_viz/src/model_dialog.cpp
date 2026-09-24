@@ -109,8 +109,8 @@ ModelDialog::ModelDialog(QWidget * parent) : QDialog(parent)
   h2_layout->addWidget(new QLabel("name:"));
   h2_layout->addWidget(n_edit);
 
-  // set the default name to the filename parsed using boost
-  std::string bsfn = boost::filesystem::path(path_to_model_file.toStdString()).stem().string();
+  // set the default name to the filename stem
+  std::string bsfn = std::filesystem::path(path_to_model_file.toStdString()).stem().string();
   QString fn = QString::fromStdString(bsfn);
   n_edit->setText(fn);
 

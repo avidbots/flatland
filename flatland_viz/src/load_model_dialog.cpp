@@ -65,7 +65,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/properties/vector_property.hpp>
@@ -128,7 +128,7 @@ LoadModelDialog::LoadModelDialog(QWidget * parent, flatland_viz::SpawnModelTool 
   h2_layout->addWidget(new QLabel("name:"));
   h2_layout->addWidget(n_edit);
 
-  // set the default name to the filename parsed using boost
+  // set the default name to the filename stem
   AddNumberAndUpdateName();
 
   // ok button
@@ -171,7 +171,7 @@ void LoadModelDialog::OkButtonClicked()
 
 void LoadModelDialog::AddNumberAndUpdateName()
 {
-  std::string bsfn = boost::filesystem::path(path_to_model_file.toStdString()).stem().string();
+  std::string bsfn = std::filesystem::path(path_to_model_file.toStdString()).stem().string();
   QString name = QString::fromStdString(bsfn);
 
   if (numbering) {

@@ -64,8 +64,6 @@
 #include <flatland_server/types.h>
 #include <yaml-cpp/yaml.h>
 
-#include <boost/filesystem.hpp>
-
 class DialogOptionsWidget;
 
 namespace flatland_viz

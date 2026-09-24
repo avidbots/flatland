@@ -53,24 +53,25 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
+#include <filesystem>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <regex>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
 
 class ModelTfPublisherTest : public ::testing::Test
 {
 public:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   World * w;
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 

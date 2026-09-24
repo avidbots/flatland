@@ -52,7 +52,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
-#include <boost/filesystem.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>

@@ -52,7 +52,7 @@
 #include <flatland_server/yaml_reader.h>
 #include <yaml-cpp/yaml.h>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
@@ -140,7 +140,7 @@ World * World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &
 
   World * w = new World(node);
 
-  w->world_yaml_dir_ = boost::filesystem::path(yaml_path).parent_path();
+  w->world_yaml_dir_ = std::filesystem::path(yaml_path).parent_path();
   w->physics_velocity_iterations_ = v;
   w->physics_position_iterations_ = p;
 
@@ -190,7 +190,7 @@ void World::LoadLayers(YamlReader & layers_reader)
         std::to_string(cfr_.LayersCount()) + ", max allowed is " + std::to_string(cfr_.MAX_LAYERS));
     }
 
-    boost::filesystem::path map_path(reader.Get<std::string>("map", ""));
+    std::filesystem::path map_path(reader.Get<std::string>("map", ""));
     Color color = reader.GetColor("color", Color(1, 1, 1, 1));
     auto properties = reader.SubnodeOpt("properties", YamlReader::NodeTypeCheck::MAP).Node();
     reader.EnsureAccessedAllKeys();
@@ -257,7 +257,7 @@ void World::LoadModel(
     throw YAMLException("Model with name " + Q(name) + " already exists");
   }
 
-  boost::filesystem::path abs_path(model_yaml_path);
+  std::filesystem::path abs_path(model_yaml_path);
   if (model_yaml_path.front() != '/') {
     abs_path = world_yaml_dir_ / abs_path;
   }

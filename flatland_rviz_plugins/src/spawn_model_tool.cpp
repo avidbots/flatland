@@ -62,7 +62,6 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <boost/filesystem.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/render_panel.hpp>
