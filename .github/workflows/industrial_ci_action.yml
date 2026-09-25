@@ -6,12 +6,16 @@ on:
       - main
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   industrial_ci:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DAMENT_LINT_AUTO_EXCLUDE=ament_uncrustify'}
+          - {ROS_DISTRO: humble, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DAMENT_LINT_AUTO_EXCLUDE=ament_cmake_uncrustify'}
           # - {ROS_DISTRO: jazzy, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
           # - {ROS_DISTRO: kilted, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
           - {ROS_DISTRO: lyrical, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
