@@ -14,7 +14,6 @@
     ],
     "remoteEnv": { "CCACHE_DIR": "/tmp/.ccache" },
     "onCreateCommand": "bash .devcontainer/on-create-command.sh",
-    "updateContentCommand": "bash .devcontainer/update-content-command.sh",
     "postCreateCommand": "bash .devcontainer/post-create-command.sh",
     "customizations": {
         "vscode": {
