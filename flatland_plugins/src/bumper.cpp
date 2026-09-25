@@ -95,7 +95,8 @@ void Bumper::OnInitialize(const YAML::Node & config)
   }
 
   update_timer_.SetRate(update_rate_);
-  collisions_publisher_ = node_->create_publisher<flatland_msgs::msg::Collisions>(topic_name_, 1);
+  collisions_publisher_ = node_->create_publisher<flatland_msgs::msg::Collisions>(
+    GetModel()->NameSpaceTopic(topic_name_), 1);
 
   RCLCPP_DEBUG(
     rclcpp::get_logger("Bumper"),
