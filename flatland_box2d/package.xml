@@ -6,7 +6,6 @@
   <description>The flatland Box2D ROS wrapped package</description>
   <license>BSD</license>
   <license>MIT</license>
-  <license>Zlib</license>
   <url type="website">https://github.com/avidbots/flatland</url>
 
   <maintainer email="joseph@avidbots.com">Joseph Duchesne</maintainer>
