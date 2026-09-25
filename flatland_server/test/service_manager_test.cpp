@@ -65,7 +65,7 @@ class ServiceManagerTest : public ::testing::Test
 {
 public:
   explicit ServiceManagerTest(const std::shared_ptr<rclcpp::Node> & node)
-  : timekeeper(node), node(node)
+  : timekeeper(node), node(node), client_node(rclcpp::Node::make_shared("test_service_manager_client"))
   {
   }
 
@@ -78,6 +78,7 @@ protected:
   fs::path robot_yaml;
   Timekeeper timekeeper;
   rclcpp::Node::SharedPtr node;
+  rclcpp::Node::SharedPtr client_node;
   std::thread simulation_thread;
 
   void SetUp() override
@@ -126,7 +127,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model)
   request->pose.y = 102.1;
   request->pose.theta = 0.23;
 
-  auto client = node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
+  auto client = client_node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
 
   // Threading is required since client.call blocks executing until return
   StartSimulationThread();
@@ -134,7 +135,7 @@ TEST_F(ServiceManagerTest, spawn_valid_model)
   ASSERT_TRUE(client->wait_for_service(1s));
 
   auto result = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  if (rclcpp::spin_until_future_complete(client_node, result) != rclcpp::FutureReturnCode::SUCCESS) {
     FAIL();
   }
   auto response = result.get();
@@ -167,14 +168,14 @@ TEST_F(ServiceManagerTest, spawn_invalid_model)
   request->pose.y = 2;
   request->pose.theta = 3;
 
-  auto client = node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
+  auto client = client_node->create_client<flatland_msgs::srv::SpawnModel>("spawn_model");
 
   StartSimulationThread();
 
   ASSERT_TRUE(client->wait_for_service(1s));
 
   auto result = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  if (rclcpp::spin_until_future_complete(client_node, result) != rclcpp::FutureReturnCode::SUCCESS) {
     FAIL();
   }
   auto response = result.get();
@@ -203,14 +204,14 @@ TEST_F(ServiceManagerTest, move_model)
   request->pose.y = 9.9;
   request->pose.theta = 0.77;
 
-  auto client = node->create_client<flatland_msgs::srv::MoveModel>("move_model");
+  auto client = client_node->create_client<flatland_msgs::srv::MoveModel>("move_model");
 
   StartSimulationThread();
 
   ASSERT_TRUE(client->wait_for_service(1s));
 
   auto result = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  if (rclcpp::spin_until_future_complete(client_node, result) != rclcpp::FutureReturnCode::SUCCESS) {
     FAIL();
   }
   auto response = result.get();
@@ -235,14 +236,14 @@ TEST_F(ServiceManagerTest, move_nonexistent_model)
   request->pose.y = 5;
   request->pose.theta = 0;
 
-  auto client = node->create_client<flatland_msgs::srv::MoveModel>("move_model");
+  auto client = client_node->create_client<flatland_msgs::srv::MoveModel>("move_model");
 
   StartSimulationThread();
 
   ASSERT_TRUE(client->wait_for_service(1s));
 
   auto result = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  if (rclcpp::spin_until_future_complete(client_node, result) != rclcpp::FutureReturnCode::SUCCESS) {
     FAIL();
   }
   auto response = result.get();
@@ -263,14 +264,14 @@ TEST_F(ServiceManagerTest, delete_model)
   auto request = std::make_shared<flatland_msgs::srv::DeleteModel::Request>();
   request->name = "turtlebot1";
 
-  auto client = node->create_client<flatland_msgs::srv::DeleteModel>("delete_model");
+  auto client = client_node->create_client<flatland_msgs::srv::DeleteModel>("delete_model");
 
   StartSimulationThread();
 
   ASSERT_TRUE(client->wait_for_service(1s));
 
   auto result = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  if (rclcpp::spin_until_future_complete(client_node, result) != rclcpp::FutureReturnCode::SUCCESS) {
     FAIL();
   }
   auto response = result.get();
@@ -294,14 +295,14 @@ TEST_F(ServiceManagerTest, delete_nonexistent_model)
   auto request = std::make_shared<flatland_msgs::srv::DeleteModel::Request>();
   request->name = "random_model";
 
-  auto client = node->create_client<flatland_msgs::srv::DeleteModel>("delete_model");
+  auto client = client_node->create_client<flatland_msgs::srv::DeleteModel>("delete_model");
 
   StartSimulationThread();
 
   ASSERT_TRUE(client->wait_for_service(1s));
 
   auto result = client->async_send_request(request);
-  if (rclcpp::spin_until_future_complete(node, result) != rclcpp::FutureReturnCode::SUCCESS) {
+  if (rclcpp::spin_until_future_complete(client_node, result) != rclcpp::FutureReturnCode::SUCCESS) {
     FAIL();
   }
   auto response = result.get();
