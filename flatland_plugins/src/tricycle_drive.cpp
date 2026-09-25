@@ -141,6 +141,10 @@ void TricycleDrive::OnInitialize(const YAML::Node & config)
     throw YAMLException("Joint with name " + Q(rear_right_wj_name) + " does not exist");
   }
 
+  twist_topic = GetModel()->NameSpaceTopic(twist_topic);
+  odom_topic = GetModel()->NameSpaceTopic(odom_topic);
+  ground_truth_topic = GetModel()->NameSpaceTopic(ground_truth_topic);
+
   // validate the that joints fits the assumption of the robot model and
   // calculate rear wheel separation and wheel base
   ComputeJoints();

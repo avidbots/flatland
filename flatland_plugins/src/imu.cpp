@@ -112,6 +112,9 @@ void Imu::OnInitialize(const YAML::Node& config) {
 
   reader.EnsureAccessedAllKeys();
 
+  imu_topic = GetModel()->NameSpaceTopic(imu_topic);
+  ground_truth_topic = GetModel()->NameSpaceTopic(ground_truth_topic);
+
   body_ = GetModel()->GetBody(body_name);
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");

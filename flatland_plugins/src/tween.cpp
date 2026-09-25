@@ -107,6 +107,7 @@ void Tween::OnInitialize(const YAML::Node & config)
   // Boolean play pause topic
   std::string trigger_topic = reader.Get<std::string>("trigger_topic", "");
   if (trigger_topic != "") {
+    trigger_topic = GetModel()->NameSpaceTopic(trigger_topic);
     trigger_sub_ = node_->create_subscription<std_msgs::msg::Bool>(
       trigger_topic, 1, std::bind(&Tween::TriggerCallback, this, std::placeholders::_1));
   }
