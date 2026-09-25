@@ -49,7 +49,7 @@
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/types.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.hpp>
 #include <thirdparty/ThreadPool.h>
 
 #include <Eigen/Dense>
