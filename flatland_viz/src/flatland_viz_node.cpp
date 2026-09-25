@@ -44,49 +44,72 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <signal.h>
-
 #include <QApplication>
+#include <QTimer>
+#include <memory>
 #include <rclcpp/rclcpp.hpp>
+#include <rviz_common/logging.hpp>
+#include <rviz_common/ros_integration/ros_node_abstraction.hpp>
+#include <string>
+#include <vector>
 
-#include "flatland_viz/flatland_window.h"
-
-FlatlandWindow * window = nullptr;
-
-/**
- * @name        SigintHandler
- * @brief       Interrupt handler - sends shutdown signal to simulation_manager
- * @param[in]   sig: signal itself
- */
-void SigintHandler(int sig)
-{
-  RCLCPP_WARN(rclcpp::get_logger("Node"), "*** Shutting down... ***");
-
-  if (window != nullptr) {
-    delete window;
-    window = nullptr;
-  }
-  RCLCPP_INFO_STREAM(rclcpp::get_logger("Flatland Viz"), "Beginning ros shutdown");
-  rclcpp::shutdown();
-}
+#include "flatland_viz/flatland_viz.h"
 
 int main(int argc, char ** argv)
 {
-  if (!rclcpp::isInitialized()) {
-    rclcpp::init(argc, argv);
+  std::vector<std::string> qt_args = rclcpp::init_and_remove_ros_arguments(argc, argv);
+
+  // Ogre's render window needs X11; use XWayland unless the user chose a platform (same as rviz2)
+  if (
+    qEnvironmentVariable("XDG_SESSION_TYPE") == "wayland" &&
+    !qEnvironmentVariableIsSet("QT_QPA_PLATFORM")) {
+    qputenv("QT_QPA_PLATFORM", "xcb");
   }
 
-  QApplication app(argc, argv);
+  std::vector<char *> qt_argv;
+  for (auto & arg : qt_args) {
+    qt_argv.push_back(arg.data());
+  }
+  int qt_argc = static_cast<int>(qt_argv.size());
+  QApplication app(qt_argc, qt_argv.data());
 
-  window = new FlatlandWindow();
-  window->show();
+  // rviz defaults to printing every log level to the console; route it through rclcpp instead
+  auto logger = rclcpp::get_logger("flatland_viz");
+  rviz_common::set_logging_handlers(
+    [logger](const std::string & msg, const std::string &, size_t) {
+      RCLCPP_DEBUG(logger, "%s", msg.c_str());
+    },
+    [logger](const std::string & msg, const std::string &, size_t) {
+      RCLCPP_INFO(logger, "%s", msg.c_str());
+    },
+    [logger](const std::string & msg, const std::string &, size_t) {
+      RCLCPP_WARN(logger, "%s", msg.c_str());
+    },
+    [logger](const std::string & msg, const std::string &, size_t) {
+      RCLCPP_ERROR(logger, "%s", msg.c_str());
+    });
+  rviz_common::install_rviz_rendering_log_handlers();
 
-  // Register sigint shutdown handler
-  signal(SIGINT, SigintHandler);
+  auto rviz_ros_node =
+    std::make_shared<rviz_common::ros_integration::RosNodeAbstraction>("flatland_viz");
 
-  app.exec();
+  int ret;
+  {
+    FlatlandViz viz(rviz_ros_node);
+    viz.show();
 
-  delete window;
-  window = nullptr;
-  return 0;
+    // rclcpp's SIGINT handler only flips rclcpp::ok(), so poll it to exit cleanly
+    QTimer shutdown_timer;
+    QObject::connect(&shutdown_timer, &QTimer::timeout, [&app]() {
+      if (!rclcpp::ok()) {
+        app.quit();
+      }
+    });
+    shutdown_timer.start(100);
+
+    ret = app.exec();
+  }
+
+  rclcpp::shutdown();
+  return ret;
 }

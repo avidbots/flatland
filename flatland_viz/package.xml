@@ -14,30 +14,18 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>qtbase5-dev</depend>
-  <depend>libqt5-core</depend>
-  <depend>libqt5-gui</depend>
-  <depend>libqt5-widgets</depend>
-  <depend>libogre-dev</depend>
+  <build_depend>qt-base-dev</build_depend>
+
+  <depend>flatland_msgs</depend>
   <depend>rclcpp</depend>
   <depend>rviz_common</depend>
   <depend>rviz_rendering</depend>
-  <depend>rviz_default_plugins</depend>
-  <depend>std_srvs</depend>
-  <depend>flatland_server</depend>
-  <depend>flatland_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>interactive_markers</depend>
 
-  <test_depend>ament_cmake_gtest</test_depend>
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_cmake_test</test_depend>
+  <exec_depend>flatland_rviz_plugins</exec_depend>
+  <exec_depend>libqtwidgets</exec_depend>
+  <exec_depend>rviz_default_plugins</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
-    
-    <!-- Other tools can request additional information be placed here -->
-      <rviz plugin="${prefix}/plugin_description.xml"/>
-      <flatland_viz plugin="${prefix}/plugin_description.xml"/>
   </export>
 </package>
