@@ -140,18 +140,15 @@ void Imu::OnInitialize(const YAML::Node& config) {
   rng_ = std::default_random_engine(rd());
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i] =
-        std::normal_distribution<double>(0.0, sqrt(orientation_noise[i]));
+    noise_gen_[i] = GaussianNoise(0.0, sqrt(orientation_noise[i]));
   }
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i + 3] =
-        std::normal_distribution<double>(0.0, sqrt(angular_velocity_noise[i]));
+    noise_gen_[i + 3] = GaussianNoise(0.0, sqrt(angular_velocity_noise[i]));
   }
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i + 6] = std::normal_distribution<double>(
-        0.0, sqrt(linear_acceleration_noise[i]));
+    noise_gen_[i + 6] = GaussianNoise(0.0, sqrt(linear_acceleration_noise[i]));
   }
 
   imu_tf_.header.frame_id = GetModel()->NameSpaceTF(body_->GetName());  // Todo: parent_tf param

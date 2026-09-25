@@ -264,7 +264,7 @@ void Laser::ParseParameters(const YAML::Node & config)
   // init the random number generators
   std::random_device rd;
   rng_ = std::default_random_engine(rd());
-  noise_gen_ = std::normal_distribution<double>(0.0, noise_std_dev_);
+  noise_gen_ = GaussianNoise(0.0, noise_std_dev_);
 
   RCLCPP_DEBUG(
     rclcpp::get_logger("LaserPlugin"),

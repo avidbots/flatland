@@ -45,6 +45,7 @@
  */
 
 #include <Box2D/Box2D.h>
+#include <flatland_plugins/gaussian_noise.h>
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
@@ -73,7 +74,7 @@ class Imu : public flatland_server::ModelPlugin {
   bool enable_imu_gravity_;  ///< YAML parameter to enable gravity in imu
 
   std::default_random_engine rng_;
-  std::array<std::normal_distribution<double>, 9> noise_gen_;
+  std::array<GaussianNoise, 9> noise_gen_;
   geometry_msgs::msg::TransformStamped imu_tf_;   ///< tf from body to IMU frame
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< broadcast GPS frame
   std::string imu_frame_id_;

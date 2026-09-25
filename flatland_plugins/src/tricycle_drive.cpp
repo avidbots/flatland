@@ -171,11 +171,11 @@ void TricycleDrive::OnInitialize(const YAML::Node & config)
   rng_ = default_random_engine(rd());
   for (unsigned int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i] = normal_distribution<double>(0.0, sqrt(odom_pose_noise[i]));
+    noise_gen_[i] = GaussianNoise(0.0, sqrt(odom_pose_noise[i]));
   }
 
   for (unsigned int i = 0; i < 3; i++) {
-    noise_gen_[i + 3] = normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
+    noise_gen_[i + 3] = GaussianNoise(0.0, sqrt(odom_twist_noise[i]));
   }
 
   RCLCPP_DEBUG(

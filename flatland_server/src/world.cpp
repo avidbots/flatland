@@ -201,7 +201,7 @@ void World::LoadLayers(YamlReader & layers_reader)
       }
     }
 
-    if (map_path.string().front() != '/' && map_path.string().length() > 0) {
+    if (!map_path.empty() && map_path.string().front() != '/') {
       map_path = world_yaml_dir_ / map_path;
     }
 
@@ -258,7 +258,7 @@ void World::LoadModel(
   }
 
   std::filesystem::path abs_path(model_yaml_path);
-  if (model_yaml_path.front() != '/') {
+  if (!model_yaml_path.empty() && model_yaml_path.front() != '/') {
     abs_path = world_yaml_dir_ / abs_path;
   }
 

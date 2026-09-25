@@ -47,6 +47,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
 #include <flatland_plugins/dynamics_limits.h>
+#include <flatland_plugins/gaussian_noise.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -89,7 +90,7 @@ public:
   double linear_velocity_ = 0.0;
 
   std::default_random_engine rng_;
-  std::array<std::normal_distribution<double>, 6> noise_gen_;
+  std::array<GaussianNoise, 6> noise_gen_;
 
   /**
    * @name          OnInitialize

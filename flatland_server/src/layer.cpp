@@ -129,7 +129,7 @@ Layer * Layer::MakeLayer(
       double scale = reader.Get<double>("scale");
       Pose origin = reader.GetPose("origin");
       std::filesystem::path data_path(reader.Get<std::string>("data"));
-      if (data_path.string().front() != '/') {
+      if (!data_path.empty() && data_path.string().front() != '/') {
         data_path = std::filesystem::path(map_path).parent_path() / data_path;
       }
 
@@ -150,7 +150,7 @@ Layer * Layer::MakeLayer(
       Pose origin = reader.GetPose("origin");
 
       std::filesystem::path image_path(reader.Get<std::string>("image"));
-      if (image_path.string().front() != '/') {
+      if (!image_path.empty() && image_path.string().front() != '/') {
         image_path = std::filesystem::path(map_path).parent_path() / image_path;
       }
 
