@@ -5,7 +5,14 @@
         "context": "../..",
         "args": { "ROS_DISTRO": "jazzy" }
     },
-    "runArgs": ["--init"],
+    "runArgs": [
+        "--init",
+        "--privileged",
+        "--volume=/dev:/dev",
+        "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+        "--env=DISPLAY=${localEnv:DISPLAY}",
+        "--env=QT_X11_NO_MITSHM=1"
+    ],
     "workspaceFolder": "/opt/overlay_ws/src/flatland",
     "workspaceMount": "source=${localWorkspaceFolder},target=${containerWorkspaceFolder},type=bind",
     "mounts": [

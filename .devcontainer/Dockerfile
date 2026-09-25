@@ -20,4 +20,5 @@ RUN rosdep update && \
     rm -rf /tmp/flatland /var/lib/apt/lists/*
 
 ENV CCACHE_DIR=/tmp/.ccache
+ENV QT_QPA_PLATFORM=xcb
 WORKDIR /opt/overlay_ws
