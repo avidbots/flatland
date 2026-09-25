@@ -61,7 +61,9 @@ namespace flatland_server
 
 DebugVisualization::DebugVisualization(rclcpp::Node::SharedPtr node) : node_(node)
 {
-  topic_list_publisher_ = node_->create_publisher<flatland_msgs::msg::DebugTopicList>("topics", 1);
+  // Latched so late joiners (e.g. flatland_viz) receive the current topic list
+  topic_list_publisher_ = node_->create_publisher<flatland_msgs::msg::DebugTopicList>(
+    "topics", rclcpp::QoS(1).transient_local());
 }
 
 std::shared_ptr<DebugVisualization> DebugVisualization::Get(rclcpp::Node::SharedPtr node)

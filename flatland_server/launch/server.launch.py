@@ -1,7 +1,12 @@
 # Helped by: https://github.com/aws-robotics/ros2-launch-file-migrator
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import (
+    AndSubstitution,
+    LaunchConfiguration,
+    NotSubstitution,
+    PathJoinSubstitution,
+)
 import launch.conditions as conditions
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
@@ -24,13 +29,18 @@ def generate_launch_description():
             DeclareLaunchArgument(name="show_viz", default_value="false"),
             DeclareLaunchArgument(name="viz_pub_rate", default_value="30.0"),
             DeclareLaunchArgument(name="use_rviz", default_value="false"),
-            #  Node(
-            #  package="flatland_viz",
-            #  executable="flatland_viz",
-            #  name="flatland_viz",
-            #  output="screen",
-            #  condition=conditions.IfCondition("$(var show_viz)"),
-            #  ),
+            Node(
+                package="flatland_viz",
+                executable="flatland_viz",
+                output="screen",
+                parameters=[{"use_sim_time": True}],
+                condition=conditions.IfCondition(
+                    AndSubstitution(
+                        LaunchConfiguration("show_viz"),
+                        NotSubstitution(LaunchConfiguration("use_rviz")),
+                    )
+                ),
+            ),
             Node(
                 package="flatland_server",
                 name="flatland_server",

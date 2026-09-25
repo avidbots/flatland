@@ -74,7 +74,7 @@ of the same model.
 5. Name text field
 ------------------
 
-The name text field recieves the file name of the file chosen using 
+The name text field receives the file name of the file chosen using 
 the file selection dialog (with the path removed). You can choose to override
 this name with a name of your choosing.
 

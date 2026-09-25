@@ -23,10 +23,11 @@
     <param name="viz_pub_rate" value="$(var viz_pub_rate)" />
     <param name="use_sim_time" value="true"/>  
   </node>
-<!-- 
-<group if="$(var show_viz)">
-  <node name="flatland_viz" pkg="flatland_viz" exec="flatland_viz" output="screen" unless="$(var use_rviz)"/>
-</group> -->
+  <group if="$(var show_viz)">
+    <node pkg="flatland_viz" exec="flatland_viz" output="screen" unless="$(var use_rviz)">
+      <param name="use_sim_time" value="true"/>
+    </node>
+  </group>
 
 
 </launch>

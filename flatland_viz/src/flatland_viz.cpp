@@ -46,140 +46,94 @@
 
 #include "flatland_viz/flatland_viz.h"
 
-#include <OgreColourValue.h>
-#include <stdlib.h>
-
 #include <QAction>
-#include <QApplication>
-#include <QCloseEvent>
-#include <QDesktopServices>
-#include <QDir>
-#include <QDockWidget>
-#include <QFileDialog>
-#include <QHBoxLayout>
-#include <QLabel>
-#include <QMainWindow>
-#include <QMenu>
-#include <QMenuBar>
-#include <QMessageBox>
-#include <QShortcut>
-#include <QStatusBar>
-#include <QTimer>
+#include <QActionGroup>
+#include <QColor>
+#include <QCoreApplication>
+#include <QScreen>
 #include <QToolBar>
-#include <QToolButton>
-#include <QUrl>
-#include <rclcpp/rclcpp.hpp>
+#include <algorithm>
+#include <rviz_common/display.hpp>
+#include <rviz_common/properties/property.hpp>
+#include <rviz_common/render_panel.hpp>
+#include <rviz_common/tool.hpp>
+#include <rviz_common/tool_manager.hpp>
+#include <rviz_common/view_manager.hpp>
+#include <rviz_common/visualization_manager.hpp>
+#include <rviz_rendering/render_window.hpp>
 
-#include "flatland_viz/flatland_window.h"
-
-// Constructor.
-FlatlandViz::FlatlandViz(FlatlandWindow * parent) : QWidget((QWidget *)parent)
+FlatlandViz::FlatlandViz(
+  rviz_common::ros_integration::RosNodeAbstractionIface::WeakPtr rviz_ros_node, QWidget * parent)
+: QMainWindow(parent)
 {
-  parent_ = parent;
-  toolbar_ = parent->addToolBar("Tools");
+  setWindowTitle("Flatland Viz");
+  resize(screen()->availableSize() * 0.9);
 
-  // init toolbar action handler
-  initToolbars();
+  toolbar_ = addToolBar("Tools");
+  toolbar_->setObjectName("Tools");
+  toolbar_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+  toolbar_actions_ = new QActionGroup(this);
+  connect(toolbar_actions_, &QActionGroup::triggered, this, &FlatlandViz::onToolbarActionTriggered);
 
-  initMenus();
+  render_panel_ = new rviz_common::RenderPanel(this);
+  setCentralWidget(render_panel_);
 
-  // Construct and lay out render panel.
-  render_panel_ = new rviz_common::RenderPanel();
-  QVBoxLayout * main_layout = new QVBoxLayout;
-  main_layout->setMargin(0);
-  main_layout->addWidget(render_panel_);
-
-  // Set the top-level layout for this FlatlandViz widget.
-  setLayout(main_layout);
-
-  // Next we initialize the main RViz classes.
-  //
-  // The VisualizationManager is the container for Display objects,
-  // holds the main Ogre scene, holds the ViewController, etc.  It is
-  // very central and we will probably need one in every usage of
-  // librviz.
-  manager_ = new rviz_common::VisualizationManager(render_panel_);
-  render_panel_->initialize(manager_->getSceneManager(), manager_);
-
-  // bind toolbar events
-  rviz_common::ToolManager * tool_man = manager_->getToolManager();
-
-  connect(manager_, SIGNAL(configChanged()), this, SLOT(setDisplayConfigModified()));
-  connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
-  connect(
-    tool_man, SIGNAL(toolRemoved(rviz_common::Tool *)), this,
-    SLOT(removeTool(rviz_common::Tool *)));
-  connect(
-    tool_man, SIGNAL(toolRefreshed(rviz_common::Tool *)), this,
-    SLOT(refreshTool(rviz_common::Tool *)));
-  connect(
-    tool_man, SIGNAL(toolChanged(rviz_common::Tool *)), this,
-    SLOT(indicateToolIsCurrent(rviz_common::Tool *)));
-
+  // In rviz2 the render window must be initialized before the VisualizationManager is built.
+  // Flush pending Qt window-system events first, or Ogre's GL context can't bind to the window.
+  QCoreApplication::processEvents();
+  render_panel_->getRenderWindow()->initialize();
+  rclcpp::Node::SharedPtr node = rviz_ros_node.lock()->get_raw_node();
+  manager_ =
+    new rviz_common::VisualizationManager(render_panel_, rviz_ros_node, nullptr, node->get_clock());
+  render_panel_->initialize(manager_);
   manager_->initialize();
 
-  tool_man->addTool("flatland_viz/SpawnModel");
-  tool_man->addTool("flatland_viz/PauseSim");
+  // Replace rviz2's default tools with the flatland toolset; the first one is the default tool
+  rviz_common::ToolManager * tool_man = manager_->getToolManager();
+  tool_man->removeAll();
+  connect(tool_man, &rviz_common::ToolManager::toolAdded, this, &FlatlandViz::addTool);
+  connect(
+    tool_man, &rviz_common::ToolManager::toolChanged, this, &FlatlandViz::indicateToolIsCurrent);
+  tool_man->addTool("rviz_default_plugins/MoveCamera");
+  tool_man->addTool("flatland_rviz_plugins/Interact");
+  tool_man->addTool("flatland_rviz_plugins/SpawnModel");
+  tool_man->addTool("flatland_rviz_plugins/TogglePause");
+  tool_man->addTool("flatland_rviz_plugins/ChangeRate");
 
-  manager_->startUpdate();
+  manager_->setFixedFrame("map");
+  manager_->getViewManager()->setCurrentViewControllerType("rviz_default_plugins/TopDownOrtho");
 
-  // Set view controller to top down
-  manager_->getViewManager()->setCurrentViewControllerType("rviz/TopDownOrtho");
-  render_panel_->setBackgroundColor(Ogre::ColourValue(0.2, 0.2, 0.2));
+  rviz_common::Display * grid =
+    manager_->createDisplay("rviz_default_plugins/Grid", "adjustable grid", true);
+  grid->subProp("Line Style")->setValue("Lines");
+  grid->subProp("Color")->setValue(QColor(Qt::white));
+  grid->subProp("Cell Size")->setValue(1.0);
+  grid->subProp("Plane Cell Count")->setValue(100);
+  grid->subProp("Alpha")->setValue(0.1);
 
-  // Create a Grid display.
-  grid_ = manager_->createDisplay("rviz/Grid", "adjustable grid", true);
-  if (grid_ == nullptr) {
-    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Grid failed to instantiate");
-    exit(1);
-  }
+  // Enabled/disabled by the flatland_rviz_plugins/Interact tool
+  rviz_common::Display * interactive_markers =
+    manager_->createDisplay("rviz_default_plugins/InteractiveMarkers", "Move Objects", false);
+  interactive_markers->subProp("Interactive Markers Namespace")
+    ->setValue("interactive_model_markers");
 
-  // Configure the GridDisplay the way we like it.
-  grid_->subProp("Line Style")->setValue("Lines");
-  grid_->subProp("Color")->setValue(QColor(Qt::white));
-  grid_->subProp("Cell Size")->setValue(1.0);
-  grid_->subProp("Plane Cell Count")->setValue(100);
-  grid_->subProp("Alpha")->setValue(0.1);
-
-  // Create interactive markers display
-  interactive_markers_ = manager_->createDisplay("rviz/InteractiveMarkers", "Move Objects", false);
-  if (interactive_markers_ == nullptr) {
-    RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "Interactive markers failed to instantiate");
-    exit(1);
-  }
-  interactive_markers_->subProp("Update Topic")->setValue("/interactive_model_markers/update");
-
-  std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("flatland_viz");
-
-  // Subscribe to debug topics topic
+  // Callbacks are serviced on the Qt thread by the VisualizationManager's executor
   using std::placeholders::_1;
   debug_topic_subscriber_ = node->create_subscription<flatland_msgs::msg::DebugTopicList>(
-    "/flatland_server/debug/topics", 0, std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
+    "topics", rclcpp::QoS(1).transient_local(),
+    std::bind(&FlatlandViz::ReceiveDebugTopics, this, _1));
+
+  manager_->startUpdate();
 }
 
-// Destructor.
 FlatlandViz::~FlatlandViz()
 {
-  delete render_panel_;
+  debug_topic_subscriber_.reset();
   delete manager_;
-}
-
-void FlatlandViz::indicateToolIsCurrent(rviz_common::Tool * tool)
-{
-  QAction * action = tool_to_action_map_[tool];
-  if (action) {
-    action->setChecked(true);
-  }
-}
-
-void FlatlandViz::setDisplayConfigModified()
-{
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "setDisplayConfigModified called");
 }
 
 void FlatlandViz::addTool(rviz_common::Tool * tool)
 {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "addTool called");
   QAction * action = new QAction(tool->getName(), toolbar_actions_);
   action->setIcon(tool->getIcon());
   action->setIconText(tool->getName());
@@ -187,223 +141,48 @@ void FlatlandViz::addTool(rviz_common::Tool * tool)
   toolbar_->addAction(action);
   action_to_tool_map_[action] = tool;
   tool_to_action_map_[tool] = action;
+}
 
-  remove_tool_menu_->addAction(tool->getName());
+void FlatlandViz::indicateToolIsCurrent(rviz_common::Tool * tool)
+{
+  auto it = tool_to_action_map_.find(tool);
+  if (it != tool_to_action_map_.end()) {
+    it->second->setChecked(true);
+  }
 }
 
 void FlatlandViz::onToolbarActionTriggered(QAction * action)
 {
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "onToolbarActionTriggered called");
+  auto it = action_to_tool_map_.find(action);
+  if (it != action_to_tool_map_.end()) {
+    manager_->getToolManager()->setCurrentTool(it->second);
+  }
+}
 
-  rviz_common::Tool * current_tool = manager_->getToolManager()->getCurrentTool();
-  rviz_common::Tool * tool = action_to_tool_map_[action];
+void FlatlandViz::ReceiveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg)
+{
+  const std::vector<std::string> & topics = msg->topics;
 
-  if (tool) {
-    manager_->getToolManager()->setCurrentTool(tool);
-
-    // If the simulation pause/resume tool was clicked, automatically and
-    // immediately switch back to the previously active tool
-    if (tool->getClassId().toStdString() == "flatland_viz/PauseSim") {
-      manager_->getToolManager()->setCurrentTool(current_tool);
-      tool = current_tool;
-      indicateToolIsCurrent(tool);
-    }
-
-    // Show or hide interactive markers depending on whether interact mode is
-    // active
-    if (tool->getClassId().toStdString() == "rviz/Interact") {
-      interactive_markers_->setEnabled(true);
+  // remove displays for deleted topics
+  for (auto it = debug_displays_.begin(); it != debug_displays_.end();) {
+    if (std::find(topics.begin(), topics.end(), it->first) == topics.end()) {
+      delete it->second;
+      it = debug_displays_.erase(it);
     } else {
-      interactive_markers_->setEnabled(false);
-    }
-  }
-}
-
-void FlatlandViz::removeTool(rviz_common::Tool * tool)
-{
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "removeTool called");
-  QAction * action = tool_to_action_map_[tool];
-  if (action) {
-    toolbar_actions_->removeAction(action);
-    toolbar_->removeAction(action);
-    tool_to_action_map_.erase(tool);
-    action_to_tool_map_.erase(action);
-  }
-  QString tool_name = tool->getName();
-  QList<QAction *> remove_tool_actions = remove_tool_menu_->actions();
-  for (int i = 0; i < remove_tool_actions.size(); i++) {
-    RCLCPP_ERROR_STREAM(
-      rclcpp::get_logger("flatland_viz"), "Removing --------> " << tool_name.toStdString());
-    QAction * removal_action = remove_tool_actions.at(i);
-    if (removal_action->text() == tool_name) {
-      remove_tool_menu_->removeAction(removal_action);
-      break;
-    }
-  }
-}
-
-void FlatlandViz::initMenus()
-{
-  file_menu_ = parent_->menuBar()->addMenu("&File");
-
-  QAction * file_menu_open_action =
-    file_menu_->addAction("&Open Config", this, SLOT(onOpen()), QKeySequence("Ctrl+O"));
-  this->addAction(file_menu_open_action);
-  QAction * file_menu_save_action =
-    file_menu_->addAction("&Save Config", this, SLOT(onSave()), QKeySequence("Ctrl+S"));
-  this->addAction(file_menu_save_action);
-  QAction * file_menu_save_as_action =
-    file_menu_->addAction("Save Config &As", this, SLOT(onSaveAs()), QKeySequence("Ctrl+Shift+S"));
-  this->addAction(file_menu_save_as_action);
-
-  recent_configs_menu_ = file_menu_->addMenu("&Recent Configs");
-  file_menu_->addAction("Save &Image", this, SLOT(onSaveImage()));
-  if (show_choose_new_master_option_) {
-    file_menu_->addSeparator();
-    file_menu_->addAction("Change &Master", this, SLOT(changeMaster()));
-  }
-  file_menu_->addSeparator();
-
-  QAction * file_menu_quit_action =
-    file_menu_->addAction("&Quit", this, SLOT(close()), QKeySequence("Ctrl+Q"));
-  this->addAction(file_menu_quit_action);
-
-  view_menu_ = parent_->menuBar()->addMenu("&Panels");
-  view_menu_->addAction("Add &New Panel", this, SLOT(openNewPanelDialog()));
-  delete_view_menu_ = view_menu_->addMenu("&Delete Panel");
-  delete_view_menu_->setEnabled(false);
-
-  QAction * fullscreen_action =
-    view_menu_->addAction("&Fullscreen", this, SLOT(setFullScreen(bool)), Qt::Key_F11);
-  fullscreen_action->setCheckable(true);
-  this->addAction(fullscreen_action);  // Also add to window, or the shortcut
-                                       // doest work when the menu is hidden.
-
-  // connect(this, SIGNAL(fullScreenChange(bool)), fullscreen_action,
-  //        SLOT(setChecked(bool)));
-  new QShortcut(Qt::Key_Escape, this, SLOT(exitFullScreen()));
-  view_menu_->addSeparator();
-
-  QMenu * help_menu = parent_->menuBar()->addMenu("&Help");
-  help_menu->addAction("Show &Help panel", this, SLOT(showHelpPanel()));
-  help_menu->addAction("Open rviz wiki in browser", this, SLOT(onHelpWiki()));
-  help_menu->addSeparator();
-  help_menu->addAction("&About", this, SLOT(onHelpAbout()));
-}
-
-void FlatlandViz::initToolbars()
-{
-  QFont font;
-  font.setPointSize(font.pointSizeF() * 0.9);
-
-  // make toolbar with plugin tools
-
-  toolbar_->setFont(font);
-  toolbar_->setContentsMargins(0, 0, 0, 0);
-  toolbar_->setObjectName("Tools");
-  toolbar_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-  toolbar_actions_ = new QActionGroup(this);
-  connect(toolbar_actions_, &QActionGroup::triggered, this, &FlatlandViz::onToolbarActionTriggered);
-
-  add_tool_action_ = new QAction("", toolbar_actions_);
-  add_tool_action_->setToolTip("Add a new tool");
-  add_tool_action_->setIcon(rviz_common::loadPixmap("package://rviz_common/icons/plus.png"));
-  toolbar_->addAction(add_tool_action_);
-
-  connect(add_tool_action_, &QAction::triggered, this, &FlatlandViz::openNewToolDialog);
-
-  remove_tool_menu_ = new QMenu();
-  QToolButton * remove_tool_button = new QToolButton();
-  remove_tool_button->setMenu(remove_tool_menu_);
-  remove_tool_button->setPopupMode(QToolButton::InstantPopup);
-  remove_tool_button->setToolTip("Remove a tool from the toolbar");
-  remove_tool_button->setIcon(rviz_common::loadPixmap("package://rviz_common/icons/minus.png"));
-  toolbar_->addWidget(remove_tool_button);
-
-  connect(remove_tool_menu_, &QMenu::triggered, this, &FlatlandViz::onToolbarRemoveTool);
-}
-
-void FlatlandViz::openNewToolDialog()
-{
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "openNewToolDialog called");
-  QString class_id;
-  QStringList empty;
-  rviz_common::ToolManager * tool_man = manager_->getToolManager();
-
-  rviz_common::NewObjectDialog * dialog = new rviz_common::NewObjectDialog(
-    tool_man->getFactory(), "Tool", empty, tool_man->getToolClasses(), &class_id);
-  manager_->stopUpdate();
-  if (dialog->exec() == QDialog::Accepted) {
-    tool_man->addTool(class_id);
-  }
-  manager_->startUpdate();
-  activateWindow();  // Force keyboard focus back on main window.
-}
-
-void FlatlandViz::onToolbarRemoveTool(QAction * remove_tool_menu_action)
-{
-  RCLCPP_ERROR(rclcpp::get_logger("flatland_viz"), "onToolbarRemoveTool called");
-  QString name = remove_tool_menu_action->text();
-
-  for (int i = 0; i < manager_->getToolManager()->numTools(); i++) {
-    rviz_common::Tool * tool = manager_->getToolManager()->getTool(i);
-    if (tool->getName() == name) {
-      RCLCPP_ERROR_(rclcpp::get_logger("flatland_viz"), _STREAM("Removing --------> " << name.toStdString());
-      manager_->getToolManager()->removeTool(i);
-      removeTool(tool);
-      return;
-    }
-  }
-}
-
-void FlatlandViz::refreshTool(rviz_common::Tool * tool)
-{
-  QAction * action = tool_to_action_map_[tool];
-  action->setIcon(tool->getIcon());
-  action->setIconText(tool->getName());
-}
-
-void FlatlandViz::setFullScreen(bool full_screen)
-{
-  // Q_EMIT(fullScreenChange(full_screen));
-
-  if (full_screen) toolbar_visible_ = toolbar_->isVisible();
-  parent_->menuBar()->setVisible(!full_screen);
-  toolbar_->setVisible(!full_screen && toolbar_visible_);
-  parent_->statusBar()->setVisible(!full_screen);
-
-  if (full_screen)
-    setWindowState(windowState() | Qt::WindowFullScreen);
-  else
-    setWindowState(windowState() & ~Qt::WindowFullScreen);
-  show();
-}
-
-void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg)
-{
-  std::vector<std::string> topics = msg->topics;
-
-  // check for deleted topics
-  for (auto & topic : debug_displays_) {
-    if (std::count(topics.begin(), topics.end(), topic.first) == 0) {
-      delete debug_displays_[topic.first];
-      debug_displays_.erase(topic.first);
+      ++it;
     }
   }
 
-  // check for new topics
+  // add displays for new topics
   for (const auto & topic : topics) {
     if (debug_displays_.count(topic) == 0) {
-      // Create the marker display and set its topic
-      debug_displays_[topic] =
-        manager_->createDisplay("rviz/MarkerArray", QString::fromLocal8Bit(topic.c_str()), true);
-      if (debug_displays_[topic] == nullptr) {
-        RCLCPP_WARN(rclcpp::get_logger("flatland_viz"), "MarkerArray failed to instantiate");
-        exit(1);
-      }
-      QString topic_qt =
-        QString::fromLocal8Bit((std::string("/flatland_server/debug/") + topic).c_str());
-      debug_displays_[topic]->subProp("Marker Topic")->setValue(topic_qt);
+      rviz_common::Display * display = manager_->createDisplay(
+        "rviz_default_plugins/MarkerArray", QString::fromStdString(topic), true);
+      rviz_common::properties::Property * topic_prop = display->subProp("Topic");
+      // flatland_server publishes debug markers latched (transient local)
+      topic_prop->subProp("Durability Policy")->setValue("Transient Local");
+      topic_prop->setValue(QString::fromStdString(topic));
+      debug_displays_[topic] = display;
     }
   }
 }
