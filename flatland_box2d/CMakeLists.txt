@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 include(FetchContent)
+set(BUILD_SHARED_LIBS ON CACHE BOOL "Build Box2D as one shared runtime" FORCE)
 set(BOX2D_SAMPLES OFF CACHE BOOL "" FORCE)
 set(BOX2D_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(box2d

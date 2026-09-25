@@ -4,17 +4,16 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-
-namespace flatland_box2d_v3
-{
 #include <box2d/box2d.h>
-}
 
 #include <array>
 #include <map>
 #include <memory>
 #include <utility>
 #include <vector>
+
+namespace flatland
+{
 
 struct b2Vec2
 {
@@ -23,8 +22,8 @@ struct b2Vec2
 
   b2Vec2() = default;
   b2Vec2(float x, float y) : x(x), y(y) {}
-  b2Vec2(flatland_box2d_v3::b2Vec2 value) : x(value.x), y(value.y) {}
-  operator flatland_box2d_v3::b2Vec2() const { return {x, y}; }
+  b2Vec2(::b2Vec2 value) : x(value.x), y(value.y) {}
+  operator ::b2Vec2() const { return {x, y}; }
   void Set(float new_x, float new_y) { x = new_x; y = new_y; }
   b2Vec2 operator+(b2Vec2 other) const { return {x + other.x, y + other.y}; }
   b2Vec2 operator-(b2Vec2 other) const { return {x - other.x, y - other.y}; }
@@ -33,15 +32,14 @@ struct b2Vec2
 };
 
 inline b2Vec2 operator*(float factor, b2Vec2 value) { return value * factor; }
-using uint32 = std::uint32_t;
 
-using b2BodyType = flatland_box2d_v3::b2BodyType;
-constexpr b2BodyType b2_staticBody = flatland_box2d_v3::b2_staticBody;
-constexpr b2BodyType b2_kinematicBody = flatland_box2d_v3::b2_kinematicBody;
-constexpr b2BodyType b2_dynamicBody = flatland_box2d_v3::b2_dynamicBody;
+using b2BodyType = ::b2BodyType;
+constexpr b2BodyType b2_staticBody = ::b2_staticBody;
+constexpr b2BodyType b2_kinematicBody = ::b2_kinematicBody;
+constexpr b2BodyType b2_dynamicBody = ::b2_dynamicBody;
 constexpr int b2_maxPolygonVertices = B2_MAX_POLYGON_VERTICES;
-using b2Filter = flatland_box2d_v3::b2Filter;
-using b2Manifold = flatland_box2d_v3::b2Manifold;
+using b2Filter = ::b2Filter;
+using b2Manifold = ::b2Manifold;
 
 struct b2Transform
 {
@@ -94,8 +92,17 @@ class b2ChainShape : public b2Shape
 {
 public:
   std::vector<b2Vec2> vertices;
-  void CreateLoop(const b2Vec2 * points, int count) { vertices.assign(points, points + count); }
-  void CreateChain(const b2Vec2 * points, int count) { vertices.assign(points, points + count); }
+  bool is_loop_ = false;
+  void CreateLoop(const b2Vec2 * points, int count)
+  {
+    vertices.assign(points, points + count);
+    is_loop_ = true;
+  }
+  void CreateChain(const b2Vec2 * points, int count)
+  {
+    vertices.assign(points, points + count);
+    is_loop_ = false;
+  }
   Type GetType() const override { return e_chain; }
 };
 
@@ -106,7 +113,7 @@ struct b2FixtureDef
   float friction = 0.2f;
   float restitution = 0.0f;
   bool isSensor = false;
-  b2Filter filter = flatland_box2d_v3::b2DefaultFilter();
+  b2Filter filter = ::b2DefaultFilter();
 };
 
 struct b2BodyDef
@@ -123,7 +130,7 @@ class b2Body;
 class b2Fixture
 {
 public:
-  b2Fixture(b2Body * body, flatland_box2d_v3::b2ShapeId id, std::unique_ptr<b2Shape> shape);
+  b2Fixture(b2Body * body, ::b2ShapeId id, std::unique_ptr<b2Shape> shape);
   b2Body * GetBody() const { return body_; }
   b2Fixture * GetNext() const { return next_; }
   b2Shape * GetShape() const { return shape_.get(); }
@@ -136,7 +143,7 @@ public:
   void SetSensor(bool sensor);
 
   b2Body * body_;
-  flatland_box2d_v3::b2ShapeId id_;
+  ::b2ShapeId id_;
   std::unique_ptr<b2Shape> shape_;
   b2Fixture * next_ = nullptr;
 };
@@ -144,7 +151,7 @@ public:
 class b2Body
 {
 public:
-  b2Body(b2World * world, flatland_box2d_v3::b2BodyId id);
+  b2Body(b2World * world, ::b2BodyId id);
   b2World * GetWorld() const { return world_; }
   b2BodyType GetType() const;
   void SetType(b2BodyType type);
@@ -172,7 +179,7 @@ public:
   void Dump() const;
 
   b2World * world_;
-  flatland_box2d_v3::b2BodyId id_;
+  ::b2BodyId id_;
   b2Fixture * fixtures_ = nullptr;
   std::vector<std::unique_ptr<b2Fixture>> owned_fixtures_;
 };
@@ -204,7 +211,7 @@ struct b2WeldJointDef : b2JointDef
 class b2Joint
 {
 public:
-  b2Joint(b2Body * body_a, b2Body * body_b, flatland_box2d_v3::b2JointId id);
+  b2Joint(b2Body * body_a, b2Body * body_b, ::b2JointId id);
   virtual ~b2Joint() = default;
   virtual b2JointType GetType() const = 0;
   b2Body * GetBodyA() const { return body_a_; }
@@ -217,7 +224,7 @@ public:
   void Dump() const;
   b2Body * body_a_;
   b2Body * body_b_;
-  flatland_box2d_v3::b2JointId id_;
+  ::b2JointId id_;
 };
 
 class b2RevoluteJoint : public b2Joint
@@ -230,8 +237,6 @@ public:
   float GetUpperLimit() const;
   void EnableLimit(bool enabled);
   void SetLimits(float lower, float upper);
-  float configured_lower_limit_ = 0.0f;
-  float configured_upper_limit_ = 0.0f;
 };
 
 class b2WeldJoint : public b2Joint
@@ -296,22 +301,25 @@ public:
   b2Joint * CreateJoint(const b2JointDef * definition);
   void DestroyJoint(b2Joint * joint);
   void SetContactListener(b2ContactListener * listener) { listener_ = listener; }
-  void Step(float time_step, int velocity_iterations, int position_iterations);
+  void Step(float time_step, int substeps);
   void RayCast(b2RayCastCallback * callback, b2Vec2 start, b2Vec2 end) const;
-  flatland_box2d_v3::b2WorldId id_;
+  ::b2WorldId id_;
 
 private:
   friend class b2Fixture;
   using ContactKey = std::pair<b2Fixture *, b2Fixture *>;
   static ContactKey Key(b2Fixture * first, b2Fixture * second);
-  b2Fixture * FindFixture(flatland_box2d_v3::b2ShapeId id) const;
-  void EndContactsFor(b2Body * body);
+  b2Fixture * FindFixture(::b2ShapeId id) const;
+  void EndContactsFor(b2Body * body, b2Fixture * fixture = nullptr);
   std::vector<std::unique_ptr<b2Body>> bodies_;
   std::vector<std::unique_ptr<b2Joint>> joints_;
   std::map<ContactKey, std::unique_ptr<b2Contact>> contacts_;
+  std::vector<::b2ContactData> contact_data_;
   b2ContactListener * listener_ = nullptr;
 };
 
 void b2Log(const char * format, ...);
+
+}  // namespace flatland
 
 #endif

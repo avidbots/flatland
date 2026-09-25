@@ -13,3 +13,5 @@ docs/_templates/*
 */.history
 **/.idea/
 **/cmake-build-debug/
+core
+core.*

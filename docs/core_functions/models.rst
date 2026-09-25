@@ -136,8 +136,8 @@ shown here. Examples can be found in flatland_server/tests.
       limits: [0, 0]
 
       # Box2D 3.1 enforces limits only within about +/-3.11 radians. Wider
-      # configured values are reported unchanged by the compatibility API but
-      # the physical joint is clamped to the supported range.
+      # configured values are clamped to the supported range. Joint limit
+      # getters report the effective limits, not the original YAML values.
 
       # required, specifies the anchor point on each body, applies to all joint
       # types

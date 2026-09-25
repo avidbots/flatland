@@ -51,11 +51,11 @@ However, we recommend throwing exceptions from flatland_server/exceptions.h.
     // in the contact, or false otherwise. If true, entity returns the pointer
     // to the entity that collided with the model, this_fixture returns the
     // fixture in the model, other_fixture returns the fixture in the entity
-    bool FilterContact(b2Contact *contact, Entity *&entity,
-                       b2Fixture *&this_fixture, b2Fixture *&other_fixture);
+    bool FilterContact(flatland::b2Contact *contact, Entity *&entity,
+                       flatland::b2Fixture *&this_fixture, flatland::b2Fixture *&other_fixture);
     
     // simplified version that just return true / false
-    bool FilterContact(b2Contact *contact);
+    bool FilterContact(flatland::b2Contact *contact);
 
 
     // Box2D collision callbacks use the FilterContact method to check if the this 
@@ -65,13 +65,14 @@ However, we recommend throwing exceptions from flatland_server/exceptions.h.
     // time is always equal to the time at BeforePhysicsStep().
 
     // Called when two fixtures starts to contact
-    virtual void BeginContact(b2Contact *contact) {}  // time t
+    virtual void BeginContact(flatland::b2Contact *contact) {}  // time t
 
     // called when two fixtures stops contact
-    virtual void EndContact(b2Contact *contact) {}  // time t
+    virtual void EndContact(flatland::b2Contact *contact) {}  // time t
     
     // called once per touching solid contact after the physics step
-    virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}  // time t
+    virtual void PostSolve(flatland::b2Contact *contact,
+                 const flatland::b2ContactImpulse *impulse) {}  // time t
   }
 
 Box2D 3.1 Version Compatibility Notes
@@ -90,6 +91,8 @@ simulation clock still reads ``t`` until the callbacks finish. Contact impulse
 values can also differ because the new solver uses substeps instead of separate
 velocity and position iterations. Legacy fixture and contact pointers are
 provided by Flatland's compatibility API, not by the Box2D 3.1 C API.
+Compatibility types live in the ``flatland`` namespace; native Box2D C types
+remain global and can be included alongside them.
 
 Box2D contact object is generated when two Box2D fixtures collide, it contains
 all the information about the collision. Box2D fixtures are the underlying physics 
@@ -187,7 +190,7 @@ constant x, y and yaw rates. This will reside in a package called my_plugins.
     }
 
     void ConstVelocity::BeforePhysicsStep(const flatland_server::Timekeeper &timekeeper) {
-      body->GetPhysicsBody()->SetLinearVelocity(b2Vec2(vel_x, vel_y));
+      body->GetPhysicsBody()->SetLinearVelocity(flatland::b2Vec2(vel_x, vel_y));
       body->GetPhysicsBody()->SetAngularVelocity(omega);
     }
 

@@ -120,20 +120,20 @@ public:
    * @brief Method called for a box2D begin contact
    * @param[in] contact Box2D contact information
    */
-  void BeginContact(b2Contact * contact);
+  void BeginContact(flatland::b2Contact * contact);
 
   /**
    * @brief Method called for a box2D end contact
    * @param[in] contact Box2D contact information
    */
-  void EndContact(b2Contact * contact);
+  void EndContact(flatland::b2Contact * contact);
 
   /**
    * @brief Method called for Box2D Postsolve
    * @param[in] contact Box2D contact information
    * @param[in] impulse The calculated impulse from the collision resolute
    */
-  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse);
+  void PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse);
 };
 }  // namespace flatland_server
 #endif  // FLATLAND_PLUGIN_MANAGER_H

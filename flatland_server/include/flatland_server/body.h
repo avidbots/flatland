@@ -64,7 +64,7 @@ class Body
 public:
   Entity * entity_;        ///< The entity the body belongs to
   std::string name_;       ///< name of the body, unique within a model
-  b2Body * physics_body_;  ///< Box2D physics body
+  flatland::b2Body * physics_body_;  ///< Box2D physics body
   Color color_;            ///< color, for visualization
   YAML::Node properties_;  ///< Properties document for plugins to use
 
@@ -81,8 +81,8 @@ public:
    * @param[in] angular_damping Box2D body angular damping
    */
   Body(
-    b2World * physics_world, Entity * entity, const std::string & name, const Color & color,
-    const Pose & pose, b2BodyType body_type, const YAML::Node & properties,
+    flatland::b2World * physics_world, Entity * entity, const std::string & name, const Color & color,
+    const Pose & pose, flatland::b2BodyType body_type, const YAML::Node & properties,
     double linear_damping = 0, double angular_damping = 0);
 
   /**
@@ -105,7 +105,7 @@ public:
    * through the Box2D methods
    * @return Pointer to Box2D physics body
    */
-  b2Body * GetPhysicsBody();
+  flatland::b2Body * GetPhysicsBody();
 
   /**
    * @brief Count the number of fixtures

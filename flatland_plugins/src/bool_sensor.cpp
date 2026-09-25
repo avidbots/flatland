@@ -114,7 +114,7 @@ void BoolSensor::AfterPhysicsStep(const Timekeeper & timekeeper)
   publisher_->publish(msg);
 }
 
-void BoolSensor::BeginContact(b2Contact * contact)
+void BoolSensor::BeginContact(flatland::b2Contact * contact)
 {
   if (!FilterContact(contact)) return;
 
@@ -127,7 +127,7 @@ void BoolSensor::BeginContact(b2Contact * contact)
   hit_something_ = true;
 }
 
-void BoolSensor::EndContact(b2Contact * contact)
+void BoolSensor::EndContact(flatland::b2Contact * contact)
 {
   if (!FilterContact(contact)) return;
 

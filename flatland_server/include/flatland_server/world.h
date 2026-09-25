@@ -69,13 +69,13 @@ namespace flatland_server
  * that can represent environments at multiple levels, and models which are
  * can be robots or obstacles.
  */
-class World : public b2ContactListener
+class World : public flatland::b2ContactListener
 {
 public:
   std::filesystem::path world_yaml_dir_;  ///< directory containing world file
   std::shared_ptr<rclcpp::Node> node_;
-  b2World * physics_world_;  ///< Box2D physics world
-  b2Vec2 gravity_;           ///< Box2D world gravity, always (0, 0)
+  flatland::b2World * physics_world_;  ///< Box2D physics world
+  flatland::b2Vec2 gravity_;           ///< Box2D world gravity, always (0, 0)
   std::map<std::vector<std::string>, Layer *>
     layers_name_map_;                            ///< map of all layers and thier name
   std::vector<Layer *> layers_;                  ///< list of layers
@@ -85,8 +85,6 @@ public:
   bool service_paused_;                          ///< indicates if simulation is paused by a service
                                                  /// call or not
   InteractiveMarkerManager int_marker_manager_;  ///< for dynamically moving models from Rviz
-  int physics_position_iterations_;              ///< Box2D solver param
-  int physics_velocity_iterations_;              ///< Box2D solver param
   int physics_substeps_ = 10;                     ///< Box2D 3.1 solver substeps
 
   /**
@@ -111,20 +109,20 @@ public:
    * @brief Box2D inherited begin contact
    * @param[in] contact Box2D contact information
    */
-  void BeginContact(b2Contact * contact) override;
+  void BeginContact(flatland::b2Contact * contact) override;
 
   /**
    * @brief Box2D inherited end contact
    * @param[in] contact Box2D contact information
    */
-  void EndContact(b2Contact * contact) override;
+  void EndContact(flatland::b2Contact * contact) override;
 
   /**
     * @brief Box2D inherited post solve
    * @param[in] contact Box2D contact information
    * @param[in] impulse The calculated impulse from the collision resolute
    */
-  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse);
+  void PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse);
 
   /*
    * @brief Load world plugins

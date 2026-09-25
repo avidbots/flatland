@@ -423,9 +423,9 @@ std::array<T, N> YamlReader::GetArray(const std::string & key, const std::array<
 namespace YAML
 {
 template <>
-struct convert<b2Vec2>
+struct convert<flatland::b2Vec2>
 {
-  static bool decode(const Node & node, b2Vec2 & rhs)
+  static bool decode(const Node & node, flatland::b2Vec2 & rhs)
   {
     if (!node.IsSequence() || node.size() != 2) {
       return false;

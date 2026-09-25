@@ -180,9 +180,9 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
 {
   bool publish = update_timer_.CheckUpdate(timekeeper);
 
-  b2Body * b2body = body_->physics_body_;
+  flatland::b2Body * b2body = body_->physics_body_;
 
-  b2Vec2 position = b2body->GetPosition();
+  flatland::b2Vec2 position = b2body->GetPosition();
   float angle = b2body->GetAngle();
 
   // Apply dynamics limits
@@ -193,8 +193,8 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
   // we apply the twist velocities, this must be done every physics step to make
   // sure Box2D solver applies the correct velocity through out. The velocity
   // given in the twist message should be in the local frame
-  b2Vec2 linear_vel_local(linear_velocity_, 0);
-  b2Vec2 linear_vel = b2body->GetWorldVector(linear_vel_local);
+  flatland::b2Vec2 linear_vel_local(linear_velocity_, 0);
+  flatland::b2Vec2 linear_vel = b2body->GetWorldVector(linear_vel_local);
   float angular_vel = angular_velocity_;  // angular is independent of frames
 
   // we want the velocity vector in the world frame at the center of mass
@@ -205,8 +205,8 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
   // center of mass
 
   // r is the vector from body origin to the CM in world frame
-  b2Vec2 r = b2body->GetWorldCenter() - position;
-  b2Vec2 linear_vel_cm = linear_vel + angular_vel * b2Vec2(-r.y, r.x);
+  flatland::b2Vec2 r = b2body->GetWorldCenter() - position;
+  flatland::b2Vec2 linear_vel_cm = linear_vel + angular_vel * flatland::b2Vec2(-r.y, r.x);
 
   b2body->SetLinearVelocity(linear_vel_cm);
   b2body->SetAngularVelocity(angular_vel);
@@ -215,7 +215,7 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
 
   if (publish) {
     // get the state of the body and publish the data
-    b2Vec2 linear_vel_local = b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+    flatland::b2Vec2 linear_vel_local = b2body->GetLinearVelocityFromLocalPoint(flatland::b2Vec2(0, 0));
     float angular_vel = b2body->GetAngularVelocity();
 
     ground_truth_msg_.header.stamp = timekeeper.GetSimTime();

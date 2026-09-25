@@ -150,7 +150,7 @@ public:
  * This class handles the b2RayCastCallback ReportFixture method
  * allowing each thread to access its own callback object
  */
-class LaserCallback : public b2RayCastCallback
+class LaserCallback : public flatland::b2RayCastCallback
 {
 public:
   bool did_hit_ = false;  ///< Box2D ray trace checking if ray hits anything
@@ -172,7 +172,7 @@ public:
    * @param[in] fraction Fraction of ray length at hit point
    */
   float ReportFixture(
-    b2Fixture * fixture, const b2Vec2 & point, const b2Vec2 & normal, float fraction) override;
+    flatland::b2Fixture * fixture, const flatland::b2Vec2 & point, const flatland::b2Vec2 & normal, float fraction) override;
 };
 }  // namespace flatland_plugins
 

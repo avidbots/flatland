@@ -66,9 +66,9 @@ class Joint
 public:
   Model * model_;            ///< Model the joint belongs to
   std::string name_;         ///< Name of the joint
-  b2World * physics_world_;  ///< Box2D physics world
+  flatland::b2World * physics_world_;  ///< Box2D physics world
   Color color_;              ///< Color for visualization
-  b2Joint * physics_joint_;  ///< Box2D physics joint
+  flatland::b2Joint * physics_joint_;  ///< Box2D physics joint
 
   /**
    * @brief Constructor for the joint
@@ -79,8 +79,8 @@ public:
    * @param[in] joint_def Box2D joint definition
    */
   Joint(
-    b2World * physics_world, Model * model, const std::string & name, const Color & color,
-    const b2JointDef & joint_def);
+    flatland::b2World * physics_world, Model * model, const std::string & name, const Color & color,
+    const flatland::b2JointDef & joint_def);
   ~Joint();
 
   /// Disallow copying of joints, problematic for constructors and destructors
@@ -115,12 +115,12 @@ public:
   /**
    * @return Get pointer to the Box2D physics joint
    */
-  b2Joint * GetPhysicsJoint();
+  flatland::b2Joint * GetPhysicsJoint();
 
   /**
    * @return Get pointer of the Box2D physics world
    */
-  b2World * GetphysicsWorld();
+  flatland::b2World * GetphysicsWorld();
 
   /**
    * @brief Creates a joint for the given params, throws exceptions upon failure
@@ -130,7 +130,7 @@ public:
    * information
    * @return A new joint as defined by the input data
    */
-  static Joint * MakeJoint(b2World * physics_world, Model * model, YamlReader & joint_reader);
+  static Joint * MakeJoint(flatland::b2World * physics_world, Model * model, YamlReader & joint_reader);
 
   /**
    * @brief Creates a revolute joint for the given params, throws exceptions
@@ -150,8 +150,8 @@ public:
    * @return A new revolute joint as defined by the input data
    */
   static Joint * MakeRevoluteJoint(
-    b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
-    const Color & color, b2Body * body_A, b2Vec2 anchor_A, b2Body * body_B, b2Vec2 anchor_B,
+    flatland::b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
+    const Color & color, flatland::b2Body * body_A, flatland::b2Vec2 anchor_A, flatland::b2Body * body_B, flatland::b2Vec2 anchor_B,
     bool collide_connected);
 
   /**
@@ -172,8 +172,8 @@ public:
    * @return A new weld joint as defined by the input data
    */
   static Joint * MakeWeldJoint(
-    b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
-    const Color & color, b2Body * body_A, b2Vec2 anchor_A, b2Body * body_B, b2Vec2 anchor_B,
+    flatland::b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
+    const Color & color, flatland::b2Body * body_A, flatland::b2Vec2 anchor_A, flatland::b2Body * body_B, flatland::b2Vec2 anchor_B,
     bool collide_connected);
 };
 }  // namespace flatland_server

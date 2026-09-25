@@ -96,7 +96,7 @@ public:
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void Visualize(std::string name, b2Body * body, float r, float g, float b, float a);
+  void Visualize(std::string name, flatland::b2Body * body, float r, float g, float b, float a);
 
   /**
    * @brief Visualize body
@@ -107,7 +107,7 @@ public:
    * @param[in] b blue color 0.0->1.0
    * @param[in] a alpha color 0.0->1.0
    */
-  void Visualize(std::string name, b2Joint * joint, float r, float g, float b, float a);
+  void Visualize(std::string name, flatland::b2Joint * joint, float r, float g, float b, float a);
 
   /**
    * @brief Visualize a layer in 2.5d
@@ -136,7 +136,7 @@ public:
    * @param[in] a alpha color 0.0->1.0
    */
   void BodyToMarkers(
-    visualization_msgs::msg::MarkerArray & markers, b2Body * body, float r, float g, float b,
+    visualization_msgs::msg::MarkerArray & markers, flatland::b2Body * body, float r, float g, float b,
     float a);
 
   /**
@@ -149,7 +149,7 @@ public:
    * @param[in] a alpha color 0.0->1.0
    */
   void JointToMarkers(
-    visualization_msgs::msg::MarkerArray & markers, b2Joint * joint, float r, float g, float b,
+    visualization_msgs::msg::MarkerArray & markers, flatland::b2Joint * joint, float r, float g, float b,
     float a);
 
   /**

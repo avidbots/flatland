@@ -3,8 +3,10 @@
     "build": {
         "dockerfile": "../Dockerfile",
         "context": "../..",
-        "args": { "ROS_DISTRO": "jazzy" }
+        "args": { "ROS_DISTRO": "jazzy", "USERNAME": "${localEnv:USER:flatland}" }
     },
+    "remoteUser": "${localEnv:USER:flatland}",
+    "updateRemoteUserUID": true,
     "runArgs": [
         "--init",
         "--privileged",

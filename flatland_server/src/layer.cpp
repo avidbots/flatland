@@ -65,33 +65,33 @@ namespace flatland_server
 {
 
 Layer::Layer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::vector<std::string> & names, const Color & color, const Pose & origin,
   const cv::Mat & bitmap, double occupied_thresh, double resolution, const YAML::Node & properties)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
+  body_ = new Body(physics_world_, this, name_, color, origin, flatland::b2_staticBody, properties);
 
   LoadFromBitmap(bitmap, occupied_thresh, resolution);
 }
 
 Layer::Layer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::vector<std::string> & names, const Color & color, const Pose & origin,
   const std::vector<LineSegment> & line_segments, double scale, const YAML::Node & properties)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
+  body_ = new Body(physics_world_, this, name_, color, origin, flatland::b2_staticBody, properties);
 
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
   for (const auto & line_segment : line_segments) {
-    b2EdgeShape edge;
+    flatland::b2EdgeShape edge;
     edge.Set(line_segment.start.Box2D(), line_segment.end.Box2D());
     edge.m_vertex1 *= scale;
     edge.m_vertex2 *= scale;
 
-    b2FixtureDef fixture_def;
+    flatland::b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
     fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
@@ -101,7 +101,7 @@ Layer::Layer(
 }
 
 Layer::Layer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::vector<std::string> & names, const Color &, const YAML::Node &)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
@@ -115,7 +115,7 @@ const CollisionFilterRegistry * Layer::GetCfr() const { return cfr_; }
 Body * Layer::GetBody() { return body_; }
 
 Layer * Layer::MakeLayer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::string & map_path, const std::vector<std::string> & names, const Color & color,
   const YAML::Node & properties)
 {
@@ -210,13 +210,13 @@ void Layer::LoadFromBitmap(const cv::Mat & bitmap, double occupied_thresh, doubl
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
   auto add_edge = [&](double x1, double y1, double x2, double y2) {
-    b2EdgeShape edge;
+    flatland::b2EdgeShape edge;
     double rows = bitmap.rows;
     double res = resolution;
 
-    edge.Set(b2Vec2(res * x1, res * (rows - y1)), b2Vec2(res * x2, res * (rows - y2)));
+    edge.Set(flatland::b2Vec2(res * x1, res * (rows - y1)), flatland::b2Vec2(res * x2, res * (rows - y2)));
 
-    b2FixtureDef fixture_def;
+    flatland::b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
     fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;

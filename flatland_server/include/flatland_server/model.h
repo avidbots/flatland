@@ -82,7 +82,7 @@ public:
    * @param[in] name Name of the model
    */
   Model(
-    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
     const std::string & ns, const std::string & name);
 
   /**
@@ -195,7 +195,7 @@ public:
    * @return A new model
    */
   static Model * MakeModel(
-    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
     const std::string & model_yaml_path, const std::string & ns, const std::string & name);
 };
 }  // namespace flatland_server

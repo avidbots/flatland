@@ -52,12 +52,12 @@ namespace flatland_server
 {
 
 Body::Body(
-  b2World * physics_world, Entity * entity, const std::string & name, const Color & color,
-  const Pose & pose, b2BodyType body_type, const YAML::Node & properties, double linear_damping,
+  flatland::b2World * physics_world, Entity * entity, const std::string & name, const Color & color,
+  const Pose & pose, flatland::b2BodyType body_type, const YAML::Node & properties, double linear_damping,
   double angular_damping)
 : entity_(entity), name_(name), color_(color), properties_(properties)
 {
-  b2BodyDef body_def;
+  flatland::b2BodyDef body_def;
   body_def.type = body_type;
   body_def.position.Set(pose.x, pose.y);
   body_def.angle = pose.theta;
@@ -78,7 +78,7 @@ Body::~Body()
 int Body::GetFixturesCount() const
 {
   int count = 0;
-  for (b2Fixture * f = physics_body_->GetFixtureList(); f; f = f->GetNext()) {
+  for (flatland::b2Fixture * f = physics_body_->GetFixtureList(); f; f = f->GetNext()) {
     count++;
   }
 
@@ -89,7 +89,7 @@ Entity * Body::GetEntity() { return entity_; }
 
 const std::string & Body::GetName() const { return name_; }
 
-b2Body * Body::GetPhysicsBody() { return physics_body_; }
+flatland::b2Body * Body::GetPhysicsBody() { return physics_body_; }
 
 const Color & Body::GetColor() const { return color_; }
 

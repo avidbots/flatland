@@ -184,11 +184,11 @@ void Imu::AfterPhysicsStep(const Timekeeper& timekeeper) {
     return;  // return if we're not ready to publish
   }
 
-  b2Body* b2body = body_->physics_body_;
+  flatland::b2Body* b2body = body_->physics_body_;
 
   float angle = b2body->GetAngle();
-  b2Vec2 linear_vel_local =
-      b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+  flatland::b2Vec2 linear_vel_local =
+      b2body->GetLinearVelocityFromLocalPoint(flatland::b2Vec2(0, 0));
   float angular_vel = b2body->GetAngularVelocity();
 
   // get the state of the body and publish the data
