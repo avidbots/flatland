@@ -221,8 +221,8 @@ TEST_F(BumperPluginTest, collision_test)
   SpinRos(500, 10);  // make sure the messages gets through
 
   // check time is not zero to make sure message is received
-  ASSERT_NE(msg1.header.stamp, rclcpp::Time(0, 0));
-  ASSERT_NE(msg2.header.stamp, rclcpp::Time(0, 0));
+  ASSERT_NE(msg1.header.stamp, builtin_interfaces::msg::Time{});
+  ASSERT_NE(msg2.header.stamp, builtin_interfaces::msg::Time{});
 
   // step 15 time which makes the body move 1.5 meters, will make base_link_1
   // collide, but not base_link_2, not that base_link_1's fixture is a sensor
