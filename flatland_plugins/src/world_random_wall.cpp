@@ -98,8 +98,8 @@ void RandomWall::OnInitialize(const YAML::Node & config, YamlReader & world_conf
     }
     if (reader.Get<std::string>("name") == robot_name) {
       robot_ini_pose = reader.Get("pose", Pose(0, 0, 0));
-      b2Transform tran = layer->body_->physics_body_->GetTransform();
-      b2Vec2 ini_pose = b2MulT(tran, b2Vec2(robot_ini_pose.x, robot_ini_pose.y));
+      flatland::b2Transform tran = layer->body_->physics_body_->GetTransform();
+      flatland::b2Vec2 ini_pose = flatland::b2MulT(tran, flatland::b2Vec2(robot_ini_pose.x, robot_ini_pose.y));
       robot_ini_pose.x = ini_pose.x;
       robot_ini_pose.y = ini_pose.y;
       break;
@@ -110,9 +110,9 @@ void RandomWall::OnInitialize(const YAML::Node & config, YamlReader & world_conf
   WorldModifier modifier(world_, layer_name, wall_wall_dist, double_wall, robot_ini_pose);
 
   // get all walls
-  std::vector<b2EdgeShape *> Wall_List;
-  for (b2Fixture * f = layer->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
-    Wall_List.push_back(static_cast<b2EdgeShape *>(f->GetShape()));
+  std::vector<flatland::b2EdgeShape *> Wall_List;
+  for (flatland::b2Fixture * f = layer->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
+    Wall_List.push_back(static_cast<flatland::b2EdgeShape *>(f->GetShape()));
   }
   std::mt19937 generator(std::random_device{}());
   std::shuffle(Wall_List.begin(), Wall_List.end(), generator);

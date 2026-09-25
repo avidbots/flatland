@@ -77,15 +77,15 @@ std::shared_ptr<DebugVisualization> DebugVisualization::Get(rclcpp::Node::Shared
 }
 
 void DebugVisualization::JointToMarkers(
-  visualization_msgs::msg::MarkerArray & markers, b2Joint * joint, float r, float g, float b,
+  visualization_msgs::msg::MarkerArray & markers, flatland::b2Joint * joint, float r, float g, float b,
   float a)
 {
   if (
-    joint->GetType() == e_distanceJoint || joint->GetType() == e_pulleyJoint ||
-    joint->GetType() == e_mouseJoint) {
+    joint->GetType() == flatland::e_distanceJoint || joint->GetType() == flatland::e_pulleyJoint ||
+    joint->GetType() == flatland::e_mouseJoint) {
     RCLCPP_ERROR(
       rclcpp::get_logger("DebugVis"),
-      "Unimplemented visualization joints. See b2World.cpp for "
+      "Unimplemented visualization joints. See flatland::b2World.cpp for "
       "implementation");
     return;
   }
@@ -133,9 +133,9 @@ void DebugVisualization::JointToMarkers(
 }
 
 void DebugVisualization::BodyToMarkers(
-  visualization_msgs::msg::MarkerArray & markers, b2Body * body, float r, float g, float b, float a)
+  visualization_msgs::msg::MarkerArray & markers, flatland::b2Body * body, float r, float g, float b, float a)
 {
-  b2Fixture * fixture = body->GetFixtureList();
+  flatland::b2Fixture * fixture = body->GetFixtureList();
 
   while (fixture != NULL) {  // traverse fixture linked list
     visualization_msgs::msg::Marker marker;
@@ -154,8 +154,8 @@ void DebugVisualization::BodyToMarkers(
 
     // Get the shape from the fixture
     switch (fixture->GetType()) {
-      case b2Shape::e_circle: {
-        b2CircleShape * circle = (b2CircleShape *)fixture->GetShape();
+      case flatland::b2Shape::e_circle: {
+        flatland::b2CircleShape * circle = (flatland::b2CircleShape *)fixture->GetShape();
 
         marker.type = marker.SPHERE_LIST;
         float diameter = circle->m_radius * 2.0;
@@ -170,8 +170,8 @@ void DebugVisualization::BodyToMarkers(
 
       } break;
 
-      case b2Shape::e_polygon: {  // Convert b2Polygon -> LINE_STRIP
-        b2PolygonShape * poly = (b2PolygonShape *)fixture->GetShape();
+      case flatland::b2Shape::e_polygon: {  // Convert b2Polygon -> LINE_STRIP
+        flatland::b2PolygonShape * poly = (flatland::b2PolygonShape *)fixture->GetShape();
         marker.type = marker.LINE_STRIP;
         marker.scale.x = 0.03;  // 3cm wide lines
 
@@ -185,9 +185,9 @@ void DebugVisualization::BodyToMarkers(
 
       } break;
 
-      case b2Shape::e_edge: {         // Convert b2Edge -> LINE_LIST
+      case flatland::b2Shape::e_edge: {         // Convert b2Edge -> LINE_LIST
         geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
-        b2EdgeShape * edge = (b2EdgeShape *)fixture->GetShape();
+        flatland::b2EdgeShape * edge = (flatland::b2EdgeShape *)fixture->GetShape();
 
         // If the last marker is a line list, extend it
         if (markers.markers.size() > 0 && markers.markers.back().type == marker.LINE_LIST) {
@@ -274,7 +274,7 @@ void DebugVisualization::VisualizeLayer(std::string name, Body * body)
 {
   AddTopicIfNotExist(name);
 
-  b2Fixture * fixture = body->physics_body_->GetFixtureList();
+  flatland::b2Fixture * fixture = body->physics_body_->GetFixtureList();
 
   visualization_msgs::msg::Marker marker;
   if (fixture == NULL) return;  // Nothing to visualize, empty linked list
@@ -304,9 +304,9 @@ void DebugVisualization::VisualizeLayer(std::string name, Body * body)
     float max_z = debug_reader.Get<float>("max_z", 1.0);
 
     // Get the shape from the fixture
-    if (fixture->GetType() == b2Shape::e_edge) {
+    if (fixture->GetType() == flatland::b2Shape::e_edge) {
       geometry_msgs::msg::Point p;  // b2Edge uses vertex1 and 2 for its edges
-      b2EdgeShape * edge = (b2EdgeShape *)fixture->GetShape();
+      flatland::b2EdgeShape * edge = (flatland::b2EdgeShape *)fixture->GetShape();
 
       p.x = edge->m_vertex1.x;
       p.y = edge->m_vertex1.y;
@@ -343,7 +343,7 @@ void DebugVisualization::VisualizeLayer(std::string name, Body * body)
 }
 
 void DebugVisualization::Visualize(
-  std::string name, b2Body * body, float r, float g, float b, float a)
+  std::string name, flatland::b2Body * body, float r, float g, float b, float a)
 {
   AddTopicIfNotExist(name);
   BodyToMarkers(topics_[name].markers, body, r, g, b, a);
@@ -351,7 +351,7 @@ void DebugVisualization::Visualize(
 }
 
 void DebugVisualization::Visualize(
-  std::string name, b2Joint * joint, float r, float g, float b, float a)
+  std::string name, flatland::b2Joint * joint, float r, float g, float b, float a)
 {
   AddTopicIfNotExist(name);
   JointToMarkers(topics_[name].markers, joint, r, g, b, a);

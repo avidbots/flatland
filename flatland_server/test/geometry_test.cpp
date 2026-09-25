@@ -66,8 +66,8 @@ TEST(TestSuite, testTransformTranslate)
 {
   flatland_server::RotateTranslate rt = flatland_server::Geometry::CreateTransform(2.0, 1.5, 0.0);
 
-  b2Vec2 in(1.0, 2.0);
-  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
+  flatland::b2Vec2 in(1.0, 2.0);
+  flatland::b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
 
   EXPECT_NEAR(out.x, 3.0, 1e-5);
   EXPECT_NEAR(out.y, 3.5, 1e-5);
@@ -79,8 +79,8 @@ TEST(TestSuite, testTransformRotate)
   flatland_server::RotateTranslate rt =
     flatland_server::Geometry::CreateTransform(0.0, 0.0, M_PI_2);
 
-  b2Vec2 in(1.0, 2.0);
-  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
+  flatland::b2Vec2 in(1.0, 2.0);
+  flatland::b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
 
   EXPECT_NEAR(out.x, -2.0, 1e-5);
   EXPECT_NEAR(out.y, 1.0, 1e-5);
@@ -91,8 +91,8 @@ TEST(TestSuite, testTransformTranslateAndRotate)
 {
   flatland_server::RotateTranslate rt = flatland_server::Geometry::CreateTransform(1.0, 0.5, -M_PI);
 
-  b2Vec2 in(-1.0, 1.5);
-  b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
+  flatland::b2Vec2 in(-1.0, 1.5);
+  flatland::b2Vec2 out = flatland_server::Geometry::Transform(in, rt);
 
   EXPECT_NEAR(out.x, 2.0, 1e-5);
   EXPECT_NEAR(out.y, -1.0, 1e-5);

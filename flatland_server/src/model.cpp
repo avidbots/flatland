@@ -53,7 +53,7 @@ namespace flatland_server
 {
 
 Model::Model(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::string & ns, const std::string & name)
 : Entity(node, physics_world, name),
   namespace_(ns),
@@ -81,7 +81,7 @@ Model::~Model()
 }
 
 Model * Model::MakeModel(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::string & model_yaml_path, const std::string & ns, const std::string & name)
 {
   YamlReader reader(node, model_yaml_path);
@@ -299,7 +299,7 @@ void Model::DebugOutput() const
 void Model::DumpBox2D() const
 {
   for (const auto & body : bodies_) {
-    b2Log(
+    flatland::b2Log(
       "BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", static_cast<void *>(body), body->name_.c_str(),
       static_cast<void *>(body->physics_body_), const_cast<void *>(static_cast<const void *>(this)), name_.c_str());
     body->physics_body_->Dump();
@@ -308,7 +308,7 @@ void Model::DumpBox2D() const
   for (const auto & joint : joints_) {
     Body * body_A = static_cast<Body *>(joint->physics_joint_->GetBodyA()->GetUserData());
     Body * body_B = static_cast<Body *>(joint->physics_joint_->GetBodyB()->GetUserData());
-    b2Log(
+    flatland::b2Log(
       "JOINT %p name=%s  box2d_joint=%p model=%p model_name=%s "
       "body_A(%p %s) body_B(%p %s)\n",
       static_cast<void *>(joint), joint->name_.c_str(), static_cast<void *>(joint->physics_joint_), const_cast<void *>(static_cast<const void *>(this)), name_.c_str(), static_cast<void *>(body_A),

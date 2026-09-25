@@ -83,8 +83,8 @@ public:
    * @param[in] angular_damping Box2D body angular damping
    */
   ModelBody(
-    b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, const std::string & name,
-    const Color & color, const Pose & pose, b2BodyType body_type, const YAML::Node & properties,
+    flatland::b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, const std::string & name,
+    const Color & color, const Pose & pose, flatland::b2BodyType body_type, const YAML::Node & properties,
     double linear_damping, double angular_damping);
 
   /**
@@ -105,7 +105,7 @@ public:
    * parameters
    * @param[out] fixture_def Box2D fixture definition
    */
-  void ConfigFootprintDef(YamlReader & footprint_reader, b2FixtureDef & fixture_def);
+  void ConfigFootprintDef(YamlReader & footprint_reader, flatland::b2FixtureDef & fixture_def);
 
   /**
    * @brief Loads a circle footprint
@@ -129,7 +129,7 @@ public:
    * @param[in] body_node YAML reader for node containing the body parameters
    */
   static ModelBody * MakeBody(
-    b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, YamlReader & body_node);
+    flatland::b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, YamlReader & body_node);
 };
 }  // namespace flatland_server
 

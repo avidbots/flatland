@@ -108,7 +108,7 @@ void Bumper::OnInitialize(const YAML::Node & config)
 
 void Bumper::BeforePhysicsStep(const Timekeeper &)
 {
-  std::map<b2Contact *, ContactState>::iterator it;
+  std::map<flatland::b2Contact *, ContactState>::iterator it;
 
   // Clear the forces at the begining of every physics step since brand
   // new collision resolutions are being calculated by Box2D each time step
@@ -130,7 +130,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper & timekeeper)
     }
   }
 
-  std::map<b2Contact *, ContactState>::iterator it;
+  std::map<flatland::b2Contact *, ContactState>::iterator it;
 
   flatland_msgs::msg::Collisions collisions;
   collisions.header.frame_id = world_frame_id_;
@@ -138,7 +138,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper & timekeeper)
 
   // loop through all collisions in our record and publish
   for (it = contact_states_.begin(); it != contact_states_.end(); it++) {
-    b2Contact * c = it->first;
+    flatland::b2Contact * c = it->first;
     ContactState * s = &it->second;
     flatland_msgs::msg::Collision collision;
     collision.entity_a = GetModel()->GetName();
@@ -150,7 +150,7 @@ void Bumper::AfterPhysicsStep(const Timekeeper & timekeeper)
     // If there was no post solve called, which means that the collision
     // probably involves a Box2D sensor, therefore there are no contact points,
     if (s->num_count > 0) {
-      b2Manifold * m = c->GetManifold();
+      flatland::b2Manifold * m = c->GetManifold();
 
       // go through each collision point
       for (int i = 0; i < m->pointCount; i++) {
@@ -186,10 +186,10 @@ void Bumper::AfterPhysicsStep(const Timekeeper & timekeeper)
   collisions_publisher_->publish(collisions);
 }
 
-void Bumper::BeginContact(b2Contact * contact)
+void Bumper::BeginContact(flatland::b2Contact * contact)
 {
   Entity * other_entity;
-  b2Fixture *this_fixture, *other_fixture;
+  flatland::b2Fixture *this_fixture, *other_fixture;
   if (!FilterContact(contact, other_entity, this_fixture, other_fixture)) {
     return;
   }
@@ -228,7 +228,7 @@ void Bumper::BeginContact(b2Contact * contact)
   }
 }
 
-void Bumper::EndContact(b2Contact * contact)
+void Bumper::EndContact(flatland::b2Contact * contact)
 {
   if (!FilterContact(contact)) return;
 
@@ -241,7 +241,7 @@ void Bumper::EndContact(b2Contact * contact)
   }
 }
 
-void Bumper::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
+void Bumper::PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse)
 {
   if (!FilterContact(contact)) return;
 
@@ -263,7 +263,7 @@ void Bumper::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
   // always use ones from the most recent post solve. These results should
   // only be used to provide a ball park feel of impact strength
 
-  b2WorldManifold m;
+  flatland::b2WorldManifold m;
   contact->GetWorldManifold(&m);
 
   state->num_count++;

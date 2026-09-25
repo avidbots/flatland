@@ -9,19 +9,21 @@ Configuring World
 The simulation world is defined by a YAML file as shown below. Examples can
 be found in flatland_server/tests.
 
+``substeps`` controls the solver's internal divisions of each physics step.
+``step_size`` remains a separate ROS launch parameter controlling simulated
+seconds per update; see :doc:`ros_launch`. Existing worlds may still specify
+``velocity_iterations`` and ``position_iterations``. Those deprecated keys
+produce a warning, and if ``substeps`` is absent the larger legacy value is
+used as the substep count (default 10). This fallback does not reproduce the
+old solver's behavior exactly.
+
 .. code-block:: yaml
 
   # required, world properties
   properties:
 
-    # optional, defaults to 10, number of velocity iterations for the Box2D 
-    # physics solver
-    velocity_iterations: 10
-
-    # optional, defaults to 10, number of position iterations for the Box2D 
-    # physics solver
-    position_iterations: 10
-  
+    # optional, Box2D 3.1 solver substeps (defaults to 10)
+    substeps: 4
 
 
   # required, specifies a list of layers, maximum number of layers is 16,

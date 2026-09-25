@@ -154,7 +154,7 @@ void Laser::ComputeLaserRanges()
   // get the transformation matrix from the world to the body, and get the
   // world to laser frame transformation matrix by multiplying the world to body
   // and body to laser
-  const b2Transform & t = body_->GetPhysicsBody()->GetTransform();
+  const flatland::b2Transform & t = body_->GetPhysicsBody()->GetTransform();
   m_world_to_body_ << t.q.c, -t.q.s, t.p.x, t.q.s, t.q.c, t.p.y, 0, 0, 1;
   m_world_to_laser_ = m_world_to_body_ * m_body_to_laser_;
 
@@ -165,7 +165,7 @@ void Laser::ComputeLaserRanges()
   v_world_laser_origin_ = m_world_to_laser_ * v_zero_point_;
 
   // Conver to Box2D data types
-  b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
+  flatland::b2Vec2 laser_origin_point(v_world_laser_origin_(0), v_world_laser_origin_(1));
 
   // Results vector
   std::vector<std::future<std::pair<double, double>>> results(laser_scan_.ranges.size());
@@ -174,7 +174,7 @@ void Laser::ComputeLaserRanges()
   // enqueueing the callback
   for (unsigned int i = 0; i < laser_scan_.ranges.size(); ++i) {
     results[i] = pool_.enqueue([i, this, laser_origin_point] {  // Lambda function
-      b2Vec2 laser_point;
+      flatland::b2Vec2 laser_point;
       laser_point.x = m_world_laser_points_(0, i);
       laser_point.y = m_world_laser_points_(1, i);
       LaserCallback cb(this);
@@ -198,7 +198,7 @@ void Laser::ComputeLaserRanges()
 }
 
 float LaserCallback::ReportFixture(
-  b2Fixture * fixture, const b2Vec2 &, const b2Vec2 &, float fraction)
+  flatland::b2Fixture * fixture, const flatland::b2Vec2 &, const flatland::b2Vec2 &, float fraction)
 {
   uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers

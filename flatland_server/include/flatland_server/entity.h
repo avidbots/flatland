@@ -68,7 +68,7 @@ public:
   enum EntityType { LAYER, MODEL };
   std::shared_ptr<rclcpp::Node> node_;
 
-  b2World * physics_world_;  ///< Box2D physics world
+  flatland::b2World * physics_world_;  ///< Box2D physics world
   std::string name_;         ///< name of the entity
 
   /**
@@ -77,7 +77,7 @@ public:
    * @param[in] physics_world Box2D physics_world
    * @param[in] name name of the entity
    */
-  Entity(std::shared_ptr<rclcpp::Node> node, b2World * physics_world, const std::string & name);
+  Entity(std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, const std::string & name);
   virtual ~Entity() = default;
 
   /**
@@ -90,7 +90,7 @@ public:
    * @return Pointer to Box2D physics world, use this to call Box2D world
    * methods
    */
-  b2World * GetPhysicsWorld();
+  flatland::b2World * GetPhysicsWorld();
 
   /// This class should be non-copyable. This will cause the destructor to be
   /// called twice for a given b2Body

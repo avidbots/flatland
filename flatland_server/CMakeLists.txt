@@ -68,6 +68,7 @@ find_package(Threads)
 ## Flatland server library
 add_library(flatland_lib SHARED
   src/simulation_manager.cpp
+  src/physics.cpp
   src/world.cpp
   src/layer.cpp
   src/model.cpp

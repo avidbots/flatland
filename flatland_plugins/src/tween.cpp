@@ -116,6 +116,7 @@ void Tween::OnInitialize(const YAML::Node & config)
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
   }
+  body_->physics_body_->SetType(flatland::b2_kinematicBody);
   start_ = Pose(
     body_->physics_body_->GetPosition().x, body_->physics_body_->GetPosition().y,
     body_->physics_body_->GetAngle());
@@ -128,7 +129,7 @@ void Tween::OnInitialize(const YAML::Node & config)
 
   tween_ = tweeny::from(0.0, 0.0, 0.0)
              .to(delta_.x, delta_.y, delta_.theta)
-             .during((uint32)(duration_ * 1000.0));
+             .during(static_cast<std::uint32_t>(duration_ * 1000.0));
 
   Tween::EasingType_ easing_type;
   std::string easing = reader.Get<std::string>("easing", "linear");
@@ -251,12 +252,12 @@ void Tween::TriggerCallback(const std_msgs::msg::Bool::SharedPtr msg) { triggere
 
 void Tween::BeforePhysicsStep(const Timekeeper & timekeeper)
 {
-  std::array<double, 3> v = tween_.step((uint32)(timekeeper.GetStepSize() * 1000.0));
+  std::array<double, 3> v = tween_.step(static_cast<std::uint32_t>(timekeeper.GetStepSize() * 1000.0));
   rclcpp::Clock steady_clock = rclcpp::Clock(RCL_STEADY_TIME);
   RCLCPP_DEBUG_THROTTLE(
     rclcpp::get_logger("Tween"), steady_clock, 1000, "value %f,%f,%f step %f progress %f", v[0],
     v[1], v[2], timekeeper.GetStepSize(), tween_.progress());
-  body_->physics_body_->SetTransform(b2Vec2(start_.x + v[0], start_.y + v[1]), start_.theta + v[2]);
+  body_->physics_body_->SetTransform(flatland::b2Vec2(start_.x + v[0], start_.y + v[1]), start_.theta + v[2]);
   // Tell Box2D to update the AABB and check for collisions for this object
   body_->physics_body_->SetAwake(true);
 

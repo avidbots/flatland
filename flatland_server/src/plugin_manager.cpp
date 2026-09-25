@@ -234,28 +234,21 @@ void PluginManager::LoadWorldPlugin(
   RCLCPP_INFO(rclcpp::get_logger("PluginManager"), "%s loaded ", msg.c_str());
 }
 
-void PluginManager::BeginContact(b2Contact * contact)
+void PluginManager::BeginContact(flatland::b2Contact * contact)
 {
   for (auto & model_plugin : model_plugins_) {
     model_plugin->BeginContact(contact);
   }
 }
 
-void PluginManager::EndContact(b2Contact * contact)
+void PluginManager::EndContact(flatland::b2Contact * contact)
 {
   for (auto & model_plugin : model_plugins_) {
     model_plugin->EndContact(contact);
   }
 }
 
-void PluginManager::PreSolve(b2Contact * contact, const b2Manifold * oldManifold)
-{
-  for (auto & model_plugin : model_plugins_) {
-    model_plugin->PreSolve(contact, oldManifold);
-  }
-}
-
-void PluginManager::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
+void PluginManager::PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse)
 {
   for (auto & model_plugin : model_plugins_) {
     model_plugin->PostSolve(contact, impulse);

@@ -67,7 +67,7 @@ World::World(std::shared_ptr<rclcpp::Node> node)
   service_paused_(false),
   int_marker_manager_(&models_, &plugin_manager_)
 {
-  physics_world_ = new b2World(gravity_);
+  physics_world_ = new flatland::b2World(gravity_);
   physics_world_->SetContactListener(this);
 }
 
@@ -108,24 +108,18 @@ void World::Update(Timekeeper & timekeeper)
 {
   if (!IsPaused()) {
     plugin_manager_.BeforePhysicsStep(timekeeper);
-    physics_world_->Step(
-      timekeeper.GetStepSize(), physics_velocity_iterations_, physics_position_iterations_);
+    physics_world_->Step(timekeeper.GetStepSize(), physics_substeps_);
     timekeeper.StepTime();
     plugin_manager_.AfterPhysicsStep(timekeeper);
   }
   int_marker_manager_.update();
 }
 
-void World::BeginContact(b2Contact * contact) { plugin_manager_.BeginContact(contact); }
+void World::BeginContact(flatland::b2Contact * contact) { plugin_manager_.BeginContact(contact); }
 
-void World::EndContact(b2Contact * contact) { plugin_manager_.EndContact(contact); }
+void World::EndContact(flatland::b2Contact * contact) { plugin_manager_.EndContact(contact); }
 
-void World::PreSolve(b2Contact * contact, const b2Manifold * oldManifold)
-{
-  plugin_manager_.PreSolve(contact, oldManifold);
-}
-
-void World::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
+void World::PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse)
 {
   plugin_manager_.PostSolve(contact, impulse);
 }
@@ -134,15 +128,24 @@ World * World::MakeWorld(std::shared_ptr<rclcpp::Node> node, const std::string &
 {
   YamlReader world_reader = YamlReader(node, yaml_path);
   YamlReader prop_reader = world_reader.Subnode("properties", YamlReader::MAP);
+  const YAML::Node properties = prop_reader.Node();
+  if (properties["velocity_iterations"] || properties["position_iterations"]) {
+    RCLCPP_WARN(
+      node->get_logger(), "World: velocity_iterations and position_iterations are deprecated; "
+      "use substeps instead");
+  }
   int v = prop_reader.Get<int>("velocity_iterations", 10);
   int p = prop_reader.Get<int>("position_iterations", 10);
+  int substeps = prop_reader.Get<int>("substeps", std::max(v, p));
+  if (substeps < 1) {
+    throw YAMLException("World substeps must be positive");
+  }
   prop_reader.EnsureAccessedAllKeys();
 
   World * w = new World(node);
 
   w->world_yaml_dir_ = std::filesystem::path(yaml_path).parent_path();
-  w->physics_velocity_iterations_ = v;
-  w->physics_position_iterations_ = p;
+  w->physics_substeps_ = substeps;
 
   try {
     YamlReader layers_reader = world_reader.Subnode("layers", YamlReader::LIST);

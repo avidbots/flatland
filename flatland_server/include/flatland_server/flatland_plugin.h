@@ -99,27 +99,20 @@ public:
    * @brief A method that is called for all Box2D begin contacts
    * @param[in] contact Box2D contact
    */
-  virtual void BeginContact(b2Contact * contact) {}
+  virtual void BeginContact(flatland::b2Contact * contact) {}
 
   /**
    * @brief A method that is called for all Box2D end contacts
    * @param[in] contact Box2D contact
    */
-  virtual void EndContact(b2Contact * contact) {}
-
-  /**
-   * @brief A method that is called for Box2D presolve
-   * @param[in] contact Box2D contact
-   * @param[in] oldManifold Manifold from the previous iteration
-   */
-  virtual void PreSolve(b2Contact * contact, const b2Manifold * oldManifold) {}
+  virtual void EndContact(flatland::b2Contact * contact) {}
 
   /**
    * @brief A method that is called for Box2D postsolve
    * @param[in] contact Box2D contact
    * @param[in] impulse Impulse from the collision resolution
    */
-  virtual void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse) {}
+  virtual void PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse) {}
 
   /**
    * @brief Flatland plugin destructor

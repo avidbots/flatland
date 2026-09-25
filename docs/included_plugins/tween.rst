@@ -9,6 +9,9 @@ Tween
 The tween plugin moves a body from it's start location to a relative end position.
 
 This can be done using a variety of tween modes and easings.
+Under Box2D 3.1, the controlled body becomes kinematic. Its commanded pose is
+not displaced by collision resolution or external forces while the tween runs;
+this differs from the previous dynamic-body behavior.
 
 Modes
 ^^^^^

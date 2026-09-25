@@ -90,13 +90,13 @@ public:
    * @brief A method that is called for all Box2D begin contacts
    * @param[in] contact Box2D contact
    */
-  void BeginContact(b2Contact * contact) override;
+  void BeginContact(flatland::b2Contact * contact) override;
 
   /**
    * @brief A method that is called for all Box2D end contacts
    * @param[in] contact Box2D contact
    */
-  void EndContact(b2Contact * contact) override;
+  void EndContact(flatland::b2Contact * contact) override;
 };
 };  // namespace flatland_plugins
 
