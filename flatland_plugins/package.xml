@@ -16,7 +16,7 @@
   <depend>flatland_server</depend>
   <depend>pluginlib</depend>
   <depend>roscpp</depend>
-  <depend>yaml-cpp</depend>
+  <depend>yaml_cpp_catkin</depend>
   <depend>cmake_modules</depend>
   <depend>tf</depend>
   <depend>std_msgs</depend>
