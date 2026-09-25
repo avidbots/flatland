@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 project(flatland_plugins)
 
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
 # C++23 is the lowest common denominator; Lyrical and newer can use C++26
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 23)
@@ -42,9 +46,6 @@ if(LUA_CXX_LIBRARY)
   list(APPEND LUA_LIBRARIES ${LUA_CXX_LIBRARY})
 endif()
 
-if(POLICY CMP0167)
-  cmake_policy(SET CMP0167 NEW)
-endif()
 find_package(Boost REQUIRED)
 
 ##############
@@ -80,21 +81,28 @@ add_library(flatland_plugins_lib SHARED
   src/gps.cpp
 )
 
-ament_target_dependencies(flatland_plugins_lib rclcpp flatland_server flatland_msgs pluginlib std_msgs nav_msgs geometry_msgs tf2 tf2_ros tf2_geometry_msgs yaml_cpp_vendor)
-
 target_include_directories(flatland_plugins_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/thirdparty/tweeny>
   $<INSTALL_INTERFACE:include/thirdparty/tweeny>
-  ${Eigen3_INCLUDE_DIRS}
   ${LUA_INCLUDE_DIR}
   ${yaml_cpp_vendor_INCLUDE_DIRS})
 
 
-target_link_libraries(flatland_plugins_lib
+target_link_libraries(flatland_plugins_lib PUBLIC
+  flatland_server::flatland_lib
+  rclcpp::rclcpp
+  pluginlib::pluginlib
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  ${flatland_msgs_TARGETS}
+  ${std_msgs_TARGETS}
+  ${nav_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
   Boost::headers
-  ${Eigen3_LIBRARIES}
+  Eigen3::Eigen
   ${LUA_LIBRARIES}
   ${OpenCV_LIBRARIES}
   yaml-cpp

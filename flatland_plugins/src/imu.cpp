@@ -50,7 +50,7 @@
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <pluginlib/class_list_macros.hpp>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 
 namespace flatland_plugins {
 

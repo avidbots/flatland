@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(flatland_viz)
 
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
 # C++23 is the lowest common denominator; Lyrical and newer can use C++26
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 23)
@@ -77,10 +81,12 @@ set(CMAKE_AUTOMOC ON)
 
 ## This plugin includes Qt widgets, so we must include Qt.
 ## We'll use the version that rviz used so they are compatible.
-message(STATUS "Using Qt5 based on the rviz_QT_VERSION: ${rviz_QT_VERSION}")
-find_package(Qt5 ${rviz_QT_VERSION} EXACT REQUIRED Core Widgets)
+find_package(Qt6 QUIET COMPONENTS Core Widgets)
+if(NOT Qt6_FOUND)
+  find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
+endif()
 ## make target_link_libraries(${QT_LIBRARIES}) pull in all required dependencies
-set(QT_LIBRARIES Qt5::Widgets)
+set(QT_LIBRARIES Qt::Widgets)
 
 add_definitions(-DQT_NO_KEYWORDS)
 
@@ -110,9 +116,16 @@ target_include_directories(flatland_viz
 
 #add_dependencies(flatland_viz ${catkin_EXPORTED_TARGETS})
 
-ament_target_dependencies(flatland_viz rclcpp flatland_msgs flatland_server visualization_msgs interactive_markers rviz_common rviz_rendering rviz_default_plugins std_srvs)
-
 target_link_libraries(flatland_viz
+  rclcpp::rclcpp
+  flatland_server::flatland_lib
+  interactive_markers::interactive_markers
+  rviz_common::rviz_common
+  rviz_rendering::rviz_rendering
+  rviz_default_plugins::rviz_default_plugins
+  ${flatland_msgs_TARGETS}
+  ${visualization_msgs_TARGETS}
+  ${std_srvs_TARGETS}
   ${QT_LIBRARIES}
 )
 
@@ -134,9 +147,14 @@ target_include_directories(flatland_viz_plugins
     ${OGRE_OV_INCLUDE_DIRS})
 
 #add_dependencies(flatland_viz_plugins ${catkin_EXPORTED_TARGETS})
-ament_target_dependencies(flatland_viz_plugins rclcpp flatland_msgs flatland_server rviz_common rviz_rendering rviz_default_plugins std_srvs)
-
 target_link_libraries(flatland_viz_plugins
+  rclcpp::rclcpp
+  flatland_server::flatland_lib
+  rviz_common::rviz_common
+  rviz_rendering::rviz_rendering
+  rviz_default_plugins::rviz_default_plugins
+  ${flatland_msgs_TARGETS}
+  ${std_srvs_TARGETS}
   ${QT_LIBRARIES}
 )
 

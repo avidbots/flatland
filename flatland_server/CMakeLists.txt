@@ -96,9 +96,19 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers sensor_msgs)
-
-target_link_libraries(flatland_lib
+target_link_libraries(flatland_lib PUBLIC
+  flatland_box2d::flatland_box2d_lib
+  rclcpp::rclcpp
+  pluginlib::pluginlib
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  interactive_markers::interactive_markers
+  ${flatland_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  ${visualization_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
   ${OpenCV_LIBRARIES}
   Boost::headers
   ${LUA_LIBRARIES}
@@ -107,7 +117,6 @@ target_link_libraries(flatland_lib
 
 ## Declare a C++ executable
 add_executable(flatland_server src/flatland_server_node.cpp)
-ament_target_dependencies(flatland_server flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_include_directories(flatland_server
   PUBLIC

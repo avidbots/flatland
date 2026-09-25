@@ -49,8 +49,8 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/convert.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/convert.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <memory>
