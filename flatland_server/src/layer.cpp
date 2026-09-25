@@ -53,6 +53,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <cmath>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -84,12 +86,21 @@ Layer::Layer(
   body_ = new Body(physics_world_, this, name_, color, origin, flatland::b2_staticBody, properties);
 
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
+  std::size_t skipped_line_segments = 0;
+  constexpr float min_segment_length_squared = 0.005f * 0.005f;
 
   for (const auto & line_segment : line_segments) {
     flatland::b2EdgeShape edge;
     edge.Set(line_segment.start.Box2D(), line_segment.end.Box2D());
     edge.m_vertex1 *= scale;
     edge.m_vertex2 *= scale;
+    float dx = edge.m_vertex2.x - edge.m_vertex1.x;
+    float dy = edge.m_vertex2.y - edge.m_vertex1.y;
+    float length_squared = dx * dx + dy * dy;
+    if (!std::isfinite(length_squared) || length_squared <= min_segment_length_squared) {
+      skipped_line_segments++;
+      continue;
+    }
 
     flatland::b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
@@ -97,6 +108,14 @@ Layer::Layer(
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     // todo: add material information
     body_->physics_body_->CreateFixture(&fixture_def);
+  }
+
+  if (skipped_line_segments > 0) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("Layer"), "Skipped " << skipped_line_segments
+                                                << " line segment(s) at or below Box2D's 5 mm "
+                                                   "minimum in layer \""
+                                                << names_[0] << "\"");
   }
 }
 
