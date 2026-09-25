@@ -281,7 +281,7 @@ void World::LoadModel(const std::string &model_yaml_path, const std::string &ns,
   visualization_msgs::MarkerArray body_markers;
   for (size_t i = 0; i < m->bodies_.size(); i++) {
     DebugVisualization::Get().BodyToMarkers(
-        body_markers, m->bodies_[i]->physics_body_, 1.0, 0.0, 0.0, 1.0);
+        body_markers, m->bodies_[i]->physics_body_, m->bodies_[i]->color_.r, m->bodies_[i]->color_.g, m->bodies_[i]->color_.b, m->bodies_[i]->color_.a);
   }
   int_marker_manager_.createInteractiveMarker(name, pose, body_markers);
 
