@@ -338,13 +338,16 @@ protected:
 
     if (f->GetFilterData().categoryBits != category_bits) {
       printf(
-        "category_bits Actual:0x%X != Expected:0x%X\n", f->GetFilterData().categoryBits,
+        "category_bits Actual:0x%llX != Expected:0x%X\n",
+        static_cast<unsigned long long>(f->GetFilterData().categoryBits),
         category_bits);
       return false;
     }
 
     if (f->GetFilterData().maskBits != mask_bits) {
-      printf("mask_bits Actual:0x%X != Expected:0x%X\n", f->GetFilterData().maskBits, mask_bits);
+      printf(
+        "mask_bits Actual:0x%llX != Expected:0x%X\n",
+        static_cast<unsigned long long>(f->GetFilterData().maskBits), mask_bits);
       return false;
     }
 

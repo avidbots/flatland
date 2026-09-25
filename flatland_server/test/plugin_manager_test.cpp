@@ -83,7 +83,6 @@ public:
     function_called["AfterPhysicsStep"] = false;
     function_called["BeginContact"] = false;
     function_called["EndContact"] = false;
-    function_called["PreSolve"] = false;
     function_called["PostSolve"] = false;
   }
 
@@ -108,12 +107,6 @@ public:
   void EndContact(b2Contact * contact) override
   {
     function_called["EndContact"] = true;
-    FilterContact(contact, entity, fixture_A, fixture_B);
-  }
-
-  void PreSolve(b2Contact * contact, const b2Manifold *) override
-  {
-    function_called["PreSolve"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
@@ -219,7 +212,6 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", true},
         {"EndContact", false},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
@@ -238,7 +230,6 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", false},
         {"EndContact", true},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
@@ -257,7 +248,6 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", true},
         {"EndContact", false},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, m1);
   EXPECT_EQ(p->fixture_B, b1->physics_body_->GetFixtureList());
@@ -276,15 +266,14 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", false},
         {"EndContact", true},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, m1);
   EXPECT_EQ(p->fixture_B, b1->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
   p->ClearTestingVariables();
 
-  // Now we set model 0 fixture as not a sensor, this should trigger pre and
-  // post solves in the contact listener in subsequent tests
+  // Now we set model 0 fixture as not a sensor, enabling post-solve reports
+  // in the contact listener in subsequent tests
   b0->physics_body_->GetFixtureList()->SetSensor(false);
 
   // now teleport the body for model 0 to (0, 0) which is right on top of a
@@ -301,7 +290,6 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", true},
         {"EndContact", false},
-        {"PreSolve", true},
         {"PostSolve", true}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());

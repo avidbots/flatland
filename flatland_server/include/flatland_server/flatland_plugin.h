@@ -108,13 +108,6 @@ public:
   virtual void EndContact(b2Contact * contact) {}
 
   /**
-   * @brief A method that is called for Box2D presolve
-   * @param[in] contact Box2D contact
-   * @param[in] oldManifold Manifold from the previous iteration
-   */
-  virtual void PreSolve(b2Contact * contact, const b2Manifold * oldManifold) {}
-
-  /**
    * @brief A method that is called for Box2D postsolve
    * @param[in] contact Box2D contact
    * @param[in] impulse Impulse from the collision resolution

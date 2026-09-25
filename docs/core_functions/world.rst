@@ -14,12 +14,14 @@ be found in flatland_server/tests.
   # required, world properties
   properties:
 
-    # optional, defaults to 10, number of velocity iterations for the Box2D 
-    # physics solver
+    # optional, Box2D 3.1 solver substeps; default is the larger of the two
+    # legacy iteration settings below (10 if neither is specified)
+    substeps: 4
+
+    # legacy settings, accepted for existing worlds; no longer independent
+    # solver parameters when using Box2D 3.1
     velocity_iterations: 10
 
-    # optional, defaults to 10, number of position iterations for the Box2D 
-    # physics solver
     position_iterations: 10
   
 

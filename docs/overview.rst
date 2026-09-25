@@ -10,6 +10,8 @@ This document provides an overview of Flatland Simulator.
 
 Flatland Simulator is a light weight, performance centric 2D robot simulator. It
 is built to integrate directly with ROS and uses Box2D for physics simulation.
+The build fetches Box2D 3.1.1 (MIT license). The legacy bundled Box2D sources
+remain in the repository but are not compiled.
 This project is divided into four ROS packages: flatland_server, flatland_plugins,
 and flatland_viz, and flatland messages.
 
@@ -42,8 +44,8 @@ following are some of the commonly used terminologies in the Flatland Server.
 
 * **Footprint**: A footprint defines the actual physical size, shape, 
   and material properties. It manages physical properties such as density and 
-  friction. It is contiguous.  The concept is equivalent to a Fixture in Box2D
-  physics engine.
+  friction. It is contiguous. The concept maps to a Shape in Box2D 3.1;
+  Flatland's plugin API still exposes a compatibility fixture.
 
 * **Joint**: A joint is used to connect two pieces of bodies. It defines additional
   constraints on how the two bodies must interact with each other. The concept is

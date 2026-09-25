@@ -70,12 +70,26 @@ However, we recommend throwing exceptions from flatland_server/exceptions.h.
     // called when two fixtures stops contact
     virtual void EndContact(b2Contact *contact) {}  // time t
     
-    // called before solving collision, may be called multiple times in a time step
-    virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {}  // time t
-
-    // called after solving collision, may be called multiple times in a time step
+    // called once per touching solid contact after the physics step
     virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {}  // time t
   }
+
+Box2D 3.1 Version Compatibility Notes
+------------------------------------
+
+The ``PreSolve`` plugin hook has been removed. Flatland's Box2D 3.1 adapter
+receives contact data after the solver completes, so a callback at that point
+cannot modify the current step's collision response and would misleadingly be
+named pre-solve. Use ``PostSolve`` to observe touching solid contacts instead.
+Plugins that used ``PreSolve`` to change collision behavior need a different
+approach; Flatland does not expose Box2D 3.1's native pre-solve callback.
+
+In Box2D 3.1, begin/end contact and sensor events are collected during a step
+and dispatched between ``BeforePhysicsStep`` and ``AfterPhysicsStep``. The
+simulation clock still reads ``t`` until the callbacks finish. Contact impulse
+values can also differ because the new solver uses substeps instead of separate
+velocity and position iterations. Legacy fixture and contact pointers are
+provided by Flatland's compatibility API, not by the Box2D 3.1 C API.
 
 Box2D contact object is generated when two Box2D fixtures collide, it contains
 all the information about the collision. Box2D fixtures are the underlying physics 

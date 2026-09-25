@@ -1,4 +1,7 @@
 lcov.info
+/build/
+/install/
+/log/
 docs/doxygen/*
 !docs/doxygen/conf.py
 !docs/doxygen/index.rst

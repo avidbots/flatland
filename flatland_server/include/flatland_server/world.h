@@ -87,6 +87,7 @@ public:
   InteractiveMarkerManager int_marker_manager_;  ///< for dynamically moving models from Rviz
   int physics_position_iterations_;              ///< Box2D solver param
   int physics_velocity_iterations_;              ///< Box2D solver param
+  int physics_substeps_ = 10;                     ///< Box2D 3.1 solver substeps
 
   /**
    * @brief Constructor for the world class. All data required for
@@ -119,14 +120,7 @@ public:
   void EndContact(b2Contact * contact) override;
 
   /**
-   * @brief Box2D inherited presolve
-   * @param[in] contact Box2D contact information
-   * @param[in] oldManifold The manifold from the previous timestep
-   */
-  void PreSolve(b2Contact * contact, const b2Manifold * oldManifold);
-
-  /**
-   * @brief Box2D inherited pre solve
+    * @brief Box2D inherited post solve
    * @param[in] contact Box2D contact information
    * @param[in] impulse The calculated impulse from the collision resolute
    */

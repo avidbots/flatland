@@ -116,6 +116,7 @@ void Tween::OnInitialize(const YAML::Node & config)
   if (body_ == nullptr) {
     throw YAMLException("Body with name " + Q(body_name) + " does not exist");
   }
+  body_->physics_body_->SetType(b2_kinematicBody);
   start_ = Pose(
     body_->physics_body_->GetPosition().x, body_->physics_body_->GetPosition().y,
     body_->physics_body_->GetAngle());

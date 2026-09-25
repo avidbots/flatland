@@ -248,13 +248,6 @@ void PluginManager::EndContact(b2Contact * contact)
   }
 }
 
-void PluginManager::PreSolve(b2Contact * contact, const b2Manifold * oldManifold)
-{
-  for (auto & model_plugin : model_plugins_) {
-    model_plugin->PreSolve(contact, oldManifold);
-  }
-}
-
 void PluginManager::PostSolve(b2Contact * contact, const b2ContactImpulse * impulse)
 {
   for (auto & model_plugin : model_plugins_) {
