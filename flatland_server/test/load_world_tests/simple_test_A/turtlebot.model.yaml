@@ -20,10 +20,17 @@ bodies:  # List of named bodies
         points: [[-0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [0.1, 0.1]]
       - type: polygon
         density: 0
+        sensor: true
+        collision: false
         points: [[-0.005, -0.005], [0.005, -0.005], [0.005, 0.005], [-0.005, 0.005]]
       - type: polygon
         density: 0
+        sensor: true
+        collision: false
         points: [[-0.0375, 0.00875], [0.0375, 0.00875], [0.0375, -0.00875], [-0.0375, -0.00875]]
+      - type: polygon
+        density: 0
+        points: [[0, 0], [0, 0], [0, 0]]
 
   - name: left_wheel
     pose: [-1, 0, 0] 

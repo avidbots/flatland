@@ -658,11 +658,15 @@ TEST_F(LoadWorldTest, simple_test_A)
   EXPECT_TRUE(
     BodyEq(m0->bodies_[0], "base", flatland::b2_dynamicBody, {0, 0, 0}, {1, 1, 0, 0.25}, 0.1, 0.125));
   auto fs = GetBodyFixtures(m0->bodies_[0]);
-  ASSERT_EQ(fs.size(), (unsigned int)2);
+  ASSERT_EQ(fs.size(), (unsigned int)4);
   EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
   EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 982.24, 0.59, 0.234));
   EXPECT_TRUE(PolygonEq(fs[1], {{-0.1, 0.1}, {-0.1, -0.1}, {0.1, -0.1}, {0.1, 0.1}}));
+  for (unsigned int fixture_index = 2; fixture_index < fs.size(); ++fixture_index) {
+    EXPECT_TRUE(FixtureEq(fs[fixture_index], true, 0, 0xFFFF, 0, 0, 0, 0));
+    EXPECT_EQ(fs[fixture_index]->GetShape()->GetType(), flatland::b2Shape::e_polygon);
+  }
 
   // check model 0 body 1
   EXPECT_TRUE(
