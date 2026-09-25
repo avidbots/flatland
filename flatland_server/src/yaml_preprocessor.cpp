@@ -47,7 +47,7 @@
 #include "flatland_server/yaml_preprocessor.h"
 
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/lexical_cast.hpp>
+#include <charconv>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -175,10 +175,12 @@ int YamlPreprocessor::LuaGetEnv(lua_State * L)
       lua_pushnil(L);
     } else {
       RCLCPP_WARN_STREAM(rclcpp::get_logger("Yaml Preprocessor"), "Found env for " << name);
-      try {  // Try to push a number
-        double x = boost::lexical_cast<double>(env);
+      const char * env_end = env + std::strlen(env);
+      double x;
+      auto [ptr, ec] = std::from_chars(env, env_end, x);
+      if (ec == std::errc() && ptr == env_end) {  // Push a number if the whole value parses
         lua_pushnumber(L, x);
-      } catch (boost::bad_lexical_cast &) {  // Otherwise it's a string
+      } else {  // Otherwise it's a string
         lua_pushstring(L, env);
       }
     }

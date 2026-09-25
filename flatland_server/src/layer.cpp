@@ -53,7 +53,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <boost/algorithm/string/join.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -102,7 +102,7 @@ Layer::Layer(
 
 Layer::Layer(
   std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
-  const std::vector<std::string> & names, const Color & color, const YAML::Node & properties)
+  const std::vector<std::string> & names, const Color &, const YAML::Node &)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
 }
@@ -128,9 +128,9 @@ Layer * Layer::MakeLayer(
     if (type == "line_segments") {
       double scale = reader.Get<double>("scale");
       Pose origin = reader.GetPose("origin");
-      boost::filesystem::path data_path(reader.Get<std::string>("data"));
-      if (data_path.string().front() != '/') {
-        data_path = boost::filesystem::path(map_path).parent_path() / data_path;
+      std::filesystem::path data_path(reader.Get<std::string>("data"));
+      if (!data_path.empty() && data_path.string().front() != '/') {
+        data_path = std::filesystem::path(map_path).parent_path() / data_path;
       }
 
       RCLCPP_INFO(
@@ -149,9 +149,9 @@ Layer * Layer::MakeLayer(
       double occupied_thresh = reader.Get<double>("occupied_thresh");
       Pose origin = reader.GetPose("origin");
 
-      boost::filesystem::path image_path(reader.Get<std::string>("image"));
-      if (image_path.string().front() != '/') {
-        image_path = boost::filesystem::path(map_path).parent_path() / image_path;
+      std::filesystem::path image_path(reader.Get<std::string>("image"));
+      if (!image_path.empty() && image_path.string().front() != '/') {
+        image_path = std::filesystem::path(map_path).parent_path() / image_path;
       }
 
       RCLCPP_INFO(
@@ -197,7 +197,7 @@ void Layer::ReadLineSegmentsFile(
       if (ss.fail()) {
         throw Exception(
           "Flatland File: Failed to read line segment from line " + std::to_string(line_count) +
-          ", in file " + Q(boost::filesystem::path(file_path).filename().string()));
+          ", in file " + Q(std::filesystem::path(file_path).filename().string()));
       }
     }
 
@@ -324,7 +324,7 @@ void Layer::DebugOutput() const
     rclcpp::get_logger("Layer"),
     "Layer %p: physics_world(%p) name(%s) names(%s) "
     "category_bits(0x%X)",
-    this, physics_world_, name_.c_str(), names.c_str(), category_bits);
+    const_cast<void *>(static_cast<const void *>(this)), static_cast<void *>(physics_world_), name_.c_str(), names.c_str(), category_bits);
 
   if (body_ != nullptr) {
     body_->DebugOutput();

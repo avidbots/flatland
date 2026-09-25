@@ -105,7 +105,7 @@ void Bumper::OnInitialize(const YAML::Node & config)
     boost::algorithm::join(excluded_body_names, ",").c_str());
 }
 
-void Bumper::BeforePhysicsStep(const Timekeeper & timekeeper)
+void Bumper::BeforePhysicsStep(const Timekeeper &)
 {
   std::map<b2Contact *, ContactState>::iterator it;
 

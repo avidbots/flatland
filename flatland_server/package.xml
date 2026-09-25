@@ -29,13 +29,12 @@
   <depend>interactive_markers</depend>
   <depend>flatland_msgs</depend>
   <depend>lua-dev</depend>
-  <depend>libboost-date-time-dev</depend>
-  <depend>libboost-filesystem-dev</depend>
   <depend>libboost-dev</depend>
   <depend>flatland_box2d</depend>
 
   <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_test</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

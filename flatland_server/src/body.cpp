@@ -103,8 +103,8 @@ void Body::DebugOutput() const
     "Body %p: entity(%p, %s) name(%s) color(%f,%f,%f,%f) "
     "physics_body(%p) num_fixtures(%d) type(%d) pose(%f, %f, %f) "
     "angular_damping(%f) linear_damping(%f)",
-    this, entity_, entity_->name_.c_str(), name_.c_str(), color_.r, color_.g, color_.b, color_.a,
-    physics_body_, GetFixturesCount(), physics_body_->GetType(), physics_body_->GetPosition().x,
+    const_cast<void *>(static_cast<const void *>(this)), static_cast<void *>(entity_), entity_->name_.c_str(), name_.c_str(), color_.r, color_.g, color_.b, color_.a,
+    static_cast<void *>(physics_body_), GetFixturesCount(), physics_body_->GetType(), physics_body_->GetPosition().x,
     physics_body_->GetPosition().y, physics_body_->GetAngle(), physics_body_->GetAngularDamping(),
     physics_body_->GetLinearDamping());
 }

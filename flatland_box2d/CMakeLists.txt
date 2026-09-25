@@ -123,8 +123,13 @@ set(BOX2D_General_HDRS
 	include/Box2D/Box2D.h
 )
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(flatland_box2d)
+
+# C++23 is the lowest common denominator; Lyrical and newer can use C++26
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 23)
+endif()
 
 find_package(ament_cmake REQUIRED)
 

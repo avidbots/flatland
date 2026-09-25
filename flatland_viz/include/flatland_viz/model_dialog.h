@@ -56,7 +56,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QWidget>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <flatland_msgs/msg/SpawnModel.hpp>
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
@@ -71,7 +71,7 @@ class QErrorMessage;
 
 class DialogOptionsWidget;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 
 class ModelDialog : public QDialog
@@ -124,7 +124,7 @@ private:
   QLineEdit *x_edit, *y_edit, *a_edit, *n_edit;
 
 protected:
-  boost::filesystem::path this_file_dir;
+  fs::path this_file_dir;
   ros::NodeHandle nh;
   ros::ServiceClient client;
   flatland_msgs::msg::SpawnModel srv;

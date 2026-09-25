@@ -1,15 +1,23 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   industrial_ci:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
-    runs-on: ubuntu-22.04
+          # - {ROS_DISTRO: humble, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
+          # - {ROS_DISTRO: jazzy, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
+          - {ROS_DISTRO: kilted, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
+          - {ROS_DISTRO: lyrical, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
+          - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: noble, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}

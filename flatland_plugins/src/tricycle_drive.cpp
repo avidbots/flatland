@@ -49,8 +49,8 @@
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/convert.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/convert.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <memory>
@@ -171,11 +171,11 @@ void TricycleDrive::OnInitialize(const YAML::Node & config)
   rng_ = default_random_engine(rd());
   for (unsigned int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i] = normal_distribution<double>(0.0, sqrt(odom_pose_noise[i]));
+    noise_gen_[i] = GaussianNoise(0.0, sqrt(odom_pose_noise[i]));
   }
 
   for (unsigned int i = 0; i < 3; i++) {
-    noise_gen_[i + 3] = normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
+    noise_gen_[i + 3] = GaussianNoise(0.0, sqrt(odom_twist_noise[i]));
   }
 
   RCLCPP_DEBUG(
@@ -185,8 +185,8 @@ void TricycleDrive::OnInitialize(const YAML::Node & config)
     "odom_frame_id(%s) twist_sub(%s) odom_pub(%s) "
     "ground_truth_pub(%s) odom_pose_noise({%f,%f,%f}) "
     "odom_twist_noise({%f,%f,%f}) pub_rate(%f)\n",
-    body_, body_->GetName().c_str(), front_wj_, front_wj_->GetName().c_str(), rear_left_wj_,
-    rear_left_wj_->GetName().c_str(), rear_right_wj_, rear_right_wj_->GetName().c_str(),
+    static_cast<void *>(body_), body_->GetName().c_str(), static_cast<void *>(front_wj_), front_wj_->GetName().c_str(), static_cast<void *>(rear_left_wj_),
+    rear_left_wj_->GetName().c_str(), static_cast<void *>(rear_right_wj_), rear_right_wj_->GetName().c_str(),
     odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(), ground_truth_topic.c_str(),
     odom_pose_noise[0], odom_pose_noise[1], odom_pose_noise[2], odom_twist_noise[0],
     odom_twist_noise[1], odom_twist_noise[2], pub_rate);

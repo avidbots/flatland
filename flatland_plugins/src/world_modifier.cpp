@@ -52,7 +52,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
-#include <boost/filesystem.hpp>
 #include <cmath>
 #include <iostream>
 #include <map>
@@ -69,7 +68,7 @@ namespace flatland_plugins
 {
 
 float RayTrace::ReportFixture(
-  b2Fixture * fixture, const b2Vec2 & point, const b2Vec2 & normal, float fraction)
+  b2Fixture * fixture, const b2Vec2 &, const b2Vec2 &, float fraction)
 {
   // only register hit in the specified layers
   if (!(fixture->GetFilterData().categoryBits & category_bits_)) {

@@ -112,6 +112,9 @@ void SimulationManager::Main()
   ServiceManager service_manager(this, world_);
   Timekeeper timekeeper(node_);
 
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node_);
+
   rclcpp::Clock wall_clock(RCL_STEADY_TIME);
   timekeeper.SetMaxStepSize(step_size_);
   RCLCPP_INFO(rclcpp::get_logger("SimMan"), "Simulation loop started");
@@ -135,7 +138,7 @@ void SimulationManager::Main()
       DebugVisualization::Get(node_)->Publish(timekeeper);  // publish debug visualization
     }
 
-    rclcpp::spin_some(node_);
+    executor.spin_some();
     double cycle_time = wall_clock.now().seconds() - start_time;
     rate_->sleep();
 
@@ -143,7 +146,6 @@ void SimulationManager::Main()
 
     double expected_cycle_time = 1.0f / update_rate_;
     double cycle_util = cycle_time / expected_cycle_time * 100;  // in percent
-    double factor = timekeeper.GetStepSize() / expected_cycle_time;
     min_cycle_util = std::min(cycle_util, min_cycle_util);
     if (iterations > 10) max_cycle_util = std::max(cycle_util, max_cycle_util);
     filtered_cycle_util = 0.99 * filtered_cycle_util + 0.01 * cycle_util;

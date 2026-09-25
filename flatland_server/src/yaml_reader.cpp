@@ -46,7 +46,9 @@
 
 #include <flatland_server/yaml_reader.h>
 
-#include <boost/filesystem/path.hpp>
+#include <algorithm>
+#include <cctype>
+#include <filesystem>
 
 namespace flatland_server
 {
@@ -208,7 +210,7 @@ void YamlReader::SetErrorInfo(std::string entry_location, std::string entry_name
     fmt_in_ = "";
   } else {
     std::string msg = entry_location_;
-    boost::algorithm::to_lower(msg);
+    std::ranges::transform(msg, msg.begin(), [](unsigned char c) { return std::tolower(c); });
     fmt_in_ = " (in " + msg + ")";
   }
 
@@ -216,7 +218,7 @@ void YamlReader::SetErrorInfo(std::string entry_location, std::string entry_name
     fmt_name_ = "";
   } else {
     std::string msg = entry_name_;
-    boost::algorithm::to_lower(msg);
+    std::ranges::transform(msg, msg.begin(), [](unsigned char c) { return std::tolower(c); });
     fmt_name_ = " " + msg;
   }
 }
@@ -229,7 +231,7 @@ void YamlReader::SetFile(const std::string & file_path)
     file_path_ = file_path;
   }
 
-  filename_ = boost::filesystem::path(file_path).filename().string();
+  filename_ = std::filesystem::path(file_path).filename().string();
 }
 
 void YamlReader::EnsureAccessedAllKeys()

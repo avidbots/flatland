@@ -56,7 +56,7 @@ using namespace flatland_server;
 namespace flatland_plugins
 {
 
-void DummyWorldPlugin::OnInitialize(const YAML::Node & plugin_reader, YamlReader & world_config)
+void DummyWorldPlugin::OnInitialize(const YAML::Node &, YamlReader &)
 {
   if (world_ != NULL) {
     throw PluginException("World is not NULL!");

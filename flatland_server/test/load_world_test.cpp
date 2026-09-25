@@ -53,24 +53,24 @@
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <rclcpp/rclcpp.hpp>
 #include <regex>
 #include <string>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 
 class LoadWorldTest : public ::testing::Test
 {
 protected:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   World * w;
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 

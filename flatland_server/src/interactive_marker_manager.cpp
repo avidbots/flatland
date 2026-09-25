@@ -190,13 +190,13 @@ void InteractiveMarkerManager::processMouseUpFeedback(
 }
 
 void InteractiveMarkerManager::processMouseDownFeedback(
-  const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback)
+  const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &)
 {
   manipulating_model_ = true;
 }
 
 void InteractiveMarkerManager::processPoseUpdateFeedback(
-  const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr & feedback)
+  const visualization_msgs::msg::InteractiveMarkerFeedback::ConstSharedPtr &)
 {
   pose_update_stamp_ = rclcpp::Clock(RCL_SYSTEM_TIME).now();
 }

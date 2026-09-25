@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 
 project(flatland_server)
 
-# Default to C++14
-# if(NOT CMAKE_CXX_STANDARD)
-#   set(CMAKE_CXX_STANDARD 17)
-# endif()
+# C++23 is the lowest common denominator; Lyrical and newer can use C++26
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 23)
+endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic -std=c++17)
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
 ## Find macros and libraries
@@ -32,14 +32,21 @@ find_package(flatland_msgs REQUIRED)
 find_package(yaml_cpp_vendor REQUIRED)
 find_package(flatland_box2d REQUIRED)
 
-# lua5.1
-find_package(Lua 5.1 QUIET)
+# Lua 5.1 or newer
+find_package(Lua 5.1 REQUIRED)
+find_library(LUA_CXX_LIBRARY NAMES lua${LUA_VERSION_MAJOR}.${LUA_VERSION_MINOR}-c++)
+if(LUA_CXX_LIBRARY)
+  list(APPEND LUA_LIBRARIES ${LUA_CXX_LIBRARY})
+endif()
 
 # OpenCV
 find_package(OpenCV REQUIRED)
 
-# Boost
-find_package(Boost REQUIRED COMPONENTS date_time system filesystem)
+# Boost (header-only)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+find_package(Boost REQUIRED)
 find_package(Threads)
 
 ##############
@@ -89,19 +96,27 @@ target_include_directories(flatland_lib
     $<INSTALL_INTERFACE:include>
     ${LUA_INCLUDE_DIR})
 
-ament_target_dependencies(flatland_lib flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers sensor_msgs)
-
-target_link_libraries(flatland_lib
+target_link_libraries(flatland_lib PUBLIC
+  flatland_box2d::flatland_box2d_lib
+  rclcpp::rclcpp
+  pluginlib::pluginlib
+  tf2::tf2
+  tf2_ros::tf2_ros
+  tf2_geometry_msgs::tf2_geometry_msgs
+  interactive_markers::interactive_markers
+  ${flatland_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${std_srvs_TARGETS}
+  ${visualization_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
   ${OpenCV_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::headers
   ${LUA_LIBRARIES}
   yaml-cpp
 )
 
 ## Declare a C++ executable
 add_executable(flatland_server src/flatland_server_node.cpp)
-ament_target_dependencies(flatland_server flatland_box2d rclcpp flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs visualization_msgs interactive_markers)
 
 target_include_directories(flatland_server
   PUBLIC
@@ -113,8 +128,7 @@ target_include_directories(flatland_server
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flatland_server
   ${OpenCV_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${Boost_FILESYSTEM_LIBRARY}
+  Boost::headers
   ${LUA_LIBRARIES}
   yaml-cpp
   flatland_lib
@@ -123,7 +137,7 @@ target_link_libraries(flatland_server
 
 ament_export_targets(export_flatland_lib HAS_LIBRARY_TARGET)
 ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_box2d flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs)
+ament_export_dependencies(rclcpp flatland_box2d flatland_msgs yaml_cpp_vendor pluginlib geometry_msgs std_srvs tf2 tf2_ros tf2_geometry_msgs Boost)
 ament_export_include_directories(include)
 
 

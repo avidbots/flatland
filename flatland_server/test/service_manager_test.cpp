@@ -50,13 +50,14 @@
 #include <gtest/gtest.h>
 
 #include <chrono>
+#include <filesystem>
 #include <flatland_msgs/srv/delete_model.hpp>
 #include <flatland_msgs/srv/move_model.hpp>
 #include <flatland_msgs/srv/spawn_model.hpp>
 #include <regex>
 #include <thread>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 using namespace std::chrono_literals;
 
@@ -72,9 +73,9 @@ public:
 
 protected:
   SimulationManager * sim_man;
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
-  boost::filesystem::path robot_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
+  fs::path robot_yaml;
   Timekeeper timekeeper;
   rclcpp::Node::SharedPtr node;
   std::thread simulation_thread;
@@ -82,7 +83,7 @@ protected:
   void SetUp() override
   {
     sim_man = nullptr;
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     timekeeper.SetMaxStepSize(1.0);
   }
 

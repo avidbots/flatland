@@ -7,14 +7,13 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2018 Avidbots Corp.
+ *  Copyright (c) 2018, Avidbots Corp.
  * @name   spawn_model_tool.cpp
  * @brief  Rviz compatible tool for spawning flatland model
  * @author Joseph Duchesne
  * @author Mike Brousseau
  *
- * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2018, Avidbots Corp.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -35,7 +34,7 @@
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
  *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
  *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
  *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
@@ -63,7 +62,6 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <boost/filesystem.hpp>
 #include <rviz_common/display_context.hpp>
 #include <rviz_common/load_resource.hpp>
 #include <rviz_common/render_panel.hpp>

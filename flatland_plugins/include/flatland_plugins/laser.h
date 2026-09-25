@@ -44,11 +44,12 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <flatland_plugins/gaussian_noise.h>
 #include <flatland_plugins/update_timer.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/types.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.hpp>
 #include <thirdparty/ThreadPool.h>
 
 #include <Eigen/Dense>
@@ -94,7 +95,7 @@ public:
   uint16_t reflectance_layers_bits_;
 
   std::default_random_engine rng_;              ///< random generator
-  std::normal_distribution<double> noise_gen_;  ///< gaussian noise generator
+  GaussianNoise noise_gen_;  ///< gaussian noise generator
 
   Eigen::Matrix3f m_body_to_laser_;         ///< tf from body to laser
   Eigen::Matrix3f m_world_to_body_;         ///< tf  from world to body

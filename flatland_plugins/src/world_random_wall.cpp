@@ -54,6 +54,7 @@
 #include <algorithm>
 #include <iostream>
 #include <pluginlib/class_list_macros.hpp>
+#include <random>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
@@ -113,8 +114,8 @@ void RandomWall::OnInitialize(const YAML::Node & config, YamlReader & world_conf
   for (b2Fixture * f = layer->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
     Wall_List.push_back(static_cast<b2EdgeShape *>(f->GetShape()));
   }
-  std::srand(std::time(0));
-  std::random_shuffle(Wall_List.begin(), Wall_List.end());
+  std::mt19937 generator(std::random_device{}());
+  std::shuffle(Wall_List.begin(), Wall_List.end(), generator);
   try {
     for (unsigned int i = 0; i < num_of_walls; i++) {
       modifier.AddFullWall(Wall_List[i]);

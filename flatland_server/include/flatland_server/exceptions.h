@@ -49,7 +49,6 @@
 
 #include <yaml-cpp/yaml.h>
 
-#include <boost/filesystem.hpp>
 #include <exception>
 #include <string>
 

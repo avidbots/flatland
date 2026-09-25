@@ -91,7 +91,7 @@ ServiceManager::ServiceManager(SimulationManager * sim_man, World * world)
 }
 
 bool ServiceManager::ChangeRate(
-  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<rmw_request_id_t>,
   const std::shared_ptr<flatland_msgs::srv::ChangeRate::Request> request,
   std::shared_ptr<flatland_msgs::srv::ChangeRate::Response> response)
 {
@@ -111,7 +111,7 @@ bool ServiceManager::ChangeRate(
 }
 
 bool ServiceManager::SpawnModel(
-  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<rmw_request_id_t>,
   const std::shared_ptr<flatland_msgs::srv::SpawnModel::Request> request,
   std::shared_ptr<flatland_msgs::srv::SpawnModel::Response> response)
 {
@@ -139,7 +139,7 @@ bool ServiceManager::SpawnModel(
 }
 
 bool ServiceManager::DeleteModel(
-  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<rmw_request_id_t>,
   const std::shared_ptr<flatland_msgs::srv::DeleteModel::Request> request,
   std::shared_ptr<flatland_msgs::srv::DeleteModel::Response> response)
 {
@@ -160,7 +160,7 @@ bool ServiceManager::DeleteModel(
 }
 
 bool ServiceManager::MoveModel(
-  const std::shared_ptr<rmw_request_id_t> request_header,
+  const std::shared_ptr<rmw_request_id_t>,
   const std::shared_ptr<flatland_msgs::srv::MoveModel::Request> request,
   std::shared_ptr<flatland_msgs::srv::MoveModel::Response> response)
 {
@@ -183,27 +183,27 @@ bool ServiceManager::MoveModel(
 }
 
 bool ServiceManager::Pause(
-  const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<std_srvs::srv::Empty::Request> request,
-  std::shared_ptr<std_srvs::srv::Empty::Response> response)
+  const std::shared_ptr<rmw_request_id_t>,
+  const std::shared_ptr<std_srvs::srv::Empty::Request>,
+  std::shared_ptr<std_srvs::srv::Empty::Response>)
 {
   world_->Pause();
   return true;
 }
 
 bool ServiceManager::Resume(
-  const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<std_srvs::srv::Empty::Request> request,
-  std::shared_ptr<std_srvs::srv::Empty::Response> response)
+  const std::shared_ptr<rmw_request_id_t>,
+  const std::shared_ptr<std_srvs::srv::Empty::Request>,
+  std::shared_ptr<std_srvs::srv::Empty::Response>)
 {
   world_->Resume();
   return true;
 }
 
 bool ServiceManager::TogglePause(
-  const std::shared_ptr<rmw_request_id_t> request_header,
-  const std::shared_ptr<std_srvs::srv::Empty::Request> request,
-  std::shared_ptr<std_srvs::srv::Empty::Response> response)
+  const std::shared_ptr<rmw_request_id_t>,
+  const std::shared_ptr<std_srvs::srv::Empty::Request>,
+  std::shared_ptr<std_srvs::srv::Empty::Response>)
 {
   world_->TogglePaused();
   return true;

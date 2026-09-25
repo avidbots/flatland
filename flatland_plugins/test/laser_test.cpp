@@ -50,10 +50,11 @@
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 
+#include <filesystem>
 #include <regex>
 #include <sensor_msgs/msg/laser_scan.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
 using std::placeholders::_1;
@@ -61,8 +62,8 @@ using std::placeholders::_1;
 class LaserPluginTest : public ::testing::Test
 {
 public:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   sensor_msgs::msg::LaserScan scan_front, scan_center, scan_back;
   World * w;
   std::shared_ptr<rclcpp::Node> node;
@@ -71,7 +72,7 @@ public:
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 
@@ -174,15 +175,17 @@ TEST_F(LaserPluginTest, range_test)
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   w = World::MakeWorld(node, world_yaml.string());
 
   auto * obj = dynamic_cast<LaserPluginTest *>(this);
   auto sub_1 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
+    "r/scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
   auto sub_2 = node->create_subscription<sensor_msgs::msg::LaserScan>(
     "scan_center", 1, std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
   auto sub_3 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
+    "r/scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
 
   auto * p1 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[0].get());
   auto * p2 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[1].get());
@@ -192,7 +195,7 @@ TEST_F(LaserPluginTest, range_test)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 10; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 
@@ -226,15 +229,17 @@ TEST_F(LaserPluginTest, intensity_test)
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   w = World::MakeWorld(node, world_yaml.string());
 
   auto * obj = dynamic_cast<LaserPluginTest *>(this);
   auto sub_1 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
+    "r/scan", 1, std::bind(&LaserPluginTest::ScanFrontCb, obj, _1));
   auto sub_2 = node->create_subscription<sensor_msgs::msg::LaserScan>(
     "scan_center", 1, std::bind(&LaserPluginTest::ScanCenterCb, obj, _1));
   auto sub_3 = node->create_subscription<sensor_msgs::msg::LaserScan>(
-    "scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
+    "r/scan_back", 1, std::bind(&LaserPluginTest::ScanBackCb, obj, _1));
 
   auto * p1 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[0].get());
   auto * p2 = dynamic_cast<Laser *>(w->plugin_manager_.model_plugins_[1].get());
@@ -244,7 +249,7 @@ TEST_F(LaserPluginTest, intensity_test)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 10; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 

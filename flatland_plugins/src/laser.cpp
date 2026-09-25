@@ -49,7 +49,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/yaml_reader.h>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 
 #include <boost/algorithm/string/join.hpp>
 #include <cmath>
@@ -69,9 +69,7 @@ void Laser::OnInitialize(const YAML::Node & config)
 
   update_timer_.SetRate(update_rate_);
 
-  //add namespace
-  std::string ns = GetModel()->GetName();
-  topic_ = ns + "/" + topic_;
+  topic_ = GetModel()->NameSpaceTopic(topic_);
   scan_publisher_ = node_->create_publisher<sensor_msgs::msg::LaserScan>(topic_, 1);
 
   // construct the body to laser transformation matrix once since it never
@@ -200,7 +198,7 @@ void Laser::ComputeLaserRanges()
 }
 
 float LaserCallback::ReportFixture(
-  b2Fixture * fixture, const b2Vec2 & point, const b2Vec2 & normal, float fraction)
+  b2Fixture * fixture, const b2Vec2 &, const b2Vec2 &, float fraction)
 {
   uint16_t category_bits = fixture->GetFilterData().categoryBits;
   // only register hit in the specified layers
@@ -266,7 +264,7 @@ void Laser::ParseParameters(const YAML::Node & config)
   // init the random number generators
   std::random_device rd;
   rng_ = std::default_random_engine(rd());
-  noise_gen_ = std::normal_distribution<double>(0.0, noise_std_dev_);
+  noise_gen_ = GaussianNoise(0.0, noise_std_dev_);
 
   RCLCPP_DEBUG(
     rclcpp::get_logger("LaserPlugin"),
@@ -274,7 +272,7 @@ void Laser::ParseParameters(const YAML::Node & config)
     "frame_id(%s) broadcast_tf(%d) update_rate(%f) range(%f)  "
     "noise_std_dev(%f) angle_min(%f) angle_max(%f) "
     "angle_increment(%f) layers(0x%u {%s})",
-    GetName().c_str(), topic_.c_str(), body_name.c_str(), body_, origin_.x, origin_.y,
+    GetName().c_str(), topic_.c_str(), body_name.c_str(), static_cast<void *>(body_), origin_.x, origin_.y,
     origin_.theta, frame_id_.c_str(), broadcast_tf_, update_rate_, range_, noise_std_dev_,
     min_angle_, max_angle_, increment_, layers_bits_, boost::algorithm::join(layers, ",").c_str());
 }

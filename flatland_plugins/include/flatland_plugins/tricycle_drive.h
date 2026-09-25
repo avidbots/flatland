@@ -47,6 +47,7 @@
 #include <Box2D/Box2D.h>
 #include <flatland_plugins/update_timer.h>
 #include <flatland_plugins/dynamics_limits.h>
+#include <flatland_plugins/gaussian_noise.h>
 #include <flatland_server/model_plugin.h>
 #include <flatland_server/timekeeper.h>
 
@@ -94,7 +95,7 @@ public:
   UpdateTimer update_timer_;
 
   default_random_engine rng_;
-  array<normal_distribution<double>, 6> noise_gen_;
+  array<GaussianNoise, 6> noise_gen_;
 
   /**
    * @name                OnInitialize

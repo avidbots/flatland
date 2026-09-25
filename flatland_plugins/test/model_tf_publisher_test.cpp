@@ -49,28 +49,29 @@
 #include <flatland_server/timekeeper.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_ros/transform_listener.hpp>
 
+#include <filesystem>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <regex>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 using namespace flatland_server;
 using namespace flatland_plugins;
 
 class ModelTfPublisherTest : public ::testing::Test
 {
 public:
-  boost::filesystem::path this_file_dir;
-  boost::filesystem::path world_yaml;
+  fs::path this_file_dir;
+  fs::path world_yaml;
   World * w;
 
   void SetUp() override
   {
-    this_file_dir = boost::filesystem::path(__FILE__).parent_path();
+    this_file_dir = fs::path(__FILE__).parent_path();
     w = nullptr;
   }
 
@@ -124,6 +125,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A)
 
   std::shared_ptr<rclcpp::Node> node =
     rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_A");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   w = World::MakeWorld(node, world_yaml.string());
@@ -145,7 +148,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 
@@ -196,6 +199,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B)
 
   std::shared_ptr<rclcpp::Node> node =
     rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_B");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   w = World::MakeWorld(node, world_yaml.string());
@@ -218,7 +223,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 

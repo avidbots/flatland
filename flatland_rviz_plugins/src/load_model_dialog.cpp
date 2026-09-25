@@ -7,14 +7,13 @@
  *    \ \_\ \_\ \___/  \ \_\ \___,_\ \_,__/\ \____/\ \__\/\____/
  *     \/_/\/_/\/__/    \/_/\/__,_ /\/___/  \/___/  \/__/\/___/
  * @copyright Copyright 2017 Avidbots Corp.
+ *  Copyright (c) 2017, Avidbots Corp.
  * @name   load_model_dialog.cpp
  * @brief  Spawn dialog
  * @author Joseph Duchesne
  * @author Mike Brousseau
  *
- * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2017, Avidbots Corp.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -35,7 +34,7 @@
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
  *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
- *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
  *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
  *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
@@ -46,8 +45,6 @@
  */
 
 #include "flatland_rviz_plugins/load_model_dialog.hpp"
-
-#include <string>
 
 #include <Ogre.h>
 
@@ -60,7 +57,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <boost/filesystem.hpp>
+#include <filesystem>
+#include <string>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_common/properties/float_property.hpp>
 #include <rviz_common/tool_manager.hpp>
@@ -125,7 +123,7 @@ LoadModelDialog::LoadModelDialog(
   h2_layout->addWidget(new QLabel("name:"));
   h2_layout->addWidget(n_edit);
 
-  // set the default name to the filename parsed using boost
+  // set the default name to the filename stem
   AddNumberAndUpdateName();
 
   // ok button
@@ -173,7 +171,7 @@ void LoadModelDialog::OkButtonClicked()
 
 void LoadModelDialog::AddNumberAndUpdateName()
 {
-  std::string bsfn = boost::filesystem::path(path_to_model_file.toStdString()).stem().string();
+  std::string bsfn = std::filesystem::path(path_to_model_file.toStdString()).stem().string();
   QString name = QString::fromStdString(bsfn);
 
   if (numbering) {

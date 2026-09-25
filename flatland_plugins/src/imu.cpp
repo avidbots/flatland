@@ -50,7 +50,7 @@
 #include <flatland_server/model_plugin.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <pluginlib/class_list_macros.hpp>
-#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Quaternion.hpp>
 
 namespace flatland_plugins {
 
@@ -140,18 +140,15 @@ void Imu::OnInitialize(const YAML::Node& config) {
   rng_ = std::default_random_engine(rd());
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i] =
-        std::normal_distribution<double>(0.0, sqrt(orientation_noise[i]));
+    noise_gen_[i] = GaussianNoise(0.0, sqrt(orientation_noise[i]));
   }
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i + 3] =
-        std::normal_distribution<double>(0.0, sqrt(angular_velocity_noise[i]));
+    noise_gen_[i + 3] = GaussianNoise(0.0, sqrt(angular_velocity_noise[i]));
   }
   for (int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i + 6] = std::normal_distribution<double>(
-        0.0, sqrt(linear_acceleration_noise[i]));
+    noise_gen_[i + 6] = GaussianNoise(0.0, sqrt(linear_acceleration_noise[i]));
   }
 
   imu_tf_.header.frame_id = GetModel()->NameSpaceTF(body_->GetName());  // Todo: parent_tf param
@@ -171,7 +168,7 @@ void Imu::OnInitialize(const YAML::Node& config) {
     "orientation_noise({%f,%f,%f}) angular_velocity_noise({%f,%f,%f}) "
     "linear_acceleration_velocity({%f,%f,%f}) "
     "pub_rate(%f)\n",
-    body_, body_->name_.c_str(), imu_frame_id_.c_str(), imu_topic.c_str(),
+    static_cast<void *>(body_), body_->name_.c_str(), imu_frame_id_.c_str(), imu_topic.c_str(),
     ground_truth_topic.c_str(), orientation_noise[0], orientation_noise[1],
     orientation_noise[2], angular_velocity_noise[0],
     angular_velocity_noise[1], angular_velocity_noise[2],
@@ -186,7 +183,6 @@ void Imu::AfterPhysicsStep(const Timekeeper& timekeeper) {
 
   b2Body* b2body = body_->physics_body_;
 
-  b2Vec2 position = b2body->GetPosition();
   float angle = b2body->GetAngle();
   b2Vec2 linear_vel_local =
       b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));

@@ -48,8 +48,8 @@
 #include <flatland_plugins/diff_drive.h>
 #include <flatland_server/debug_visualization.h>
 #include <flatland_server/model_plugin.h>
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2/convert.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2/convert.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
@@ -161,11 +161,11 @@ void DiffDrive::OnInitialize(const YAML::Node & config)
   rng_ = std::default_random_engine(rd());
   for (unsigned int i = 0; i < 3; i++) {
     // variance is standard deviation squared
-    noise_gen_[i] = std::normal_distribution<double>(0.0, sqrt(odom_pose_noise[i]));
+    noise_gen_[i] = GaussianNoise(0.0, sqrt(odom_pose_noise[i]));
   }
 
   for (unsigned int i = 0; i < 3; i++) {
-    noise_gen_[i + 3] = std::normal_distribution<double>(0.0, sqrt(odom_twist_noise[i]));
+    noise_gen_[i + 3] = GaussianNoise(0.0, sqrt(odom_twist_noise[i]));
   }
 
   RCLCPP_DEBUG(
@@ -174,7 +174,7 @@ void DiffDrive::OnInitialize(const YAML::Node & config)
     "twist_sub(%s) odom_pub(%s) ground_truth_pub(%s) "
     "odom_pose_noise({%f,%f,%f}) odom_twist_noise({%f,%f,%f}) "
     "pub_rate(%f)\n",
-    body_, body_->name_.c_str(), odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(),
+    static_cast<void *>(body_), body_->name_.c_str(), odom_frame_id.c_str(), twist_topic.c_str(), odom_topic.c_str(),
     ground_truth_topic.c_str(), odom_pose_noise[0], odom_pose_noise[1], odom_pose_noise[2],
     odom_twist_noise[0], odom_twist_noise[1], odom_twist_noise[2], pub_rate);
 }

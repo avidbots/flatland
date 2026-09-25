@@ -57,8 +57,8 @@ Model::Model(
   const std::string & ns, const std::string & name)
 : Entity(node, physics_world, name),
   namespace_(ns),
-  cfr_(cfr),
   plugins_reader_(node),
+  cfr_(cfr),
   viz_name_("models/m_" + name_)
 {
 }
@@ -285,7 +285,7 @@ void Model::DebugOutput() const
     rclcpp::get_logger("Model"),
     "Model %p: physics_world(%p) name(%s) namespace(%s) "
     "num_bodies(%lu) num_joints(%lu)",
-    this, physics_world_, name_.c_str(), namespace_.c_str(), bodies_.size(), joints_.size());
+    const_cast<void *>(static_cast<const void *>(this)), static_cast<void *>(physics_world_), name_.c_str(), namespace_.c_str(), bodies_.size(), joints_.size());
 
   for (const auto & body : bodies_) {
     body->DebugOutput();
@@ -300,8 +300,8 @@ void Model::DumpBox2D() const
 {
   for (const auto & body : bodies_) {
     b2Log(
-      "BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", body, body->name_.c_str(),
-      body->physics_body_, this, name_.c_str());
+      "BODY %p name=%s box2d_body=%p model=%p model_name=%s\n", static_cast<void *>(body), body->name_.c_str(),
+      static_cast<void *>(body->physics_body_), const_cast<void *>(static_cast<const void *>(this)), name_.c_str());
     body->physics_body_->Dump();
   }
 
@@ -311,8 +311,8 @@ void Model::DumpBox2D() const
     b2Log(
       "JOINT %p name=%s  box2d_joint=%p model=%p model_name=%s "
       "body_A(%p %s) body_B(%p %s)\n",
-      joint, joint->name_.c_str(), joint->physics_joint_, this, name_.c_str(), body_A,
-      body_A->name_.c_str(), body_B, body_B->name_.c_str());
+      static_cast<void *>(joint), joint->name_.c_str(), static_cast<void *>(joint->physics_joint_), const_cast<void *>(static_cast<const void *>(this)), name_.c_str(), static_cast<void *>(body_A),
+      body_A->name_.c_str(), static_cast<void *>(body_B), body_B->name_.c_str());
     joint->physics_joint_->Dump();
   }
 }

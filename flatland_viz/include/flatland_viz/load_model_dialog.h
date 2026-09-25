@@ -67,7 +67,6 @@
 #include <QWidget>
 //#include <Ogre.h>
 
-#include <boost/filesystem.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rviz_rendering/geometry.hpp>
 #include <rviz_rendering/mesh_loader.hpp>

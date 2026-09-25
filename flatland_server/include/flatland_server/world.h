@@ -55,6 +55,7 @@
 #include <flatland_server/plugin_manager.h>
 #include <flatland_server/timekeeper.h>
 
+#include <filesystem>
 #include <map>
 #include <rclcpp/rclcpp.hpp>
 #include <string>
@@ -71,7 +72,7 @@ namespace flatland_server
 class World : public b2ContactListener
 {
 public:
-  boost::filesystem::path world_yaml_dir_;  ///< directory containing world file
+  std::filesystem::path world_yaml_dir_;  ///< directory containing world file
   std::shared_ptr<rclcpp::Node> node_;
   b2World * physics_world_;  ///< Box2D physics world
   b2Vec2 gravity_;           ///< Box2D world gravity, always (0, 0)
