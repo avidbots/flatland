@@ -86,11 +86,11 @@ public:
   ~FlatlandViz() override;
 
   /**
-   * @brief Recieve a new DebugTopicList msg and add/remove displays as required
+   * @brief Receive a new DebugTopicList msg and add/remove displays as required
    *
    * @param msg The DebugTopicList message
    */
-  void RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg);
+  void ReceiveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg);
 
 private:
   void addTool(rviz_common::Tool * tool);

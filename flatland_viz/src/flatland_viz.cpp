@@ -121,7 +121,7 @@ FlatlandViz::FlatlandViz(
   using std::placeholders::_1;
   debug_topic_subscriber_ = node->create_subscription<flatland_msgs::msg::DebugTopicList>(
     "topics", rclcpp::QoS(1).transient_local(),
-    std::bind(&FlatlandViz::RecieveDebugTopics, this, _1));
+    std::bind(&FlatlandViz::ReceiveDebugTopics, this, _1));
 
   manager_->startUpdate();
 }
@@ -159,7 +159,7 @@ void FlatlandViz::onToolbarActionTriggered(QAction * action)
   }
 }
 
-void FlatlandViz::RecieveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg)
+void FlatlandViz::ReceiveDebugTopics(const flatland_msgs::msg::DebugTopicList::SharedPtr msg)
 {
   const std::vector<std::string> & topics = msg->topics;
 

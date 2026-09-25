@@ -16,7 +16,7 @@ Modes
 - ``yoyo`` - move back and forth between the start and end position repeatedly
 - ``once`` - move to the end position and stop
 - ``loop`` - move to the end position then teleport back, then repeat indefinitely
-- ``trigger`` - move towards the end position if the "trigger_topic" ros topic recieves ``true``, move towards start otherwise.
+- ``trigger`` - move towards the end position if the "trigger_topic" ros topic receives ``true``, move towards start otherwise.
 
 Easings
 ^^^^^^^
