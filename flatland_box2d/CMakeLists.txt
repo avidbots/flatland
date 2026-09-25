@@ -15,6 +15,10 @@ set(BOX2D_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(box2d
   GIT_REPOSITORY https://github.com/erincatto/box2d.git
   GIT_TAG 8c661469c9507d3ad6fbd2fea3f1aa71669c2fe3 # v3.1.1
+  PATCH_COMMAND
+    ${CMAKE_COMMAND}
+      -DBOX2D_SOURCE_DIR=<SOURCE_DIR>
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/set_box2d_linear_slop.cmake"
 )
 FetchContent_MakeAvailable(box2d)
 

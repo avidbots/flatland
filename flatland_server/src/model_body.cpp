@@ -48,6 +48,7 @@
 #include <flatland_server/model_body.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <stdexcept>
 
 namespace flatland_server
 {
@@ -185,9 +186,16 @@ void ModelBody::LoadPolygonFootprint(YamlReader & footprint_reader)
   ConfigFootprintDef(footprint_reader, fixture_def);
 
   flatland::b2PolygonShape shape;
-  shape.Set(points.data(), points.size());
-
-  fixture_def.shape = &shape;
-  physics_body_->CreateFixture(&fixture_def);
+  try {
+    shape.Set(points.data(), points.size());
+    fixture_def.shape = &shape;
+    physics_body_->CreateFixture(&fixture_def);
+  } catch (const std::invalid_argument & e) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("ModelBody"), "Skipping invalid polygon footprint for body \"" << name_
+                                                                                          << "\" in "
+                                                                                          << footprint_reader.entry_location_
+                                                                                          << ": " << e.what());
+  }
 }
 };  // namespace flatland_server

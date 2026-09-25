@@ -112,7 +112,7 @@ Layer::Layer(
 
   if (skipped_line_segments > 0) {
     RCLCPP_WARN_STREAM(
-      rclcpp::get_logger("Layer"), "Skipped " << skipped_line_segments
+      rclcpp::get_logger("Layer"), "Skipped "   << skipped_line_segments
                                                 << " line segment(s) at or below Box2D's 5 mm "
                                                    "minimum in layer \""
                                                 << names_[0] << "\"");
