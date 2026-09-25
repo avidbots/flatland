@@ -47,6 +47,7 @@
 #ifndef FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
 #define FLATLAND_SERVER_COLLISION_FILTER_REGISTRY_H
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
