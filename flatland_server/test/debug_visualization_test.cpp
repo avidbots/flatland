@@ -395,12 +395,16 @@ TEST(DebugVizTest, testJointToMarkersMultiJoint)
 struct MarkerArraySubscriptionHelper
 {
   std::shared_ptr<rclcpp::Node> node_;
+  std::shared_ptr<rclcpp::executors::SingleThreadedExecutor> executor_;
   visualization_msgs::msg::MarkerArray markers_;
   int count_;
 
   explicit MarkerArraySubscriptionHelper(std::shared_ptr<rclcpp::Node> node)
-  : node_(std::move(node)), count_(0)
+  : node_(std::move(node)),
+    executor_(std::make_shared<rclcpp::executors::SingleThreadedExecutor>()),
+    count_(0)
   {
+    executor_->add_node(node_);
   }
 
   /**
@@ -426,7 +430,7 @@ struct MarkerArraySubscriptionHelper
   {
     rclcpp::Rate rate(10);  // throttle check to 10Hz
     for (unsigned int i = 0; i < 20; i++) {
-      rclcpp::spin_some(node_);
+      executor_->spin_some();
       if (count_ >= count) return true;
       rate.sleep();
     }
@@ -474,7 +478,7 @@ TEST(DebugVizTest, testPublishMarkers)
 
   // Check pre publish conditions
   EXPECT_EQ(debugVis->topics_.size(), 1UL);
-  rclcpp::spin_some(node);
+  helper.executor_->spin_some();
   EXPECT_EQ(helper.count_, 0);
   EXPECT_EQ(debugVis->topics_["example"].needs_publishing, true);
 

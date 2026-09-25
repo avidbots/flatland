@@ -119,11 +119,14 @@ public:
     timekeeper.SetMaxStepSize(step_size);
     rclcpp::WallRate rate(wall_rate);
 
+    rclcpp::executors::SingleThreadedExecutor executor;
+    executor.add_node(node);
+
     // run for two seconds
     auto timeLimit = rclcpp::Time(sim_test_time, 0);
     while (timekeeper.GetSimTime() < timeLimit) {
       w->Update(timekeeper);
-      rclcpp::spin_some(node);
+      executor.spin_some();
       rate.sleep();
     }
 

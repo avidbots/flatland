@@ -125,6 +125,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A)
 
   std::shared_ptr<rclcpp::Node> node =
     rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_A");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   w = World::MakeWorld(node, world_yaml.string());
@@ -146,7 +148,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_A)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 
@@ -197,6 +199,8 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B)
 
   std::shared_ptr<rclcpp::Node> node =
     rclcpp::Node::make_shared("test_tf_publisher_tf_publish_test_B");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   w = World::MakeWorld(node, world_yaml.string());
@@ -219,7 +223,7 @@ TEST_F(ModelTfPublisherTest, tf_publish_test_B)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 

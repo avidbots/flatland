@@ -175,6 +175,8 @@ TEST_F(LaserPluginTest, range_test)
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   w = World::MakeWorld(node, world_yaml.string());
 
   auto * obj = dynamic_cast<LaserPluginTest *>(this);
@@ -193,7 +195,7 @@ TEST_F(LaserPluginTest, range_test)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 10; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 
@@ -227,6 +229,8 @@ TEST_F(LaserPluginTest, intensity_test)
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(1.0);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  rclcpp::executors::SingleThreadedExecutor executor;
+  executor.add_node(node);
   w = World::MakeWorld(node, world_yaml.string());
 
   auto * obj = dynamic_cast<LaserPluginTest *>(this);
@@ -245,7 +249,7 @@ TEST_F(LaserPluginTest, intensity_test)
   rclcpp::WallRate rate(500);
   for (unsigned int i = 0; i < 10; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
     rate.sleep();
   }
 

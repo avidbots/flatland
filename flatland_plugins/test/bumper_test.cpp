@@ -69,6 +69,7 @@ public:
   flatland_msgs::msg::Collisions msg1, msg2;
   World * w;
   std::shared_ptr<rclcpp::Node> node;
+  rclcpp::executors::SingleThreadedExecutor executor;
 
   BumperPluginTest() : node(rclcpp::Node::make_shared("test_bumper_plugin")) {}
 
@@ -182,7 +183,7 @@ public:
   {
     rclcpp::WallRate rate(hz);
     for (unsigned int i = 0; i < iterations; i++) {
-      rclcpp::spin_some(node);
+      executor.spin_some();
       rate.sleep();
     }
   }
@@ -198,6 +199,7 @@ TEST_F(BumperPluginTest, collision_test)
   Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.01);
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("test_node");
+  executor.add_node(node);
   w = World::MakeWorld(node, world_yaml.string());
 
   BumperPluginTest * obj = dynamic_cast<BumperPluginTest *>(this);
@@ -214,7 +216,7 @@ TEST_F(BumperPluginTest, collision_test)
   // check that there are no collision at the beginning
   for (unsigned int i = 0; i < 100; i++) {
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
   }
   SpinRos(500, 10);  // make sure the messages gets through
 
@@ -229,7 +231,7 @@ TEST_F(BumperPluginTest, collision_test)
     // moving at the desired velocity
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
   }
   SpinRos(500, 10);  // makes sure the ros message gets through
 
@@ -242,7 +244,7 @@ TEST_F(BumperPluginTest, collision_test)
   for (unsigned int i = 0; i < 50; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(1, 0.0));
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
   }
   SpinRos(500, 10);
   ASSERT_TRUE(CollisionsEq(msg1, "map", 2));
@@ -258,7 +260,7 @@ TEST_F(BumperPluginTest, collision_test)
   for (unsigned int i = 0; i < 300; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0.0));
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
   }
   SpinRos(500, 10);
 
@@ -273,7 +275,7 @@ TEST_F(BumperPluginTest, collision_test)
   for (unsigned int i = 0; i < 300; i++) {
     b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0.0));
     w->Update(timekeeper);
-    rclcpp::spin_some(node);
+    executor.spin_some();
   }
   SpinRos(500, 10);
 
