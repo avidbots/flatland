@@ -1,19 +1,38 @@
 # README #
 
-![ci test result](https://travis-ci.com/avidbots/flatland.svg?branch=master "CI Test Result")
+### What is Flatland? ###
 
+Flatland is a lightweight 2.5D robot simulator for ROS 1 and ROS 2.
 
-### What is this repository for? ###
+- Simulate 2D motion with a variety of drivetrains.
+- Extend worlds and robots with plugins for dynamic maps, lidar, and drive control.
+- Run faster than real time; connected ROS nodes may encounter timing issues if they cannot keep up.
+- Allows headless execution, with RViz based visualization if needed
 
-* Flatland is a performance centric 2d robot simulator
-* [Roadmap on trello](https://trello.com/b/s9poP2Jg/flatland-2d-simulator)
-* Release Version: None
+### Dev container (recommended) ###
 
-### How do I get set up? ###
+1. Install Docker, VS Code, and the Dev Containers extension.
+2. Open the Flatland repository in VS Code and run **Dev Containers: Reopen in Container**.
+3. Choose Humble, Jazzy, Kilted, Lyrical, or Rolling when prompted.
 
-* Git clone flatland into your catkin workspace's src folder, and catkin build.
-* Optionally check out [turtlebot_flatland](https://github.com/avidbots/turtlebot_flatland) and run the turtlebot nav stack
-* Run `rosdep install --from-paths src --ignore-src` in your catkin workspace to install any missing rosdeps
+Once the container opens, Flatland is ready to use. Run **Dev Containers: Rebuild Container** if you change package dependencies.
+
+### Without a dev container (ROS 2) ###
+
+Install ROS 2 on your host, or in a container, then run the following:
+
+```bash
+mkdir -p ~/flatland_ws/src
+git clone https://github.com/avidbots/flatland.git ~/flatland_ws/src/flatland
+source /opt/ros/*/setup.bash
+cd ~/flatland_ws
+rosdep update
+rosdep install --from-paths src --ignore-src -y
+colcon build --symlink-install
+source install/setup.bash
+```
+
+For older ROS 1 / catkin setups, check out a ROS 1-compatible Flatland version in your catkin workspace's `src` directory. From the workspace root, run `rosdep install --from-paths src --ignore-src -y` and `catkin build`.
 
 ### Who do I talk to? ###
 

@@ -1,0 +1,29 @@
+{
+    "name": "Flatland (Rolling)",
+    "build": {
+        "dockerfile": "../Dockerfile",
+        "context": "../..",
+        "args": { "ROS_DISTRO": "rolling" }
+    },
+    "runArgs": ["--init"],
+    "workspaceFolder": "/opt/overlay_ws/src/flatland",
+    "workspaceMount": "source=${localWorkspaceFolder},target=${containerWorkspaceFolder},type=bind",
+    "mounts": [
+        { "source": "overlay-${devcontainerId}", "target": "/opt/overlay_ws", "type": "volume" },
+        { "source": "ccache-${devcontainerId}", "target": "/tmp/.ccache", "type": "volume" }
+    ],
+    "remoteEnv": { "CCACHE_DIR": "/tmp/.ccache" },
+    "onCreateCommand": "bash .devcontainer/on-create-command.sh",
+    "updateContentCommand": "bash .devcontainer/update-content-command.sh",
+    "postCreateCommand": "bash .devcontainer/post-create-command.sh",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "althack.ament-task-provider",
+                "eamodio.gitlens",
+                "ms-iot.vscode-ros",
+                "twxs.cmake"
+            ]
+        }
+    }
+}
