@@ -13,6 +13,8 @@
 #include <visualization_msgs/msg/interactive_marker_feedback.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+#include <unordered_map>
+
 namespace flatland_server
 {
 
@@ -72,6 +74,8 @@ private:
   /// interactive marker server stops
   /// manipulating without triggering a
   /// MOUSE_UP event.
+  rclcpp::Time last_marker_update_{0, 0, RCL_STEADY_TIME};
+  std::unordered_map<std::string, geometry_msgs::msg::Pose> marker_poses_;
 
   /**
    * @brief Process interactive feedback on a MOUSE_UP event and use it

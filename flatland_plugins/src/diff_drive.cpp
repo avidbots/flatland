@@ -70,6 +70,8 @@ void DiffDrive::OnInitialize(const YAML::Node & config)
   YamlReader reader(node_, config);
   enable_odom_pub_ = reader.Get<bool>("enable_odom_pub", true);
   enable_odom_tf_ = reader.Get<bool>("enable_odom_tf", true);
+  odom_include_pose_ = reader.Get<bool>("odom_include_pose", false);
+  odom_stationary_noise_ = reader.Get<bool>("odom_stationary_noise", false);
 
   enable_twist_pub_ = reader.Get<bool>("enable_twist_pub", true);
   twist_in_local_frame_ = reader.Get<bool>("twist_in_local_frame", true);
@@ -248,17 +250,25 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
     odom_msg_.header.stamp = timekeeper.GetSimTime();
     odom_msg_.pose.pose = ground_truth_msg_.pose.pose;
     odom_msg_.twist.twist = ground_truth_msg_.twist.twist;
-    odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
-    odom_msg_.pose.pose.position.y += noise_gen_[1](rng_);
-    q.setRPY(0, 0, angle + noise_gen_[2](rng_));
-    odom_msg_.pose.pose.orientation = tf2::toMsg(q);
-    odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
-    odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
-    odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
+    bool add_noise = odom_stationary_noise_ || linear_vel_local.x != 0 ||
+      linear_vel_local.y != 0 || angular_vel != 0;
+    if (add_noise) {
+      odom_msg_.pose.pose.position.x += noise_gen_[0](rng_);
+      odom_msg_.pose.pose.position.y += noise_gen_[1](rng_);
+      q.setRPY(0, 0, angle + noise_gen_[2](rng_));
+      odom_msg_.pose.pose.orientation = tf2::toMsg(q);
+      odom_msg_.twist.twist.linear.x += noise_gen_[3](rng_);
+      odom_msg_.twist.twist.linear.y += noise_gen_[4](rng_);
+      odom_msg_.twist.twist.angular.z += noise_gen_[5](rng_);
+    }
 
     if (enable_odom_pub_) {
       ground_truth_pub_->publish(ground_truth_msg_);
-      odom_pub_->publish(odom_msg_);
+      nav_msgs::msg::Odometry odom_pub_msg = odom_msg_;
+      if (!odom_include_pose_) {
+        odom_pub_msg.pose = geometry_msgs::msg::PoseWithCovariance();
+      }
+      odom_pub_->publish(odom_pub_msg);
     }
 
     if (enable_twist_pub_) {
@@ -270,11 +280,14 @@ void DiffDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
 
       // Forward velocity in twist.linear.x
       twist_pub_msg.twist.twist.linear.x = cos(angle) * linear_vel_local.x +
-                                           sin(angle) * linear_vel_local.y +
-                                           noise_gen_[3](rng_);
+                                           sin(angle) * linear_vel_local.y;
 
       // Angular velocity in twist.angular.z
-      twist_pub_msg.twist.twist.angular.z = angular_vel + noise_gen_[5](rng_);
+      twist_pub_msg.twist.twist.angular.z = angular_vel;
+      if (add_noise) {
+        twist_pub_msg.twist.twist.linear.x += noise_gen_[3](rng_);
+        twist_pub_msg.twist.twist.angular.z += noise_gen_[5](rng_);
+      }
 
       twist_pub_msg.twist.covariance = odom_msg_.twist.covariance;
 

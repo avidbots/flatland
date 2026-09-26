@@ -208,6 +208,7 @@ b2Vec2 b2Body::GetLocalPoint(b2Vec2 point) const { return ::b2Body_GetLocalPoint
 b2Vec2 b2Body::GetWorldPoint(b2Vec2 point) const { return ::b2Body_GetWorldPoint(id_, point); }
 b2Vec2 b2Body::GetWorldVector(b2Vec2 vector) const { return ::b2Body_GetWorldVector(id_, vector); }
 b2Vec2 b2Body::GetWorldCenter() const { return ::b2Body_GetWorldCenterOfMass(id_); }
+float b2Body::GetMass() const { return ::b2Body_GetMass(id_); }
 b2Vec2 b2Body::GetLinearVelocity() const { return ::b2Body_GetLinearVelocity(id_); }
 float b2Body::GetAngularVelocity() const { return ::b2Body_GetAngularVelocity(id_); }
 b2Vec2 b2Body::GetLinearVelocityFromLocalPoint(b2Vec2 point) const
@@ -218,6 +219,7 @@ float b2Body::GetLinearDamping() const { return ::b2Body_GetLinearDamping(id_); 
 float b2Body::GetAngularDamping() const { return ::b2Body_GetAngularDamping(id_); }
 void b2Body::SetLinearVelocity(b2Vec2 value) { ::b2Body_SetLinearVelocity(id_, value); }
 void b2Body::SetAngularVelocity(float value) { ::b2Body_SetAngularVelocity(id_, value); }
+void b2Body::ApplyForce(b2Vec2 force, b2Vec2 point) { ::b2Body_ApplyForce(id_, force, point, true); }
 void b2Body::SetAwake(bool awake) { ::b2Body_SetAwake(id_, awake); }
 void b2Body::Dump() const
 {

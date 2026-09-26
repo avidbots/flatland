@@ -80,6 +80,8 @@ public:
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< For publish ROS TF
   bool enable_odom_pub_;   ///< YAML parameter to enable odom publishing
   bool enable_odom_tf_;    ///< YAML parameter to enable publishing map->odom TF
+  bool odom_include_pose_; ///< YAML parameter to include pose in noisy odometry
+  bool odom_stationary_noise_; ///< YAML parameter to enable noise while stationary
   bool enable_twist_pub_;  ///< YAML parameter to enable twist publishing
   bool twist_in_local_frame_;  ///< YAML parameter to publish velocity in local
                                /// frame. Original diff drive plugin publishes

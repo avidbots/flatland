@@ -31,6 +31,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_msgs REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(flatland_server REQUIRED)
 find_package(flatland_msgs REQUIRED)
@@ -69,9 +70,11 @@ add_library(flatland_plugins_lib SHARED
   src/laser.cpp
   src/tricycle_drive.cpp
   src/diff_drive.cpp
+  src/free_wheel.cpp
   src/imu.cpp
   src/dynamics_limits.cpp
   src/model_tf_publisher.cpp
+  src/initial_pose.cpp
   src/update_timer.cpp
   src/bumper.cpp
   src/tween.cpp
@@ -96,6 +99,7 @@ target_link_libraries(flatland_plugins_lib PUBLIC
   pluginlib::pluginlib
   tf2::tf2
   tf2_ros::tf2_ros
+  ${tf2_msgs_TARGETS}
   tf2_geometry_msgs::tf2_geometry_msgs
   ${flatland_msgs_TARGETS}
   ${std_msgs_TARGETS}
@@ -110,7 +114,7 @@ target_link_libraries(flatland_plugins_lib PUBLIC
 
 ament_export_targets(export_flatland_plugins_lib HAS_LIBRARY_TARGET)
 # ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib geometry_msgs tf2 tf2_ros tf2_geometry_msgs yaml_cpp_vendor)
+ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib std_msgs geometry_msgs tf2 tf2_ros tf2_msgs tf2_geometry_msgs yaml_cpp_vendor)
 
 #############
 ## Install ##
@@ -151,6 +155,9 @@ if(BUILD_TESTING)
 
   ament_add_gtest(diff_drive_test test/diff_drive_test.cpp)
   target_link_libraries(diff_drive_test flatland_plugins_lib)
+
+  ament_add_gtest(free_wheel_test test/free_wheel_test.cpp)
+  target_link_libraries(free_wheel_test flatland_plugins_lib)
 
   ament_add_gtest(dynamics_limits_test test/dynamics_limits_test.cpp)
   target_link_libraries(dynamics_limits_test flatland_plugins_lib)

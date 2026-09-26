@@ -1,0 +1,205 @@
+# Turtlebot
+
+bodies:  # List of named bodies
+  - name: base
+    pose: [0, 0, 0] 
+    type: dynamic  
+    color: [1, 1, 1, 0.75] 
+    footprints:
+      - type: polygon  # wheel
+        sensor: true
+        points: [[-.06025, -.2], [-.06025, -.15], [.06025, -.15], [.06025, -.2]]
+        density: 1
+        layers: ["2d"]
+      - type: polygon  # wheel
+        sensor: true
+        points: [[-.06025, .2], [-.06025, .15], [.06025, .15], [.06025, .2]]
+        density: 1
+        layers: ["2d"]
+  - name: base_footprint
+    pose: [0, 0, 0]
+    type: dynamic
+    footprints:
+      - type: circle
+        radius: 0.001
+        sensor: true
+        density: 1
+        layers: []
+  - name: base_link
+    pose: [0, 0, 0]
+    type: dynamic
+    footprints:
+      - type: circle
+        radius: 0.001
+        sensor: true
+        density: 1
+        layers: []
+  - name: laser_mount
+    pose: [0, 0, 0] 
+    type: dynamic  
+    color: [1, 0, 0, 0.75] 
+    footprints:
+      - type: polygon  # Laser model
+        sensor: true
+        points: [[.025, -.025], [.025, 0.025], [-.025, 0.025], [-.025, -0.025]]
+        layers: []
+        density: 1
+  - name: shell
+    pose: [0,0,0]
+    type: dynamic
+    color: [0,0,1,1.0]
+    footprints:
+      - type: circle
+        radius: 0.2552
+        center: [0, 0]
+        density: 1
+        layers: ["2d"]  # Keep the door detector without colliding with 3D obstacles
+  # Feel free to comment out or remove the trailer if not needed
+  - name: trailer
+    pose: [-0.6052, 0, 0]
+    type: dynamic
+    color: [0.85, 0.55, 0.15, 1]
+    footprints:
+      - type: polygon  # Trailer main body
+        points: [[-0.15, -0.15], [0.15, -0.15], [0.15, 0.15], [-0.15, 0.15]]
+        density: 1
+        layers: ["3d"]
+      - type: polygon  # Trailer hitch
+        points: [[0.15, -0.15], [0.35, 0], [0.15, 0.15]]
+        density: 1
+        layers: ["2d"]
+  - name: trailer_left_wheel
+    pose: [-0.6852, 0.18, 0]
+    type: dynamic
+    color: [0.1, 0.1, 0.1, 1]
+    footprints:
+      - type: polygon
+        points: [[-0.06, -0.025], [0.06, -0.025], [0.06, 0.025], [-0.06, 0.025]]
+        density: 1
+        layers: ["2d"]
+  - name: trailer_right_wheel
+    pose: [-0.6852, -0.18, 0]
+    type: dynamic
+    color: [0.1, 0.1, 0.1, 1]
+    footprints:
+      - type: polygon
+        points: [[-0.06, -0.025], [0.06, -0.025], [0.06, 0.025], [-0.06, 0.025]]
+        density: 1
+        layers: ["2d"]
+
+joints:
+  - type: weld
+    name: base_footprint_weld
+    bodies:
+      - name: base_footprint
+        anchor: [0, 0]
+      - name: base
+        anchor: [0, 0]
+  - type: weld
+    name: base_link_weld
+    bodies:
+      - name: base_link
+        anchor: [0, 0]
+      - name: base
+        anchor: [0, 0]
+  - type: weld
+    name: laser_mount_weld
+    bodies: 
+      - name: laser_mount
+        anchor: [0, 0]
+      - name: base
+        anchor: [0, 0]
+  - type: weld
+    name: shell_mount_weld
+    bodies: 
+      - name: shell
+        anchor: [0, 0]
+      - name: base
+        anchor: [0, 0]
+  - type: revolute
+    name: trailer_hitch
+    limits: [-0.7854, 0.7854]  # +/- 45 degrees
+    bodies:
+      - name: base
+        anchor: [-0.2552, 0]
+      - name: trailer
+        anchor: [0.35, 0]
+  - type: weld
+    name: trailer_left_wheel_weld
+    bodies:
+      - name: trailer
+        anchor: [-0.08, 0.18]
+      - name: trailer_left_wheel
+        anchor: [0, 0]
+  - type: weld
+    name: trailer_right_wheel_weld
+    bodies:
+      - name: trailer
+        anchor: [-0.08, -0.18]
+      - name: trailer_right_wheel
+        anchor: [0, 0]
+
+plugins:
+  - type: DiffDrive 
+    name: turtlebot_drive 
+    body: base
+    odom_frame_id: odom
+    odom_pub: odom  # topic odom is published on
+    pub_rate: 50
+    odom_include_pose: false # no odom pose publication
+    # odom_pose_noise: [0.0005,0.0005,0.0001]
+    odom_stationary_noise: false # no noise when V=0
+    odom_twist_noise: [0.0001, 0.0001, 0.002]  # variance vx, vy, vw
+    # odom_pose_covariance: [...] # diagonal is generated from noise
+    linear_dynamics:
+      acceleration_limit: 3.0   # max acceleration (away from 0), in m/s/s; 0.0 means "no limit"
+      deceleration_limit: 3.0   # max deceleration (towards 0), in m/s/s; 0.0 means "no limit"; left blank, will default to acceleration_limit value
+      velocity_limit: 2.8       # max absolute velocity in m/s; 0.0 means "no limit"
+    angular_dynamics:
+      acceleration_limit: 3.0   # max acceleration (away from 0), in rads/s/s; 0.0 means "no limit"
+      deceleration_limit: 3.0   # max deceleration (towards 0), in rads/s/s; 0.0 means "no limit"; left blank, will default to acceleration_limit value
+      velocity_limit: 2.0       # max absolute velocity in rads/s; 0.0 means "no limit"
+  - type: FreeWheel
+    name: trailer_left_free_wheel
+    body: trailer_left_wheel
+    offset: [0, 0, 0]
+    radius: 0.05
+    lateral_resistance: 1.0
+    encoder_topic: trailer/left_wheel/rad_s
+  - type: FreeWheel
+    name: trailer_right_free_wheel
+    body: trailer_right_wheel
+    offset: [0, 0, 0]
+    radius: 0.05
+    lateral_resistance: 1.0
+    encoder_topic: trailer/right_wheel/rad_s
+  - type: Laser
+    name: laser_front
+    frame: laser_mount
+    topic: scan
+    body: laser_mount
+    broadcast_tf: false
+    origin: [0, 0, 0]
+    range: 20
+    angle: {min: -2.356194490192345, max: 2.356194490192345, increment: 0.04363323129985824}
+    noise_std_dev: 0.005
+    update_rate: 40
+    layers: ["2d"]
+  - type: Laser
+    name: laser_3d
+    frame: laser_mount
+    topic: scan_3d
+    body: laser_mount
+    broadcast_tf: false
+    origin: [0, 0, 0]
+    range: 3
+    angle: {min: -0.61, max: 0.61, increment: 0.05}
+    noise_std_dev: 0.04
+    update_rate: 10
+    layers: ["2d", "3d"]
+  - type: ModelTfPublisher
+    name: tf_publisher
+    publish_tf_world: false
+  - type: InitialPose  # publish a pose estimate on init
+    name: initial_pose
+    odom_frame_id: odom

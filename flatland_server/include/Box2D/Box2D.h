@@ -168,6 +168,7 @@ public:
   b2Vec2 GetWorldPoint(b2Vec2 point) const;
   b2Vec2 GetWorldVector(b2Vec2 vector) const;
   b2Vec2 GetWorldCenter() const;
+  float GetMass() const;
   b2Vec2 GetLinearVelocity() const;
   float GetAngularVelocity() const;
   b2Vec2 GetLinearVelocityFromLocalPoint(b2Vec2 point) const;
@@ -175,6 +176,7 @@ public:
   float GetAngularDamping() const;
   void SetLinearVelocity(b2Vec2 velocity);
   void SetAngularVelocity(float velocity);
+  void ApplyForce(b2Vec2 force, b2Vec2 point);
   void SetAwake(bool awake);
   void Dump() const;
 
