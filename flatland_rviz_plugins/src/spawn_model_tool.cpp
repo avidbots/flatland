@@ -350,7 +350,8 @@ void SpawnModelTool::LoadPreview()
 void SpawnModelTool::LoadPolygonFootprint(flatland_server::YamlReader & footprint)
 {
   auto lines = lines_list_.back();
-  auto points = footprint.GetList<flatland_server::Vec2>("points", 3, b2_maxPolygonVertices);
+  auto points = footprint.GetList<flatland_server::Vec2>("points", 3,
+      flatland::b2_maxPolygonVertices);
   for (auto p : points) {
     lines->addPoint(Ogre::Vector3(p.x, p.y, 0.));
   }

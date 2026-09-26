@@ -60,18 +60,18 @@ using std::placeholders::_1;
 // Test the bodyToMarkers method on a polygon shape
 TEST(DebugVizTest, testBodyToMarkersPolygon)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  bodyDef.type = b2_dynamicBody;
+  flatland::b2BodyDef bodyDef;
+  bodyDef.type = flatland::b2_dynamicBody;
   bodyDef.position.Set(3.0f, 4.0f);
   bodyDef.angle = M_PI_2;
-  b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
 
-  b2PolygonShape dynamicBox;
+  flatland::b2PolygonShape dynamicBox;
   dynamicBox.SetAsBox(1.0f, 2.0f);
-  b2FixtureDef fixtureDef;
+  flatland::b2FixtureDef fixtureDef;
   fixtureDef.shape = &dynamicBox;
   fixtureDef.density = 1.0f;
   fixtureDef.friction = 0.3f;
@@ -125,17 +125,17 @@ TEST(DebugVizTest, testBodyToMarkersPolygon)
 // Test the bodyToMarkers method on a circle shape
 TEST(DebugVizTest, testBodyToMarkersCircle)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  bodyDef.type = b2_dynamicBody;
+  flatland::b2BodyDef bodyDef;
+  bodyDef.type = flatland::b2_dynamicBody;
   bodyDef.position.Set(3.0f, 4.0f);
   bodyDef.angle = M_PI_2;
-  b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
 
-  b2FixtureDef fixtureDef;
-  b2CircleShape circle;
+  flatland::b2FixtureDef fixtureDef;
+  flatland::b2CircleShape circle;
   circle.m_p.Set(2.0f, 3.0f);
   circle.m_radius = 0.2f;
   fixtureDef.shape = &circle;
@@ -158,14 +158,14 @@ TEST(DebugVizTest, testBodyToMarkersCircle)
 // Test the bodyToMarkers method on a edge shape
 TEST(DebugVizTest, testBodyToMarkersEdge)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2BodyDef bodyDef;
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
 
-  b2FixtureDef fixtureDef;
-  b2EdgeShape edge;
+  flatland::b2FixtureDef fixtureDef;
+  flatland::b2EdgeShape edge;
   edge.m_vertex1.Set(0.5, 1.5);
   edge.m_vertex2.Set(3.5, 2.0);
   fixtureDef.shape = &edge;
@@ -190,19 +190,19 @@ TEST(DebugVizTest, testBodyToMarkersEdge)
 // Test the bodyToMarkers method on an unsupported shape
 TEST(DebugVizTest, testBodyToMarkersUnsupported)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2BodyDef bodyDef;
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
 
-  b2FixtureDef fixtureDef;
-  b2Vec2 vs[4];
+  flatland::b2FixtureDef fixtureDef;
+  flatland::b2Vec2 vs[4];
   vs[0].Set(1.7f, 0.0f);
   vs[1].Set(1.0f, 0.25f);
   vs[2].Set(0.0f, 0.0f);
   vs[3].Set(-1.7f, 0.4f);
-  b2ChainShape chain;
+  flatland::b2ChainShape chain;
   chain.CreateChain(vs, 4);
   fixtureDef.shape = &chain;
   body->CreateFixture(&fixtureDef);
@@ -218,15 +218,15 @@ TEST(DebugVizTest, testBodyToMarkersUnsupported)
 // test bodyToMarkers with a body with multiple fixtures
 TEST(DebugVizTest, testBodyToMarkersMultifixture)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2BodyDef bodyDef;
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
 
   // body 2 before body 1 because fixture ordering is LIFO in box2d
-  b2FixtureDef fixtureDef, fixtureDef2;
-  b2EdgeShape edge, edge2;
+  flatland::b2FixtureDef fixtureDef, fixtureDef2;
+  flatland::b2EdgeShape edge, edge2;
 
   edge2.m_vertex1.Set(-1.0, 3.0);
   edge2.m_vertex2.Set(5.0, 7.0);
@@ -263,15 +263,15 @@ TEST(DebugVizTest, testBodyToMarkersMultifixture)
 // test bodyToMarkers with multiple bodies
 TEST(DebugVizTest, testBodyToMarkersMultibody)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  b2Body * body = world.CreateBody(&bodyDef);
-  b2Body * body2 = world.CreateBody(&bodyDef);
+  flatland::b2BodyDef bodyDef;
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2Body * body2 = world.CreateBody(&bodyDef);
 
-  b2FixtureDef fixtureDef, fixtureDef2;
-  b2EdgeShape edge, edge2;
+  flatland::b2FixtureDef fixtureDef, fixtureDef2;
+  flatland::b2EdgeShape edge, edge2;
 
   edge.m_vertex1.Set(0.0, 1.0);
   edge.m_vertex2.Set(1.0, 2.0);
@@ -309,25 +309,25 @@ TEST(DebugVizTest, testBodyToMarkersMultibody)
 // test bodyToMarkers with multiple joint
 TEST(DebugVizTest, testJointToMarkersMultiJoint)
 {
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  b2Body * b1 = world.CreateBody(&bodyDef);
-  b2Body * b2 = world.CreateBody(&bodyDef);
+  flatland::b2BodyDef bodyDef;
+  flatland::b2Body * b1 = world.CreateBody(&bodyDef);
+  flatland::b2Body * b2 = world.CreateBody(&bodyDef);
 
-  b2WeldJointDef jd1, jd2;
+  flatland::b2WeldJointDef jd1, jd2;
   jd1.bodyA = b1;
   jd1.bodyB = b2;
-  jd1.localAnchorA = b2Vec2(0, 0);
-  jd1.localAnchorB = b2Vec2(0, 0);
+  jd1.localAnchorA = flatland::b2Vec2(0, 0);
+  jd1.localAnchorB = flatland::b2Vec2(0, 0);
   jd2.bodyA = b1;
   jd2.bodyB = b2;
-  jd2.localAnchorA = b2Vec2(1, 2);
-  jd2.localAnchorB = b2Vec2(3, 4);
+  jd2.localAnchorA = flatland::b2Vec2(1, 2);
+  jd2.localAnchorB = flatland::b2Vec2(3, 4);
 
-  b2Joint * j1 = world.CreateJoint(&jd1);
-  b2Joint * j2 = world.CreateJoint(&jd2);
+  flatland::b2Joint * j1 = world.CreateJoint(&jd1);
+  flatland::b2Joint * j2 = world.CreateJoint(&jd2);
 
   visualization_msgs::msg::MarkerArray markers;
   std::shared_ptr<rclcpp::Node> node =
@@ -446,26 +446,26 @@ TEST(DebugVizTest, testPublishMarkers)
   flatland_server::Timekeeper timekeeper(node);
   timekeeper.SetMaxStepSize(0.01);
 
-  b2Vec2 gravity(0.0, 0.0);
-  b2World world(gravity);
+  flatland::b2Vec2 gravity(0.0, 0.0);
+  flatland::b2World world(gravity);
 
-  b2BodyDef bodyDef;
-  b2Body * body = world.CreateBody(&bodyDef);
-  b2Body * body2 = world.CreateBody(&bodyDef);
+  flatland::b2BodyDef bodyDef;
+  flatland::b2Body * body = world.CreateBody(&bodyDef);
+  flatland::b2Body * body2 = world.CreateBody(&bodyDef);
 
-  b2FixtureDef fixtureDef;
-  b2CircleShape circle;
+  flatland::b2FixtureDef fixtureDef;
+  flatland::b2CircleShape circle;
   circle.m_p.Set(2.0f, 3.0f);
   circle.m_radius = 0.2f;
   fixtureDef.shape = &circle;
   body->CreateFixture(&fixtureDef);
 
-  b2WeldJointDef joint_def;
+  flatland::b2WeldJointDef joint_def;
   joint_def.bodyA = body;
   joint_def.bodyB = body2;
-  joint_def.localAnchorA = b2Vec2(0, 0);
-  joint_def.localAnchorB = b2Vec2(0, 0);
-  b2Joint * joint = world.CreateJoint(&joint_def);
+  joint_def.localAnchorA = flatland::b2Vec2(0, 0);
+  joint_def.localAnchorB = flatland::b2Vec2(0, 0);
+  flatland::b2Joint * joint = world.CreateJoint(&joint_def);
 
   // Set up helper class subscribing to rostopic
   MarkerArraySubscriptionHelper helper(node);

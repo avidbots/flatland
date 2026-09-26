@@ -73,7 +73,7 @@ public:
   Joint * rear_right_wj_;          ///< rear right wheel joint
   double axel_track_;              ///< normal distrance between the rear two wheels
   double wheelbase_;               ///< distance between the front and rear wheel
-  b2Vec2 rear_center_;             ///< middle point between the two rear wheels
+  flatland::b2Vec2 rear_center_;             ///< middle point between the two rear wheels
   bool invert_steering_angle_;     ///< whether to invert steering angle
   double max_steer_angle_;         ///< max abs. steering allowed [rad]
   double max_steer_velocity_;      ///< max abs. steering velocity [rad/s]

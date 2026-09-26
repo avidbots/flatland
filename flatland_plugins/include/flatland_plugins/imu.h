@@ -79,7 +79,7 @@ class Imu : public flatland_server::ModelPlugin {
   std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;  ///< broadcast GPS frame
   std::string imu_frame_id_;
   bool broadcast_tf_;
-  b2Vec2 linear_vel_local_prev;
+  flatland::b2Vec2 linear_vel_local_prev;
   double pub_rate_;
   /**
    * @name          OnInitialize

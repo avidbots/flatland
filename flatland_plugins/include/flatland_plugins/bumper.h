@@ -70,8 +70,8 @@ public:
     int num_count;                      ///< stores number of times post solve is called
     double sum_normal_impulses[2];      ///< sum of impulses for averaging later
     double sum_tangential_impulses[2];  ///< sum of impulses for averaging later
-    b2Vec2 points[2];                   ///< Box2D collision points, max of 2 from Box2D
-    b2Vec2 normal;                      ///< normal of collision points, all points have same normal
+    flatland::b2Vec2 points[2];                   ///< Box2D collision points, max of 2 from Box2D
+    flatland::b2Vec2 normal;                      ///< normal of collision points, all points have same normal
     int normal_sign;                    ///< for flipping direction of normal when necessary
 
     Body * body_A;      ///< the body of the model involved in the collision
@@ -92,7 +92,7 @@ public:
   UpdateTimer update_timer_;  ///< for managing update rate
 
   /// For keeping track of contacts
-  std::map<b2Contact *, ContactState> contact_states_;
+  std::map<flatland::b2Contact *, ContactState> contact_states_;
   rclcpp::Publisher<flatland_msgs::msg::Collisions>::SharedPtr
     collisions_publisher_;  ///< For publishing the collisions
 
@@ -118,20 +118,20 @@ public:
    * @brief A method that is called for all Box2D begin contacts
    * @param[in] contact Box2D contact
    */
-  void BeginContact(b2Contact * contact) override;
+  void BeginContact(flatland::b2Contact * contact) override;
 
   /**
    * @brief A method that is called for all Box2D end contacts
    * @param[in] contact Box2D contact
    */
-  void EndContact(b2Contact * contact) override;
+  void EndContact(flatland::b2Contact * contact) override;
 
   /*
    * @brief A method that is called for Box2D presolve
    * @param[in] contact Box2D contact
    * @param[in] oldManifold Manifold from the previous iteration
    */
-  void PostSolve(b2Contact * contact, const b2ContactImpulse * impulse) override;
+  void PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse * impulse) override;
 };
 };  // namespace flatland_plugins
 

@@ -199,8 +199,8 @@ void TricycleDrive::OnInitialize(const YAML::Node & config)
 void TricycleDrive::ComputeJoints()
 {
   auto get_anchor = [&](Joint * joint, bool * is_inverted = nullptr) {
-    b2Vec2 wheel_anchor;  ///< wheel anchor point, must be (0,0)
-    b2Vec2 body_anchor;   ///< body anchor point
+    flatland::b2Vec2 wheel_anchor;  ///< wheel anchor point, must be (0,0)
+    flatland::b2Vec2 body_anchor;   ///< body anchor point
     bool inv = false;
 
     // ensure one of the body is the main body for the odometry
@@ -234,27 +234,27 @@ void TricycleDrive::ComputeJoints()
   };
 
   // joints must be of expected type
-  if (front_wj_->physics_joint_->GetType() != e_revoluteJoint) {
+  if (front_wj_->physics_joint_->GetType() != flatland::e_revoluteJoint) {
     throw YAMLException("Front wheel joint must be a revolute joint");
   }
 
-  if (rear_left_wj_->physics_joint_->GetType() != e_weldJoint) {
+  if (rear_left_wj_->physics_joint_->GetType() != flatland::e_weldJoint) {
     throw YAMLException("Rear left wheel joint must be a weld joint");
   }
 
-  if (rear_right_wj_->physics_joint_->GetType() != e_weldJoint) {
+  if (rear_right_wj_->physics_joint_->GetType() != flatland::e_weldJoint) {
     throw YAMLException("Rear right wheel joint must be a weld joint");
   }
 
   // enable limits for the front joint
-  b2RevoluteJoint * j = dynamic_cast<b2RevoluteJoint *>(front_wj_->physics_joint_);
+  flatland::b2RevoluteJoint * j = dynamic_cast<flatland::b2RevoluteJoint *>(front_wj_->physics_joint_);
   j->EnableLimit(true);
 
   // positive joint angle goes counter clockwise from the perspective of BodyA,
   // if body_ is not BodyA, we need flip the steering angle for visualization
-  b2Vec2 front_anchor = get_anchor(front_wj_, &invert_steering_angle_);
-  b2Vec2 rear_left_anchor = get_anchor(rear_left_wj_);
-  b2Vec2 rear_right_anchor = get_anchor(rear_right_wj_);
+  flatland::b2Vec2 front_anchor = get_anchor(front_wj_, &invert_steering_angle_);
+  flatland::b2Vec2 rear_left_anchor = get_anchor(rear_left_wj_);
+  flatland::b2Vec2 rear_right_anchor = get_anchor(rear_right_wj_);
 
   // the front wheel must be at (0,0) of the body
   if (std::fabs(front_anchor.x) > 1e-5 || std::fabs(front_anchor.y) > 1e-5) {
@@ -297,15 +297,15 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
 {
   bool publish = update_timer_.CheckUpdate(timekeeper);
 
-  b2Body * b2body = body_->physics_body_;
+  flatland::b2Body * b2body = body_->physics_body_;
 
-  b2Vec2 position = b2body->GetPosition();
+  flatland::b2Vec2 position = b2body->GetPosition();
   float angle = b2body->GetAngle();
 
   if (publish) {
     // 1. get the state of the body and publish the data,
     //    before the tricycle physics get updated
-    b2Vec2 linear_vel_local = b2body->GetLinearVelocityFromLocalPoint(b2Vec2(0, 0));
+    flatland::b2Vec2 linear_vel_local = b2body->GetLinearVelocityFromLocalPoint(flatland::b2Vec2(0, 0));
     float angular_vel = b2body->GetAngularVelocity();
 
     ground_truth_msg_.header.stamp = timekeeper.GetSimTime();
@@ -386,7 +386,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
     theta_f_ = DynamicsLimits::Saturate(theta_f_, -max_steer_angle_, max_steer_angle_);
   }
 
-  RCLCPP_INFO_THROTTLE(node_->get_logger(), *node_->get_clock(), 1,
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *node_->get_clock(), 1000,
                      "Using new tricycle steering, "
                      "d_delta = %.4f, twist.x = %.4f, twist.delta = %.4f",
                      d_delta_, twist_msg_->twist.linear.x,
@@ -395,8 +395,8 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
   // change angle of the front wheel for visualization
 
 
-  b2RevoluteJoint* j =
-      dynamic_cast<b2RevoluteJoint*>(front_wj_->physics_joint_);
+  flatland::b2RevoluteJoint* j =
+      dynamic_cast<flatland::b2RevoluteJoint*>(front_wj_->physics_joint_);
   j->EnableLimit(true);
   if (invert_steering_angle_) {
     j->SetLimits(-theta_f_, -theta_f_);
@@ -418,7 +418,7 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
   // Now we would like the rear center to move at v_x, v_y, and w, since Box2D
   // applies velocities at center of mass, we must use rigid body kinematics
   // to transform the velocities
-  b2Vec2 linear_vel(v_x, v_y);
+  flatland::b2Vec2 linear_vel(v_x, v_y);
 
   // V_cm = V_rc + W x r_cm/rc
   // velocity at center of mass equals to the velocity at the rear center plus,
@@ -426,8 +426,8 @@ void TricycleDrive::BeforePhysicsStep(const Timekeeper & timekeeper)
   // center of mass
 
   // r is the vector from rear center to CM in world frame
-  b2Vec2 r = b2body->GetWorldCenter() - b2body->GetWorldPoint(rear_center_);
-  b2Vec2 linear_vel_cm = linear_vel + w * b2Vec2(-r.y, r.x);
+  flatland::b2Vec2 r = b2body->GetWorldCenter() - b2body->GetWorldPoint(rear_center_);
+  flatland::b2Vec2 linear_vel_cm = linear_vel + w * flatland::b2Vec2(-r.y, r.x);
 
   b2body->SetLinearVelocity(linear_vel_cm);
 

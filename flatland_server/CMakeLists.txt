@@ -68,6 +68,7 @@ find_package(Threads)
 ## Flatland server library
 add_library(flatland_lib SHARED
   src/simulation_manager.cpp
+  src/physics.cpp
   src/world.cpp
   src/layer.cpp
   src/model.cpp
@@ -149,6 +150,9 @@ if(BUILD_TESTING)
 
   # Include linting tests
   find_package(ament_lint_auto REQUIRED)
+  if("$ENV{ROS_DISTRO}" STREQUAL "humble")
+    set(AMENT_LINT_AUTO_EXCLUDE ament_cmake_uncrustify)
+  endif()
   ament_lint_auto_find_test_dependencies()
 
   ament_add_gtest(${PROJECT_NAME}_null_test test/null.cpp)

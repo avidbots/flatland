@@ -68,7 +68,7 @@ namespace flatland_plugins
 {
 
 float RayTrace::ReportFixture(
-  b2Fixture * fixture, const b2Vec2 &, const b2Vec2 &, float fraction)
+  flatland::b2Fixture * fixture, const flatland::b2Vec2 &, const flatland::b2Vec2 &, float fraction)
 {
   // only register hit in the specified layers
   if (!(fixture->GetFilterData().categoryBits & category_bits_)) {
@@ -92,10 +92,10 @@ WorldModifier::WorldModifier(
 }
 
 void WorldModifier::CalculateNewWall(
-  double d, b2Vec2 vertex1, b2Vec2 vertex2, b2EdgeShape & new_wall)
+  double d, flatland::b2Vec2 vertex1, flatland::b2Vec2 vertex2, flatland::b2EdgeShape & new_wall)
 {
-  b2Vec2 new_wall_v1;
-  b2Vec2 new_wall_v2;
+  flatland::b2Vec2 new_wall_v1;
+  flatland::b2Vec2 new_wall_v2;
   if (d == 0) {  // if distance towards the robot is 0
     RCLCPP_FATAL(rclcpp::get_logger("World Modifier"), "robot start pose hit the wall!");
   } else if (d < 0) {              // if on the left side
@@ -124,7 +124,7 @@ void WorldModifier::CalculateNewWall(
   new_wall.Set(new_wall_v1, new_wall_v2);
 }
 
-void WorldModifier::AddWall(b2EdgeShape & new_wall)
+void WorldModifier::AddWall(flatland::b2EdgeShape & new_wall)
 {
   Layer * layer = NULL;
   std::vector<std::string> cfr_names;
@@ -140,7 +140,7 @@ void WorldModifier::AddWall(b2EdgeShape & new_wall)
   if (layer == NULL) {
     throw("no such layer name!");
   }
-  b2FixtureDef fixture_def;
+  flatland::b2FixtureDef fixture_def;
   fixture_def.shape = &new_wall;
   uint16_t categoryBits = layer->cfr_->GetCategoryBits(cfr_names);
   fixture_def.filter.categoryBits = categoryBits;
@@ -149,12 +149,12 @@ void WorldModifier::AddWall(b2EdgeShape & new_wall)
   layer->body_->physics_body_->CreateFixture(&fixture_def);
 }
 
-void WorldModifier::AddSideWall(b2EdgeShape & old_wall, b2EdgeShape & new_wall)
+void WorldModifier::AddSideWall(flatland::b2EdgeShape & old_wall, flatland::b2EdgeShape & new_wall)
 {
-  b2Vec2 old_wall_v1 = old_wall.m_vertex1;
-  b2Vec2 old_wall_v2 = old_wall.m_vertex2;
-  b2Vec2 new_wall_v1 = new_wall.m_vertex1;
-  b2Vec2 new_wall_v2 = new_wall.m_vertex2;
+  flatland::b2Vec2 old_wall_v1 = old_wall.m_vertex1;
+  flatland::b2Vec2 old_wall_v2 = old_wall.m_vertex2;
+  flatland::b2Vec2 new_wall_v1 = new_wall.m_vertex1;
+  flatland::b2Vec2 new_wall_v2 = new_wall.m_vertex2;
   // first side
   double k =
     ((old_wall_v2.y - old_wall_v1.y) * (new_wall_v1.x - old_wall_v1.x) -
@@ -162,8 +162,8 @@ void WorldModifier::AddSideWall(b2EdgeShape & old_wall, b2EdgeShape & new_wall)
     (std::pow((old_wall_v2.y - old_wall_v1.y), 2) + std::pow((old_wall_v2.x - old_wall_v1.x), 2));
   double x = new_wall_v1.x - k * (old_wall_v2.y - old_wall_v1.y);
   double y = new_wall_v1.y + k * (old_wall_v2.x - old_wall_v1.x);
-  b2EdgeShape first_wall;
-  first_wall.Set(new_wall_v1, b2Vec2(x, y));
+  flatland::b2EdgeShape first_wall;
+  first_wall.Set(new_wall_v1, flatland::b2Vec2(x, y));
   AddWall(first_wall);
 
   // second side
@@ -172,20 +172,20 @@ void WorldModifier::AddSideWall(b2EdgeShape & old_wall, b2EdgeShape & new_wall)
       (std::pow((old_wall_v2.y - old_wall_v1.y), 2) + std::pow((old_wall_v2.x - old_wall_v1.x), 2));
   x = new_wall_v2.x - k * (old_wall_v2.y - old_wall_v1.y);
   y = new_wall_v2.y + k * (old_wall_v2.x - old_wall_v1.x);
-  b2EdgeShape second_wall;
-  second_wall.Set(new_wall_v2, b2Vec2(x, y));
+  flatland::b2EdgeShape second_wall;
+  second_wall.Set(new_wall_v2, flatland::b2Vec2(x, y));
   AddWall(second_wall);
 }
 
-void WorldModifier::AddFullWall(b2EdgeShape * wall)
+void WorldModifier::AddFullWall(flatland::b2EdgeShape * wall)
 {
-  b2Vec2 vertex1 = wall->m_vertex1;
-  b2Vec2 vertex2 = wall->m_vertex2;
+  flatland::b2Vec2 vertex1 = wall->m_vertex1;
+  flatland::b2Vec2 vertex2 = wall->m_vertex2;
   double d = (robot_ini_pose_.x - vertex1.x) * (vertex2.y - vertex1.y) -
              (robot_ini_pose_.y - vertex1.y) * (vertex2.x - vertex1.x);
 
   // add the main wall
-  b2EdgeShape new_wall;
+  flatland::b2EdgeShape new_wall;
   CalculateNewWall(d, vertex1, vertex2, new_wall);
   AddWall(new_wall);
   // add the sidewall

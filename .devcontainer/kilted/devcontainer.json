@@ -3,9 +3,18 @@
     "build": {
         "dockerfile": "../Dockerfile",
         "context": "../..",
-        "args": { "ROS_DISTRO": "kilted" }
+        "args": { "ROS_DISTRO": "kilted", "USERNAME": "${localEnv:USER:flatland}" }
     },
-    "runArgs": ["--init"],
+    "remoteUser": "${localEnv:USER:flatland}",
+    "updateRemoteUserUID": true,
+    "runArgs": [
+        "--init",
+        "--privileged",
+        "--volume=/dev:/dev",
+        "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+        "--env=DISPLAY=${localEnv:DISPLAY}",
+        "--env=QT_X11_NO_MITSHM=1"
+    ],
     "workspaceFolder": "/opt/overlay_ws/src/flatland",
     "workspaceMount": "source=${localWorkspaceFolder},target=${containerWorkspaceFolder},type=bind",
     "mounts": [
@@ -14,7 +23,6 @@
     ],
     "remoteEnv": { "CCACHE_DIR": "/tmp/.ccache" },
     "onCreateCommand": "bash .devcontainer/on-create-command.sh",
-    "updateContentCommand": "bash .devcontainer/update-content-command.sh",
     "postCreateCommand": "bash .devcontainer/post-create-command.sh",
     "customizations": {
         "vscode": {

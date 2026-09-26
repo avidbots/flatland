@@ -53,8 +53,8 @@ namespace flatland_server
 {
 
 Joint::Joint(
-  b2World * physics_world, Model * model, const std::string & name, const Color & color,
-  const b2JointDef & joint_def)
+  flatland::b2World * physics_world, Model * model, const std::string & name, const Color & color,
+  const flatland::b2JointDef & joint_def)
 : model_(model), name_(name), physics_world_(physics_world), color_(color)
 {
   physics_joint_ = physics_world->CreateJoint(&joint_def);
@@ -71,11 +71,11 @@ const Color & Joint::GetColor() const { return color_; }
 
 void Joint::SetColor(const Color & color) { color_ = color; }
 
-b2Joint * Joint::GetPhysicsJoint() { return physics_joint_; }
+flatland::b2Joint * Joint::GetPhysicsJoint() { return physics_joint_; }
 
-b2World * Joint::GetphysicsWorld() { return physics_world_; }
+flatland::b2World * Joint::GetphysicsWorld() { return physics_world_; }
 
-Joint * Joint::MakeJoint(b2World * physics_world, Model * model, YamlReader & joint_reader)
+Joint * Joint::MakeJoint(flatland::b2World * physics_world, Model * model, YamlReader & joint_reader)
 {
   Joint * j;
 
@@ -108,10 +108,10 @@ Joint * Joint::MakeJoint(b2World * physics_world, Model * model, YamlReader & jo
     }
   }
 
-  b2Vec2 anchor_A = anchors[0].Box2D();
-  b2Vec2 anchor_B = anchors[1].Box2D();
-  b2Body * body_A = bodies[0]->physics_body_;
-  b2Body * body_B = bodies[1]->physics_body_;
+  flatland::b2Vec2 anchor_A = anchors[0].Box2D();
+  flatland::b2Vec2 anchor_B = anchors[1].Box2D();
+  flatland::b2Body * body_A = bodies[0]->physics_body_;
+  flatland::b2Body * body_B = bodies[1]->physics_body_;
 
   if (type == "revolute") {
     j = MakeRevoluteJoint(
@@ -137,8 +137,8 @@ Joint * Joint::MakeJoint(b2World * physics_world, Model * model, YamlReader & jo
 }
 
 Joint * Joint::MakeRevoluteJoint(
-  b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
-  const Color & color, b2Body * body_A, b2Vec2 anchor_A, b2Body * body_B, b2Vec2 anchor_B,
+  flatland::b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
+  const Color & color, flatland::b2Body * body_A, flatland::b2Vec2 anchor_A, flatland::b2Body * body_B, flatland::b2Vec2 anchor_B,
   bool collide_connected)
 {
   double upper_limit, lower_limit;
@@ -151,7 +151,7 @@ Joint * Joint::MakeRevoluteJoint(
     has_limits = true;
   }
 
-  b2RevoluteJointDef joint_def;
+  flatland::b2RevoluteJointDef joint_def;
   joint_def.bodyA = body_A;
   joint_def.bodyB = body_B;
   joint_def.localAnchorA = anchor_A;
@@ -170,15 +170,15 @@ Joint * Joint::MakeRevoluteJoint(
 }
 
 Joint * Joint::MakeWeldJoint(
-  b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
-  const Color & color, b2Body * body_A, b2Vec2 anchor_A, b2Body * body_B, b2Vec2 anchor_B,
+  flatland::b2World * physics_world, Model * model, YamlReader & joint_reader, const std::string & name,
+  const Color & color, flatland::b2Body * body_A, flatland::b2Vec2 anchor_A, flatland::b2Body * body_B, flatland::b2Vec2 anchor_B,
   bool collide_connected)
 {
   double angle = joint_reader.Get<double>("angle", 0.0);
   double frequency = joint_reader.Get<double>("frequency", 0.0);
   double damping = joint_reader.Get<double>("damping", 0.0);
 
-  b2WeldJointDef joint_def;
+  flatland::b2WeldJointDef joint_def;
   joint_def.bodyA = body_A;
   joint_def.bodyB = body_B;
   joint_def.localAnchorA = anchor_A;
@@ -193,7 +193,7 @@ Joint * Joint::MakeWeldJoint(
 
 void Joint::DebugOutput() const
 {
-  b2Joint * j = physics_joint_;
+  flatland::b2Joint * j = physics_joint_;
   Body * body_A = static_cast<Body *>(j->GetBodyA()->GetUserData());
   Body * body_B = static_cast<Body *>(j->GetBodyB()->GetUserData());
 

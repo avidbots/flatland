@@ -110,14 +110,14 @@ public:
    * be populated
    */
   bool FilterContact(
-    b2Contact * contact, Entity *& entity, b2Fixture *& this_fixture, b2Fixture *& other_fixture);
+    flatland::b2Contact * contact, Entity *& entity, flatland::b2Fixture *& this_fixture, flatland::b2Fixture *& other_fixture);
 
   /**
    * @brief Helper function check if this model is part of the contact
    * @param[in] contact Box2D contact
    * @return True or false depending on if this model is involved
    */
-  bool FilterContact(b2Contact * contact);
+  bool FilterContact(flatland::b2Contact * contact);
 
 protected:
   /**

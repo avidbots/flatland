@@ -65,8 +65,8 @@ public:
   double timestep_before;
   double timestep_after;
   Entity * entity;
-  b2Fixture * fixture_A;
-  b2Fixture * fixture_B;
+  flatland::b2Fixture * fixture_A;
+  flatland::b2Fixture * fixture_B;
 
   std::map<std::string, bool> function_called;
 
@@ -83,7 +83,6 @@ public:
     function_called["AfterPhysicsStep"] = false;
     function_called["BeginContact"] = false;
     function_called["EndContact"] = false;
-    function_called["PreSolve"] = false;
     function_called["PostSolve"] = false;
   }
 
@@ -99,25 +98,19 @@ public:
     function_called["AfterPhysicsStep"] = true;
   }
 
-  void BeginContact(b2Contact * contact) override
+  void BeginContact(flatland::b2Contact * contact) override
   {
     function_called["BeginContact"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void EndContact(b2Contact * contact) override
+  void EndContact(flatland::b2Contact * contact) override
   {
     function_called["EndContact"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
   }
 
-  void PreSolve(b2Contact * contact, const b2Manifold *) override
-  {
-    function_called["PreSolve"] = true;
-    FilterContact(contact, entity, fixture_A, fixture_B);
-  }
-
-  void PostSolve(b2Contact * contact, const b2ContactImpulse *) override
+  void PostSolve(flatland::b2Contact * contact, const flatland::b2ContactImpulse *) override
   {
     function_called["PostSolve"] = true;
     FilterContact(contact, entity, fixture_A, fixture_B);
@@ -219,16 +212,15 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", true},
         {"EndContact", false},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
-  EXPECT_EQ(p->fixture_B->GetType(), b2Shape::e_edge);
+  EXPECT_EQ(p->fixture_B->GetType(), flatland::b2Shape::e_edge);
   p->ClearTestingVariables();
 
   // move the body 2m to the left over two 1s timesteps, this should remove any
   // contacts between the body and the layer
-  b0->physics_body_->SetLinearVelocity(b2Vec2(-1, 0));
+  b0->physics_body_->SetLinearVelocity(flatland::b2Vec2(-1, 0));
   // takes two steps for Box2D to genreate collision events, not sure why
   w->Update(timekeeper);
   w->Update(timekeeper);
@@ -238,17 +230,16 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", false},
         {"EndContact", true},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
-  EXPECT_EQ(p->fixture_B->GetType(), b2Shape::e_edge);
+  EXPECT_EQ(p->fixture_B->GetType(), flatland::b2Shape::e_edge);
   p->ClearTestingVariables();
 
   // move the body 1m down over 2 timesteps, this should place model 0 in
   // contact with model 1
-  b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
-  b1->physics_body_->SetLinearVelocity(b2Vec2(0, -0.5));
+  b0->physics_body_->SetLinearVelocity(flatland::b2Vec2(0, 0));
+  b1->physics_body_->SetLinearVelocity(flatland::b2Vec2(0, -0.5));
   w->Update(timekeeper);
   w->Update(timekeeper);
   EXPECT_TRUE(FunctionCallEq(
@@ -257,7 +248,6 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", true},
         {"EndContact", false},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, m1);
   EXPECT_EQ(p->fixture_B, b1->physics_body_->GetFixtureList());
@@ -266,8 +256,8 @@ TEST_F(PluginManagerTest, collision_test)
 
   // move the body 2m down over 2 timesteps, this should clear any contacts for
   // model 0
-  b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
-  b1->physics_body_->SetLinearVelocity(b2Vec2(0, -1));
+  b0->physics_body_->SetLinearVelocity(flatland::b2Vec2(0, 0));
+  b1->physics_body_->SetLinearVelocity(flatland::b2Vec2(0, -1));
   w->Update(timekeeper);
   w->Update(timekeeper);
   EXPECT_TRUE(FunctionCallEq(
@@ -276,23 +266,22 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", false},
         {"EndContact", true},
-        {"PreSolve", false},
         {"PostSolve", false}}));
   EXPECT_EQ(p->entity, m1);
   EXPECT_EQ(p->fixture_B, b1->physics_body_->GetFixtureList());
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
   p->ClearTestingVariables();
 
-  // Now we set model 0 fixture as not a sensor, this should trigger pre and
-  // post solves in the contact listener in subsequent tests
+  // Now we set model 0 fixture as not a sensor, enabling post-solve reports
+  // in the contact listener in subsequent tests
   b0->physics_body_->GetFixtureList()->SetSensor(false);
 
   // now teleport the body for model 0 to (0, 0) which is right on top of a
   // layer edge, set zero velocity and step, this will cause the body
   // to begin contact with the layer, but you can't be sure if end contact
   // will be called
-  b0->physics_body_->SetLinearVelocity(b2Vec2(0, 0));
-  b0->physics_body_->SetTransform(b2Vec2(0, 0), 0);
+  b0->physics_body_->SetLinearVelocity(flatland::b2Vec2(0, 0));
+  b0->physics_body_->SetTransform(flatland::b2Vec2(0, 0), 0);
   w->Update(timekeeper);
   w->Update(timekeeper);
   EXPECT_TRUE(FunctionCallEq(
@@ -301,16 +290,113 @@ TEST_F(PluginManagerTest, collision_test)
         {"AfterPhysicsStep", true},
         {"BeginContact", true},
         {"EndContact", false},
-        {"PreSolve", true},
         {"PostSolve", true}}));
   EXPECT_EQ(p->entity, l);
   EXPECT_EQ(p->fixture_A, b0->physics_body_->GetFixtureList());
-  EXPECT_EQ(p->fixture_B->GetType(), b2Shape::e_edge);
+  EXPECT_EQ(p->fixture_B->GetType(), flatland::b2Shape::e_edge);
   p->ClearTestingVariables();
 
   // w->DebugVisualize();
   // DebugVisualization::Get(node_)->Publish();
   // ros::spin();
+}
+
+TEST(PhysicsAdapterTest, sensorChangeKeepsOtherFixtureContact)
+{
+  struct ContactRecorder : flatland::b2ContactListener
+  {
+    int begin_count = 0;
+    std::vector<std::pair<flatland::b2Fixture *, flatland::b2Fixture *>> ended;
+
+    void BeginContact(flatland::b2Contact *) override { ++begin_count; }
+    void EndContact(flatland::b2Contact * contact) override
+    {
+      ended.emplace_back(contact->GetFixtureA(), contact->GetFixtureB());
+    }
+  } recorder;
+
+  flatland::b2World physics_world({0.0f, 0.0f});
+  physics_world.SetContactListener(&recorder);
+  flatland::b2BodyDef static_definition;
+  auto * ground = physics_world.CreateBody(&static_definition);
+  flatland::b2BodyDef dynamic_definition;
+  dynamic_definition.type = flatland::b2_dynamicBody;
+  auto * body = physics_world.CreateBody(&dynamic_definition);
+
+  flatland::b2CircleShape left;
+  left.m_p = {-2.0f, 0.0f};
+  left.m_radius = 0.5f;
+  flatland::b2CircleShape right;
+  right.m_p = {2.0f, 0.0f};
+  right.m_radius = 0.5f;
+  ground->CreateFixture(&left, 0.0f);
+  ground->CreateFixture(&right, 0.0f);
+
+  flatland::b2FixtureDef sensor_definition;
+  sensor_definition.isSensor = true;
+  sensor_definition.shape = &left;
+  auto * changed = body->CreateFixture(&sensor_definition);
+  sensor_definition.shape = &right;
+  auto * unaffected = body->CreateFixture(&sensor_definition);
+
+  physics_world.Step(1.0f / 60.0f, 4);
+  ASSERT_EQ(recorder.begin_count, 2);
+
+  changed->SetSensor(false);
+  ASSERT_EQ(recorder.ended.size(), 1u);
+  EXPECT_TRUE(recorder.ended[0].first == changed || recorder.ended[0].second == changed);
+  EXPECT_NE(recorder.ended[0].first, unaffected);
+  EXPECT_NE(recorder.ended[0].second, unaffected);
+  physics_world.Step(1.0f / 60.0f, 4);
+  EXPECT_EQ(recorder.ended.size(), 1u);
+}
+
+TEST(PhysicsAdapterTest, destroyedNativeShapeEndsContact)
+{
+  struct ContactRecorder : flatland::b2ContactListener
+  {
+    int begin_count = 0;
+    int end_count = 0;
+
+    void BeginContact(flatland::b2Contact *) override { ++begin_count; }
+    void EndContact(flatland::b2Contact *) override { ++end_count; }
+  } recorder;
+
+  flatland::b2World physics_world({0.0f, 0.0f});
+  physics_world.SetContactListener(&recorder);
+  flatland::b2BodyDef static_definition;
+  auto * ground = physics_world.CreateBody(&static_definition);
+  flatland::b2BodyDef dynamic_definition;
+  dynamic_definition.type = flatland::b2_dynamicBody;
+  auto * body = physics_world.CreateBody(&dynamic_definition);
+  flatland::b2CircleShape circle;
+  circle.m_radius = 0.5f;
+  ground->CreateFixture(&circle, 0.0f);
+  flatland::b2FixtureDef sensor_definition;
+  sensor_definition.shape = &circle;
+  sensor_definition.isSensor = true;
+  auto * sensor = body->CreateFixture(&sensor_definition);
+
+  physics_world.Step(1.0f / 60.0f, 4);
+  ASSERT_EQ(recorder.begin_count, 1);
+  b2DestroyShape(sensor->id_, true);
+  physics_world.Step(1.0f / 60.0f, 4);
+  EXPECT_EQ(recorder.end_count, 1);
+}
+
+TEST(PhysicsAdapterTest, loopCreatesAllSegments)
+{
+  flatland::b2World physics_world({0.0f, 0.0f});
+  flatland::b2BodyDef static_definition;
+  auto * body = physics_world.CreateBody(&static_definition);
+  flatland::b2Vec2 corners[] = {
+    {-1.0f, -1.0f}, {1.0f, -1.0f}, {1.0f, 1.0f}, {-1.0f, 1.0f}};
+  flatland::b2ChainShape loop;
+  loop.CreateLoop(corners, 4);
+
+  auto * fixture = body->CreateFixture(&loop, 0.0f);
+  ASSERT_NE(fixture, nullptr);
+  EXPECT_EQ(body->owned_fixtures_.size(), 4u);
 }
 
 TEST_F(PluginManagerTest, load_dummy_test)

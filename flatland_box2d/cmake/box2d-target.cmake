@@ -1,0 +1,1 @@
+find_package(box2d 3.1.1 CONFIG REQUIRED)

@@ -80,7 +80,7 @@ public:
    * @param[in] rt Defined transformation
    * @return Transformed point
    */
-  static b2Vec2 Transform(const b2Vec2 & in, const RotateTranslate & rt);
+  static flatland::b2Vec2 Transform(const flatland::b2Vec2 & in, const RotateTranslate & rt);
 
   /**
    * @brief Inverse transform a point for given transformation
@@ -88,7 +88,7 @@ public:
    * @param[in] rt Defined transformation
    * @return Inverse transformed point
    */
-  static b2Vec2 InverseTransform(const b2Vec2 & in, const RotateTranslate & rt);
+  static flatland::b2Vec2 InverseTransform(const flatland::b2Vec2 & in, const RotateTranslate & rt);
 };
 
 }  // namespace flatland_server

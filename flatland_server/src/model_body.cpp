@@ -48,13 +48,14 @@
 #include <flatland_server/model_body.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <stdexcept>
 
 namespace flatland_server
 {
 
 ModelBody::ModelBody(
-  b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, const std::string & name,
-  const Color & color, const Pose & pose, b2BodyType body_type, const YAML::Node & properties,
+  flatland::b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, const std::string & name,
+  const Color & color, const Pose & pose, flatland::b2BodyType body_type, const YAML::Node & properties,
   double linear_damping, double angular_damping)
 : Body(
     physics_world, model, name, color, pose, body_type, properties, linear_damping,
@@ -66,7 +67,7 @@ ModelBody::ModelBody(
 const CollisionFilterRegistry * ModelBody::GetCfr() const { return cfr_; }
 
 ModelBody * ModelBody::MakeBody(
-  b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, YamlReader & body_reader)
+  flatland::b2World * physics_world, CollisionFilterRegistry * cfr, Model * model, YamlReader & body_reader)
 {
   std::string name = body_reader.Get<std::string>("name");
   body_reader.SetErrorInfo("model " + Q(model->name_), "body " + Q(name));
@@ -77,13 +78,13 @@ ModelBody * ModelBody::MakeBody(
   double linear_damping = body_reader.Get("linear_damping", 0.0);
   double angular_damping = body_reader.Get("angular_damping", 0.0);
 
-  b2BodyType type;
+  flatland::b2BodyType type;
   if (type_str == "static") {
-    type = b2_staticBody;
+    type = flatland::b2_staticBody;
   } else if (type_str == "kinematic") {
-    type = b2_kinematicBody;
+    type = flatland::b2_kinematicBody;
   } else if (type_str == "dynamic") {
-    type = b2_dynamicBody;
+    type = flatland::b2_dynamicBody;
   } else {
     throw YAMLException(
       "Invalid \"type\" in " + body_reader.entry_location_ + " " + body_reader.entry_name_ +
@@ -128,7 +129,7 @@ void ModelBody::LoadFootprints(YamlReader & footprints_reader)
   }
 }
 
-void ModelBody::ConfigFootprintDef(YamlReader & footprint_reader, b2FixtureDef & fixture_def)
+void ModelBody::ConfigFootprintDef(YamlReader & footprint_reader, flatland::b2FixtureDef & fixture_def)
 {
   // configure physics properties
   fixture_def.density = footprint_reader.Get<float>("density");
@@ -166,10 +167,10 @@ void ModelBody::LoadCircleFootprint(YamlReader & footprint_reader)
   Vec2 center = footprint_reader.GetVec2("center", Vec2(0, 0));
   double radius = footprint_reader.Get<double>("radius");
 
-  b2FixtureDef fixture_def;
+  flatland::b2FixtureDef fixture_def;
   ConfigFootprintDef(footprint_reader, fixture_def);
 
-  b2CircleShape shape;
+  flatland::b2CircleShape shape;
   shape.m_p.Set(center.x, center.y);
   shape.m_radius = radius;
 
@@ -179,15 +180,22 @@ void ModelBody::LoadCircleFootprint(YamlReader & footprint_reader)
 
 void ModelBody::LoadPolygonFootprint(YamlReader & footprint_reader)
 {
-  std::vector<b2Vec2> points = footprint_reader.GetList<b2Vec2>("points", 3, b2_maxPolygonVertices);
+  std::vector<flatland::b2Vec2> points = footprint_reader.GetList<flatland::b2Vec2>("points", 3, flatland::b2_maxPolygonVertices);
 
-  b2FixtureDef fixture_def;
+  flatland::b2FixtureDef fixture_def;
   ConfigFootprintDef(footprint_reader, fixture_def);
 
-  b2PolygonShape shape;
-  shape.Set(points.data(), points.size());
-
-  fixture_def.shape = &shape;
-  physics_body_->CreateFixture(&fixture_def);
+  flatland::b2PolygonShape shape;
+  try {
+    shape.Set(points.data(), points.size());
+    fixture_def.shape = &shape;
+    physics_body_->CreateFixture(&fixture_def);
+  } catch (const std::invalid_argument & e) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("ModelBody"), "Skipping invalid polygon footprint for body \"" << name_
+                                                                                          << "\" in "
+                                                                                          << footprint_reader.entry_location_
+                                                                                          << ": " << e.what());
+  }
 }
 };  // namespace flatland_server

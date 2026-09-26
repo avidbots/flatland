@@ -68,7 +68,7 @@ struct Vec2
 
   Vec2() : x(0), y(0) {}
 
-  b2Vec2 Box2D() const { return b2Vec2(x, y); }
+  flatland::b2Vec2 Box2D() const { return flatland::b2Vec2(x, y); }
 };
 
 struct LineSegment

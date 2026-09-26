@@ -118,6 +118,7 @@ void InteractiveMarkerManager::createInteractiveMarker(
   new_interactive_marker.controls.push_back(rotate_control);
   new_interactive_marker.controls.push_back(no_control);
   interactive_marker_server_->insert(new_interactive_marker);
+  marker_poses_[model_name] = new_interactive_marker.pose;
 
   // Bind feedback callbacks for the new interactive marker
   using namespace std::placeholders;
@@ -164,6 +165,7 @@ void InteractiveMarkerManager::deleteInteractiveMarker(const std::string & model
 {
   // Remove target interactive marker by name and
   // update the server
+  marker_poses_.erase(model_name);
   interactive_marker_server_->erase(model_name);
   interactive_marker_server_->applyChanges();
 }
@@ -203,11 +205,13 @@ void InteractiveMarkerManager::processPoseUpdateFeedback(
 
 void InteractiveMarkerManager::update()
 {
+  rclcpp::Time now = rclcpp::Clock(RCL_STEADY_TIME).now();
   // Loop through each model, extract the pose of the root body,
   // and use it to update the interactive marker pose. Only
   // necessary to compute if user is not currently dragging
   // an interactive marker
-  if (!manipulating_model_) {
+  if (!manipulating_model_ && (now - last_marker_update_).seconds() >= 0.05) {
+    bool changed = false;
     for (size_t i = 0; i < (*models_).size(); i++) {
       geometry_msgs::msg::Pose new_pose;
       new_pose.position.x = (*models_)[i]->bodies_[0]->physics_body_->GetPosition().x;
@@ -215,9 +219,18 @@ void InteractiveMarkerManager::update()
       double theta = (*models_)[i]->bodies_[0]->physics_body_->GetAngle();
       new_pose.orientation.w = cos(0.5 * theta);
       new_pose.orientation.z = sin(0.5 * theta);
-      interactive_marker_server_->setPose((*models_)[i]->GetName(), new_pose);
-      interactive_marker_server_->applyChanges();
+      auto & previous = marker_poses_[(*models_)[i]->GetName()];
+      if (previous.position.x != new_pose.position.x ||
+        previous.position.y != new_pose.position.y ||
+        previous.orientation.w != new_pose.orientation.w ||
+        previous.orientation.z != new_pose.orientation.z) {
+        interactive_marker_server_->setPose((*models_)[i]->GetName(), new_pose);
+        previous = new_pose;
+        changed = true;
+      }
     }
+    if (changed) interactive_marker_server_->applyChanges();
+    last_marker_update_ = now;
   }
 
   // Detect when interaction stops without triggering a MOUSE_UP event by

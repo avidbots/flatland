@@ -91,7 +91,7 @@ public:
    * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(
-    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
     const std::vector<std::string> & names, const Color & color, const Pose & origin,
     const cv::Mat & bitmap, double occupied_thresh, double resolution,
     const YAML::Node & properties);
@@ -113,7 +113,7 @@ public:
    * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(
-    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
     const std::vector<std::string> & names, const Color & color, const Pose & origin,
     const std::vector<LineSegment> & line_segments, double scale, const YAML::Node & properties);
 
@@ -128,7 +128,7 @@ public:
    * @param[in] properties A YAML node containing properties for plugins to use
    */
   Layer(
-    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
     const std::vector<std::string> & names, const Color & color, const YAML::Node & properties);
 
   /**
@@ -197,7 +197,7 @@ public:
    * @return A new layer
    */
   static Layer * MakeLayer(
-    std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+    std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
     const std::string & map_path, const std::vector<std::string> & names, const Color & color,
     const YAML::Node & properties);
 };

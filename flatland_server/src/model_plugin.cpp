@@ -64,10 +64,10 @@ void ModelPlugin::Initialize(
 }
 
 bool ModelPlugin::FilterContact(
-  b2Contact * contact, Entity *& entity, b2Fixture *& this_fixture, b2Fixture *& other_fixture)
+  flatland::b2Contact * contact, Entity *& entity, flatland::b2Fixture *& this_fixture, flatland::b2Fixture *& other_fixture)
 {
-  b2Fixture * f_A = contact->GetFixtureA();
-  b2Fixture * f_B = contact->GetFixtureB();
+  flatland::b2Fixture * f_A = contact->GetFixtureA();
+  flatland::b2Fixture * f_B = contact->GetFixtureB();
   Body * b_A = static_cast<Body *>(f_A->GetBody()->GetUserData());
   Body * b_B = static_cast<Body *>(f_B->GetBody()->GetUserData());
   Entity * e_A = b_A->GetEntity();
@@ -87,9 +87,9 @@ bool ModelPlugin::FilterContact(
   return true;
 }
 
-bool ModelPlugin::FilterContact(b2Contact * contact)
+bool ModelPlugin::FilterContact(flatland::b2Contact * contact)
 {
-  b2Fixture *f1, *f2;
+  flatland::b2Fixture *f1, *f2;
   Entity * e;
   return FilterContact(contact, e, f1, f2);
 }

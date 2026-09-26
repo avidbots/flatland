@@ -53,6 +53,8 @@
 #include <yaml-cpp/yaml.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <cmath>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -65,43 +67,60 @@ namespace flatland_server
 {
 
 Layer::Layer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::vector<std::string> & names, const Color & color, const Pose & origin,
   const cv::Mat & bitmap, double occupied_thresh, double resolution, const YAML::Node & properties)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
+  body_ = new Body(physics_world_, this, name_, color, origin, flatland::b2_staticBody, properties);
 
   LoadFromBitmap(bitmap, occupied_thresh, resolution);
 }
 
 Layer::Layer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::vector<std::string> & names, const Color & color, const Pose & origin,
   const std::vector<LineSegment> & line_segments, double scale, const YAML::Node & properties)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
-  body_ = new Body(physics_world_, this, name_, color, origin, b2_staticBody, properties);
+  body_ = new Body(physics_world_, this, name_, color, origin, flatland::b2_staticBody, properties);
 
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
+  std::size_t skipped_line_segments = 0;
+  constexpr float min_segment_length_squared = 0.005f * 0.005f;
 
   for (const auto & line_segment : line_segments) {
-    b2EdgeShape edge;
+    flatland::b2EdgeShape edge;
     edge.Set(line_segment.start.Box2D(), line_segment.end.Box2D());
     edge.m_vertex1 *= scale;
     edge.m_vertex2 *= scale;
+    float dx = edge.m_vertex2.x - edge.m_vertex1.x;
+    float dy = edge.m_vertex2.y - edge.m_vertex1.y;
+    float length_squared = dx * dx + dy * dy;
+    if (!std::isfinite(length_squared) || length_squared <= min_segment_length_squared) {
+      skipped_line_segments++;
+      continue;
+    }
 
-    b2FixtureDef fixture_def;
+    flatland::b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
     fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;
     // todo: add material information
     body_->physics_body_->CreateFixture(&fixture_def);
   }
+
+  if (skipped_line_segments > 0) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("Layer"), "Skipped "   << skipped_line_segments
+                                                << " line segment(s) at or below Box2D's 5 mm "
+                                                   "minimum in layer \""
+                                                << names_[0] << "\"");
+  }
 }
 
 Layer::Layer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::vector<std::string> & names, const Color &, const YAML::Node &)
 : Entity(node, physics_world, names[0]), names_(names), cfr_(cfr), viz_name_("layers/l_" + names[0])
 {
@@ -115,7 +134,7 @@ const CollisionFilterRegistry * Layer::GetCfr() const { return cfr_; }
 Body * Layer::GetBody() { return body_; }
 
 Layer * Layer::MakeLayer(
-  std::shared_ptr<rclcpp::Node> node, b2World * physics_world, CollisionFilterRegistry * cfr,
+  std::shared_ptr<rclcpp::Node> node, flatland::b2World * physics_world, CollisionFilterRegistry * cfr,
   const std::string & map_path, const std::vector<std::string> & names, const Color & color,
   const YAML::Node & properties)
 {
@@ -210,13 +229,13 @@ void Layer::LoadFromBitmap(const cv::Mat & bitmap, double occupied_thresh, doubl
   uint16_t category_bits = cfr_->GetCategoryBits(names_);
 
   auto add_edge = [&](double x1, double y1, double x2, double y2) {
-    b2EdgeShape edge;
+    flatland::b2EdgeShape edge;
     double rows = bitmap.rows;
     double res = resolution;
 
-    edge.Set(b2Vec2(res * x1, res * (rows - y1)), b2Vec2(res * x2, res * (rows - y2)));
+    edge.Set(flatland::b2Vec2(res * x1, res * (rows - y1)), flatland::b2Vec2(res * x2, res * (rows - y2)));
 
-    b2FixtureDef fixture_def;
+    flatland::b2FixtureDef fixture_def;
     fixture_def.shape = &edge;
     fixture_def.filter.categoryBits = category_bits;
     fixture_def.filter.maskBits = fixture_def.filter.categoryBits;

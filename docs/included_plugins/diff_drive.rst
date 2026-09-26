@@ -13,8 +13,8 @@ velocities and odometries are w.r.t. the robot origin
   messages, and move the robot at the desired forward and rotation velocities
 
 * Publishes to two topics with `nav_msgs/Odometry <http://docs.ros.org/api/nav_msgs/html/msg/Odometry.html>`_
-  messages, one for robot odometry which has noise, the other the ground truth
-  odometry
+  messages, one for noisy robot odometry and the other for ground truth. Noisy
+  odometry includes velocity by default; pose and its covariance are opt-in.
 
 .. code-block:: yaml
 
@@ -54,6 +54,12 @@ velocities and odometries are w.r.t. the robot origin
       # optional, defaults to true, enables the advertising and publishing of both
       # ground truth and noisy odometry
       enable_odom_pub: true
+
+      # optional, defaults to false. If true, noisy odometry includes pose and
+      # pose covariance in addition to velocity and twist covariance. If false,
+      # the fixed pose fields remain at their ROS message defaults (zero position,
+      # identity orientation, zero covariance); odom TF and ground truth are unchanged.
+      odom_include_pose: false
       
       # optional, defaults to true, enables the publication of map->odom tf
       enable_odom_tf: true
@@ -72,11 +78,16 @@ velocities and odometries are w.r.t. the robot origin
       # apply to the twist components of the odometry message
       odom_twist_noise: [0, 0, 0]
 
+      # optional, defaults to false. If false, no pose or velocity noise is
+      # sampled while both linear and angular velocity are zero. If true, noise
+      # is sampled even while stationary. Configured covariances are unchanged.
+      odom_stationary_noise: false
+
       # optional, defaults to the diagonal [x, y, yaw] components replaced by 
       # odom_pose_noise with all other values equals zero, must have length of 36, 
       # represents a 6x6 covariance matrix for x, y, z, roll, pitch, yaw. 
       # This does not involve in any of the noise calculation, it is simply 
-      # the output values of odometry pose covariance
+      # the output values of odometry pose covariance when odom_include_pose is true
       odom_pose_covariance: [0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0,
                              0, 0, 0, 0, 0, 0,
@@ -89,12 +100,12 @@ velocities and odometries are w.r.t. the robot origin
       # must have length of 36, represents a 6x6 covariance matrix for rates x, 
       # y, z, roll, pitch, yaw. This does not involve in any of the noise 
       # calculation, it is simply the output values of odometry twist covariance
-      odom_twist_covariance: [0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0
-                             0, 0, 0, 0, 0, 0]
+      odom_twist_covariance: [0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0,
+                              0, 0, 0, 0, 0, 0]
 
       # optional, defaults each parameter to 0.0 which means "no limit"
       # sets dynamics constraints on angular velocity, acceleration (in rads/sec; rads/sec/sec)

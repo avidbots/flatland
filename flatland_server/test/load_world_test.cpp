@@ -54,6 +54,7 @@
 #include <gtest/gtest.h>
 
 #include <filesystem>
+#include <numbers>
 #include <rclcpp/rclcpp.hpp>
 #include <regex>
 #include <string>
@@ -112,7 +113,7 @@ protected:
 
   // return the id if found, -1 otherwise
   int does_edge_exist(
-    const b2EdgeShape & edge, const std::vector<std::pair<b2Vec2, b2Vec2>> & edges)
+    const flatland::b2EdgeShape & edge, const std::vector<std::pair<flatland::b2Vec2, flatland::b2Vec2>> & edges)
   {
     for (unsigned int i = 0; i < edges.size(); i++) {
       auto e = edges[i];
@@ -132,9 +133,9 @@ protected:
   // checks if one list of edges completely matches the content
   // of the other list
   bool do_edges_exactly_match(
-    const std::vector<b2EdgeShape> & edges1, const std::vector<std::pair<b2Vec2, b2Vec2>> & edges2)
+    const std::vector<flatland::b2EdgeShape> & edges1, const std::vector<std::pair<flatland::b2Vec2, flatland::b2Vec2>> & edges2)
   {
-    std::vector<std::pair<b2Vec2, b2Vec2>> edges_cpy = edges2;
+    std::vector<std::pair<flatland::b2Vec2, flatland::b2Vec2>> edges_cpy = edges2;
     for (unsigned int i = 0; i < edges1.size(); i++) {
       auto e = edges1[i];
       int ret_idx = does_edge_exist(e, edges_cpy);
@@ -165,10 +166,10 @@ protected:
   }
 
   bool BodyEq(
-    Body * body, const std::string name, b2BodyType type, const std::array<double, 3> & pose,
+    Body * body, const std::string name, flatland::b2BodyType type, const std::array<double, 3> & pose,
     const std::array<double, 4> & color, double linear_damping, double angular_damping)
   {
-    b2Vec2 t = body->physics_body_->GetPosition();
+    flatland::b2Vec2 t = body->physics_body_->GetPosition();
     double a = body->physics_body_->GetAngle();
 
     if (name != body->name_) {
@@ -178,11 +179,11 @@ protected:
 
     if (type != body->physics_body_->GetType()) {
       /*
-      enum b2BodyType
+      enum flatland::b2BodyType
       {
-        b2_staticBody = 0,
-        b2_kinematicBody,
-        b2_dynamicBody
+        flatland::b2_staticBody = 0,
+        flatland::b2_kinematicBody,
+        flatland::b2_dynamicBody
       };
       */
       printf("Body type Actual:%d != Expected:%d\n", body->physics_body_->GetType(), type);
@@ -216,9 +217,9 @@ protected:
     return true;
   }
 
-  bool CircleEq(b2Fixture * f, double x, double y, double r)
+  bool CircleEq(flatland::b2Fixture * f, double x, double y, double r)
   {
-    if (f->GetShape()->GetType() != b2Shape::e_circle) {
+    if (f->GetShape()->GetType() != flatland::b2Shape::e_circle) {
       /*
       enum Type
       {
@@ -229,11 +230,11 @@ protected:
         e_typeCount = 4
       };
       */
-      printf("Shape is not of type b2Shape::e_circle, Actual=%d\n", f->GetShape()->GetType());
+      printf("Shape is not of type flatland::b2Shape::e_circle, Actual=%d\n", f->GetShape()->GetType());
       return false;
     }
 
-    b2CircleShape * s = dynamic_cast<b2CircleShape *>(f->GetShape());
+    flatland::b2CircleShape * s = dynamic_cast<flatland::b2CircleShape *>(f->GetShape());
 
     if (!float_cmp(r, s->m_radius) || !float_cmp(x, s->m_p.x) || !float_cmp(y, s->m_p.y)) {
       printf(
@@ -244,9 +245,9 @@ protected:
     return true;
   }
 
-  bool PolygonEq(b2Fixture * f, std::vector<std::pair<double, double>> points)
+  bool PolygonEq(flatland::b2Fixture * f, std::vector<std::pair<double, double>> points)
   {
-    if (f->GetShape()->GetType() != b2Shape::e_polygon) {
+    if (f->GetShape()->GetType() != flatland::b2Shape::e_polygon) {
       /*
       enum Type
       {
@@ -257,11 +258,11 @@ protected:
         e_typeCount = 4
       };
       */
-      printf("Shape is not of type b2Shape::e_polygon, Actual=%d\n", f->GetShape()->GetType());
+      printf("Shape is not of type flatland::b2Shape::e_polygon, Actual=%d\n", f->GetShape()->GetType());
       return false;
     }
 
-    b2PolygonShape * s = dynamic_cast<b2PolygonShape *>(f->GetShape());
+    flatland::b2PolygonShape * s = dynamic_cast<flatland::b2PolygonShape *>(f->GetShape());
     unsigned int cnt = s->m_count;
     if (cnt != points.size()) {
       printf("Number of points Actual:%d != Expected:%lu\n", cnt, points.size());
@@ -271,7 +272,7 @@ protected:
     auto pts = points;
 
     for (unsigned int i = 0; i < cnt; i++) {
-      const b2Vec2 p = s->m_vertices[i];
+      const flatland::b2Vec2 p = s->m_vertices[i];
 
       bool found_match = false;
       unsigned int j;
@@ -308,12 +309,12 @@ protected:
     }
   }
 
-  std::vector<b2Fixture *> GetBodyFixtures(Body * body)
+  std::vector<flatland::b2Fixture *> GetBodyFixtures(Body * body)
   {
-    std::vector<b2Fixture *> fixtures;
+    std::vector<flatland::b2Fixture *> fixtures;
 
-    b2Body * b = body->physics_body_;
-    for (b2Fixture * f = b->GetFixtureList(); f; f = f->GetNext()) {
+    flatland::b2Body * b = body->physics_body_;
+    for (flatland::b2Fixture * f = b->GetFixtureList(); f; f = f->GetNext()) {
       fixtures.push_back(f);
     }
 
@@ -323,7 +324,7 @@ protected:
   }
 
   bool FixtureEq(
-    b2Fixture * f, bool is_sensor, int group_index, uint16_t category_bits, uint16_t mask_bits,
+    flatland::b2Fixture * f, bool is_sensor, int group_index, uint16_t category_bits, uint16_t mask_bits,
     double density, double friction, double restitution)
   {
     if (f->IsSensor() != is_sensor) {
@@ -338,13 +339,16 @@ protected:
 
     if (f->GetFilterData().categoryBits != category_bits) {
       printf(
-        "category_bits Actual:0x%X != Expected:0x%X\n", f->GetFilterData().categoryBits,
+        "category_bits Actual:0x%llX != Expected:0x%X\n",
+        static_cast<unsigned long long>(f->GetFilterData().categoryBits),
         category_bits);
       return false;
     }
 
     if (f->GetFilterData().maskBits != mask_bits) {
-      printf("mask_bits Actual:0x%X != Expected:0x%X\n", f->GetFilterData().maskBits, mask_bits);
+      printf(
+        "mask_bits Actual:0x%llX != Expected:0x%X\n",
+        static_cast<unsigned long long>(f->GetFilterData().maskBits), mask_bits);
       return false;
     }
 
@@ -371,7 +375,7 @@ protected:
     const std::array<double, 2> & anchor_A, Body * body_B, const std::array<double, 2> & anchor_B,
     bool collide_connected)
   {
-    b2Joint * j = joint->physics_joint_;
+    flatland::b2Joint * j = joint->physics_joint_;
 
     if (name != joint->name_) {
       printf("Name Actual:%s != Expected:%s\n", joint->name_.c_str(), name.c_str());
@@ -398,8 +402,8 @@ protected:
 
     // GetAnchor returns world coordinates, we want to verify against
     // local coordinates
-    b2Vec2 local_anchor_A = j->GetAnchorA() - j->GetBodyA()->GetPosition();
-    b2Vec2 local_anchor_B = j->GetAnchorB() - j->GetBodyB()->GetPosition();
+    flatland::b2Vec2 local_anchor_A = j->GetAnchorA() - j->GetBodyA()->GetPosition();
+    flatland::b2Vec2 local_anchor_B = j->GetAnchorB() - j->GetBodyB()->GetPosition();
 
     if (!float_cmp(local_anchor_A.x, anchor_A[0]) || !float_cmp(local_anchor_A.y, anchor_A[1])) {
       printf(
@@ -427,27 +431,27 @@ protected:
 
   bool WeldEq(Joint * joint, double angle, double freq, double damping)
   {
-    b2WeldJoint * j = dynamic_cast<b2WeldJoint *>(joint->physics_joint_);
+    flatland::b2WeldJoint * j = dynamic_cast<flatland::b2WeldJoint *>(joint->physics_joint_);
 
-    if (j->GetType() != e_weldJoint) {
+    if (j->GetType() != flatland::e_weldJoint) {
       /*
-      enum b2JointType
+      enum flatland::b2JointType
       {
-        e_unknownJoint, --> C++ should defaults initialize at zero?
-        e_revoluteJoint,
+        flatland::e_unknownJoint, --> C++ should defaults initialize at zero?
+        flatland::e_revoluteJoint,
         e_prismaticJoint,
-        e_distanceJoint,
-        e_pulleyJoint,
-        e_mouseJoint,
+        flatland::e_distanceJoint,
+        flatland::e_pulleyJoint,
+        flatland::e_mouseJoint,
         e_gearJoint,
         e_wheelJoint,
-        e_weldJoint,
+        flatland::e_weldJoint,
         e_frictionJoint,
         e_ropeJoint,
         e_motorJoint
       };
       */
-      printf("Joint type Actual:%d != Expected:%d(weld joint)\n", j->GetType(), e_weldJoint);
+      printf("Joint type Actual:%d != Expected:%d(weld joint)\n", j->GetType(), flatland::e_weldJoint);
       return false;
     }
 
@@ -471,28 +475,28 @@ protected:
 
   bool RevoluteEq(Joint * joint, bool is_limit_enabled, const std::array<double, 2> limits)
   {
-    b2RevoluteJoint * j = dynamic_cast<b2RevoluteJoint *>(joint->physics_joint_);
+    flatland::b2RevoluteJoint * j = dynamic_cast<flatland::b2RevoluteJoint *>(joint->physics_joint_);
 
-    if (j->GetType() != e_revoluteJoint) {
+    if (j->GetType() != flatland::e_revoluteJoint) {
       /*
-      enum b2JointType
+      enum flatland::b2JointType
       {
-        e_unknownJoint, --> C++ defaults initialize at zero?
-        e_revoluteJoint,
+        flatland::e_unknownJoint, --> C++ defaults initialize at zero?
+        flatland::e_revoluteJoint,
         e_prismaticJoint,
-        e_distanceJoint,
-        e_pulleyJoint,
-        e_mouseJoint,
+        flatland::e_distanceJoint,
+        flatland::e_pulleyJoint,
+        flatland::e_mouseJoint,
         e_gearJoint,
         e_wheelJoint,
-        e_weldJoint,
+        flatland::e_weldJoint,
         e_frictionJoint,
         e_ropeJoint,
         e_motorJoint
       };
       */
       printf(
-        "Joint type Actual:%d != Expected:%d(revolute joint)\n", j->GetType(), e_revoluteJoint);
+        "Joint type Actual:%d != Expected:%d(revolute joint)\n", j->GetType(), flatland::e_revoluteJoint);
       return false;
     }
 
@@ -525,8 +529,7 @@ TEST_F(LoadWorldTest, simple_test_A)
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("simple_test_A_node");
   w = World::MakeWorld(node, world_yaml.string());
 
-  EXPECT_EQ(w->physics_velocity_iterations_, 11);
-  EXPECT_EQ(w->physics_position_iterations_, 12);
+  EXPECT_EQ(w->physics_substeps_, 12);
 
   ASSERT_EQ(w->layers_.size(), (unsigned int)4);
 
@@ -536,7 +539,7 @@ TEST_F(LoadWorldTest, simple_test_A)
   EXPECT_STREQ(w->layers_[0]->names_[0].c_str(), "2d");
   EXPECT_EQ(w->layers_[0]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(
-    BodyEq(w->layers_[0]->body_, "2d", b2_staticBody, {0.05, -0.05, 1.57}, {0, 1, 0, 0.675}, 0, 0));
+    BodyEq(w->layers_[0]->body_, "2d", flatland::b2_staticBody, {0.05, -0.05, 1.57}, {0, 1, 0, 0.675}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("2d"), 0);
   EXPECT_EQ(w->cfr_.GetCategoryBits(w->layers_[0]->names_), 0b1);
 
@@ -548,7 +551,7 @@ TEST_F(LoadWorldTest, simple_test_A)
   EXPECT_STREQ(w->layers_[1]->names_[2].c_str(), "5d");
   EXPECT_EQ(w->layers_[1]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(
-    BodyEq(w->layers_[1]->body_, "3d", b2_staticBody, {0.0, 0.0, 0.0}, {1, 1, 1, 1}, 0, 0));
+    BodyEq(w->layers_[1]->body_, "3d", flatland::b2_staticBody, {0.0, 0.0, 0.0}, {1, 1, 1, 1}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("3d"), 1);
   EXPECT_EQ(w->cfr_.LookUpLayerId("4d"), 2);
   EXPECT_EQ(w->cfr_.LookUpLayerId("5d"), 3);
@@ -560,30 +563,30 @@ TEST_F(LoadWorldTest, simple_test_A)
   EXPECT_STREQ(w->layers_[2]->names_[0].c_str(), "lines");
   EXPECT_EQ(w->layers_[2]->Type(), Entity::EntityType::LAYER);
   EXPECT_TRUE(
-    BodyEq(w->layers_[2]->body_, "lines", b2_staticBody, {-1.20, -5, 1.23}, {1, 1, 1, 1}, 0, 0));
+    BodyEq(w->layers_[2]->body_, "lines", flatland::b2_staticBody, {-1.20, -5, 1.23}, {1, 1, 1, 1}, 0, 0));
   EXPECT_EQ(w->cfr_.LookUpLayerId("lines"), 4);
 
   // check that bitmap is transformed correctly. This involves flipping the y
   // coordinates and apply the resolution. Note that the translation and
   // rotation is performed internally by Box2D
-  std::vector<std::pair<b2Vec2, b2Vec2>> layer0_expected_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.25, 0.25)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.20, 0.20)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.15, 0.15)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.10), b2Vec2(0.15, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.05), b2Vec2(0.20, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.00), b2Vec2(0.25, 0.00)),
+  std::vector<std::pair<flatland::b2Vec2, flatland::b2Vec2>> layer0_expected_edges = {
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.00, 0.25), flatland::b2Vec2(0.25, 0.25)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.05, 0.20), flatland::b2Vec2(0.20, 0.20)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.10, 0.15), flatland::b2Vec2(0.15, 0.15)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.10, 0.10), flatland::b2Vec2(0.15, 0.10)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.05, 0.05), flatland::b2Vec2(0.20, 0.05)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.00, 0.00), flatland::b2Vec2(0.25, 0.00)),
 
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.00, 0.25), b2Vec2(0.00, 0.00)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.05, 0.20), b2Vec2(0.05, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.10, 0.15), b2Vec2(0.10, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.15, 0.15), b2Vec2(0.15, 0.10)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.20, 0.20), b2Vec2(0.20, 0.05)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.25, 0.25), b2Vec2(0.25, 0.00))};
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.00, 0.25), flatland::b2Vec2(0.00, 0.00)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.05, 0.20), flatland::b2Vec2(0.05, 0.05)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.10, 0.15), flatland::b2Vec2(0.10, 0.10)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.15, 0.15), flatland::b2Vec2(0.15, 0.10)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.20, 0.20), flatland::b2Vec2(0.20, 0.05)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.25, 0.25), flatland::b2Vec2(0.25, 0.00))};
 
-  std::vector<b2EdgeShape> layer0_edges;
-  for (b2Fixture * f = w->layers_[0]->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
-    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+  std::vector<flatland::b2EdgeShape> layer0_edges;
+  for (flatland::b2Fixture * f = w->layers_[0]->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
+    flatland::b2EdgeShape e = *(dynamic_cast<flatland::b2EdgeShape *>(f->GetShape()));
     layer0_edges.push_back(e);
 
     // check that collision groups are correctly assigned
@@ -595,27 +598,27 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // layer[1] has origin of [0, 0, 0], so there should be no transform, just
   // apply the inversion of y coordinates and scale by resolution
-  std::vector<std::pair<b2Vec2, b2Vec2>> layer1_expected_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(1.5, 7.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 7.5), b2Vec2(0.0, 4.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.0, 4.5), b2Vec2(4.5, 4.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(4.5, 4.5), b2Vec2(4.5, 1.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 3.0), b2Vec2(6.0, 6.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 6.0), b2Vec2(1.5, 6.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 7.5), b2Vec2(1.5, 6.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(3.0, 3.0), b2Vec2(6.0, 3.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(3.0, 0.0), b2Vec2(3.0, 3.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 1.5), b2Vec2(4.5, 1.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 0.0), b2Vec2(3.0, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(1.5, 1.5), b2Vec2(1.5, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 1.5), b2Vec2(7.5, 1.5)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 1.5), b2Vec2(6.0, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(7.5, 1.5), b2Vec2(7.5, 0.0)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(6.0, 0.0), b2Vec2(7.5, 0.0))};
+  std::vector<std::pair<flatland::b2Vec2, flatland::b2Vec2>> layer1_expected_edges = {
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.0, 7.5), flatland::b2Vec2(1.5, 7.5)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.0, 7.5), flatland::b2Vec2(0.0, 4.5)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.0, 4.5), flatland::b2Vec2(4.5, 4.5)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(4.5, 4.5), flatland::b2Vec2(4.5, 1.5)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(6.0, 3.0), flatland::b2Vec2(6.0, 6.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(6.0, 6.0), flatland::b2Vec2(1.5, 6.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(1.5, 7.5), flatland::b2Vec2(1.5, 6.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(3.0, 3.0), flatland::b2Vec2(6.0, 3.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(3.0, 0.0), flatland::b2Vec2(3.0, 3.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(1.5, 1.5), flatland::b2Vec2(4.5, 1.5)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(1.5, 0.0), flatland::b2Vec2(3.0, 0.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(1.5, 1.5), flatland::b2Vec2(1.5, 0.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(6.0, 1.5), flatland::b2Vec2(7.5, 1.5)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(6.0, 1.5), flatland::b2Vec2(6.0, 0.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(7.5, 1.5), flatland::b2Vec2(7.5, 0.0)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(6.0, 0.0), flatland::b2Vec2(7.5, 0.0))};
 
-  std::vector<b2EdgeShape> layer1_edges;
-  for (b2Fixture * f = w->layers_[1]->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
-    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+  std::vector<flatland::b2EdgeShape> layer1_edges;
+  for (flatland::b2Fixture * f = w->layers_[1]->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
+    flatland::b2EdgeShape e = *(dynamic_cast<flatland::b2EdgeShape *>(f->GetShape()));
     layer1_edges.push_back(e);
 
     // check that collision groups are correctly assigned
@@ -626,14 +629,14 @@ TEST_F(LoadWorldTest, simple_test_A)
   EXPECT_TRUE(do_edges_exactly_match(layer1_edges, layer1_expected_edges));
 
   // check layer[2] data
-  std::vector<std::pair<b2Vec2, b2Vec2>> layer2_expected_edges = {
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.1, 0.2), b2Vec2(0.3, 0.4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(-0.1, -0.2), b2Vec2(-0.3, -0.4)),
-    std::pair<b2Vec2, b2Vec2>(b2Vec2(0.01, 0.02), b2Vec2(0.03, 0.04))};
+  std::vector<std::pair<flatland::b2Vec2, flatland::b2Vec2>> layer2_expected_edges = {
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.1, 0.2), flatland::b2Vec2(0.3, 0.4)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(-0.1, -0.2), flatland::b2Vec2(-0.3, -0.4)),
+    std::pair<flatland::b2Vec2, flatland::b2Vec2>(flatland::b2Vec2(0.01, 0.02), flatland::b2Vec2(0.03, 0.04))};
 
-  std::vector<b2EdgeShape> layer2_edges;
-  for (b2Fixture * f = w->layers_[2]->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
-    b2EdgeShape e = *(dynamic_cast<b2EdgeShape *>(f->GetShape()));
+  std::vector<flatland::b2EdgeShape> layer2_edges;
+  for (flatland::b2Fixture * f = w->layers_[2]->body_->physics_body_->GetFixtureList(); f; f = f->GetNext()) {
+    flatland::b2EdgeShape e = *(dynamic_cast<flatland::b2EdgeShape *>(f->GetShape()));
     layer2_edges.push_back(e);
 
     // check that collision groups are correctly assigned
@@ -653,17 +656,21 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // check model 0 body 0
   EXPECT_TRUE(
-    BodyEq(m0->bodies_[0], "base", b2_dynamicBody, {0, 0, 0}, {1, 1, 0, 0.25}, 0.1, 0.125));
+    BodyEq(m0->bodies_[0], "base", flatland::b2_dynamicBody, {0, 0, 0}, {1, 1, 0, 0.25}, 0.1, 0.125));
   auto fs = GetBodyFixtures(m0->bodies_[0]);
-  ASSERT_EQ(fs.size(), (unsigned int)2);
+  ASSERT_EQ(fs.size(), (unsigned int)4);
   EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(CircleEq(fs[0], 0, 0, 1.777));
   EXPECT_TRUE(FixtureEq(fs[1], false, 0, 0xFFFF, 0xFFFF, 982.24, 0.59, 0.234));
   EXPECT_TRUE(PolygonEq(fs[1], {{-0.1, 0.1}, {-0.1, -0.1}, {0.1, -0.1}, {0.1, 0.1}}));
+  for (unsigned int fixture_index = 2; fixture_index < fs.size(); ++fixture_index) {
+    EXPECT_TRUE(FixtureEq(fs[fixture_index], true, 0, 0xFFFF, 0, 0, 0, 0));
+    EXPECT_EQ(fs[fixture_index]->GetShape()->GetType(), flatland::b2Shape::e_polygon);
+  }
 
   // check model 0 body 1
   EXPECT_TRUE(
-    BodyEq(m0->bodies_[1], "left_wheel", b2_dynamicBody, {-1, 0, 0}, {1, 0, 0, 0.25}, 0, 0));
+    BodyEq(m0->bodies_[1], "left_wheel", flatland::b2_dynamicBody, {-1, 0, 0}, {1, 0, 0, 0.25}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[1]);
   ASSERT_EQ(fs.size(), (unsigned int)1);
   EXPECT_TRUE(FixtureEq(fs[0], true, 0, 0b01, 0b01, 0, 0, 0));
@@ -671,14 +678,14 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // check model 0 body 2
   EXPECT_TRUE(
-    BodyEq(m0->bodies_[2], "right_wheel", b2_dynamicBody, {1, 0, 0}, {0, 1, 0, 0.25}, 0, 0));
+    BodyEq(m0->bodies_[2], "right_wheel", flatland::b2_dynamicBody, {1, 0, 0}, {0, 1, 0, 0.25}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[2]);
   ASSERT_EQ(fs.size(), (unsigned int)1);
   EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0xFFFF, 0xFFFF, 0, 0, 0));
   EXPECT_TRUE(PolygonEq(fs[0], {{-0.2, 0.75}, {-0.2, -0.75}, {0.2, -0.75}, {0.2, 0.75}}));
 
   // check model 0 body 3
-  EXPECT_TRUE(BodyEq(m0->bodies_[3], "tail", b2_dynamicBody, {0, 0, 0.52}, {0, 0, 0, 0.5}, 0, 0));
+  EXPECT_TRUE(BodyEq(m0->bodies_[3], "tail", flatland::b2_dynamicBody, {0, 0, 0.52}, {0, 0, 0, 0.5}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[3]);
   ASSERT_EQ(fs.size(), (unsigned int)1);
   EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b10, 0b10, 0, 0, 0));
@@ -686,7 +693,7 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // check model 0 body 4
   EXPECT_TRUE(
-    BodyEq(m0->bodies_[4], "antenna", b2_dynamicBody, {0, 0.5, 0}, {0.2, 0.4, 0.6, 1}, 0, 0));
+    BodyEq(m0->bodies_[4], "antenna", flatland::b2_dynamicBody, {0, 0.5, 0}, {0.2, 0.4, 0.6, 1}, 0, 0));
   fs = GetBodyFixtures(m0->bodies_[4]);
   ASSERT_EQ(fs.size(), (unsigned int)1);
   EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b0, 0b0, 0, 0, 0));
@@ -711,7 +718,7 @@ TEST_F(LoadWorldTest, simple_test_A)
   EXPECT_TRUE(JointEq(
     m0->joints_[3], "antenna_revolute", {1, 1, 1, 0.5}, m0->bodies_[0], {0, 0}, m0->bodies_[4],
     {0, 0}, true));
-  EXPECT_TRUE(RevoluteEq(m0->joints_[3], true, {-0.002, 3.735}));
+  EXPECT_TRUE(RevoluteEq(m0->joints_[3], true, {-0.002, 0.99 * std::numbers::pi_v<float>}));
 
   // Check model 1 is same yaml file as model 1, simply do a simple sanity check
   Model * m1 = w->models_[1];
@@ -722,7 +729,7 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // check the applied transformation just for the first body
   EXPECT_TRUE(
-    BodyEq(m1->bodies_[0], "base", b2_dynamicBody, {3, 4.5, 3.14159}, {1, 1, 0, 0.25}, 0.1, 0.125));
+    BodyEq(m1->bodies_[0], "base", flatland::b2_dynamicBody, {3, 4.5, 3.14159}, {1, 1, 0, 0.25}, 0.1, 0.125));
 
   // Check model 2 which is the chair
   Model * m2 = w->models_[2];
@@ -732,7 +739,7 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // Check model 2 fixtures
   EXPECT_TRUE(
-    BodyEq(m2->bodies_[0], "chair", b2_staticBody, {1.2, 3.5, 2.123}, {1, 1, 1, 0.5}, 0, 0));
+    BodyEq(m2->bodies_[0], "chair", flatland::b2_staticBody, {1.2, 3.5, 2.123}, {1, 1, 1, 0.5}, 0, 0));
   fs = GetBodyFixtures(m2->bodies_[0]);
   ASSERT_EQ(fs.size(), (unsigned int)2);
   EXPECT_TRUE(FixtureEq(fs[0], false, 0, 0b1100, 0b1100, 0, 0, 0));
@@ -749,7 +756,7 @@ TEST_F(LoadWorldTest, simple_test_A)
 
   // check the body only
   EXPECT_TRUE(
-    BodyEq(m3->bodies_[0], "body", b2_kinematicBody, {0, 1, 2}, {0, 0.75, 0.75, 0.25}, 0, 0));
+    BodyEq(m3->bodies_[0], "body", flatland::b2_kinematicBody, {0, 1, 2}, {0, 0.75, 0.75, 0.25}, 0, 0));
 }
 
 /**
