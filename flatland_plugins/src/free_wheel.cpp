@@ -16,12 +16,13 @@ void FreeWheel::OnInitialize(const YAML::Node & config)
   offset_ = flatland::b2Vec2(offset[0], offset[1]);
   theta_ = offset[2];
   radius_ = reader.Get<double>("radius");
+  friction_ = reader.Get<double>("friction", 1.0);
   lateral_resistance_ = reader.Get<double>("lateral_resistance", 1.0);
   const auto encoder_topic = reader.Get<std::string>("encoder_topic", "");
   reader.EnsureAccessedAllKeys();
 
-  if (radius_ <= 0.0 || lateral_resistance_ < 0.0) {
-    throw flatland_server::YAMLException("FreeWheel radius must be positive and lateral_resistance nonnegative");
+  if (radius_ <= 0.0 || friction_ < 0.0 || lateral_resistance_ < 0.0) {
+    throw flatland_server::YAMLException("Invalid FreeWheel radius, friction or lateral_resistance");
   }
   body_ = GetModel()->GetBody(body_name);
   if (body_ == nullptr) {
@@ -33,6 +34,16 @@ void FreeWheel::OnInitialize(const YAML::Node & config)
   }
 }
 
+std::vector<flatland::b2Vec2> FreeWheel::GetContactPoints() const
+{
+  return {body_->physics_body_->GetWorldPoint(offset_)};
+}
+
+void FreeWheel::UpdateGroundContactForces(const std::vector<double> & forces)
+{
+  load_ = forces.empty() ? 0.0 : forces[0];
+}
+
 void FreeWheel::BeforePhysicsStep(const flatland_server::Timekeeper & timekeeper)
 {
   auto * physics_body = body_->physics_body_;
@@ -42,11 +53,10 @@ void FreeWheel::BeforePhysicsStep(const flatland_server::Timekeeper & timekeeper
   const flatland::b2Vec2 lateral(-forward.y, forward.x);
   const float lateral_speed = velocity.x * lateral.x + velocity.y * lateral.y;
   const double dt = timekeeper.GetStepSize();
-  if (dt > 0.0 && lateral_resistance_ > 0.0 && lateral_speed != 0.0f) {
-    const float max_force = physics_body->GetMass() * std::abs(lateral_speed) / dt;
-    const float force = std::clamp(
-      -lateral_resistance_ * lateral_speed, -static_cast<double>(max_force),
-      static_cast<double>(max_force));
+  if (dt > 0.0 && load_ > 0.0 && lateral_resistance_ > 0.0 && lateral_speed != 0.0f) {
+    const double grip = friction_ * load_;
+    const double force = std::clamp(
+      -lateral_resistance_ * (load_ / 9.81) * lateral_speed / dt, -grip, grip);
     physics_body->ApplyForce(lateral * force, physics_body->GetWorldPoint(offset_));
   }
 

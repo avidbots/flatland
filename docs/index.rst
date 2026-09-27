@@ -50,6 +50,8 @@ Class APIs are documented `here <http://flatland-simulator-api.readthedocs.io/>`
    included_plugins/bool_sensor
    included_plugins/diff_drive
    included_plugins/free_wheel
+   included_plugins/drive_wheel
+   included_plugins/steering_motor
    included_plugins/tricycle_drive
    included_plugins/laser
    included_plugins/model_tf_publisher

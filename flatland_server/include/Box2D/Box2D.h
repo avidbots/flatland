@@ -177,6 +177,7 @@ public:
   void SetLinearVelocity(b2Vec2 velocity);
   void SetAngularVelocity(float velocity);
   void ApplyForce(b2Vec2 force, b2Vec2 point);
+  void ApplyTorque(float torque);
   void SetAwake(bool awake);
   void Dump() const;
 
@@ -234,6 +235,12 @@ class b2RevoluteJoint : public b2Joint
 public:
   using b2Joint::b2Joint;
   b2JointType GetType() const override { return e_revoluteJoint; }
+  float GetJointAngle() const;
+  float GetJointSpeed() const;
+  float GetMotorTorque() const;
+  void EnableMotor(bool enabled);
+  void SetMotorSpeed(float speed);
+  void SetMaxMotorTorque(float torque);
   bool IsLimitEnabled() const;
   float GetLowerLimit() const;
   float GetUpperLimit() const;

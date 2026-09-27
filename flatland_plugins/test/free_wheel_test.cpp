@@ -32,6 +32,13 @@ TEST(FreeWheelTest, ResistsLateralMotionAndPublishesEncoder)
   plugin->Initialize(node, "FreeWheel", "test_wheel", world->models_[0], config);
   world->plugin_manager_.model_plugins_.push_back(plugin);
 
+  const flatland_server::ModelPlugin & contact_plugin = *plugin;
+  EXPECT_TRUE(contact_plugin.HasContactPoints());
+  const auto contact_points = contact_plugin.GetContactPoints();
+  ASSERT_EQ(contact_points.size(), 1u);
+  EXPECT_FLOAT_EQ(contact_points[0].x, 3.0f);
+  EXPECT_FLOAT_EQ(contact_points[0].y, 3.0f);
+
   std_msgs::msg::Float64::SharedPtr encoder;
   auto subscription = node->create_subscription<std_msgs::msg::Float64>(
     plugin->encoder_pub_->get_topic_name(), 1,
@@ -70,6 +77,35 @@ TEST(FreeWheelTest, RejectsNonpositiveRadius)
   EXPECT_THROW(
     plugin->Initialize(node, "FreeWheel", "test_wheel", world->models_[0], config),
     flatland_server::YAMLException);
+}
+
+TEST(FreeWheelTest, LowSlipGripsAndHighSlipSlides)
+{
+  auto node = rclcpp::Node::make_shared("test_free_wheel_grip");
+  auto world_path = std::filesystem::path(__FILE__).parent_path() / "update_timer_test/world.yaml";
+  std::unique_ptr<flatland_server::World> world(
+    flatland_server::World::MakeWorld(node, world_path.string()));
+  auto * body = world->models_[0]->GetBody("base")->physics_body_;
+  body->SetTransform(flatland::b2Vec2(2.0f, 3.0f), 0.0f);
+  YAML::Node config;
+  config["body"] = "base";
+  config["radius"] = 0.1;
+  config["friction"] = 0.8;
+  auto wheel = std::make_shared<flatland_plugins::FreeWheel>();
+  wheel->Initialize(node, "FreeWheel", "grip_test", world->models_[0], config);
+  wheel->UpdateGroundContactForces({body->GetMass() * 9.81});
+  flatland_server::Timekeeper timekeeper(node);
+  timekeeper.SetMaxStepSize(0.01);
+
+  body->SetLinearVelocity(flatland::b2Vec2(0.0f, 0.02f));
+  wheel->BeforePhysicsStep(timekeeper);
+  world->Update(timekeeper);
+  EXPECT_NEAR(body->GetLinearVelocity().y, 0.0, 1e-4);
+
+  body->SetLinearVelocity(flatland::b2Vec2(0.0f, 1.0f));
+  wheel->BeforePhysicsStep(timekeeper);
+  world->Update(timekeeper);
+  EXPECT_NEAR(body->GetLinearVelocity().y, 1.0 - 0.8 * 9.81 * 0.01, 1e-4);
 }
 
 TEST(FreeWheelTest, EncoderIsOptional)

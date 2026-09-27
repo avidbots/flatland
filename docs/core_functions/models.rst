@@ -63,9 +63,13 @@ shown here. Examples can be found in flatland_server/tests.
           # Does not disable interactions like the laser scan plugin.
           collision: true
 
-          # required, the density of footprint in kg/m^2 in Box2D, used for all
-          # footprint types
+          # required unless mass is given: density in kg/m^2 for this footprint
           density: 1
+
+          # alternative to density: total footprint mass in kg. For circles and
+          # polygons Flatland divides this by the footprint area for Box2D.
+          # If both are given, mass takes precedence and a warning is logged.
+          # mass: 2
 
           # optional, default to 0.0, specifies Box2D fixture friction, used for
           # all footprint types

@@ -220,6 +220,7 @@ float b2Body::GetAngularDamping() const { return ::b2Body_GetAngularDamping(id_)
 void b2Body::SetLinearVelocity(b2Vec2 value) { ::b2Body_SetLinearVelocity(id_, value); }
 void b2Body::SetAngularVelocity(float value) { ::b2Body_SetAngularVelocity(id_, value); }
 void b2Body::ApplyForce(b2Vec2 force, b2Vec2 point) { ::b2Body_ApplyForce(id_, force, point, true); }
+void b2Body::ApplyTorque(float torque) { ::b2Body_ApplyTorque(id_, torque, true); }
 void b2Body::SetAwake(bool awake) { ::b2Body_SetAwake(id_, awake); }
 void b2Body::Dump() const
 {
@@ -246,6 +247,18 @@ void b2Joint::Dump() const
   auto anchor = GetAnchorA();
   b2Log("joint type=%d anchor=(%g, %g) connected=%d\n", GetType(), anchor.x,
         anchor.y, GetCollideConnected());
+}
+float b2RevoluteJoint::GetJointAngle() const { return ::b2RevoluteJoint_GetAngle(id_); }
+float b2RevoluteJoint::GetJointSpeed() const
+{
+  return body_b_->GetAngularVelocity() - body_a_->GetAngularVelocity();
+}
+float b2RevoluteJoint::GetMotorTorque() const { return ::b2RevoluteJoint_GetMotorTorque(id_); }
+void b2RevoluteJoint::EnableMotor(bool enabled) { ::b2RevoluteJoint_EnableMotor(id_, enabled); }
+void b2RevoluteJoint::SetMotorSpeed(float speed) { ::b2RevoluteJoint_SetMotorSpeed(id_, speed); }
+void b2RevoluteJoint::SetMaxMotorTorque(float torque)
+{
+  ::b2RevoluteJoint_SetMaxMotorTorque(id_, torque);
 }
 bool b2RevoluteJoint::IsLimitEnabled() const { return ::b2RevoluteJoint_IsLimitEnabled(id_); }
 float b2RevoluteJoint::GetLowerLimit() const { return ::b2RevoluteJoint_GetLowerLimit(id_); }

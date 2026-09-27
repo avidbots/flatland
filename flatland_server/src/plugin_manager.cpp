@@ -52,6 +52,12 @@
 #include <flatland_server/world_plugin.h>
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
+#include <cmath>
+#include <map>
+#include <numeric>
+#include <vector>
+
 namespace flatland_server
 {
 
@@ -90,6 +96,85 @@ PluginManager::~PluginManager()
 
 void PluginManager::BeforePhysicsStep(const Timekeeper & timekeeper_)
 {
+  std::map<Model *, std::vector<std::shared_ptr<ModelPlugin>>> contacts;
+  for (const auto & plugin : model_plugins_) {
+    if (plugin->HasContactPoints()) {
+      contacts[plugin->GetModel()].push_back(plugin);
+    }
+  }
+  for (const auto & [model, plugins] : contacts) {
+    std::vector<flatland::b2Vec2> points;
+    std::vector<size_t> counts;
+    for (const auto & plugin : plugins) {
+      auto plugin_points = plugin->GetContactPoints();
+      counts.push_back(plugin_points.size());
+      points.insert(points.end(), plugin_points.begin(), plugin_points.end());
+    }
+    if (points.empty()) {
+      continue;
+    }
+
+    double mass = 0.0;
+    flatland::b2Vec2 center(0.0f, 0.0f);
+    for (const auto * body : model->GetBodies()) {
+      const auto * physics_body = body->physics_body_;
+      mass += physics_body->GetMass();
+      center = center + physics_body->GetMass() * physics_body->GetWorldCenter();
+    }
+    if (mass > 0.0) {
+      center *= 1.0 / mass;
+    }
+
+    std::vector<double> weights(points.size(), 0.0);
+    std::vector<size_t> active(points.size());
+    std::iota(active.begin(), active.end(), 0);
+    while (!active.empty()) {
+      flatland::b2Vec2 mean(0.0f, 0.0f);
+      for (auto index : active) {
+        mean = mean + points[index];
+      }
+      mean *= 1.0 / active.size();
+      double xx = 0.0, xy = 0.0, yy = 0.0;
+      for (auto index : active) {
+        const auto delta = points[index] - mean;
+        xx += delta.x * delta.x;
+        xy += delta.x * delta.y;
+        yy += delta.y * delta.y;
+      }
+      const auto target = center - mean;
+      double x = 0.0, y = 0.0;
+      const double determinant = xx * yy - xy * xy;
+      if (determinant > 1e-10 * (xx + yy) * (xx + yy)) {
+        x = (yy * target.x - xy * target.y) / determinant;
+        y = (xx * target.y - xy * target.x) / determinant;
+      } else if (xx >= yy && xx > 1e-10) {
+        x = target.x / xx;
+      } else if (yy > 1e-10) {
+        y = target.y / yy;
+      }
+      for (auto index : active) {
+        const auto delta = points[index] - mean;
+        weights[index] = 1.0 / active.size() + delta.x * x + delta.y * y;
+      }
+      auto lowest = std::min_element(active.begin(), active.end(), [&](size_t a, size_t b) {
+        return weights[a] < weights[b];
+      });
+      if (weights[*lowest] >= 0.0 || active.size() == 1) {
+        break;
+      }
+      weights[*lowest] = 0.0;
+      active.erase(lowest);
+    }
+    size_t start = 0;
+    for (size_t index = 0; index < plugins.size(); ++index) {
+      std::vector<double> forces(weights.begin() + start, weights.begin() + start + counts[index]);
+      for (auto & force : forces) {
+        force *= mass * 9.81;
+      }
+      plugins[index]->UpdateGroundContactForces(forces);
+      start += counts[index];
+    }
+  }
   for (const auto & model_plugin : model_plugins_) {
     model_plugin->BeforePhysicsStep(timekeeper_);
   }
