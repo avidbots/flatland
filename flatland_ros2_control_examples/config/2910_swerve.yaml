@@ -1,0 +1,17 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    wheels:
+      type: forward_command_controller/ForwardCommandController
+    steering:
+      type: forward_command_controller/ForwardCommandController
+wheels:
+  ros__parameters:
+    joints: [front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel]
+    interface_name: velocity
+steering:
+  ros__parameters:
+    joints: [front_left_steer, front_right_steer, rear_left_steer, rear_right_steer]
+    interface_name: position

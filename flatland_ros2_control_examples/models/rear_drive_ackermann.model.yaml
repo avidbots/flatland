@@ -1,0 +1,41 @@
+bodies:
+  - name: chassis
+    type: dynamic
+    color: [0.64, 0.17, 0.13, 1.0]
+    footprints:
+      - type: polygon
+        points: [[-0.78, -0.37], [0.62, -0.37], [0.62, 0.37], [-0.78, 0.37]]
+        density: 180
+        layers: [robot]
+      - {type: polygon, points: [[-0.71, 0.26], [-0.33, 0.26], [-0.33, 0.38], [-0.71, 0.38]], density: 50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.71, -0.38], [-0.33, -0.38], [-0.33, -0.26], [-0.71, -0.26]], density: 50, sensor: true, layers: [robot]}
+  - name: front_left_knuckle
+    type: dynamic
+    pose: [0.52, 0.32, 0.0]
+    footprints:
+      - {type: circle, radius: 0.045, density: 150, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.19, -0.06], [0.19, -0.06], [0.19, 0.06], [-0.19, 0.06]], density: 150, sensor: true, layers: [robot]}
+  - name: front_right_knuckle
+    type: dynamic
+    pose: [0.52, -0.32, 0.0]
+    footprints:
+      - {type: circle, radius: 0.045, density: 150, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.19, -0.06], [0.19, -0.06], [0.19, 0.06], [-0.19, 0.06]], density: 150, sensor: true, layers: [robot]}
+joints:
+  - name: front_left_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [0.52, 0.32]}
+      - {name: front_left_knuckle, anchor: [0.0, 0.0]}
+  - name: front_right_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [0.52, -0.32]}
+      - {name: front_right_knuckle, anchor: [0.0, 0.0]}
+plugins:
+  - {type: DriveWheel, name: rear_left_wheel, body: chassis, offset: [-0.52, 0.32, 0.0], radius: 0.19, mode: velocity, friction: 1.1}
+  - {type: DriveWheel, name: rear_right_wheel, body: chassis, offset: [-0.52, -0.32, 0.0], radius: 0.19, mode: velocity, friction: 1.1}
+  - {type: FreeWheel, name: front_left_wheel, body: front_left_knuckle, radius: 0.19}
+  - {type: FreeWheel, name: front_right_wheel, body: front_right_knuckle, radius: 0.19}
+  - {type: SteeringMotor, name: front_left_steer, joint: front_left_pivot, mode: position, limit: {lower: -0.65, upper: 0.65}}
+  - {type: SteeringMotor, name: front_right_steer, joint: front_right_pivot, mode: position, limit: {lower: -0.65, upper: 0.65}}

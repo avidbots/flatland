@@ -1,0 +1,6 @@
+properties: {}
+layers:
+  - name: robot
+models:
+  - name: front_drive_tricycle
+    model: ../models/front_drive_tricycle.model.yaml

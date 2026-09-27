@@ -1,0 +1,6 @@
+properties: {}
+layers:
+  - name: robot
+models:
+  - name: swerve_2910
+    model: ../models/2910_swerve.model.yaml

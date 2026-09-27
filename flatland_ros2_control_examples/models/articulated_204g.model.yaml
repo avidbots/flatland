@@ -1,0 +1,35 @@
+bodies:
+  - name: rear_chassis
+    type: dynamic
+    pose: [-0.45, 0.0, 0.0]
+    color: [0.27, 0.48, 0.15, 1.0]
+    footprints:
+      - type: polygon
+        points: [[-0.43, -0.40], [0.43, -0.40], [0.43, 0.40], [-0.43, 0.40]]
+        density: 290
+        layers: [robot]
+      - {type: polygon, points: [[-0.54, 0.23], [0.04, 0.23], [0.04, 0.41], [-0.54, 0.41]], density: 50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.54, -0.41], [0.04, -0.41], [0.04, -0.23], [-0.54, -0.23]], density: 50, sensor: true, layers: [robot]}
+  - name: front_chassis
+    type: dynamic
+    pose: [0.45, 0.0, 0.0]
+    color: [0.3, 0.56, 0.17, 1.0]
+    footprints:
+      - type: polygon
+        points: [[-0.43, -0.40], [0.43, -0.40], [0.43, 0.40], [-0.43, 0.40]]
+        density: 290
+        layers: [robot]
+      - {type: polygon, points: [[-0.04, 0.23], [0.54, 0.23], [0.54, 0.41], [-0.04, 0.41]], density: 50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.04, -0.41], [0.54, -0.41], [0.54, -0.23], [-0.04, -0.23]], density: 50, sensor: true, layers: [robot]}
+joints:
+  - name: articulation_pivot
+    type: revolute
+    bodies:
+      - {name: rear_chassis, anchor: [0.45, 0.0]}
+      - {name: front_chassis, anchor: [-0.45, 0.0]}
+plugins:
+  - {type: DriveWheel, name: front_left_wheel, body: front_chassis, offset: [0.25, 0.32, 0.0], radius: 0.29, mode: velocity, friction: 1.2}
+  - {type: DriveWheel, name: front_right_wheel, body: front_chassis, offset: [0.25, -0.32, 0.0], radius: 0.29, mode: velocity, friction: 1.2}
+  - {type: DriveWheel, name: rear_left_wheel, body: rear_chassis, offset: [-0.25, 0.32, 0.0], radius: 0.29, mode: velocity, friction: 1.2}
+  - {type: DriveWheel, name: rear_right_wheel, body: rear_chassis, offset: [-0.25, -0.32, 0.0], radius: 0.29, mode: velocity, friction: 1.2}
+  - {type: SteeringMotor, name: articulation, joint: articulation_pivot, mode: position, limit: {lower: -0.6981317, upper: 0.6981317}}

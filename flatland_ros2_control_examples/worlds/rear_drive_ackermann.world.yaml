@@ -1,0 +1,6 @@
+properties: {}
+layers:
+  - name: robot
+models:
+  - name: rear_drive_ackermann
+    model: ../models/rear_drive_ackermann.model.yaml
