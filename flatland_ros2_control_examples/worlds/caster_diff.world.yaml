@@ -1,6 +1,0 @@
-properties: {}
-layers:
-  - name: robot
-models:
-  - name: caster_diff
-    model: ../models/caster_diff.model.yaml

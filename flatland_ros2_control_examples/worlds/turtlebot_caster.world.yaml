@@ -1,0 +1,6 @@
+properties: {}
+layers:
+  - name: robot
+models:
+  - name: turtlebot_caster
+    model: ../models/turtlebot_caster.model.yaml

@@ -11,7 +11,7 @@ from launch_ros.actions import Node
 
 
 EXAMPLES = (
-    "caster_diff",
+    "turtlebot_caster",
     "a300_diff",
     "2910_swerve",
     "rear_drive_ackermann",
@@ -162,7 +162,7 @@ def launch_example(context):
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument("robot", default_value="caster_diff", choices=EXAMPLES),
+        DeclareLaunchArgument("robot", default_value="turtlebot_caster", choices=EXAMPLES),
         DeclareLaunchArgument("show_viz", default_value="true", choices=["true", "false"]),
         DeclareLaunchArgument("use_ros2_control", default_value="true", choices=["true", "false"]),
         DeclareLaunchArgument("use_joystick", default_value="true", choices=["true", "false"]),

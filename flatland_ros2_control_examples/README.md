@@ -7,7 +7,7 @@ CAD reproductions or calibrated vehicle dynamics.
 
 | `robot` launch value | Geometry | ros2_control controller |
 | --- | --- | --- |
-| `caster_diff` | Two drive wheels and a rear trailing caster on a free revolute swivel | `diff_drive_controller` |
+| `turtlebot_caster` | Two drive wheels and a rear trailing caster on a free revolute swivel | `diff_drive_controller` |
 | `a300_diff` | Four fixed drive wheels, two per side, A300-style skid steering | `diff_drive_controller` |
 | `2910_swerve` | Four independently steered and driven corner pods, inspired by [2910's Charged Up drivebase](https://frcdesign.org/mechanism-examples/drivebase/swerve/2910_2023_dt/) | Separate forward command controllers for wheel speeds and steering angles |
 | `rear_drive_ackermann` | Two rear drive wheels and two front passive wheels on independent steered knuckles | `ackermann_steering_controller` |
@@ -29,7 +29,7 @@ Build after sourcing ROS and the Flatland dependencies:
 ```sh
 colcon build --packages-select flatland_ros2_control_examples
 source install/setup.bash
-ros2 launch flatland_ros2_control_examples example.launch.py robot:=caster_diff
+ros2 launch flatland_ros2_control_examples example.launch.py robot:=turtlebot_caster
 ```
 
 Change `robot` to any value in the table. The default launch starts Flatland

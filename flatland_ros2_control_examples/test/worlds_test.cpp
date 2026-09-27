@@ -13,7 +13,7 @@ TEST(ExampleWorlds, LoadAndStep)
   const auto worlds = std::filesystem::path(__FILE__).parent_path().parent_path() / "worlds";
   for (const auto & [name, plugin_count] :
     std::array<std::pair<std::string, size_t>, 6>{{
-      {"caster_diff", 3}, {"a300_diff", 4}, {"2910_swerve", 8},
+      {"turtlebot_caster", 3}, {"a300_diff", 4}, {"2910_swerve", 8},
       {"rear_drive_ackermann", 6}, {"front_drive_tricycle", 4},
       {"articulated_204g", 5}}}) {
     SCOPED_TRACE(name);
@@ -33,7 +33,7 @@ TEST(ExampleWorlds, WheelBearingBodiesHavePlausibleMass)
   const auto worlds = std::filesystem::path(__FILE__).parent_path().parent_path() / "worlds";
   auto node = rclcpp::Node::make_shared("example_mass_distribution");
   auto caster = std::unique_ptr<flatland_server::World>(flatland_server::World::MakeWorld(
-    node, (worlds / "caster_diff.world.yaml").string()));
+    node, (worlds / "turtlebot_caster.world.yaml").string()));
   auto * caster_model = caster->models_[0];
   const double caster_mass = caster_model->GetBody("chassis")->physics_body_->GetMass();
   const double platform_mass = caster_model->GetBody("caster_platform")->physics_body_->GetMass();
@@ -66,14 +66,14 @@ TEST(ExampleWorlds, WheelBearingBodiesHavePlausibleMass)
 TEST(ExampleWorlds, AckermannAndCasterSteerUnderPower)
 {
   const auto worlds = std::filesystem::path(__FILE__).parent_path().parent_path() / "worlds";
-  for (const auto & name : {"rear_drive_ackermann", "caster_diff"}) {
+  for (const auto & name : {"rear_drive_ackermann", "turtlebot_caster"}) {
     SCOPED_TRACE(name);
     auto node = rclcpp::Node::make_shared(std::string("drive_") + name);
     auto world = std::unique_ptr<flatland_server::World>(flatland_server::World::MakeWorld(
       node, (worlds / (std::string(name) + ".world.yaml")).string()));
     for (const auto & plugin : world->plugin_manager_.model_plugins_) {
       if (auto wheel = std::dynamic_pointer_cast<flatland_plugins::DriveWheel>(plugin)) {
-        wheel->command_ = name == std::string("caster_diff") && wheel->GetName() == "right_wheel" ?
+        wheel->command_ = name == std::string("turtlebot_caster") && wheel->GetName() == "right_wheel" ?
           5.0 : 3.0;
         wheel->has_command_ = true;
       }
