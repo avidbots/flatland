@@ -16,9 +16,9 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:humble-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, UPSTREAM_WORKSPACE: flatland-not-released.repos}
-          # - {ROS_DISTRO: jazzy, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
-          # - {ROS_DISTRO: kilted, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
+          # - {ROS_DISTRO: humble, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:humble-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, UPSTREAM_WORKSPACE: flatland-not-released.repos}
+          - {ROS_DISTRO: jazzy, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:jazzy-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, UPSTREAM_WORKSPACE: flatland-not-released.repos}
+          # - {ROS_DISTRO: kilted, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:kilted-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, UPSTREAM_WORKSPACE: flatland-not-released.repos}
           - {ROS_DISTRO: lyrical, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:lyrical-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos, ADDITIONAL_DEBS: ros-lyrical-rmw-cyclonedds-cpp, DOCKER_RUN_OPTS: '-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp'}
           - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: resolute, DOCKER_IMAGE: 'osrf/ros:rolling-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos, ADDITIONAL_DEBS: ros-rolling-rmw-cyclonedds-cpp, DOCKER_RUN_OPTS: '-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp'}
     runs-on: ubuntu-24.04
