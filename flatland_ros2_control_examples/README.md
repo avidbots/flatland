@@ -18,9 +18,12 @@ CAD reproductions or calibrated vehicle dynamics.
 that both drives and steers*, and can publish an Ackermann command. The stock
 `ackermann_steering_controller` needs two driven wheels and two separate steering
 joints, so it is used on the rear-drive car instead. The swerve and articulated
-profiles expose individual joint commands; they do not include body-twist to
-wheel inverse kinematics. Swerve steering is limited to +/-2.98 radians, rather
-than continuous swivel rotation.
+profiles use a small TwistStamped adapter to publish wheel speeds and steering
+angles to their forward controllers. Swerve accepts forward, lateral and yaw
+commands; its pods reverse drive direction to keep steering within +/-90 degrees
+(the joints are limited to +/-2.98 radians). The articulated adapter approximates
+yaw with a bounded hinge angle and left/right wheel speeds. It ignores lateral
+velocity and cannot turn in place; zero forward speed stops all four wheels.
 
 ## Run
 
@@ -46,9 +49,12 @@ Joystick teleop is enabled by default with ros2_control; set `use_joystick:=fals
 to skip it or `joy_device_id:=1` to select another device. Hold button 4
 (left bumper on a typical gamepad), use axis 1 for forward speed and axis 3
 for turning. `teleop_twist_joy` publishes TwistStamped on `/drive/cmd_vel`
-for the differential, tricycle and Ackermann models.
-The swerve and articulated profiles use forward joint controllers and do not
-consume Twist commands; command their wheel and steering controllers directly.
+for all six models. For swerve and articulated models, the adapter also runs
+with `use_joystick:=false`, so an external publisher can send TwistStamped to
+`/drive/cmd_vel`. It sends zero wheel speeds and centers steering if commands
+stop arriving for 0.5 seconds. Their forward controllers can still be commanded
+directly on `/wheels/commands` and `/steering/commands`, but avoid competing
+publishers while the adapter is running.
 
 The six `models/*.model.yaml` files specify physical bodies, contact offsets,
 wheel radii and plugin names; `worlds/*.world.yaml` each load one model.

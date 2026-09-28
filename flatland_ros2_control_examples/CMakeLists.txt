@@ -10,6 +10,7 @@ find_package(ament_cmake REQUIRED)
 install(DIRECTORY models worlds launch config
   DESTINATION share/${PROJECT_NAME})
 install(FILES README.md DESTINATION share/${PROJECT_NAME})
+install(PROGRAMS scripts/twist_to_joint_commands.py DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)

@@ -1,4 +1,5 @@
 import importlib.util
+import math
 import unittest
 from pathlib import Path
 from xml.etree import ElementTree
@@ -16,6 +17,11 @@ SPEC = importlib.util.spec_from_file_location("example_launch", ROOT / "launch" 
 assert SPEC is not None and SPEC.loader is not None
 EXAMPLE_LAUNCH = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(EXAMPLE_LAUNCH)
+ADAPTER_SPEC = importlib.util.spec_from_file_location(
+    "twist_to_joint_commands", ROOT / "scripts" / "twist_to_joint_commands.py")
+assert ADAPTER_SPEC is not None and ADAPTER_SPEC.loader is not None
+ADAPTER = importlib.util.module_from_spec(ADAPTER_SPEC)
+ADAPTER_SPEC.loader.exec_module(ADAPTER)
 
 
 class ControllerConfigTest(unittest.TestCase):
@@ -39,7 +45,14 @@ class ControllerConfigTest(unittest.TestCase):
                         self.assertEqual(actions[1].node_executable, "flatland_viz")
                     context.launch_configurations["use_ros2_control"] = "true"
                     control_actions = EXAMPLE_LAUNCH.launch_example(context)
-                    self.assertEqual(len(control_actions), 5 + len(config) + viz_count)
+                    has_adapter = example in ("2910_swerve", "articulated_204g")
+                    self.assertEqual(len(control_actions), 5 + len(config) + viz_count + has_adapter)
+                    self.assertEqual(
+                        [action.node_executable for action in control_actions
+                         if isinstance(action, Node)
+                         and action.node_package == "flatland_ros2_control_examples"],
+                        ["twist_to_joint_commands.py"] if has_adapter else [],
+                    )
                     spawners = [action for action in control_actions
                                 if isinstance(action, Node) and action.node_executable == "spawner"]
                     for spawner in spawners:
@@ -59,9 +72,34 @@ class ControllerConfigTest(unittest.TestCase):
                     for handler in handlers:
                         self.assertIsInstance(handler.event_handler, OnProcessExit)
                     context.launch_configurations["use_joystick"] = "false"
-                    self.assertEqual(len(EXAMPLE_LAUNCH.launch_example(context)), 3 + len(config) + viz_count)
+                    no_joystick = EXAMPLE_LAUNCH.launch_example(context)
+                    self.assertEqual(len(no_joystick), 3 + len(config) + viz_count + has_adapter)
+                    self.assertEqual(sum(isinstance(action, Node) and
+                                         action.node_package == "flatland_ros2_control_examples"
+                                         for action in no_joystick), has_adapter)
                     context.launch_configurations["use_joystick"] = "true"
                     context.launch_configurations["use_ros2_control"] = "false"
+
+    def test_twist_to_joint_commands(self):
+        speeds, angles = ADAPTER.swerve_commands(1, 0.2, 0.5, 0.051, 0.28, 0.28)
+        for index, (x, y) in enumerate(((0.28, 0.28), (0.28, -0.28),
+                                        (-0.28, 0.28), (-0.28, -0.28))):
+            self.assertAlmostEqual(speeds[index] * 0.051 * math.cos(angles[index]), 1 - 0.5 * y)
+            self.assertAlmostEqual(speeds[index] * 0.051 * math.sin(angles[index]), 0.2 + 0.5 * x)
+            self.assertLessEqual(abs(angles[index]), math.pi / 2)
+        speeds, angles = ADAPTER.swerve_commands(0, 0, 0, 0.051, 0.28, 0.28)
+        self.assertEqual(speeds, [0.0] * 4)
+        self.assertEqual(angles, [0.0] * 4)
+
+        speeds, angles = ADAPTER.articulated_commands(1, 0.3, 0.29, 0.32, 0.45, 0.6981317)
+        self.assertAlmostEqual(angles[0], 2 * math.atan(0.45 * 0.3))
+        self.assertAlmostEqual(speeds[0], (1 - 0.3 * 0.32) / 0.29)
+        self.assertAlmostEqual(speeds[1], (1 + 0.3 * 0.32) / 0.29)
+        self.assertEqual(speeds, [speeds[0], speeds[1]] * 2)
+        self.assertEqual(ADAPTER.articulated_commands(0, 1, 0.29, 0.32, 0.45, 0.6981317),
+                         ([0.0] * 4, [0.0]))
+        self.assertEqual(ADAPTER.articulated_commands(1, 100, 0.29, 0.32, 0.45, 0.6981317)[1],
+                         [0.6981317])
 
     def test_wheel_footprints_match_plugins(self):
         for example in EXAMPLE_LAUNCH.EXAMPLES:

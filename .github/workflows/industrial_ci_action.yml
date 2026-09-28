@@ -16,11 +16,11 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: humble, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:humble-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
+          - {ROS_DISTRO: humble, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:humble-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, UPSTREAM_WORKSPACE: flatland-not-released.repos}
           # - {ROS_DISTRO: jazzy, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
           # - {ROS_DISTRO: kilted, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
-          - {ROS_DISTRO: lyrical, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:lyrical-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
-          - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: noble, DOCKER_IMAGE: 'osrf/ros:rolling-desktop-full-noble', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
+          - {ROS_DISTRO: lyrical, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:lyrical-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos}
+          - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: noble, DOCKER_IMAGE: 'osrf/ros:rolling-desktop-full-noble', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +37,7 @@ jobs:
           ROS_DISTRO: lyrical
           ROS_REPO: main
           DOCKER_IMAGE: osrf/ros:lyrical-desktop-full
+          UPSTREAM_WORKSPACE: flatland-not-released.repos
           CC: gcc
           CXX: g++
           ADDITIONAL_DEBS: gcovr

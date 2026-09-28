@@ -126,6 +126,24 @@ def launch_example(context):
         for controller in ("joint_state_broadcaster", *controllers)
     ]
     nodes.extend(spawners)
+    if name in ("2910_swerve", "articulated_204g"):
+        wheels = {plugin["name"]: plugin for plugin in model["plugins"]
+                  if plugin["type"] == "DriveWheel"}
+        geometry = {"robot": name, "wheel_radius": wheels["front_left_wheel"]["radius"]}
+        if name == "2910_swerve":
+            front_left = next(body for body in model["bodies"] if body["name"] == "front_left_pod")
+            geometry.update(module_x=front_left["pose"][0], module_y=front_left["pose"][1])
+        else:
+            front = next(body for body in model["bodies"] if body["name"] == "front_chassis")
+            hinge = next(plugin for plugin in model["plugins"] if plugin["name"] == "articulation")
+            geometry.update(half_track=wheels["front_left_wheel"]["offset"][1],
+                            half_wheelbase=front["pose"][0], max_angle=hinge["limit"]["upper"])
+        nodes.append(Node(
+            package="flatland_ros2_control_examples",
+            executable="twist_to_joint_commands.py",
+            parameters=[geometry],
+            output="screen",
+        ))
     if viz_node:
         nodes.append(RegisterEventHandler(OnProcessExit(
             target_action=spawners[-1], on_exit=[viz_node]
