@@ -1,6 +1,7 @@
 ARG ROS_DISTRO=humble
 FROM ros:${ROS_DISTRO}
 
+ARG ROS_DISTRO
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=flatland
 
@@ -12,17 +13,28 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client \
     python3-colcon-common-extensions \
     python3-rosdep \
+    python3-vcstool \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . /tmp/flatland
-RUN rosdep update && \
+RUN mkdir -p /opt/flatland_upstream_ws/src && \
+        vcs import /opt/flatland_upstream_ws/src < /tmp/flatland/flatland-not-released.repos && \
+        rosdep update && \
     apt-get update && \
-    rosdep install --from-paths /tmp/flatland --ignore-src --rosdistro "$ROS_DISTRO" -y && \
+        rosdep install --from-paths /tmp/flatland /opt/flatland_upstream_ws/src \
+            --ignore-src --rosdistro "$ROS_DISTRO" -y && \
+        . "/opt/ros/$ROS_DISTRO/setup.sh" && \
+        colcon --log-base /opt/flatland_upstream_ws/log build \
+            --base-paths /opt/flatland_upstream_ws/src \
+            --build-base /opt/flatland_upstream_ws/build \
+            --install-base /opt/flatland_upstream_ws/install && \
     rm -rf /tmp/flatland /var/lib/apt/lists/*
 
 ENV CCACHE_DIR=/tmp/.ccache
 ENV QT_QPA_PLATFORM=xcb
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 WORKDIR /opt/overlay_ws
 RUN if id -u ubuntu >/dev/null 2>&1; then \
         if [ "$USERNAME" != ubuntu ]; then \

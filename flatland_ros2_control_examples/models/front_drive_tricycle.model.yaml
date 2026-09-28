@@ -1,0 +1,28 @@
+bodies:
+  - name: chassis
+    type: dynamic
+    color: [0.11, 0.53, 0.48, 1.0]
+    footprints:
+      - type: polygon
+        points: [[-0.62, -0.35], [0.62, -0.35], [0.62, 0.35], [-0.62, 0.35]]
+        mass: 190.96
+        layers: [robot]
+      - {type: polygon, points: [[-0.64, 0.25], [-0.30, 0.25], [-0.30, 0.35], [-0.64, 0.35]], mass: 1.70, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.64, -0.35], [-0.30, -0.35], [-0.30, -0.25], [-0.64, -0.25]], mass: 1.70, sensor: true, layers: [robot]}
+  - name: front_drive_pod
+    type: dynamic
+    pose: [0.47, 0.0, 0.0]
+    footprints:
+      - {type: circle, radius: 0.045, mass: 0.38, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.17, -0.05], [0.17, -0.05], [0.17, 0.05], [-0.17, 0.05]], mass: 2.04, sensor: true, layers: [robot]}
+joints:
+  - name: front_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [0.47, 0.0]}
+      - {name: front_drive_pod, anchor: [0.0, 0.0]}
+plugins:
+  - {type: DriveWheel, name: front_wheel, body: front_drive_pod, radius: 0.17, mode: velocity, friction: 1.1}
+  - {type: FreeWheel, name: rear_left_wheel, body: chassis, offset: [-0.47, 0.30, 0.0], radius: 0.17}
+  - {type: FreeWheel, name: rear_right_wheel, body: chassis, offset: [-0.47, -0.30, 0.0], radius: 0.17}
+  - {type: SteeringMotor, name: front_steer, joint: front_pivot, mode: position, limit: {lower: -0.70, upper: 0.70}}

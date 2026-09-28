@@ -20,9 +20,11 @@ also affects the body's rotation. Use one instance per wheel.
 ``body`` is the required body name. ``offset`` defaults to ``[0, 0, 0]``
 and specifies the wheel center (x, y, in meters) and forward orientation
 (theta, in radians) relative to that body. ``radius`` is required and must be
-positive, in meters. ``lateral_resistance`` defaults to 1.0 N/(m/s); zero
-disables sideways resistance. The force is limited by the wheel body's mass
-and simulation step to avoid reversing lateral velocity in one step.
+positive, in meters. ``lateral_resistance`` defaults to 1.0 and scales lateral
+velocity correction by the wheel's allocated normal load and step duration;
+zero disables sideways resistance. ``friction`` defaults to 1.0 and caps the
+lateral force at the allocated normal load times the coefficient, allowing
+sliding when the required force exceeds the available grip.
 
 ``encoder_topic`` is optional. If provided, it publishes the signed forward
 velocity at the wheel center divided by its radius as a

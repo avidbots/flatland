@@ -1,0 +1,63 @@
+bodies:
+  - name: chassis
+    type: dynamic
+    color: [0.18, 0.29, 0.52, 1.0]
+    footprints:
+      - type: polygon
+        points: [[-0.37, -0.37], [0.37, -0.37], [0.37, 0.37], [-0.37, 0.37]]
+        mass: 49.28
+        layers: [robot]
+  - name: front_left_pod
+    type: dynamic
+    pose: [0.28, 0.28, 0.0]
+    footprints:
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
+  - name: front_right_pod
+    type: dynamic
+    pose: [0.28, -0.28, 0.0]
+    footprints:
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
+  - name: rear_left_pod
+    type: dynamic
+    pose: [-0.28, 0.28, 0.0]
+    footprints:
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
+  - name: rear_right_pod
+    type: dynamic
+    pose: [-0.28, -0.28, 0.0]
+    footprints:
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
+joints:
+  - name: front_left_steer_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [0.28, 0.28]}
+      - {name: front_left_pod, anchor: [0.0, 0.0]}
+  - name: front_right_steer_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [0.28, -0.28]}
+      - {name: front_right_pod, anchor: [0.0, 0.0]}
+  - name: rear_left_steer_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [-0.28, 0.28]}
+      - {name: rear_left_pod, anchor: [0.0, 0.0]}
+  - name: rear_right_steer_pivot
+    type: revolute
+    bodies:
+      - {name: chassis, anchor: [-0.28, -0.28]}
+      - {name: rear_right_pod, anchor: [0.0, 0.0]}
+plugins:
+  - {type: DriveWheel, name: front_left_wheel, body: front_left_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: DriveWheel, name: front_right_wheel, body: front_right_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: DriveWheel, name: rear_left_wheel, body: rear_left_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: DriveWheel, name: rear_right_wheel, body: rear_right_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: SteeringMotor, name: front_left_steer, joint: front_left_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: SteeringMotor, name: front_right_steer, joint: front_right_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: SteeringMotor, name: rear_left_steer, joint: rear_left_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: SteeringMotor, name: rear_right_steer, joint: rear_right_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}

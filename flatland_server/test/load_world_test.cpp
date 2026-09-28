@@ -49,8 +49,11 @@
 #include <flatland_server/entity.h>
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
+#include <flatland_server/model_body.h>
+#include <flatland_server/timekeeper.h>
 #include <flatland_server/types.h>
 #include <flatland_server/world.h>
+#include <flatland_server/yaml_reader.h>
 #include <gtest/gtest.h>
 
 #include <filesystem>
@@ -518,6 +521,25 @@ protected:
   }
 };
 
+TEST_F(LoadWorldTest, map_without_models)
+{
+  world_yaml = this_file_dir / "load_world_tests/no_models/world.yaml";
+  auto node = rclcpp::Node::make_shared("map_without_models_node");
+  w = World::MakeWorld(node, world_yaml.string());
+
+  ASSERT_TRUE(w->models_.empty());
+  ASSERT_EQ(w->layers_.size(), 1u);
+  EXPECT_GT(w->layers_[0]->body_->GetFixturesCount(), 0);
+
+  Timekeeper timekeeper(node);
+  timekeeper.SetMaxStepSize(0.01);
+  const auto start = timekeeper.GetSimTime();
+  for (int step = 0; step < 3; ++step) {
+    w->Update(timekeeper);
+  }
+  EXPECT_GT((timekeeper.GetSimTime() - start).seconds(), 0.0);
+}
+
 /**
  * This test loads the world, layers, models from the given world
  * yaml file and checks that all configurations, data, and calculations are
@@ -757,6 +779,35 @@ TEST_F(LoadWorldTest, simple_test_A)
   // check the body only
   EXPECT_TRUE(
     BodyEq(m3->bodies_[0], "body", flatland::b2_kinematicBody, {0, 1, 2}, {0, 0.75, 0.75, 0.25}, 0, 0));
+}
+
+TEST_F(LoadWorldTest, footprint_mass)
+{
+  auto node = rclcpp::Node::make_shared("footprint_mass_node");
+  flatland::b2World physics_world({0.0f, 0.0f});
+  CollisionFilterRegistry cfr;
+  ModelBody body(
+    &physics_world, &cfr, nullptr, "mass_body", Color(1, 1, 1, 1), Pose(0, 0, 0),
+    flatland::b2_dynamicBody, YAML::Node(), 0, 0);
+  YamlReader footprints(node, YAML::Load(R"(
+    - {type: circle, radius: 2, mass: 8}
+    - {type: polygon, points: [[0, 0], [2, 0], [2, 1], [0, 1]], mass: 6, density: ignored}
+    - {type: circle, radius: 1, density: 3}
+  )"));
+
+  testing::internal::CaptureStderr();
+  body.LoadFootprints(footprints);
+  EXPECT_NE(testing::internal::GetCapturedStderr().find("using mass"), std::string::npos);
+
+  auto fixtures = GetBodyFixtures(&body);
+  ASSERT_EQ(fixtures.size(), 3u);
+  EXPECT_NEAR(fixtures[0]->GetDensity(), 8.0 / (4.0 * std::numbers::pi), 1e-5);
+  EXPECT_NEAR(fixtures[1]->GetDensity(), 3.0, 1e-5);
+  EXPECT_NEAR(fixtures[2]->GetDensity(), 3.0, 1e-5);
+  EXPECT_NEAR(body.physics_body_->GetMass(), 14.0 + 3.0 * std::numbers::pi, 1e-4);
+
+  YamlReader missing(node, YAML::Load("[{type: circle, radius: 1}]"));
+  EXPECT_THROW(body.LoadFootprints(missing), YAMLException);
 }
 
 /**

@@ -1,0 +1,6 @@
+properties: {}
+layers:
+  - name: robot
+models:
+  - name: a300_diff
+    model: ../models/a300_diff.model.yaml

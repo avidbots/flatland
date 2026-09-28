@@ -48,6 +48,8 @@
 #include <flatland_server/model_body.h>
 
 #include <boost/algorithm/string/join.hpp>
+#include <cmath>
+#include <numbers>
 #include <stdexcept>
 
 namespace flatland_server
@@ -129,10 +131,24 @@ void ModelBody::LoadFootprints(YamlReader & footprints_reader)
   }
 }
 
-void ModelBody::ConfigFootprintDef(YamlReader & footprint_reader, flatland::b2FixtureDef & fixture_def)
+void ModelBody::ConfigFootprintDef(YamlReader & footprint_reader, flatland::b2FixtureDef & fixture_def, float area)
 {
   // configure physics properties
-  fixture_def.density = footprint_reader.Get<float>("density");
+  if (footprint_reader.Node()["mass"]) {
+    float mass = footprint_reader.Get<float>("mass");
+    if (footprint_reader.Node()["density"]) {
+      footprint_reader.Subnode("density", YamlReader::NO_CHECK);
+      RCLCPP_WARN_STREAM(
+        rclcpp::get_logger("ModelBody"), "Both mass and density set for footprint in "
+          << footprint_reader.entry_location_ << "; using mass");
+    }
+    if (!std::isfinite(mass) || mass < 0 || !std::isfinite(area) || area <= 0) {
+      throw YAMLException("Invalid footprint mass or area in " + footprint_reader.entry_location_);
+    }
+    fixture_def.density = mass / area;
+  } else {
+    fixture_def.density = footprint_reader.Get<float>("density");
+  }
   fixture_def.friction = footprint_reader.Get<float>("friction", 0.0);
   fixture_def.restitution = footprint_reader.Get<float>("restitution", 0.0);
 
@@ -168,7 +184,7 @@ void ModelBody::LoadCircleFootprint(YamlReader & footprint_reader)
   double radius = footprint_reader.Get<double>("radius");
 
   flatland::b2FixtureDef fixture_def;
-  ConfigFootprintDef(footprint_reader, fixture_def);
+  ConfigFootprintDef(footprint_reader, fixture_def, std::numbers::pi_v<float> * radius * radius);
 
   flatland::b2CircleShape shape;
   shape.m_p.Set(center.x, center.y);
@@ -183,11 +199,31 @@ void ModelBody::LoadPolygonFootprint(YamlReader & footprint_reader)
   std::vector<flatland::b2Vec2> points = footprint_reader.GetList<flatland::b2Vec2>("points", 3, flatland::b2_maxPolygonVertices);
 
   flatland::b2FixtureDef fixture_def;
-  ConfigFootprintDef(footprint_reader, fixture_def);
-
   flatland::b2PolygonShape shape;
+  bool valid = true;
   try {
     shape.Set(points.data(), points.size());
+  } catch (const std::invalid_argument & e) {
+    RCLCPP_WARN_STREAM(
+      rclcpp::get_logger("ModelBody"), "Skipping invalid polygon footprint for body \"" << name_
+                                                                                        << "\" in "
+                                                                                        << footprint_reader.entry_location_
+                                                                                        << ": " << e.what());
+    valid = false;
+  }
+  float area = 1.0f;
+  if (valid) {
+    float twice_area = 0.0f;
+    for (int index = 0; index < shape.m_count; ++index) {
+      const auto & current = shape.m_vertices[index];
+      const auto & next = shape.m_vertices[(index + 1) % shape.m_count];
+      twice_area += current.x * next.y - next.x * current.y;
+    }
+    area = std::abs(twice_area) / 2.0f;
+  }
+  ConfigFootprintDef(footprint_reader, fixture_def, area);
+  if (!valid) return;
+  try {
     fixture_def.shape = &shape;
     physics_body_->CreateFixture(&fixture_def);
   } catch (const std::invalid_argument & e) {

@@ -54,6 +54,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include <rclcpp/rclcpp.hpp>
+#include <vector>
 
 namespace flatland_server
 {
@@ -82,6 +83,10 @@ public:
    * @param[in] config The plugin YAML node
    */
   virtual void OnInitialize(const YAML::Node & config) = 0;
+
+  virtual bool HasContactPoints() const { return false; }
+  virtual std::vector<flatland::b2Vec2> GetContactPoints() const { return {}; }
+  virtual void UpdateGroundContactForces(const std::vector<double> &/* forces */) {}
 
   /**
    * @brief The method to initialize the ModelPlugin, required since Pluginlib

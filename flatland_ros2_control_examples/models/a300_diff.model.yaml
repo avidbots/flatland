@@ -1,0 +1,18 @@
+bodies:
+  - name: chassis
+    type: dynamic
+    color: [0.35, 0.39, 0.32, 1.0]
+    footprints:
+      - type: polygon
+        points: [[-0.43, -0.34], [0.43, -0.34], [0.43, 0.34], [-0.43, 0.34]]
+        mass: 102.34
+        layers: [robot]
+      - {type: polygon, points: [[0.15, 0.27], [0.45, 0.27], [0.45, 0.37], [0.15, 0.37]], mass: 1.50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[0.15, -0.37], [0.45, -0.37], [0.45, -0.27], [0.15, -0.27]], mass: 1.50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.45, 0.27], [-0.15, 0.27], [-0.15, 0.37], [-0.45, 0.37]], mass: 1.50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.45, -0.37], [-0.15, -0.37], [-0.15, -0.27], [-0.45, -0.27]], mass: 1.50, sensor: true, layers: [robot]}
+plugins:
+  - {type: DriveWheel, name: front_left_wheel, body: chassis, offset: [0.30, 0.32, 0.0], radius: 0.15, mode: velocity, friction: 1.1}
+  - {type: DriveWheel, name: front_right_wheel, body: chassis, offset: [0.30, -0.32, 0.0], radius: 0.15, mode: velocity, friction: 1.1}
+  - {type: DriveWheel, name: rear_left_wheel, body: chassis, offset: [-0.30, 0.32, 0.0], radius: 0.15, mode: velocity, friction: 1.1}
+  - {type: DriveWheel, name: rear_right_wheel, body: chassis, offset: [-0.30, -0.32, 0.0], radius: 0.15, mode: velocity, friction: 1.1}

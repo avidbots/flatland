@@ -1,0 +1,15 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    drive:
+      type: tricycle_controller/TricycleController
+drive:
+  ros__parameters:
+    traction_joint_name: front_wheel
+    steering_joint_name: front_steer
+    wheelbase: 0.94
+    wheel_radius: 0.17
+    publish_ackermann_command: true
+    enable_odom_tf: false

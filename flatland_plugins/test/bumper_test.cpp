@@ -136,6 +136,14 @@ public:
     return true;
   }
 
+  const Collision * CollisionForBody(const Collisions & collisions, const std::string & body)
+  {
+    for (const auto & collision : collisions.collisions) {
+      if (collision.body_a == body) return &collision;
+    }
+    return nullptr;
+  }
+
   // check the received scan data is as expected
   bool CollisionEq(
     const Collision & collision, const std::string & entity_a, const std::string & body_A,
@@ -248,10 +256,14 @@ TEST_F(BumperPluginTest, collision_test)
   }
   SpinRos(500, 10);
   ASSERT_TRUE(CollisionsEq(msg1, "map", 2));
+  const Collision * sensor_collision = CollisionForBody(msg1, "base_link_1");
+  const Collision * wheel_collision = CollisionForBody(msg1, "base_link_2");
+  ASSERT_NE(sensor_collision, nullptr);
+  ASSERT_NE(wheel_collision, nullptr);
   EXPECT_TRUE(
-    CollisionEq(msg1.collisions[0], "robot1", "base_link_1", "layer_1", "layer_1", 0, {}));
+    CollisionEq(*sensor_collision, "robot1", "base_link_1", "layer_1", "layer_1", 0, {}));
   EXPECT_TRUE(
-    CollisionEq(msg1.collisions[1], "robot1", "base_link_2", "layer_1", "layer_1", 1, {1, 0}));
+    CollisionEq(*wheel_collision, "robot1", "base_link_2", "layer_1", "layer_1", 1, {1, 0}));
   ASSERT_TRUE(CollisionsEq(msg2, "world", 1));
   EXPECT_TRUE(
     CollisionEq(msg2.collisions[0], "robot1", "base_link_2", "layer_1", "layer_1", 1, {1, 0}));
@@ -280,10 +292,14 @@ TEST_F(BumperPluginTest, collision_test)
   SpinRos(500, 10);
 
   ASSERT_TRUE(CollisionsEq(msg1, "map", 2));
+  sensor_collision = CollisionForBody(msg1, "base_link_1");
+  wheel_collision = CollisionForBody(msg1, "base_link_2");
+  ASSERT_NE(sensor_collision, nullptr);
+  ASSERT_NE(wheel_collision, nullptr);
   EXPECT_TRUE(
-    CollisionEq(msg1.collisions[0], "robot1", "base_link_1", "layer_1", "layer_1", 0, {}));
+    CollisionEq(*sensor_collision, "robot1", "base_link_1", "layer_1", "layer_1", 0, {}));
   EXPECT_TRUE(
-    CollisionEq(msg1.collisions[1], "robot1", "base_link_2", "layer_1", "layer_1", 1, {-1, 0}));
+    CollisionEq(*wheel_collision, "robot1", "base_link_2", "layer_1", "layer_1", 1, {-1, 0}));
   ASSERT_TRUE(CollisionsEq(msg2, "world", 1));
   EXPECT_TRUE(
     CollisionEq(msg2.collisions[0], "robot1", "base_link_2", "layer_1", "layer_1", 1, {-1, 0}));

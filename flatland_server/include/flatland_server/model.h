@@ -143,7 +143,7 @@ public:
   std::string NameSpaceTF(const std::string & frame_id) const;
 
   /**
-   * @return prepend the topic with namespace/
+    * @return an absolute topic unchanged, or a relative topic prefixed with namespace/
    */
   std::string NameSpaceTopic(const std::string & topic) const;
 

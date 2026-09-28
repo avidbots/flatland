@@ -1,0 +1,83 @@
+# Flatland ros2_control examples
+
+Six planar robot models demonstrate traction-limited `DriveWheel`, passive
+`FreeWheel`, and revolute `SteeringMotor` plugins. Coordinates are in meters;
+forward is +x and left is +y. These are illustrative layouts, not manufacturer
+CAD reproductions or calibrated vehicle dynamics.
+
+| `robot` launch value | Geometry | ros2_control controller |
+| --- | --- | --- |
+| `turtlebot_caster` | Two drive wheels and a rear trailing caster on a free revolute swivel | `diff_drive_controller` |
+| `a300_diff` | Four fixed drive wheels, two per side, A300-style skid steering | `diff_drive_controller` |
+| `2910_swerve` | Four independently steered and driven corner pods, inspired by [2910's Charged Up drivebase](https://frcdesign.org/mechanism-examples/drivebase/swerve/2910_2023_dt/) | Separate forward command controllers for wheel speeds and steering angles |
+| `rear_drive_ackermann` | Two rear drive wheels and two front passive wheels on independent steered knuckles | `ackermann_steering_controller` |
+| `front_drive_tricycle` | One driven and steered front wheel, two rear passive wheels, Neo 2.0-style | `tricycle_controller` with Ackermann command output |
+| `articulated_204g` | Front and rear driven chassis joined by a steering hinge limited to +/-40 degrees, 204 G-Tier-style | Separate forward command controllers for wheel speeds and articulation |
+
+`tricycle_controller` is the ros2_controllers controller for a *single wheel
+that both drives and steers*, and can publish an Ackermann command. The stock
+`ackermann_steering_controller` needs two driven wheels and two separate steering
+joints, so it is used on the rear-drive car instead. The swerve and articulated
+profiles use a small TwistStamped adapter to publish wheel speeds and steering
+angles to their forward controllers. Swerve accepts forward, lateral and yaw
+commands; its pods reverse drive direction to keep steering within +/-90 degrees
+(the joints are limited to +/-2.98 radians). The articulated adapter approximates
+yaw with a bounded hinge angle and left/right wheel speeds. It ignores lateral
+velocity and cannot turn in place; zero forward speed stops all four wheels.
+
+## Run
+
+Build after sourcing ROS and the Flatland dependencies:
+
+```sh
+colcon build --packages-select flatland_ros2_control_examples
+source install/setup.bash
+ros2 launch flatland_ros2_control_examples example.launch.py robot:=turtlebot_caster
+```
+
+Change `robot` to any value in the table. The default launch starts Flatland
+only. To also start controller manager, the topic-based hardware interface,
+robot state publisher, controllers and joystick teleop, install those ROS packages
+and run:
+
+```sh
+ros2 launch flatland_ros2_control_examples example.launch.py \
+  robot:=rear_drive_ackermann use_ros2_control:=true
+```
+
+Joystick teleop is enabled by default with ros2_control; set `use_joystick:=false`
+to skip it or `joy_device_id:=1` to select another device. Hold button 4
+(left bumper on a typical gamepad), use axis 1 for forward speed and axis 3
+for turning. `teleop_twist_joy` publishes TwistStamped on `/drive/cmd_vel`
+for all six models. For swerve and articulated models, the adapter also runs
+with `use_joystick:=false`, so an external publisher can send TwistStamped to
+`/drive/cmd_vel`. It sends zero wheel speeds and centers steering if commands
+stop arriving for 0.5 seconds. Their forward controllers can still be commanded
+directly on `/wheels/commands` and `/steering/commands`, but avoid competing
+publishers while the adapter is running.
+
+The six `models/*.model.yaml` files specify physical bodies, contact offsets,
+wheel radii and plugin names; `worlds/*.world.yaml` each load one model.
+`config/*.yaml` holds the corresponding controller configuration. The launch
+file derives the ros2_control URDF joint interfaces from the model YAML, so
+the plugin `name` is the joint name for controller commands and published
+joint states. `joint` in a SteeringMotor identifies the underlying Flatland
+revolute joint, which may have a different name. DriveWheel takes velocity
+(rad/s) or effort (N m); these examples command velocity. SteeringMotor uses
+position (rad). FreeWheel contributes a contact point but has no commanded
+joint interface or JointState publisher.
+
+The topic hardware plugin exchanges `control_msgs/msg/JointCommand` on
+`/robot_joint_commands/velocity` and `/robot_joint_commands/position`, and
+receives `sensor_msgs/msg/JointState` on `/robot_joint_states`. Multiple plugins
+publish single-joint states to that topic; ros2_control merges them. Flatland
+physics and ros2_control are separate processes, so start Flatland before
+sending commands. For example, `diff_drive_controller` accepts
+`geometry_msgs/msg/TwistStamped` on `/drive/cmd_vel`; the Ackermann controller's
+`~/reference` input is remapped there by launch. Forward controllers accept
+`std_msgs/msg/Float64MultiArray` on their
+`/<controller>/commands` topics in the order given in their YAML configs.
+
+The ros2_control URDF generated by launch is for hardware registration, not a
+visual or collision model; Flatland's YAML is authoritative for geometry. The
+profile dimensions and controller parameters are starting points for tuning.

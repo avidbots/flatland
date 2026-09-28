@@ -104,8 +104,9 @@ public:
    * @param[in] footprint_reader YAML reader for node containing the footprint
    * parameters
    * @param[out] fixture_def Box2D fixture definition
+  * @param[in] area Area of the footprint geometry
    */
-  void ConfigFootprintDef(YamlReader & footprint_reader, flatland::b2FixtureDef & fixture_def);
+  void ConfigFootprintDef(YamlReader & footprint_reader, flatland::b2FixtureDef & fixture_def, float area);
 
   /**
    * @brief Loads a circle footprint

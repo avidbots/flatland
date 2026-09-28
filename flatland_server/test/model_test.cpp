@@ -75,16 +75,15 @@ TEST(TestSuite, testNameSpaceTopic)
 {
   std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("testNameSpaceTopic_node");
   flatland_server::Model has_ns(node, nullptr, nullptr, std::string("foo"), std::string("has_ns"));
-  // namespace "foo" onto tf "bar" => foo_bar
+  // namespace "foo" onto topic "bar" => foo/bar
   EXPECT_EQ(has_ns.NameSpaceTopic("bar"), "foo/bar");
-  // namespace "foo" onto tf "/bar" => bar
-  EXPECT_EQ(has_ns.NameSpaceTopic("/bar"), "bar");
+  // absolute topics are not namespaced
+  EXPECT_EQ(has_ns.NameSpaceTopic("/bar"), "/bar");
 
   flatland_server::Model no_ns(node, nullptr, nullptr, std::string(""), std::string("no_ns"));
-  // namespace "" onto tf "bar" => bar
+  // namespace "" onto topic "bar" => bar
   EXPECT_EQ(no_ns.NameSpaceTopic("bar"), "bar");
-  // namespace "" onto tf "/bar" => bar
-  EXPECT_EQ(no_ns.NameSpaceTopic("/bar"), "bar");
+  EXPECT_EQ(no_ns.NameSpaceTopic("/bar"), "/bar");
 }
 
 // Run all the tests that were declared with TEST()

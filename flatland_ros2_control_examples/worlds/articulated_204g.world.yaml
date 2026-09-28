@@ -1,0 +1,6 @@
+properties: {}
+layers:
+  - name: robot
+models:
+  - name: articulated_204g
+    model: ../models/articulated_204g.model.yaml
