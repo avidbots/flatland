@@ -5,22 +5,22 @@ bodies:
     footprints:
       - type: polygon
         points: [[-0.78, -0.37], [0.62, -0.37], [0.62, 0.37], [-0.78, 0.37]]
-        density: 180
+        mass: 186.48
         layers: [robot]
-      - {type: polygon, points: [[-0.71, 0.26], [-0.33, 0.26], [-0.33, 0.38], [-0.71, 0.38]], density: 50, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.71, -0.38], [-0.33, -0.38], [-0.33, -0.26], [-0.71, -0.26]], density: 50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.71, 0.26], [-0.33, 0.26], [-0.33, 0.38], [-0.71, 0.38]], mass: 2.28, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.71, -0.38], [-0.33, -0.38], [-0.33, -0.26], [-0.71, -0.26]], mass: 2.28, sensor: true, layers: [robot]}
   - name: front_left_knuckle
     type: dynamic
     pose: [0.52, 0.32, 0.0]
     footprints:
-      - {type: circle, radius: 0.045, density: 150, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.19, -0.06], [0.19, -0.06], [0.19, 0.06], [-0.19, 0.06]], density: 150, sensor: true, layers: [robot]}
+      - {type: circle, radius: 0.045, mass: 0.95, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.19, -0.06], [0.19, -0.06], [0.19, 0.06], [-0.19, 0.06]], mass: 6.84, sensor: true, layers: [robot]}
   - name: front_right_knuckle
     type: dynamic
     pose: [0.52, -0.32, 0.0]
     footprints:
-      - {type: circle, radius: 0.045, density: 150, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.19, -0.06], [0.19, -0.06], [0.19, 0.06], [-0.19, 0.06]], density: 150, sensor: true, layers: [robot]}
+      - {type: circle, radius: 0.045, mass: 0.95, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.19, -0.06], [0.19, -0.06], [0.19, 0.06], [-0.19, 0.06]], mass: 6.84, sensor: true, layers: [robot]}
 joints:
   - name: front_left_pivot
     type: revolute

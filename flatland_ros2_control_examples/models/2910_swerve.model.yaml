@@ -5,32 +5,32 @@ bodies:
     footprints:
       - type: polygon
         points: [[-0.37, -0.37], [0.37, -0.37], [0.37, 0.37], [-0.37, 0.37]]
-        density: 90
+        mass: 49.28
         layers: [robot]
   - name: front_left_pod
     type: dynamic
     pose: [0.28, 0.28, 0.0]
     footprints:
-      - {type: circle, radius: 0.035, density: 70, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], density: 70, sensor: true, layers: [robot]}
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
   - name: front_right_pod
     type: dynamic
     pose: [0.28, -0.28, 0.0]
     footprints:
-      - {type: circle, radius: 0.035, density: 70, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], density: 70, sensor: true, layers: [robot]}
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
   - name: rear_left_pod
     type: dynamic
     pose: [-0.28, 0.28, 0.0]
     footprints:
-      - {type: circle, radius: 0.035, density: 70, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], density: 70, sensor: true, layers: [robot]}
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
   - name: rear_right_pod
     type: dynamic
     pose: [-0.28, -0.28, 0.0]
     footprints:
-      - {type: circle, radius: 0.035, density: 70, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], density: 70, sensor: true, layers: [robot]}
+      - {type: circle, radius: 0.035, mass: 0.27, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.051, -0.025], [0.051, -0.025], [0.051, 0.025], [-0.051, 0.025]], mass: 0.36, sensor: true, layers: [robot]}
 joints:
   - name: front_left_steer_pivot
     type: revolute

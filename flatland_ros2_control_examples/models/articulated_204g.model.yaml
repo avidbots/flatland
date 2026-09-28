@@ -6,10 +6,10 @@ bodies:
     footprints:
       - type: polygon
         points: [[-0.43, -0.40], [0.43, -0.40], [0.43, 0.40], [-0.43, 0.40]]
-        density: 290
+        mass: 199.52
         layers: [robot]
-      - {type: polygon, points: [[-0.54, 0.23], [0.04, 0.23], [0.04, 0.41], [-0.54, 0.41]], density: 50, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.54, -0.41], [0.04, -0.41], [0.04, -0.23], [-0.54, -0.23]], density: 50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.54, 0.23], [0.04, 0.23], [0.04, 0.41], [-0.54, 0.41]], mass: 5.22, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.54, -0.41], [0.04, -0.41], [0.04, -0.23], [-0.54, -0.23]], mass: 5.22, sensor: true, layers: [robot]}
   - name: front_chassis
     type: dynamic
     pose: [0.45, 0.0, 0.0]
@@ -17,10 +17,10 @@ bodies:
     footprints:
       - type: polygon
         points: [[-0.43, -0.40], [0.43, -0.40], [0.43, 0.40], [-0.43, 0.40]]
-        density: 290
+        mass: 199.52
         layers: [robot]
-      - {type: polygon, points: [[-0.04, 0.23], [0.54, 0.23], [0.54, 0.41], [-0.04, 0.41]], density: 50, sensor: true, layers: [robot]}
-      - {type: polygon, points: [[-0.04, -0.41], [0.54, -0.41], [0.54, -0.23], [-0.04, -0.23]], density: 50, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.04, 0.23], [0.54, 0.23], [0.54, 0.41], [-0.04, 0.41]], mass: 5.22, sensor: true, layers: [robot]}
+      - {type: polygon, points: [[-0.04, -0.41], [0.54, -0.41], [0.54, -0.23], [-0.04, -0.23]], mass: 5.22, sensor: true, layers: [robot]}
 joints:
   - name: articulation_pivot
     type: revolute
