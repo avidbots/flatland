@@ -26,3 +26,23 @@ jobs:
       - uses: actions/checkout@v4
       - uses: 'ros-industrial/industrial_ci@master'
         env: ${{matrix.env}}
+
+  coverage:
+    name: Coverage (ROS Lyrical)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: 'ros-industrial/industrial_ci@master'
+        env:
+          ROS_DISTRO: lyrical
+          ROS_REPO: main
+          DOCKER_IMAGE: osrf/ros:lyrical-desktop-full
+          CC: gcc
+          CXX: g++
+          ADDITIONAL_DEBS: gcovr
+          TARGET_CMAKE_ARGS: '-DCMAKE_C_FLAGS=--coverage -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage -DCMAKE_SHARED_LINKER_FLAGS=--coverage'
+          AFTER_SCRIPT: >-
+            gcovr --root "$BASEDIR/${PREFIX}target_ws/src"
+            --filter "$BASEDIR/${PREFIX}target_ws/src"
+            --exclude '.*/test/.*'
+            --print-summary "$BASEDIR/${PREFIX}target_ws/build"
