@@ -1,6 +1,7 @@
 ARG ROS_DISTRO=humble
 FROM ros:${ROS_DISTRO}
 
+ARG ROS_DISTRO
 ARG DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=flatland
 
@@ -13,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-colcon-common-extensions \
     python3-rosdep \
     python3-vcstool \
+    ros-${ROS_DISTRO}-rmw-cyclonedds-cpp \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
@@ -32,6 +34,7 @@ RUN mkdir -p /opt/flatland_upstream_ws/src && \
 
 ENV CCACHE_DIR=/tmp/.ccache
 ENV QT_QPA_PLATFORM=xcb
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
 WORKDIR /opt/overlay_ws
 RUN if id -u ubuntu >/dev/null 2>&1; then \
         if [ "$USERNAME" != ubuntu ]; then \

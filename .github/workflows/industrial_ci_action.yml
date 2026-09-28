@@ -19,8 +19,8 @@ jobs:
           - {ROS_DISTRO: humble, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:humble-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, UPSTREAM_WORKSPACE: flatland-not-released.repos}
           # - {ROS_DISTRO: jazzy, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true}
           # - {ROS_DISTRO: kilted, ROS_REPO: main, AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON'}
-          - {ROS_DISTRO: lyrical, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:lyrical-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos, ADDITIONAL_DEBS: ros-lyrical-rmw-cyclonedds-cpp, RMW_IMPLEMENTATION: rmw_cyclonedds_cpp}
-          - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: noble, DOCKER_IMAGE: 'osrf/ros:rolling-desktop-full-noble', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos, ADDITIONAL_DEBS: ros-rolling-rmw-cyclonedds-cpp, RMW_IMPLEMENTATION: rmw_cyclonedds_cpp}
+          - {ROS_DISTRO: lyrical, ROS_REPO: main, DOCKER_IMAGE: 'osrf/ros:lyrical-desktop-full', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos, ADDITIONAL_DEBS: ros-lyrical-rmw-cyclonedds-cpp, DOCKER_RUN_OPTS: '-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp'}
+          - {ROS_DISTRO: rolling, ROS_REPO: main, OS_CODE_NAME: noble, DOCKER_IMAGE: 'osrf/ros:rolling-desktop-full-noble', AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true, TARGET_CMAKE_ARGS: '-DCMAKE_COMPILE_WARNING_AS_ERROR=ON', UPSTREAM_WORKSPACE: flatland-not-released.repos, ADDITIONAL_DEBS: ros-rolling-rmw-cyclonedds-cpp, DOCKER_RUN_OPTS: '-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp'}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
           CC: gcc
           CXX: g++
           ADDITIONAL_DEBS: gcovr ros-lyrical-rmw-cyclonedds-cpp
-          RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+          DOCKER_RUN_OPTS: '-e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp'
           TARGET_CMAKE_ARGS: '-DCMAKE_C_FLAGS=--coverage -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage -DCMAKE_SHARED_LINKER_FLAGS=--coverage'
           AFTER_SCRIPT: >-
             gcovr --root "$BASEDIR/${PREFIX}target_ws/src"
