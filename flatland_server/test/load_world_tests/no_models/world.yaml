@@ -1,0 +1,4 @@
+properties: {}
+layers:
+  - name: map
+    map: ../simple_test_A/map.yaml

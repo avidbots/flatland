@@ -50,6 +50,7 @@
 #include <flatland_server/exceptions.h>
 #include <flatland_server/geometry.h>
 #include <flatland_server/model_body.h>
+#include <flatland_server/timekeeper.h>
 #include <flatland_server/types.h>
 #include <flatland_server/world.h>
 #include <flatland_server/yaml_reader.h>
@@ -519,6 +520,25 @@ protected:
     return true;
   }
 };
+
+TEST_F(LoadWorldTest, map_without_models)
+{
+  world_yaml = this_file_dir / "load_world_tests/no_models/world.yaml";
+  auto node = rclcpp::Node::make_shared("map_without_models_node");
+  w = World::MakeWorld(node, world_yaml.string());
+
+  ASSERT_TRUE(w->models_.empty());
+  ASSERT_EQ(w->layers_.size(), 1u);
+  EXPECT_GT(w->layers_[0]->body_->GetFixturesCount(), 0);
+
+  Timekeeper timekeeper(node);
+  timekeeper.SetMaxStepSize(0.01);
+  const auto start = timekeeper.GetSimTime();
+  for (int step = 0; step < 3; ++step) {
+    w->Update(timekeeper);
+  }
+  EXPECT_GT((timekeeper.GetSimTime() - start).seconds(), 0.0);
+}
 
 /**
  * This test loads the world, layers, models from the given world
