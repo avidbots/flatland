@@ -15,6 +15,7 @@ install(PROGRAMS scripts/twist_to_joint_commands.py DESTINATION lib/${PROJECT_NA
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   find_package(interactive_markers REQUIRED)
+  find_package(flatland_controls_plugins REQUIRED)
   find_package(flatland_server REQUIRED)
   find_package(flatland_plugins REQUIRED)
   find_package(rclcpp REQUIRED)
@@ -22,7 +23,7 @@ if(BUILD_TESTING)
   ament_add_gtest(worlds_test test/worlds_test.cpp)
   target_include_directories(worlds_test PRIVATE ${OpenCV_INCLUDE_DIRS})
   target_link_libraries(worlds_test flatland_server::flatland_lib
-    flatland_plugins::flatland_plugins_lib rclcpp::rclcpp)
+    flatland_controls_plugins::flatland_controls_plugins_lib rclcpp::rclcpp)
 
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_test(NAME controller_config_test

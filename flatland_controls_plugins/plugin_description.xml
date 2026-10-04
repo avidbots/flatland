@@ -1,0 +1,8 @@
+<library path="flatland_controls_plugins_lib">
+  <class type="flatland_controls_plugins::DriveWheel" base_class_type="flatland_server::ModelPlugin">
+    <description>Traction-limited wheel controlled by joint commands</description>
+  </class>
+  <class type="flatland_controls_plugins::SteeringMotor" base_class_type="flatland_server::ModelPlugin">
+    <description>Revolute steering joint controlled by joint commands</description>
+  </class>
+</library>

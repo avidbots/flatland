@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>flatland_controls_plugins</name>
+  <version>2.0.0</version>
+  <description>Control command plugins for Flatland</description>
+  <license>BSD</license>
+
+  <maintainer email="joseph@avidbots.com">Joseph Duchesne</maintainer>
+  <author email="joseph@avidbots.com">Joseph Duchesne</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>control_msgs</depend>
+  <depend>flatland_server</depend>
+    <depend>interactive_markers</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>libopencv-dev</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

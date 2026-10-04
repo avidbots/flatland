@@ -53,11 +53,11 @@ joints:
       - {name: chassis, anchor: [-0.28, -0.28]}
       - {name: rear_right_pod, anchor: [0.0, 0.0]}
 plugins:
-  - {type: DriveWheel, name: front_left_wheel, body: front_left_pod, radius: 0.051, mode: velocity, friction: 1.2}
-  - {type: DriveWheel, name: front_right_wheel, body: front_right_pod, radius: 0.051, mode: velocity, friction: 1.2}
-  - {type: DriveWheel, name: rear_left_wheel, body: rear_left_pod, radius: 0.051, mode: velocity, friction: 1.2}
-  - {type: DriveWheel, name: rear_right_wheel, body: rear_right_pod, radius: 0.051, mode: velocity, friction: 1.2}
-  - {type: SteeringMotor, name: front_left_steer, joint: front_left_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
-  - {type: SteeringMotor, name: front_right_steer, joint: front_right_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
-  - {type: SteeringMotor, name: rear_left_steer, joint: rear_left_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
-  - {type: SteeringMotor, name: rear_right_steer, joint: rear_right_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: flatland_controls_plugins::DriveWheel, name: front_left_wheel, body: front_left_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: flatland_controls_plugins::DriveWheel, name: front_right_wheel, body: front_right_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: flatland_controls_plugins::DriveWheel, name: rear_left_wheel, body: rear_left_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: flatland_controls_plugins::DriveWheel, name: rear_right_wheel, body: rear_right_pod, radius: 0.051, mode: velocity, friction: 1.2}
+  - {type: flatland_controls_plugins::SteeringMotor, name: front_left_steer, joint: front_left_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: flatland_controls_plugins::SteeringMotor, name: front_right_steer, joint: front_right_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: flatland_controls_plugins::SteeringMotor, name: rear_left_steer, joint: rear_left_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}
+  - {type: flatland_controls_plugins::SteeringMotor, name: rear_right_steer, joint: rear_right_steer_pivot, mode: position, limit: {lower: -2.98, upper: 2.98}}

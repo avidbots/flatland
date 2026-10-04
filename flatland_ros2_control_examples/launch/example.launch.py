@@ -35,10 +35,10 @@ def robot_description(model):
         ElementTree.SubElement(hardware, "param", name=parameter).text = value
 
     for plugin in model["plugins"]:
-        if plugin["type"] not in ("DriveWheel", "SteeringMotor"):
+        if plugin["type"] not in ("flatland_controls_plugins::DriveWheel", "flatland_controls_plugins::SteeringMotor"):
             continue
         name = plugin["name"]
-        is_steering = plugin["type"] == "SteeringMotor"
+        is_steering = plugin["type"] == "flatland_controls_plugins::SteeringMotor"
         ElementTree.SubElement(robot, "link", name=f"{name}_link")
         joint = ElementTree.SubElement(
             robot, "joint", name=name, type="revolute" if is_steering else "continuous"
@@ -128,7 +128,7 @@ def launch_example(context):
     nodes.extend(spawners)
     if name in ("2910_swerve", "articulated_204g"):
         wheels = {plugin["name"]: plugin for plugin in model["plugins"]
-                  if plugin["type"] == "DriveWheel"}
+                  if plugin["type"] == "flatland_controls_plugins::DriveWheel"}
         geometry = {"robot": name, "wheel_radius": wheels["front_left_wheel"]["radius"]}
         if name == "2910_swerve":
             front_left = next(body for body in model["bodies"] if body["name"] == "front_left_pod")

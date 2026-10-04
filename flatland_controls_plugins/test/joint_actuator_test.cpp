@@ -1,5 +1,5 @@
-#include <flatland_plugins/drive_wheel.h>
-#include <flatland_plugins/steering_motor.h>
+#include <flatland_controls_plugins/drive_wheel.h>
+#include <flatland_controls_plugins/steering_motor.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 #include <pluginlib/class_loader.hpp>
@@ -44,8 +44,8 @@ TEST(JointActuatorTest, LoadsFromPluginlib)
 {
   pluginlib::ClassLoader<flatland_server::ModelPlugin> loader(
     "flatland_server", "flatland_server::ModelPlugin");
-  EXPECT_NE(loader.createSharedInstance("flatland_plugins::DriveWheel"), nullptr);
-  EXPECT_NE(loader.createSharedInstance("flatland_plugins::SteeringMotor"), nullptr);
+  EXPECT_NE(loader.createSharedInstance("flatland_controls_plugins::DriveWheel"), nullptr);
+  EXPECT_NE(loader.createSharedInstance("flatland_controls_plugins::SteeringMotor"), nullptr);
 }
 
 TEST(JointActuatorTest, DistributesLoadAndLimitsWheelEffort)
@@ -53,7 +53,7 @@ TEST(JointActuatorTest, DistributesLoadAndLimitsWheelEffort)
   auto node = rclcpp::Node::make_shared("test_drive_wheel");
   auto world = MakeWorld(node, false);
   auto * body = world->models_[0]->GetBody("base")->physics_body_;
-  std::vector<std::shared_ptr<flatland_plugins::DriveWheel>> wheels;
+  std::vector<std::shared_ptr<flatland_controls_plugins::DriveWheel>> wheels;
   for (double x : {-1.0, 1.0}) {
     YAML::Node config;
     config["body"] = "base";
@@ -61,8 +61,8 @@ TEST(JointActuatorTest, DistributesLoadAndLimitsWheelEffort)
     config["offset"] = std::vector<double>{x, 0.0, 0.0};
     config["mode"] = "effort";
     config["friction"] = 0.5;
-    auto wheel = std::make_shared<flatland_plugins::DriveWheel>();
-    wheel->Initialize(node, "DriveWheel", x < 0 ? "left" : "right", world->models_[0], config);
+    auto wheel = std::make_shared<flatland_controls_plugins::DriveWheel>();
+    wheel->Initialize(node, "flatland_controls_plugins::DriveWheel", x < 0 ? "left" : "right", world->models_[0], config);
     world->plugin_manager_.model_plugins_.push_back(wheel);
     wheels.push_back(wheel);
   }
@@ -107,8 +107,8 @@ TEST(JointActuatorTest, VelocityWheelAcceleratesTowardCommand)
   YAML::Node config;
   config["body"] = "base";
   config["radius"] = 0.1;
-  auto wheel = std::make_shared<flatland_plugins::DriveWheel>();
-  wheel->Initialize(node, "DriveWheel", "velocity_wheel", world->models_[0], config);
+  auto wheel = std::make_shared<flatland_controls_plugins::DriveWheel>();
+  wheel->Initialize(node, "flatland_controls_plugins::DriveWheel", "velocity_wheel", world->models_[0], config);
   world->plugin_manager_.model_plugins_.push_back(wheel);
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node);
@@ -131,8 +131,8 @@ TEST(JointActuatorTest, LateralGripIsLoadLimited)
   config["radius"] = 0.1;
   config["friction"] = 0.8;
   config["mode"] = "effort";
-  auto wheel = std::make_shared<flatland_plugins::DriveWheel>();
-  wheel->Initialize(node, "DriveWheel", "grip_test", world->models_[0], config);
+  auto wheel = std::make_shared<flatland_controls_plugins::DriveWheel>();
+  wheel->Initialize(node, "flatland_controls_plugins::DriveWheel", "grip_test", world->models_[0], config);
   wheel->UpdateGroundContactForces({body->GetMass() * 9.81});
   wheel->command_ = 1000.0;
   wheel->has_command_ = true;
@@ -160,9 +160,9 @@ TEST(JointActuatorTest, DriveWheelRejectsPositionMode)
   config["body"] = "base";
   config["radius"] = 0.1;
   config["mode"] = "position";
-  auto wheel = std::make_shared<flatland_plugins::DriveWheel>();
+  auto wheel = std::make_shared<flatland_controls_plugins::DriveWheel>();
   EXPECT_THROW(
-    wheel->Initialize(node, "DriveWheel", "unsupported_wheel", world->models_[0], config),
+    wheel->Initialize(node, "flatland_controls_plugins::DriveWheel", "unsupported_wheel", world->models_[0], config),
     flatland_server::YAMLException);
 }
 
@@ -172,15 +172,15 @@ TEST(JointActuatorTest, FourContactLoadsBalanceCenterOfMass)
   auto world = MakeWorld(node, false);
   auto * body = world->models_[0]->GetBody("base")->physics_body_;
   const auto center = body->GetWorldCenter();
-  std::vector<std::shared_ptr<flatland_plugins::DriveWheel>> wheels;
+  std::vector<std::shared_ptr<flatland_controls_plugins::DriveWheel>> wheels;
   for (double x : {-1.0, 1.0}) {
     for (double y : {-1.0, 1.0}) {
       YAML::Node config;
       config["body"] = "base";
       config["radius"] = 0.1;
       config["offset"] = std::vector<double>{x, y, 0.0};
-      auto wheel = std::make_shared<flatland_plugins::DriveWheel>();
-      wheel->Initialize(node, "DriveWheel", "wheel_" + std::to_string(wheels.size()),
+      auto wheel = std::make_shared<flatland_controls_plugins::DriveWheel>();
+      wheel->Initialize(node, "flatland_controls_plugins::DriveWheel", "wheel_" + std::to_string(wheels.size()),
         world->models_[0], config);
       world->plugin_manager_.model_plugins_.push_back(wheel);
       wheels.push_back(wheel);
@@ -215,8 +215,8 @@ TEST(JointActuatorTest, SteeringSupportsAllModes)
     YAML::Node config;
     config["joint"] = "tail_revolute";
     config["mode"] = mode;
-    auto motor = std::make_shared<flatland_plugins::SteeringMotor>();
-    motor->Initialize(node, "SteeringMotor", "steering", world->models_[0], config);
+    auto motor = std::make_shared<flatland_controls_plugins::SteeringMotor>();
+    motor->Initialize(node, "flatland_controls_plugins::SteeringMotor", "steering", world->models_[0], config);
     world->plugin_manager_.model_plugins_.push_back(motor);
     rclcpp::executors::SingleThreadedExecutor executor;
     executor.add_node(node);
@@ -249,8 +249,8 @@ TEST(JointActuatorTest, SteeringRequiresPluginNameInCommand)
   auto world = MakeWorld(node, true);
   YAML::Node config;
   config["joint"] = "tail_revolute";
-  auto motor = std::make_shared<flatland_plugins::SteeringMotor>();
-  motor->Initialize(node, "SteeringMotor", "steering_plugin", world->models_[0], config);
+  auto motor = std::make_shared<flatland_controls_plugins::SteeringMotor>();
+  motor->Initialize(node, "flatland_controls_plugins::SteeringMotor", "steering_plugin", world->models_[0], config);
   rclcpp::executors::SingleThreadedExecutor executor;
   executor.add_node(node);
   auto publisher = node->create_publisher<control_msgs::msg::JointCommand>(
@@ -288,8 +288,8 @@ TEST(JointActuatorTest, SteeringLimitsRotation)
   config["joint"] = "tail_revolute";
   config["limit"]["lower"] = -0.1;
   config["limit"]["upper"] = 0.2;
-  auto motor = std::make_shared<flatland_plugins::SteeringMotor>();
-  motor->Initialize(node, "SteeringMotor", "limited_steering", world->models_[0], config);
+  auto motor = std::make_shared<flatland_controls_plugins::SteeringMotor>();
+  motor->Initialize(node, "flatland_controls_plugins::SteeringMotor", "limited_steering", world->models_[0], config);
   world->plugin_manager_.model_plugins_.push_back(motor);
   ASSERT_TRUE(motor->joint_->IsLimitEnabled());
   EXPECT_NEAR(motor->joint_->GetLowerLimit(), -0.1, 1e-6);
@@ -321,9 +321,9 @@ TEST(JointActuatorTest, SteeringRejectsInvalidLimits)
     config["joint"] = "tail_revolute";
     config["limit"]["lower"] = lower;
     config["limit"]["upper"] = upper;
-    auto motor = std::make_shared<flatland_plugins::SteeringMotor>();
+    auto motor = std::make_shared<flatland_controls_plugins::SteeringMotor>();
     EXPECT_THROW(
-      motor->Initialize(node, "SteeringMotor", "invalid_steering", world->models_[0], config),
+      motor->Initialize(node, "flatland_controls_plugins::SteeringMotor", "invalid_steering", world->models_[0], config),
       flatland_server::YAMLException);
   }
 }
@@ -339,8 +339,8 @@ TEST(JointActuatorTest, SteeringAcceptsNoLimits)
       config["limit"]["lower"] = std::numeric_limits<double>::quiet_NaN();
       config["limit"]["upper"] = std::numeric_limits<double>::quiet_NaN();
     }
-    auto motor = std::make_shared<flatland_plugins::SteeringMotor>();
-    motor->Initialize(node, "SteeringMotor", "unlimited_steering", world->models_[0], config);
+    auto motor = std::make_shared<flatland_controls_plugins::SteeringMotor>();
+    motor->Initialize(node, "flatland_controls_plugins::SteeringMotor", "unlimited_steering", world->models_[0], config);
     EXPECT_FALSE(motor->joint_->IsLimitEnabled());
   }
 }

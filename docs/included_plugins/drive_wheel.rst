@@ -5,11 +5,12 @@ DriveWheel applies a traction-limited force at a wheel center on a model body.
 Use one plugin per driven wheel; the wheel has no Box2D rotational body. Wheel
 position is integrated from measured forward speed, so slip or external motion
 is reflected in the reported state. A wheel also resists sideways motion.
+This plugin is provided by ``flatland_controls_plugins``.
 
 .. code-block:: yaml
 
   plugins:
-    - type: DriveWheel
+    - type: flatland_controls_plugins::DriveWheel
       name: left_drive
       body: base
       offset: [0.0, 0.3, 0.0]

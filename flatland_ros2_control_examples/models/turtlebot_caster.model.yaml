@@ -27,6 +27,6 @@ joints:
       - {name: chassis, anchor: [-0.19, 0.0]}
       - {name: caster_platform, anchor: [0.0, 0.0]}
 plugins:
-  - {type: DriveWheel, name: left_wheel, body: chassis, offset: [0.02, 0.16, 0.0], radius: 0.07, mode: velocity, friction: 1.2}
-  - {type: DriveWheel, name: right_wheel, body: chassis, offset: [0.02, -0.16, 0.0], radius: 0.07, mode: velocity, friction: 1.2}
+  - {type: flatland_controls_plugins::DriveWheel, name: left_wheel, body: chassis, offset: [0.02, 0.16, 0.0], radius: 0.07, mode: velocity, friction: 1.2}
+  - {type: flatland_controls_plugins::DriveWheel, name: right_wheel, body: chassis, offset: [0.02, -0.16, 0.0], radius: 0.07, mode: velocity, friction: 1.2}
   - {type: FreeWheel, name: rear_caster, body: caster_platform, offset: [-0.07, 0.0, 0.0], radius: 0.035, lateral_resistance: 0.2}
