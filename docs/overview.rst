@@ -12,8 +12,9 @@ Flatland Simulator is a light weight, performance centric 2D robot simulator. It
 is built to integrate directly with ROS and uses Box2D for physics simulation.
 The build fetches Box2D 3.1.1 (MIT license).
 
-This project is divided into four ROS packages: flatland_server, flatland_plugins,
-and flatland_viz, and flatland messages.
+Core simulator functionality is provided by ``flatland_server``,
+``flatland_plugins``, and ``flatland_controls_plugins``, with visualization in
+``flatland_viz`` and message definitions in ``flatland_msgs``.
 
 Flatland Server
 ---------------

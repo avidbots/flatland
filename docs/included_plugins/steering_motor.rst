@@ -3,11 +3,12 @@ SteeringMotor
 
 SteeringMotor actuates a model's revolute Box2D joint and publishes its angle,
 angular speed and applied torque as joint state.
+This plugin is provided by ``flatland_controls_plugins``.
 
 .. code-block:: yaml
 
   plugins:
-    - type: SteeringMotor
+    - type: flatland_controls_plugins::SteeringMotor
       name: front_steering
       joint: steering_joint
       mode: position

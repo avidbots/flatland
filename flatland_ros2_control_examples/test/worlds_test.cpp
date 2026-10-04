@@ -1,5 +1,5 @@
-#include <flatland_plugins/drive_wheel.h>
-#include <flatland_plugins/steering_motor.h>
+#include <flatland_controls_plugins/drive_wheel.h>
+#include <flatland_controls_plugins/steering_motor.h>
 #include <flatland_server/world.h>
 #include <gtest/gtest.h>
 
@@ -72,12 +72,12 @@ TEST(ExampleWorlds, AckermannAndCasterSteerUnderPower)
     auto world = std::unique_ptr<flatland_server::World>(flatland_server::World::MakeWorld(
       node, (worlds / (std::string(name) + ".world.yaml")).string()));
     for (const auto & plugin : world->plugin_manager_.model_plugins_) {
-      if (auto wheel = std::dynamic_pointer_cast<flatland_plugins::DriveWheel>(plugin)) {
+      if (auto wheel = std::dynamic_pointer_cast<flatland_controls_plugins::DriveWheel>(plugin)) {
         wheel->command_ = name == std::string("turtlebot_caster") && wheel->GetName() == "right_wheel" ?
           5.0 : 3.0;
         wheel->has_command_ = true;
       }
-      if (auto steer = std::dynamic_pointer_cast<flatland_plugins::SteeringMotor>(plugin)) {
+      if (auto steer = std::dynamic_pointer_cast<flatland_controls_plugins::SteeringMotor>(plugin)) {
         steer->command_ = 0.25;
         steer->has_command_ = true;
       }

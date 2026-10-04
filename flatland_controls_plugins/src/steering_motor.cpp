@@ -1,4 +1,4 @@
-#include <flatland_plugins/steering_motor.h>
+#include <flatland_controls_plugins/steering_motor.h>
 #include <flatland_server/yaml_reader.h>
 #include <pluginlib/class_list_macros.hpp>
 
@@ -7,7 +7,7 @@
 #include <limits>
 #include <numbers>
 
-namespace flatland_plugins
+namespace flatland_controls_plugins
 {
 
 void SteeringMotor::OnInitialize(const YAML::Node & config)
@@ -101,6 +101,6 @@ void SteeringMotor::AfterPhysicsStep(const flatland_server::Timekeeper & timekee
   state_pub_->publish(state);
 }
 
-}  // namespace flatland_plugins
+}  // namespace flatland_controls_plugins
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::SteeringMotor, flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_controls_plugins::SteeringMotor, flatland_server::ModelPlugin)

@@ -1,11 +1,11 @@
-#include <flatland_plugins/drive_wheel.h>
+#include <flatland_controls_plugins/drive_wheel.h>
 #include <flatland_server/yaml_reader.h>
 #include <pluginlib/class_list_macros.hpp>
 
 #include <algorithm>
 #include <cmath>
 
-namespace flatland_plugins
+namespace flatland_controls_plugins
 {
 
 void DriveWheel::OnInitialize(const YAML::Node & config)
@@ -109,6 +109,6 @@ void DriveWheel::AfterPhysicsStep(const flatland_server::Timekeeper & timekeeper
   state_pub_->publish(state);
 }
 
-}  // namespace flatland_plugins
+}  // namespace flatland_controls_plugins
 
-PLUGINLIB_EXPORT_CLASS(flatland_plugins::DriveWheel, flatland_server::ModelPlugin)
+PLUGINLIB_EXPORT_CLASS(flatland_controls_plugins::DriveWheel, flatland_server::ModelPlugin)

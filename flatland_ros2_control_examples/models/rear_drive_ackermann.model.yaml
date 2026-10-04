@@ -33,9 +33,9 @@ joints:
       - {name: chassis, anchor: [0.52, -0.32]}
       - {name: front_right_knuckle, anchor: [0.0, 0.0]}
 plugins:
-  - {type: DriveWheel, name: rear_left_wheel, body: chassis, offset: [-0.52, 0.32, 0.0], radius: 0.19, mode: velocity, friction: 1.1}
-  - {type: DriveWheel, name: rear_right_wheel, body: chassis, offset: [-0.52, -0.32, 0.0], radius: 0.19, mode: velocity, friction: 1.1}
+  - {type: flatland_controls_plugins::DriveWheel, name: rear_left_wheel, body: chassis, offset: [-0.52, 0.32, 0.0], radius: 0.19, mode: velocity, friction: 1.1}
+  - {type: flatland_controls_plugins::DriveWheel, name: rear_right_wheel, body: chassis, offset: [-0.52, -0.32, 0.0], radius: 0.19, mode: velocity, friction: 1.1}
   - {type: FreeWheel, name: front_left_wheel, body: front_left_knuckle, radius: 0.19}
   - {type: FreeWheel, name: front_right_wheel, body: front_right_knuckle, radius: 0.19}
-  - {type: SteeringMotor, name: front_left_steer, joint: front_left_pivot, mode: position, limit: {lower: -0.65, upper: 0.65}}
-  - {type: SteeringMotor, name: front_right_steer, joint: front_right_pivot, mode: position, limit: {lower: -0.65, upper: 0.65}}
+  - {type: flatland_controls_plugins::SteeringMotor, name: front_left_steer, joint: front_left_pivot, mode: position, limit: {lower: -0.65, upper: 0.65}}
+  - {type: flatland_controls_plugins::SteeringMotor, name: front_right_steer, joint: front_right_pivot, mode: position, limit: {lower: -0.65, upper: 0.65}}

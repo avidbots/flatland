@@ -1,11 +1,11 @@
-#ifndef FLATLAND_PLUGINS_DRIVE_WHEEL_H
-#define FLATLAND_PLUGINS_DRIVE_WHEEL_H
+#ifndef FLATLAND_CONTROLS_PLUGINS_DRIVE_WHEEL_H
+#define FLATLAND_CONTROLS_PLUGINS_DRIVE_WHEEL_H
 
 #include <flatland_server/model_plugin.h>
 #include <control_msgs/msg/joint_command.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
-namespace flatland_plugins
+namespace flatland_controls_plugins
 {
 
 class DriveWheel : public flatland_server::ModelPlugin
@@ -35,6 +35,6 @@ public:
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr state_pub_;
 };
 
-}  // namespace flatland_plugins
+}  // namespace flatland_controls_plugins
 
-#endif  // FLATLAND_PLUGINS_DRIVE_WHEEL_H
+#endif  // FLATLAND_CONTROLS_PLUGINS_DRIVE_WHEEL_H

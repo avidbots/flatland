@@ -25,7 +25,6 @@ find_package(ament_cmake REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(control_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(interactive_markers REQUIRED)
@@ -73,8 +72,6 @@ add_library(flatland_plugins_lib SHARED
   src/tricycle_drive.cpp
   src/diff_drive.cpp
   src/free_wheel.cpp
-  src/drive_wheel.cpp
-  src/steering_motor.cpp
   src/imu.cpp
   src/dynamics_limits.cpp
   src/model_tf_publisher.cpp
@@ -107,7 +104,6 @@ target_link_libraries(flatland_plugins_lib PUBLIC
   tf2_geometry_msgs::tf2_geometry_msgs
   ${flatland_msgs_TARGETS}
   ${std_msgs_TARGETS}
-  ${control_msgs_TARGETS}
   ${sensor_msgs_TARGETS}
   ${nav_msgs_TARGETS}
   ${geometry_msgs_TARGETS}
@@ -120,7 +116,7 @@ target_link_libraries(flatland_plugins_lib PUBLIC
 
 ament_export_targets(export_flatland_plugins_lib HAS_LIBRARY_TARGET)
 # ament_export_libraries(flatland_lib)
-ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib std_msgs control_msgs sensor_msgs nav_msgs geometry_msgs tf2 tf2_ros tf2_msgs tf2_geometry_msgs yaml_cpp_vendor)
+ament_export_dependencies(rclcpp flatland_server flatland_msgs pluginlib std_msgs sensor_msgs nav_msgs geometry_msgs tf2 tf2_ros tf2_msgs tf2_geometry_msgs yaml_cpp_vendor)
 
 #############
 ## Install ##
@@ -164,9 +160,6 @@ if(BUILD_TESTING)
 
   ament_add_gtest(free_wheel_test test/free_wheel_test.cpp)
   target_link_libraries(free_wheel_test flatland_plugins_lib)
-
-  ament_add_gtest(joint_actuator_test test/joint_actuator_test.cpp)
-  target_link_libraries(joint_actuator_test flatland_plugins_lib)
 
   ament_add_gtest(dynamics_limits_test test/dynamics_limits_test.cpp)
   target_link_libraries(dynamics_limits_test flatland_plugins_lib)

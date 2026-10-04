@@ -22,7 +22,7 @@ joints:
       - {name: chassis, anchor: [0.47, 0.0]}
       - {name: front_drive_pod, anchor: [0.0, 0.0]}
 plugins:
-  - {type: DriveWheel, name: front_wheel, body: front_drive_pod, radius: 0.17, mode: velocity, friction: 1.1}
+  - {type: flatland_controls_plugins::DriveWheel, name: front_wheel, body: front_drive_pod, radius: 0.17, mode: velocity, friction: 1.1}
   - {type: FreeWheel, name: rear_left_wheel, body: chassis, offset: [-0.47, 0.30, 0.0], radius: 0.17}
   - {type: FreeWheel, name: rear_right_wheel, body: chassis, offset: [-0.47, -0.30, 0.0], radius: 0.17}
-  - {type: SteeringMotor, name: front_steer, joint: front_pivot, mode: position, limit: {lower: -0.70, upper: 0.70}}
+  - {type: flatland_controls_plugins::SteeringMotor, name: front_steer, joint: front_pivot, mode: position, limit: {lower: -0.70, upper: 0.70}}

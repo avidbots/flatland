@@ -106,7 +106,7 @@ class ControllerConfigTest(unittest.TestCase):
             model = yaml.safe_load((ROOT / "models" / f"{example}.model.yaml").read_text())
             bodies = {body["name"]: body for body in model["bodies"]}
             for wheel in model["plugins"]:
-                if wheel["type"] not in ("DriveWheel", "FreeWheel"):
+                if wheel["type"] not in ("flatland_controls_plugins::DriveWheel", "FreeWheel"):
                     continue
                 with self.subTest(example=example, wheel=wheel["name"]):
                     center_x, center_y, _ = wheel.get("offset", [0, 0, 0])
@@ -136,7 +136,7 @@ class ControllerConfigTest(unittest.TestCase):
                 plugins = {
                     plugin["name"]: plugin["mode"]
                     for plugin in model["plugins"]
-                    if plugin["type"] in ("DriveWheel", "SteeringMotor")
+                    if plugin["type"] in ("flatland_controls_plugins::DriveWheel", "flatland_controls_plugins::SteeringMotor")
                 }
                 description = ElementTree.fromstring(EXAMPLE_LAUNCH.robot_description(model))
                 control = description.find("ros2_control")
